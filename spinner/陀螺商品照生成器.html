@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>陀螺商品照生成器</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+  :root{
+    --ink:#EDEAE2;
+    --ink-dim:#9C978A;
+    --panel:#17151A;
+    --panel-2:#1E1B22;
+    --line:rgba(255,255,255,0.08);
+    --accent:#C99A4B;
+    --accent-soft:rgba(201,154,75,0.15);
+    --danger:#C4674C;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:#0B0A0D;
+    color:var(--ink);
+    font-family:'Zen Kaku Gothic New','Noto Sans TC',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .topbar{
+    padding:22px 28px 18px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .topbar .mark{
+    font-family:'Space Grotesk',monospace;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.18em;
+    color:var(--accent);
+    border:1px solid var(--accent-soft);
+    padding:4px 9px;
+    border-radius:999px;
+  }
+  .topbar h1{
+    font-size:19px;
+    font-weight:700;
+    margin:0;
+    letter-spacing:0.02em;
+  }
+  .topbar .sub{
+    color:var(--ink-dim);
+    font-size:13px;
+    margin-left:auto;
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:0;
+    min-height:calc(100vh - 66px);
+  }
+  @media (max-width:880px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:var(--panel);
+    border-right:1px solid var(--line);
+    padding:24px;
+    overflow-y:auto;
+  }
+  .section{margin-bottom:26px;}
+  .section-title{
+    font-family:'Space Grotesk',monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    color:var(--ink-dim);
+    text-transform:uppercase;
+    margin-bottom:12px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section-title::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+
+  .upload-box{
+    border:1.5px dashed var(--line);
+    border-radius:var(--radius);
+    padding:22px 16px;
+    text-align:center;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+    background:var(--panel-2);
+  }
+  .upload-box:hover, .upload-box.drag{
+    border-color:var(--accent);
+    background:var(--accent-soft);
+  }
+  .upload-box svg{opacity:.55;margin-bottom:8px;}
+  .upload-box p{margin:0;font-size:13px;color:var(--ink-dim);}
+  .upload-box .hint{font-size:11px;margin-top:4px;color:#6b675f;}
+  #fileInput{display:none;}
+
+  .bg-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-bottom:20px;
+  }
+  .bg-swatch{
+    aspect-ratio:1;
+    border-radius:10px;
+    cursor:pointer;
+    border:2px solid transparent;
+    position:relative;
+    transition:transform .12s;
+  }
+  .bg-swatch:hover{transform:scale(1.05);}
+  .bg-swatch.active{border-color:var(--accent);}
+  .bg-swatch .name{
+    position:absolute;
+    bottom:-18px;
+    left:0;right:0;
+    text-align:center;
+    font-size:9.5px;
+    color:var(--ink-dim);
+    white-space:nowrap;
+  }
+
+  label.field-label{
+    display:block;
+    font-size:12px;
+    color:var(--ink-dim);
+    margin-bottom:6px;
+  }
+  .row{display:flex;gap:10px;}
+  .row > *{flex:1;}
+
+  input[type="text"], select{
+    width:100%;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:9px 11px;
+    border-radius:8px;
+    font-size:14px;
+    font-family:inherit;
+  }
+  input[type="text"]:focus, select:focus{outline:none;border-color:var(--accent);}
+
+  input[type="range"]{
+    width:100%;
+    accent-color:var(--accent);
+  }
+  .range-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:11px;
+    color:var(--ink-dim);
+    margin-bottom:4px;
+  }
+
+  .color-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:8px;
+  }
+  .color-dot{
+    width:22px;height:22px;
+    border-radius:50%;
+    cursor:pointer;
+    border:2px solid transparent;
+  }
+  .color-dot.active{border-color:#fff;}
+
+  .btn{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:none;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  .btn-primary{
+    background:var(--accent);
+    color:#141014;
+  }
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-ghost{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink);
+    margin-top:8px;
+  }
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-small{
+    padding:8px;
+    font-size:12px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--panel-2);
+    color:var(--ink-dim);
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .btn-small:hover{color:var(--danger);border-color:var(--danger);}
+
+  .layer-strip{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .layer-thumb{
+    width:52px;height:52px;
+    border-radius:8px;
+    border:2px solid var(--line);
+    background:var(--panel-2) center/cover no-repeat;
+    cursor:pointer;
+    position:relative;
+    flex-shrink:0;
+  }
+  .layer-thumb.selected{border-color:var(--accent);}
+  .layer-thumb .del{
+    position:absolute;
+    top:-6px;right:-6px;
+    width:16px;height:16px;
+    border-radius:50%;
+    background:var(--danger);
+    color:#fff;
+    font-size:10px;
+    line-height:16px;
+    text-align:center;
+    cursor:pointer;
+  }
+  .layer-empty{
+    font-size:12px;
+    color:var(--ink-dim);
+    padding:10px 0;
+  }
+
+  .selected-controls{
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:14px;
+    margin-top:4px;
+  }
+  .selected-controls .sc-title{
+    font-size:12px;
+    color:var(--accent);
+    margin-bottom:10px;
+    font-weight:700;
+  }
+
+  .stage-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:32px;
+    position:relative;
+    gap:22px;
+  }
+  .stage-frame{
+    position:relative;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,0.7);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  canvas{
+    display:block;
+    max-width:min(74vh,520px);
+    width:min(74vh,520px);
+    height:auto;
+    cursor:grab;
+    touch-action:none;
+  }
+  canvas:active{cursor:grabbing;}
+
+  .empty-hint{
+    position:absolute;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    color:var(--ink-dim);
+    font-size:13px;
+    pointer-events:none;
+    width:200px;
+  }
+  .empty-hint svg{opacity:.35;margin-bottom:10px;}
+
+  .stage-tip{
+    position:absolute;
+    bottom:14px; left:50%;
+    transform:translateX(-50%);
+    font-size:11.5px;
+    color:var(--ink-dim);
+    background:rgba(0,0,0,0.4);
+    padding:6px 12px;
+    border-radius:999px;
+    pointer-events:none;
+  }
+
+  .quick-chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+  }
+  .chip{
+    min-width:26px;
+    height:26px;
+    padding:0 7px;
+    border-radius:6px;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    color:var(--ink-dim);
+    font-family:'Space Grotesk',monospace;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .chip:hover{border-color:var(--accent);color:var(--accent);}
+  .chip.tag{
+    font-family:'Zen Kaku Gothic New',sans-serif;
+    padding:0 10px;
+  }
+
+  .mini-preview-block{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px 20px;
+  }
+  .mini-preview-block .mp-label{
+    font-size:11.5px;
+    color:var(--ink-dim);
+    line-height:1.5;
+    max-width:170px;
+  }
+  .mini-preview-block .mp-label b{color:var(--accent);}
+  #miniPreview{
+    width:78px;
+    height:78px;
+    border-radius:6px;
+    object-fit:cover;
+    border:1px solid var(--line);
+    background:#000;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="mark">SPIN·SHOT</span>
+  <h1>陀螺商品照生成器</h1>
+  <span class="sub">可放多顆陀螺與零件 · 選背景 · 加文字 · 下載成品圖</span>
+</div>
+
+<div class="layout">
+  <div class="panel">
+
+    <div class="section">
+      <div class="section-title">照片（可一次選多張）</div>
+      <div class="upload-box" id="uploadBox">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        <p>點擊或拖曳照片到這裡</p>
+        <p class="hint">陀螺本體、輔助戰刃、紋章等零件都可以分開上傳</p>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" multiple>
+
+      <div class="layer-strip" id="layerStrip" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">已選取項目</div>
+      <div class="selected-controls" id="selectedControls">
+        <div class="layer-empty">點選上方縮圖來調整大小 / 旋轉 / 圖層順序</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">背景質感</div>
+      <div class="bg-grid" id="bgGrid"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">文字標籤</div>
+      <label class="field-label">內容（例如編號 / 型號 / ABC）</label>
+      <input type="text" id="labelText" placeholder="例如：CX-06 極狐九尾 全配一組" value="">
+
+      <div style="margin-top:10px;">
+        <label class="field-label">快速插入</label>
+        <div class="quick-chip-row" id="quickNumbers"></div>
+        <div class="quick-chip-row" id="quickLetters" style="margin-top:6px;"></div>
+        <div class="quick-chip-row" id="quickTags" style="margin-top:6px;"></div>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <div>
+          <label class="field-label">字體</label>
+          <select id="fontSelect">
+            <option value="'Space Grotesk', monospace">工業感 · Grotesk</option>
+            <option value="'Zen Kaku Gothic New', sans-serif">日系黑體</option>
+            <option value="Georgia, serif">襯線 · 精品感</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">位置</label>
+          <select id="posSelect">
+            <option value="bottom-left">左下</option>
+            <option value="bottom-right">右下</option>
+            <option value="top-left">左上</option>
+            <option value="top-right">右上</option>
+            <option value="center-bottom">置中下方</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="range-row" style="margin-top:12px;"><span>字級</span><span id="fontSizeVal">36px</span></div>
+      <input type="range" id="fontSizeSlider" min="14" max="56" value="36">
+
+      <label class="field-label" style="margin-top:12px;">文字顏色</label>
+      <div class="color-row" id="textColorRow"></div>
+    </div>
+
+    <div class="section">
+      <button class="btn btn-primary" id="downloadBtn">下載成品圖 (PNG)</button>
+      <button class="btn btn-ghost" id="resetBtn">全部清空</button>
+    </div>
+
+  </div>
+
+  <div class="stage-wrap">
+    <div class="stage-frame">
+      <canvas id="stage" width="1000" height="1000"></canvas>
+      <div class="empty-hint" id="emptyHint">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+        <div>先上傳陀螺 / 零件照片<br>可以一次選多張</div>
+      </div>
+      <div class="stage-tip" id="stageTip" style="display:none;">拖曳畫面上的項目可移動位置</div>
+    </div>
+
+    <div class="mini-preview-block">
+      <img id="miniPreview" alt="小視窗預覽">
+      <div class="mp-label"><b>賣貨便小視窗預覽</b><br>這是商品縮圖在小視窗下大概的樣子，確認文字跟主體看得清楚再下載。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('stage');
+const ctx = canvas.getContext('2d');
+const SIZE = 1000;
+const miniPreview = document.getElementById('miniPreview');
+
+const backgrounds = [
+  { name:'曜石黑', type:'radial', colors:['#2a2830','#0a0a0d'] },
+  { name:'霧灰調', type:'linear', colors:['#3a3a42','#1b1b20'], angle:135 },
+  { name:'香檳金', type:'radial', colors:['#3d3324','#171310'] },
+  { name:'冷藍漸層', type:'linear', colors:['#232b3d','#0c0e14'], angle:160 },
+  { name:'米杏白', type:'linear', colors:['#efe8da','#cfc4ad'], angle:135, dark:false },
+  { name:'珍珠灰', type:'radial', colors:['#d8d8dc','#a8a8ae'], dark:false },
+  { name:'深綠絨', type:'radial', colors:['#1e2b23','#0a120d'] },
+  { name:'酒紅絨', type:'radial', colors:['#2c1620','#12080c'] },
+];
+
+const textColors = ['#F4EFE4','#C99A4B','#1a1a1a','#E8664E','#8FB3A9'];
+
+let state = {
+  bgIndex: 0,
+  layers: [],          // {id, img, x, y, scale, rotation}
+  selectedId: null,
+  label: '',
+  font: "'Space Grotesk', monospace",
+  fontSize: 36,
+  position: 'bottom-left',
+  textColor: '#F4EFE4',
+};
+let layerCounter = 0;
+let isDragging = false;
+
+function buildBg(g, cfg){
+  let grad;
+  if(cfg.type === 'radial'){
+    grad = g.createRadialGradient(SIZE*0.5, SIZE*0.42, SIZE*0.05, SIZE*0.5, SIZE*0.5, SIZE*0.75);
+  } else {
+    const rad = (cfg.angle||135) * Math.PI/180;
+    const x1 = SIZE/2 - Math.cos(rad)*SIZE/2, y1 = SIZE/2 - Math.sin(rad)*SIZE/2;
+    const x2 = SIZE/2 + Math.cos(rad)*SIZE/2, y2 = SIZE/2 + Math.sin(rad)*SIZE/2;
+    grad = g.createLinearGradient(x1,y1,x2,y2);
+  }
+  grad.addColorStop(0, cfg.colors[0]);
+  grad.addColorStop(1, cfg.colors[1]);
+  return grad;
+}
+
+function drawVignette(g, dark){
+  const grad = g.createRadialGradient(SIZE/2,SIZE/2,SIZE*0.35,SIZE/2,SIZE/2,SIZE*0.72);
+  grad.addColorStop(0,'rgba(0,0,0,0)');
+  grad.addColorStop(1, dark ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.18)');
+  g.fillStyle = grad;
+  g.fillRect(0,0,SIZE,SIZE);
+}
+
+function layerDrawSize(layer){
+  const iw = layer.img.width, ih = layer.img.height;
+  const baseSize = SIZE * 0.34;
+  const ratio = iw > ih ? baseSize/iw : baseSize/ih;
+  return { w: iw*ratio*layer.scale, h: ih*ratio*layer.scale };
+}
+
+function render(){
+  const cfg = backgrounds[state.bgIndex];
+  ctx.clearRect(0,0,SIZE,SIZE);
+  ctx.fillStyle = buildBg(ctx, cfg);
+  ctx.fillRect(0,0,SIZE,SIZE);
+
+  ctx.save();
+  ctx.globalAlpha = 0.04;
+  ctx.strokeStyle = cfg.dark===false ? '#000' : '#fff';
+  for(let i=0;i<40;i++){
+    ctx.beginPath();
+    ctx.moveTo(Math.random()*SIZE, 0);
+    ctx.lineTo(Math.random()*SIZE, SIZE);
+    ctx.lineWidth = Math.random()*1;
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  state.layers.forEach(layer => {
+    const {w,h} = layerDrawSize(layer);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(layer.x, layer.y + h*0.42, w*0.34, h*0.09, 0, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.filter = 'blur(12px)';
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(layer.x, layer.y);
+    ctx.rotate(layer.rotation * Math.PI/180);
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 14;
+    ctx.filter = `brightness(${layer.brightness}%) contrast(${layer.contrast}%) saturate(${layer.saturate}%)`;
+    ctx.drawImage(layer.img, -w/2, -h/2, w, h);
+    ctx.filter = 'none';
+    ctx.restore();
+
+    if(layer.id === state.selectedId){
+      ctx.save();
+      ctx.translate(layer.x, layer.y);
+      ctx.rotate(layer.rotation * Math.PI/180);
+      ctx.strokeStyle = 'rgba(201,154,75,0.9)';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([8,6]);
+      ctx.strokeRect(-w/2-8, -h/2-8, w+16, h+16);
+      ctx.restore();
+    }
+  });
+
+  drawVignette(ctx, cfg.dark!==false);
+
+  if(state.label.trim()){
+    ctx.save();
+    ctx.font = `700 ${state.fontSize*1.6}px ${state.font}`;
+    ctx.fillStyle = state.textColor;
+    ctx.textBaseline = 'alphabetic';
+    const pad = 56;
+    let x, y, align='left';
+    switch(state.position){
+      case 'bottom-left': x=pad; y=SIZE-pad; align='left'; break;
+      case 'bottom-right': x=SIZE-pad; y=SIZE-pad; align='right'; break;
+      case 'top-left': x=pad; y=pad+state.fontSize*1.6; align='left'; break;
+      case 'top-right': x=SIZE-pad; y=pad+state.fontSize*1.6; align='right'; break;
+      case 'center-bottom': x=SIZE/2; y=SIZE-pad; align='center'; break;
+    }
+    ctx.textAlign = align;
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 12;
+    ctx.fillText(state.label, x, y);
+    ctx.restore();
+  }
+
+  if(!isDragging){
+    miniPreview.src = canvas.toDataURL('image/png');
+  }
+}
+
+// ---- background swatches ----
+const bgGrid = document.getElementById('bgGrid');
+backgrounds.forEach((cfg, i) => {
+  const el = document.createElement('div');
+  el.className = 'bg-swatch' + (i===0?' active':'');
+  const c1 = cfg.colors[0], c2 = cfg.colors[1];
+  el.style.background = cfg.type==='radial'
+    ? `radial-gradient(circle at 45% 40%, ${c1}, ${c2})`
+    : `linear-gradient(135deg, ${c1}, ${c2})`;
+  const label = document.createElement('div');
+  label.className = 'name';
+  label.textContent = cfg.name;
+  el.appendChild(label);
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.bg-swatch').forEach(s=>s.classList.remove('active'));
+    el.classList.add('active');
+    state.bgIndex = i;
+    render();
+  });
+  bgGrid.appendChild(el);
+});
+
+// ---- text color dots ----
+const colorRow = document.getElementById('textColorRow');
+textColors.forEach((c,i)=>{
+  const dot = document.createElement('div');
+  dot.className = 'color-dot' + (i===0?' active':'');
+  dot.style.background = c;
+  dot.addEventListener('click', ()=>{
+    document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
+    dot.classList.add('active');
+    state.textColor = c;
+    render();
+  });
+  colorRow.appendChild(dot);
+});
+
+// ---- upload handling (multi) ----
+const fileInput = document.getElementById('fileInput');
+const uploadBox = document.getElementById('uploadBox');
+const emptyHint = document.getElementById('emptyHint');
+const stageTip = document.getElementById('stageTip');
+
+uploadBox.addEventListener('click', ()=>fileInput.click());
+uploadBox.addEventListener('dragover', e=>{e.preventDefault(); uploadBox.classList.add('drag');});
+uploadBox.addEventListener('dragleave', ()=>uploadBox.classList.remove('drag'));
+uploadBox.addEventListener('drop', e=>{
+  e.preventDefault();
+  uploadBox.classList.remove('drag');
+  loadImages(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', e=>{
+  loadImages(e.target.files);
+  fileInput.value = '';
+});
+
+function loadImages(fileList){
+  const files = Array.from(fileList).filter(f=>f.type.startsWith('image/'));
+  if(!files.length) return;
+  let offsetIndex = state.layers.length;
+  files.forEach((file, idx) => {
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        layerCounter++;
+        const n = offsetIndex + idx;
+        const cols = 3;
+        const cx = SIZE/2 + ((n % cols) - 1) * SIZE*0.20;
+        const cy = SIZE/2 + (Math.floor(n / cols) % 3 - 1) * SIZE*0.18;
+        state.layers.push({
+          id: 'L'+layerCounter,
+          img,
+          originalImg: img,
+          x: cx, y: cy,
+          scale: 1.0,
+          rotation: 0,
+          brightness: 100,
+          contrast: 100,
+          saturate: 100,
+          bgRemove: false,
+          bgTolerance: 40,
+        });
+        state.selectedId = state.layers[state.layers.length-1].id;
+        emptyHint.style.display = 'none';
+        stageTip.style.display = 'block';
+        rebuildLayerStrip();
+        renderSelectedControls();
+        render();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ---- simple background removal (color-distance keying, good for plain backgrounds) ----
+function removeBackgroundFromLayer(layer, tolerance, callback){
+  const src = layer.originalImg;
+  const off = document.createElement('canvas');
+  const maxDim = 900;
+  let w = src.width, h = src.height;
+  if(w > h){ if(w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; } }
+  else { if(h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; } }
+  off.width = w; off.height = h;
+  const octx = off.getContext('2d');
+  octx.drawImage(src, 0, 0, w, h);
+  const imgData = octx.getImageData(0, 0, w, h);
+  const d = imgData.data;
+  const idx = (x,y) => (y*w+x)*4;
+  const pts = [[0,0],[w-1,0],[0,h-1],[w-1,h-1],[Math.floor(w/2),0],[0,Math.floor(h/2)],[w-1,Math.floor(h/2)],[Math.floor(w/2),h-1]];
+  let r=0,g=0,b=0;
+  pts.forEach(([x,y])=>{ const i=idx(x,y); r+=d[i]; g+=d[i+1]; b+=d[i+2]; });
+  r/=pts.length; g/=pts.length; b/=pts.length;
+  const soft = tolerance*0.6;
+  for(let i=0;i<d.length;i+=4){
+    const dr=d[i]-r, dg=d[i+1]-g, db=d[i+2]-b;
+    const dist = Math.sqrt(dr*dr+dg*dg+db*db);
+    if(dist < tolerance){
+      d[i+3] = 0;
+    } else if(dist < tolerance+soft){
+      const t = (dist-tolerance)/soft;
+      d[i+3] = Math.round(d[i+3]*t);
+    }
+  }
+  octx.putImageData(imgData, 0, 0);
+  const out = new Image();
+  out.onload = () => callback(out);
+  out.src = off.toDataURL('image/png');
+}
+
+// ---- layer strip UI ----
+const layerStrip = document.getElementById('layerStrip');
+function rebuildLayerStrip(){
+  layerStrip.innerHTML = '';
+  if(!state.layers.length) return;
+  state.layers.forEach(layer=>{
+    const thumb = document.createElement('div');
+    thumb.className = 'layer-thumb' + (layer.id===state.selectedId ? ' selected':'');
+    thumb.style.backgroundImage = `url(${layer.img.src})`;
+    thumb.addEventListener('click', ()=>{
+      state.selectedId = layer.id;
+      rebuildLayerStrip();
+      renderSelectedControls();
+      render();
+    });
+    const del = document.createElement('div');
+    del.className = 'del';
+    del.textContent = '×';
+    del.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      state.layers = state.layers.filter(l=>l.id!==layer.id);
+      if(state.selectedId === layer.id){
+        state.selectedId = state.layers.length ? state.layers[state.layers.length-1].id : null;
+      }
+      if(!state.layers.length){
+        emptyHint.style.display = 'block';
+        stageTip.style.display = 'none';
+      }
+      rebuildLayerStrip();
+      renderSelectedControls();
+      render();
+    });
+    thumb.appendChild(del);
+    layerStrip.appendChild(thumb);
+  });
+}
+
+// ---- selected layer controls ----
+const selectedControls = document.getElementById('selectedControls');
+function renderSelectedControls(){
+  const layer = state.layers.find(l=>l.id===state.selectedId);
+  if(!layer){
+    selectedControls.innerHTML = '<div class="layer-empty">點選上方縮圖來調整大小 / 旋轉 / 圖層順序</div>';
+    return;
+  }
+  selectedControls.innerHTML = `
+    <div class="sc-title">已選取項目設定</div>
+    <div class="range-row"><span>大小</span><span id="scValScale">${Math.round(layer.scale*100)}%</span></div>
+    <input type="range" id="scScale" min="15" max="200" value="${Math.round(layer.scale*100)}">
+    <div class="range-row" style="margin-top:10px;"><span>旋轉</span><span id="scValRot">${layer.rotation}°</span></div>
+    <input type="range" id="scRot" min="-180" max="180" value="${layer.rotation}">
+
+    <div class="sc-title" style="margin-top:16px;">去背（適合白色/淺色背景）</div>
+    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-dim);cursor:pointer;">
+      <input type="checkbox" id="scBgToggle" ${layer.bgRemove ? 'checked' : ''} style="width:15px;height:15px;accent-color:var(--accent);">
+      啟用自動去背
+    </label>
+    <div id="scBgToleranceWrap" style="margin-top:8px;${layer.bgRemove ? '' : 'display:none;'}">
+      <div class="range-row"><span>去背強度</span><span id="scValTol">${layer.bgTolerance}</span></div>
+      <input type="range" id="scTol" min="10" max="120" value="${layer.bgTolerance}">
+      <div style="font-size:10.5px;color:#6b675f;margin-top:4px;">拍照背景越單一（白桌/淺色墊）效果越乾淨；邊緣有雜色可拉高強度</div>
+    </div>
+
+    <div class="sc-title" style="margin-top:16px;">濾鏡（補光用）</div>
+    <div class="range-row"><span>亮度</span><span id="scValBright">${layer.brightness}%</span></div>
+    <input type="range" id="scBright" min="50" max="180" value="${layer.brightness}">
+    <div class="range-row" style="margin-top:10px;"><span>對比</span><span id="scValContrast">${layer.contrast}%</span></div>
+    <input type="range" id="scContrast" min="50" max="180" value="${layer.contrast}">
+    <div class="range-row" style="margin-top:10px;"><span>飽和度</span><span id="scValSat">${layer.saturate}%</span></div>
+    <input type="range" id="scSat" min="0" max="200" value="${layer.saturate}">
+    <button class="btn-small" id="scFilterReset" style="width:100%;margin-top:10px;">重設濾鏡</button>
+
+    <div class="row" style="margin-top:14px;">
+      <button class="btn-small" id="scFront">移到最上層</button>
+      <button class="btn-small" id="scBack">移到最下層</button>
+    </div>
+  `;
+  document.getElementById('scScale').addEventListener('input', e=>{
+    layer.scale = e.target.value/100;
+    document.getElementById('scValScale').textContent = e.target.value+'%';
+    render();
+  });
+  document.getElementById('scRot').addEventListener('input', e=>{
+    layer.rotation = parseInt(e.target.value);
+    document.getElementById('scValRot').textContent = e.target.value+'°';
+    render();
+  });
+  document.getElementById('scBgToggle').addEventListener('change', e=>{
+    layer.bgRemove = e.target.checked;
+    document.getElementById('scBgToleranceWrap').style.display = layer.bgRemove ? '' : 'none';
+    if(layer.bgRemove){
+      removeBackgroundFromLayer(layer, layer.bgTolerance, (newImg)=>{
+        layer.img = newImg;
+        rebuildLayerStrip();
+        render();
+      });
+    } else {
+      layer.img = layer.originalImg;
+      rebuildLayerStrip();
+      render();
+    }
+  });
+  document.getElementById('scTol').addEventListener('change', e=>{
+    layer.bgTolerance = parseInt(e.target.value);
+    document.getElementById('scValTol').textContent = e.target.value;
+    if(layer.bgRemove){
+      removeBackgroundFromLayer(layer, layer.bgTolerance, (newImg)=>{
+        layer.img = newImg;
+        rebuildLayerStrip();
+        render();
+      });
+    }
+  });
+  document.getElementById('scTol').addEventListener('input', e=>{
+    document.getElementById('scValTol').textContent = e.target.value;
+  });
+  document.getElementById('scBright').addEventListener('input', e=>{
+    layer.brightness = parseInt(e.target.value);
+    document.getElementById('scValBright').textContent = e.target.value+'%';
+    render();
+  });
+  document.getElementById('scContrast').addEventListener('input', e=>{
+    layer.contrast = parseInt(e.target.value);
+    document.getElementById('scValContrast').textContent = e.target.value+'%';
+    render();
+  });
+  document.getElementById('scSat').addEventListener('input', e=>{
+    layer.saturate = parseInt(e.target.value);
+    document.getElementById('scValSat').textContent = e.target.value+'%';
+    render();
+  });
+  document.getElementById('scFilterReset').addEventListener('click', ()=>{
+    layer.brightness = 100; layer.contrast = 100; layer.saturate = 100;
+    renderSelectedControls();
+    render();
+  });
+  document.getElementById('scFront').addEventListener('click', ()=>{
+    state.layers = state.layers.filter(l=>l.id!==layer.id).concat([layer]);
+    render();
+  });
+  document.getElementById('scBack').addEventListener('click', ()=>{
+    state.layers = [layer].concat(state.layers.filter(l=>l.id!==layer.id));
+    render();
+  });
+}
+
+// ---- quick-insert chips for label text ----
+const quickNumbers = document.getElementById('quickNumbers');
+const quickLetters = document.getElementById('quickLetters');
+const quickTags = document.getElementById('quickTags');
+
+function insertIntoLabel(str){
+  const input = document.getElementById('labelText');
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? input.value.length;
+  input.value = input.value.slice(0,start) + str + input.value.slice(end);
+  input.focus();
+  const pos = start + str.length;
+  input.setSelectionRange(pos,pos);
+  state.label = input.value;
+  render();
+}
+
+'0123456789'.split('').forEach(ch=>{
+  const b = document.createElement('div');
+  b.className = 'chip';
+  b.textContent = ch;
+  b.addEventListener('click', ()=>insertIntoLabel(ch));
+  quickNumbers.appendChild(b);
+});
+
+'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(ch=>{
+  const b = document.createElement('div');
+  b.className = 'chip';
+  b.textContent = ch;
+  b.addEventListener('click', ()=>insertIntoLabel(ch));
+  quickLetters.appendChild(b);
+});
+
+['NEW','現貨','已售出','特價','組','入','#'].forEach(tag=>{
+  const b = document.createElement('div');
+  b.className = 'chip tag';
+  b.textContent = tag;
+  b.addEventListener('click', ()=>insertIntoLabel((document.getElementById('labelText').value ? ' ' : '') + tag));
+  quickTags.appendChild(b);
+});
+
+// ---- text controls ----
+const labelText = document.getElementById('labelText');
+labelText.addEventListener('input', ()=>{ state.label = labelText.value; render(); });
+document.getElementById('fontSelect').addEventListener('change', e=>{ state.font = e.target.value; render(); });
+document.getElementById('posSelect').addEventListener('change', e=>{ state.position = e.target.value; render(); });
+const fontSizeSlider = document.getElementById('fontSizeSlider');
+fontSizeSlider.addEventListener('input', ()=>{
+  state.fontSize = parseInt(fontSizeSlider.value);
+  document.getElementById('fontSizeVal').textContent = state.fontSize+'px';
+  render();
+});
+
+// ---- drag on canvas (select topmost hit layer, then drag) ----
+let dragOffX=0, dragOffY=0;
+function getCanvasPos(e){
+  const rect = canvas.getBoundingClientRect();
+  const cx = (e.touches? e.touches[0].clientX : e.clientX) - rect.left;
+  const cy = (e.touches? e.touches[0].clientY : e.clientY) - rect.top;
+  return { x: cx * (SIZE/rect.width), y: cy * (SIZE/rect.height) };
+}
+function hitTest(p){
+  for(let i=state.layers.length-1; i>=0; i--){
+    const layer = state.layers[i];
+    const {w,h} = layerDrawSize(layer);
+    if(p.x > layer.x-w/2 && p.x < layer.x+w/2 && p.y > layer.y-h/2 && p.y < layer.y+h/2){
+      return layer;
+    }
+  }
+  return null;
+}
+function startDrag(e){
+  if(!state.layers.length) return;
+  const p = getCanvasPos(e);
+  const hit = hitTest(p);
+  if(hit){
+    state.selectedId = hit.id;
+    isDragging = true;
+    dragOffX = p.x - hit.x;
+    dragOffY = p.y - hit.y;
+    rebuildLayerStrip();
+    renderSelectedControls();
+    render();
+  }
+}
+function moveDrag(e){
+  if(!isDragging) return;
+  const layer = state.layers.find(l=>l.id===state.selectedId);
+  if(!layer) return;
+  const p = getCanvasPos(e);
+  layer.x = p.x - dragOffX;
+  layer.y = p.y - dragOffY;
+  render();
+}
+function endDrag(){
+  if(isDragging){
+    isDragging = false;
+    render(); // refresh mini preview after drag ends
+  }
+}
+canvas.addEventListener('mousedown', startDrag);
+window.addEventListener('mousemove', moveDrag);
+window.addEventListener('mouseup', endDrag);
+canvas.addEventListener('touchstart', startDrag, {passive:true});
+canvas.addEventListener('touchmove', moveDrag, {passive:true});
+window.addEventListener('touchend', endDrag);
+
+// ---- download ----
+document.getElementById('downloadBtn').addEventListener('click', ()=>{
+  if(!state.layers.length){
+    alert('請先上傳至少一張照片');
+    return;
+  }
+  const wasSelected = state.selectedId;
+  state.selectedId = null;
+  render();
+  const link = document.createElement('a');
+  link.download = (state.label.trim() || '陀螺商品照') + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  state.selectedId = wasSelected;
+  render();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  state.layers = [];
+  state.selectedId = null;
+  state.label = '';
+  labelText.value = '';
+  emptyHint.style.display = 'block';
+  stageTip.style.display = 'none';
+  rebuildLayerStrip();
+  renderSelectedControls();
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
