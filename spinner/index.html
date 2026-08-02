@@ -367,6 +367,54 @@
     border:1px solid var(--line);
     background:#000;
   }
+
+  /* --- 儲存圖片彈窗（給獨立模式/受限瀏覽器用的備援方式） --- */
+  .save-overlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.75);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding:24px;
+  }
+  .save-overlay.open{ display:flex; }
+  .save-sheet{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px;
+    max-width:420px;
+    width:100%;
+    text-align:center;
+  }
+  .save-sheet h3{
+    margin:0 0 6px;
+    font-size:16px;
+    color:var(--accent);
+  }
+  .save-sheet p{
+    margin:0 0 16px;
+    font-size:13px;
+    color:var(--ink-dim);
+    line-height:1.6;
+  }
+  .save-sheet img{
+    width:100%;
+    border-radius:8px;
+    margin-bottom:16px;
+    -webkit-touch-callout:default;
+  }
+  .save-sheet .btn-close{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:10px 18px;
+    border-radius:8px;
+    font-family:inherit;
+    font-size:13px;
+    cursor:pointer;
+  }
 </style>
 </head>
 <body>
@@ -465,6 +513,15 @@
       <img id="miniPreview" alt="小視窗預覽">
       <div class="mp-label"><b>賣貨便小視窗預覽</b><br>這是商品縮圖在小視窗下大概的樣子，確認文字跟主體看得清楚再下載。</div>
     </div>
+  </div>
+</div>
+
+<div class="save-overlay" id="saveOverlay">
+  <div class="save-sheet">
+    <h3>長按下方圖片存到相簿</h3>
+    <p>如果剛才沒有自動跳出下載，就用這個方式：長按圖片 → 選「加入照片」或「儲存影像」</p>
+    <img id="saveImg" alt="成品圖">
+    <button class="btn-close" id="closeSaveOverlay">關閉</button>
   </div>
 </div>
 
@@ -994,7 +1051,10 @@ canvas.addEventListener('touchstart', startDrag, {passive:true});
 canvas.addEventListener('touchmove', moveDrag, {passive:true});
 window.addEventListener('touchend', endDrag);
 
-// ---- download ----
+// ---- download (with fallback save-sheet for standalone / restricted browsers) ----
+const saveOverlay = document.getElementById('saveOverlay');
+const saveImg = document.getElementById('saveImg');
+
 document.getElementById('downloadBtn').addEventListener('click', ()=>{
   if(!state.layers.length){
     alert('請先上傳至少一張照片');
@@ -1003,12 +1063,33 @@ document.getElementById('downloadBtn').addEventListener('click', ()=>{
   const wasSelected = state.selectedId;
   state.selectedId = null;
   render();
-  const link = document.createElement('a');
-  link.download = (state.label.trim() || '陀螺商品照') + '.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
+  const dataUrl = canvas.toDataURL('image/png');
+
+  // 嘗試一般下載
+  try{
+    const link = document.createElement('a');
+    link.download = (state.label.trim() || '陀螺商品照') + '.png';
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }catch(e){
+    // 忽略，交給下面的備援畫面
+  }
+
+  // 同時顯示備援畫面：長按圖片存檔，確保在「加入主畫面」獨立模式下也能存
+  saveImg.src = dataUrl;
+  saveOverlay.classList.add('open');
+
   state.selectedId = wasSelected;
   render();
+});
+
+document.getElementById('closeSaveOverlay').addEventListener('click', ()=>{
+  saveOverlay.classList.remove('open');
+});
+saveOverlay.addEventListener('click', (e)=>{
+  if(e.target === saveOverlay) saveOverlay.classList.remove('open');
 });
 
 document.getElementById('resetBtn').addEventListener('click', ()=>{
