@@ -474,7 +474,7 @@
           </select>
         </div>
         <div>
-          <label class="field-label">位置</label>
+          <label class="field-label">快速定位</label>
           <select id="posSelect">
             <option value="bottom-left">左下</option>
             <option value="bottom-right">右下</option>
@@ -484,9 +484,12 @@
           </select>
         </div>
       </div>
+      <div style="font-size:10.5px;color:#6b675f;margin-top:6px;">也可以直接在右邊畫面上用手指拖曳文字到想要的位置</div>
 
       <div class="range-row" style="margin-top:12px;"><span>字級</span><span id="fontSizeVal">36px</span></div>
-      <input type="range" id="fontSizeSlider" min="14" max="56" value="36">
+      <input type="range" id="fontSizeSlider" min="14" max="90" value="36">
+
+      <button class="btn-small" id="resetTextPos" style="width:100%;margin-top:10px;">重設文字位置</button>
 
       <label class="field-label" style="margin-top:12px;">文字顏色</label>
       <div class="color-row" id="textColorRow"></div>
@@ -553,9 +556,13 @@ let state = {
   fontSize: 36,
   position: 'bottom-left',
   textColor: '#F4EFE4',
+  textOffsetX: 0,
+  textOffsetY: 0,
 };
 let layerCounter = 0;
 let isDragging = false;
+let isDraggingText = false;
+let lastTextBox = null; // {x,y,w,h,align} in canvas coords, updated每次 render
 
 function buildBg(g, cfg){
   let grad;
@@ -641,6 +648,7 @@ function render(){
 
   drawVignette(ctx, cfg.dark!==false);
 
+  lastTextBox = null;
   if(state.label.trim()){
     ctx.save();
     ctx.font = `700 ${state.fontSize*1.6}px ${state.font}`;
@@ -655,14 +663,34 @@ function render(){
       case 'top-right': x=SIZE-pad; y=pad+state.fontSize*1.6; align='right'; break;
       case 'center-bottom': x=SIZE/2; y=SIZE-pad; align='center'; break;
     }
+    x += state.textOffsetX;
+    y += state.textOffsetY;
     ctx.textAlign = align;
     ctx.shadowColor = 'rgba(0,0,0,0.6)';
     ctx.shadowBlur = 12;
     ctx.fillText(state.label, x, y);
+
+    // 記錄文字邊界框（給拖曳判斷 & 選取框用）
+    const textW = ctx.measureText(state.label).width;
+    const textH = state.fontSize*1.6;
+    let boxX;
+    if(align==='left') boxX = x;
+    else if(align==='right') boxX = x - textW;
+    else boxX = x - textW/2;
+    lastTextBox = { x:boxX, y:y-textH*0.78, w:textW, h:textH, align };
+
+    if(isDraggingText){
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(201,154,75,0.9)';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([8,6]);
+      ctx.strokeRect(lastTextBox.x-10, lastTextBox.y-10, lastTextBox.w+20, lastTextBox.h+20);
+    }
     ctx.restore();
   }
 
-  if(!isDragging){
+  if(!isDragging && !isDraggingText){
     miniPreview.src = canvas.toDataURL('image/png');
   }
 }
@@ -989,21 +1017,38 @@ function insertIntoLabel(str){
 const labelText = document.getElementById('labelText');
 labelText.addEventListener('input', ()=>{ state.label = labelText.value; render(); });
 document.getElementById('fontSelect').addEventListener('change', e=>{ state.font = e.target.value; render(); });
-document.getElementById('posSelect').addEventListener('change', e=>{ state.position = e.target.value; render(); });
+document.getElementById('posSelect').addEventListener('change', e=>{
+  state.position = e.target.value;
+  state.textOffsetX = 0;
+  state.textOffsetY = 0;
+  render();
+});
 const fontSizeSlider = document.getElementById('fontSizeSlider');
 fontSizeSlider.addEventListener('input', ()=>{
   state.fontSize = parseInt(fontSizeSlider.value);
   document.getElementById('fontSizeVal').textContent = state.fontSize+'px';
   render();
 });
+document.getElementById('resetTextPos').addEventListener('click', ()=>{
+  state.textOffsetX = 0;
+  state.textOffsetY = 0;
+  render();
+});
 
-// ---- drag on canvas (select topmost hit layer, then drag) ----
+// ---- drag on canvas (text on top, then layers) ----
 let dragOffX=0, dragOffY=0;
+let textDragStartX=0, textDragStartY=0;
 function getCanvasPos(e){
   const rect = canvas.getBoundingClientRect();
   const cx = (e.touches? e.touches[0].clientX : e.clientX) - rect.left;
   const cy = (e.touches? e.touches[0].clientY : e.clientY) - rect.top;
   return { x: cx * (SIZE/rect.width), y: cy * (SIZE/rect.height) };
+}
+function hitTestText(p){
+  if(!lastTextBox) return false;
+  const pad = 14; // 稍微放寬一點好點選
+  return p.x > lastTextBox.x-pad && p.x < lastTextBox.x+lastTextBox.w+pad &&
+         p.y > lastTextBox.y-pad && p.y < lastTextBox.y+lastTextBox.h+pad;
 }
 function hitTest(p){
   for(let i=state.layers.length-1; i>=0; i--){
@@ -1016,8 +1061,18 @@ function hitTest(p){
   return null;
 }
 function startDrag(e){
-  if(!state.layers.length) return;
   const p = getCanvasPos(e);
+
+  // 文字畫在最上面，優先判斷
+  if(hitTestText(p)){
+    isDraggingText = true;
+    textDragStartX = p.x - state.textOffsetX;
+    textDragStartY = p.y - state.textOffsetY;
+    render();
+    return;
+  }
+
+  if(!state.layers.length) return;
   const hit = hitTest(p);
   if(hit){
     state.selectedId = hit.id;
@@ -1030,6 +1085,13 @@ function startDrag(e){
   }
 }
 function moveDrag(e){
+  if(isDraggingText){
+    const p = getCanvasPos(e);
+    state.textOffsetX = p.x - textDragStartX;
+    state.textOffsetY = p.y - textDragStartY;
+    render();
+    return;
+  }
   if(!isDragging) return;
   const layer = state.layers.find(l=>l.id===state.selectedId);
   if(!layer) return;
@@ -1039,6 +1101,10 @@ function moveDrag(e){
   render();
 }
 function endDrag(){
+  if(isDraggingText){
+    isDraggingText = false;
+    render();
+  }
   if(isDragging){
     isDragging = false;
     render(); // refresh mini preview after drag ends
@@ -1096,6 +1162,8 @@ document.getElementById('resetBtn').addEventListener('click', ()=>{
   state.layers = [];
   state.selectedId = null;
   state.label = '';
+  state.textOffsetX = 0;
+  state.textOffsetY = 0;
   labelText.value = '';
   emptyHint.style.display = 'block';
   stageTip.style.display = 'none';
