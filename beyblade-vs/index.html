@@ -221,6 +221,10 @@
   .combo-editor textarea{width:100%; min-height:70px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; color:var(--text); padding:10px 12px; font-size:13px; font-family:'Noto Sans TC',sans-serif; resize:vertical; margin-top:3px;}
   .proof-check{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--muted); margin-top:10px;}
   .card-thumb{width:100%; height:100%; object-fit:cover; border-radius:8px;}
+  .icon-slot{cursor:pointer; border-radius:8px;}
+  .icon-slot:active{opacity:0.7;}
+  .icon-clear{position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%; background:#000; color:#fff; border:1px solid var(--line); font-size:10px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  .icon-hint{font-size:10px; color:var(--muted); margin-top:10px;}
   .card-controls{display:flex; gap:6px; margin-top:10px;}
   .card-controls button{flex:1; font-size:10px; padding:6px; border-radius:6px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); cursor:pointer;}
   footer{max-width:960px; margin:40px auto 0; padding:20px 18px 0; border-top:1px solid var(--line); font-size:11px; color:var(--muted); line-height:1.8;}
@@ -479,6 +483,7 @@
   </div>
 
   <div class="grid" id="grid"></div>
+  <input type="file" accept="image/*" id="officialCardFile">
   <div class="empty" id="emptyState">找不到符合的配置，換個關鍵字或分類看看。</div>
   <footer>配置資料整理自 BeybladeHub，文字已改寫摘要。零件圖示為手繪示意圖，非官方實體照片。戰鬥陀螺X™（BEYBLADE X™）為 TAKARA TOMY 版權所有，本頁為玩家整理的非官方參考資料。</footer>
 </div>
@@ -1229,6 +1234,7 @@ const DATA = [
   {series:'CX', name:'幽冥', en:'', blade:'幽冥主刃＋S紋章', ratchet:'7-60', bit:'T', style:'stamina', proof:false,
    text:'S 刃壓低重心加上 7 凸固鎖形成穩定防守陣形，T 耐久軸進一步拉長旋轉時間，是純消耗戰型配置。'},
 ];
+DATA.forEach((item, i) => { item.id = 'official-' + i; });
 function styleIconSVG(style){
   const c = 'var(--'+style+')';
   if(style==='attack') return `<svg viewBox="0 0 48 48"><polygon points="24,3 29,18 45,18 32,28 37,44 24,34 11,44 16,28 3,18 19,18" fill="none" stroke="${c}" stroke-width="2"/></svg>`;
@@ -1249,8 +1255,14 @@ function makeCard(item){
   const iconHtml = item.photo
     ? `<img class="card-thumb" src="${item.photo}">`
     : styleIconSVG(item.style);
+  const iconSlot = item.isCustom
+    ? `<div style="width:36px;height:36px;">${iconHtml}</div>`
+    : `<div class="icon-slot" data-cardid="${item.id}" style="width:36px;height:36px;position:relative;">
+         ${iconHtml}
+         ${item.photo ? `<button class="icon-clear" data-cardid="${item.id}">✕</button>` : ''}
+       </div>`;
   div.innerHTML = `
-    <div class="card-top"><div style="width:36px;height:36px;">${iconHtml}</div><span class="series-badge">${item.isCustom ? '我的' : item.series}</span></div>
+    <div class="card-top">${iconSlot}<span class="series-badge">${item.isCustom ? '我的' : item.series}</span></div>
     <div class="name-cn">${item.name}</div>
     ${item.en ? `<div class="name-en">${item.en}</div>` : ''}
     <div class="style-tag"><span class="dot"></span>${meta.label}</div>
@@ -1261,18 +1273,21 @@ function makeCard(item){
     </div>
     ${item.text ? `<p class="analysis">${item.text}</p>` : ''}
     ${item.proof ? `<div class="proof">🏆 賽場前四強實戰驗證</div>` : ``}
-    ${item.isCustom ? `<div class="card-controls"><button class="combo-edit" data-id="${item.id}">✏️ 編輯</button><button class="combo-del" data-id="${item.id}">🗑 刪除</button></div>` : ''}
+    ${item.isCustom ? `<div class="card-controls"><button class="combo-edit" data-id="${item.id}">✏️ 編輯</button><button class="combo-del" data-id="${item.id}">🗑 刪除</button></div>` : `<div class="icon-hint">點縮圖可放自己的照片</div>`}
   `;
   return div;
 }
 
 let customCombos = [];
+let officialPhotos = {}; // id -> compressed data URL, personal only
+let officialPhotoTargetId = null;
 const grid = document.getElementById('grid');
 
 function renderCatalogGrid(){
   grid.innerHTML = '';
-  DATA.forEach(item => grid.appendChild(makeCard(item)));
+  DATA.forEach(item => { item.photo = officialPhotos[item.id] || null; grid.appendChild(makeCard(item)); });
   customCombos.forEach(item => grid.appendChild(makeCard(item)));
+
   grid.querySelectorAll('.combo-edit').forEach(b=>b.addEventListener('click', ()=>{
     const item = customCombos.find(it=>it.id===b.dataset.id);
     if(item) openComboEditor(item);
@@ -1284,7 +1299,53 @@ function renderCatalogGrid(){
     renderCatalogGrid();
     applyFilter();
   }));
+
+  // Official card photo upload / clear
+  grid.querySelectorAll('.icon-slot').forEach(slot=>{
+    slot.addEventListener('click', (e)=>{
+      if(e.target.classList.contains('icon-clear')) return;
+      officialPhotoTargetId = slot.dataset.cardid;
+      document.getElementById('officialCardFile').click();
+    });
+  });
+  grid.querySelectorAll('.icon-clear').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      delete officialPhotos[btn.dataset.cardid];
+      await saveOfficialPhotos();
+      renderCatalogGrid();
+      applyFilter();
+    });
+  });
+
   applyFilter();
+}
+
+document.getElementById('officialCardFile').addEventListener('change', async ()=>{
+  const file = document.getElementById('officialCardFile').files[0];
+  const input = document.getElementById('officialCardFile');
+  if(!file || !officialPhotoTargetId) { input.value=''; return; }
+  try{
+    // Compressed to 480px / ~0.7 quality, same as everywhere else in the app,
+    // so lots of card photos can be stored without filling up space.
+    const compressed = await compressImage(file, 480, 0.7);
+    officialPhotos[officialPhotoTargetId] = compressed;
+    await saveOfficialPhotos();
+    renderCatalogGrid();
+  }catch(e){ console.error('official card photo failed', e); }
+  input.value = '';
+  officialPhotoTargetId = null;
+});
+
+async function loadOfficialPhotos(){
+  try{
+    const r = await appStorage.get('officialCardPhotos', false);
+    officialPhotos = r && r.value ? JSON.parse(r.value) : {};
+  }catch(e){ officialPhotos = {}; }
+}
+async function saveOfficialPhotos(){
+  try{ await appStorage.set('officialCardPhotos', JSON.stringify(officialPhotos), false); }
+  catch(e){ console.error('officialPhotos save failed', e); }
 }
 
 async function loadCustomCombos(){
@@ -1292,6 +1353,7 @@ async function loadCustomCombos(){
     const r = await appStorage.get('customCombos', false);
     customCombos = r && r.value ? JSON.parse(r.value) : [];
   }catch(e){ customCombos = []; }
+  await loadOfficialPhotos();
   renderCatalogGrid();
 }
 async function saveCustomCombos(){
