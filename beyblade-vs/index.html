@@ -123,7 +123,7 @@
   .go-hint{font-size:11px; color:var(--muted); margin-top:10px; line-height:1.7;}
 
   /* ---- Countdown overlay ---- */
-  .countdown-overlay{position:fixed; inset:0; z-index:100; display:none; align-items:center; justify-content:center;
+  .countdown-overlay{position:fixed; inset:0; z-index:300; display:none; align-items:center; justify-content:center;
     background:#000; overflow:hidden;}
   .countdown-overlay.show{display:flex;}
   .cd-text{font-family:'Bebas Neue',sans-serif; font-size:clamp(90px,32vw,340px); color:#fff; text-shadow:0 0 50px currentColor, 0 0 100px currentColor; text-align:center; padding:0 12px;}
@@ -135,33 +135,29 @@
   @keyframes shake{0%,100%{transform:translate(0,0);} 20%{transform:translate(-8px,4px);} 40%{transform:translate(7px,-5px);} 60%{transform:translate(-6px,-3px);} 80%{transform:translate(6px,5px);}}
   .shake{animation:shake 0.4s ease;}
 
-  /* ---- Battle screen ---- */
-  .battle-screen{display:none; max-width:680px; margin:0 auto; padding:16px 14px;}
-  .battle-screen.show{display:block;}
-  .battle-vs-row{display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px; margin-bottom:14px;}
-  .battle-dot{width:22px; height:22px; border-radius:50%; margin:0 auto;}
-  .battle-dot.red{background:var(--red); box-shadow:0 0 16px rgba(255,61,104,0.6);}
-  .battle-dot.blue{background:var(--blue); box-shadow:0 0 16px rgba(62,140,255,0.6);}
-  .battle-name{text-align:center; font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:0.02em; margin-top:8px;}
-  .vs-center{font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--gold);}
+  /* ---- Battle screen: full-bleed split-color scoreboard ---- */
+  .battle-screen{display:none; position:fixed; inset:0; z-index:150; flex-direction:row; overflow:hidden;}
+  .battle-screen.show{display:flex;}
+  .scorepanel{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:space-between;
+    padding:calc(64px + env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom)); text-align:center; position:relative; gap:14px;}
+  .scorepanel.red{background:linear-gradient(165deg, #FF3D68, #7A0E2C);}
+  .scorepanel.blue{background:linear-gradient(165deg, #3E8CFF, #0E2E7A);}
+  .battle-name{font-family:'Rajdhani',sans-serif; font-weight:700; letter-spacing:0.02em; font-size:clamp(17px,4.8vw,26px); color:#fff; word-break:break-word; max-width:100%;}
+  .vs-center{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:5;
+    font-family:'Bebas Neue',sans-serif; font-size:20px; color:#fff; background:rgba(0,0,0,0.4);
+    width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; pointer-events:none;}
+  .bignum{font-family:'Bebas Neue',sans-serif; font-size:clamp(84px,25vw,168px); line-height:1; color:#fff; text-shadow:0 4px 26px rgba(0,0,0,0.3);}
+  .scorebtns2{width:100%; display:flex; flex-direction:column; gap:9px;}
+  .scorebtn2{width:100%; padding:15px 6px; border-radius:14px; border:1px solid rgba(255,255,255,0.35);
+    background:rgba(255,255,255,0.16); color:#fff; font-family:'Noto Sans TC',sans-serif; font-weight:700; font-size:clamp(13px,3.6vw,16px); cursor:pointer;}
+  .scorebtn2:active{transform:scale(0.96); background:rgba(255,255,255,0.32);}
 
-  .score-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-  .scorepanel{border-radius:16px; padding:14px; text-align:center; border:1px solid var(--line);}
-  .scorepanel.red{background:rgba(255,61,104,0.08); border-color:rgba(255,61,104,0.4);}
-  .scorepanel.blue{background:rgba(62,140,255,0.08); border-color:rgba(62,140,255,0.4);}
-  .bignum{font-family:'Bebas Neue',sans-serif; font-size:60px; line-height:1;}
-  .scorepanel.red .bignum{color:var(--red);} .scorepanel.blue .bignum{color:var(--blue);}
-  .scorebtn2{width:100%; margin-top:8px; padding:11px 6px; border-radius:10px; border:1px solid var(--line);
-    background:var(--surface-2); color:var(--text); font-family:'Rajdhani',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer;}
-  .scorebtn2:active{transform:scale(0.96);}
-  .scorepanel.red .scorebtn2:hover{border-color:var(--red);}
-  .scorepanel.blue .scorebtn2:hover{border-color:var(--blue);}
+  .battle-actions{position:fixed; top:calc(10px + env(safe-area-inset-top)); left:0; right:0; z-index:160;
+    display:flex; justify-content:space-between; padding:0 14px; pointer-events:none;}
+  .battle-actions button{pointer-events:auto; padding:9px 16px; border-radius:20px; border:1px solid rgba(255,255,255,0.4);
+    background:rgba(0,0,0,0.38); color:#fff; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer;}
 
-  .battle-actions{display:flex; gap:10px; margin-top:16px;}
-  .battle-actions button{flex:1; padding:12px; border-radius:12px; border:1px solid var(--line); background:var(--surface);
-    color:var(--text); font-family:'Rajdhani',sans-serif; font-weight:700; cursor:pointer;}
-
-  .winner-overlay{position:fixed; inset:0; z-index:90; display:none; align-items:center; justify-content:center;
+  .winner-overlay{position:fixed; inset:0; z-index:250; display:none; align-items:center; justify-content:center;
     background:rgba(0,0,0,0.86); padding:20px;}
   .winner-overlay.show{display:flex;}
   .winner-card{max-width:340px; width:100%; text-align:center; background:var(--surface); border:2px solid var(--gold);
@@ -450,33 +446,27 @@
   </div>
 
   <div class="battle-screen" id="battleScreen">
-    <div class="battle-vs-row">
-      <div>
-        <div class="battle-dot red"></div>
-        <div class="battle-name" id="bnRed"></div>
-      </div>
-      <div class="vs-center display">VS</div>
-      <div>
-        <div class="battle-dot blue"></div>
-        <div class="battle-name" id="bnBlue"></div>
-      </div>
-    </div>
-    <div class="score-row">
-      <div class="scorepanel red">
-        <div class="bignum" id="scoreRed">0</div>
+    <div class="scorepanel red">
+      <div class="battle-name" id="bnRed"></div>
+      <div class="bignum" id="scoreRed">0</div>
+      <div class="scorebtns2">
         <button class="scorebtn2" data-side="red" data-pts="1">迴轉 +1</button>
         <button class="scorebtn2" data-side="red" data-pts="2">爆裂/擊飛 +2</button>
         <button class="scorebtn2" data-side="red" data-pts="3">極限 +3</button>
       </div>
-      <div class="scorepanel blue">
-        <div class="bignum" id="scoreBlue">0</div>
+    </div>
+    <div class="vs-center display">VS</div>
+    <div class="scorepanel blue">
+      <div class="battle-name" id="bnBlue"></div>
+      <div class="bignum" id="scoreBlue">0</div>
+      <div class="scorebtns2">
         <button class="scorebtn2" data-side="blue" data-pts="1">迴轉 +1</button>
         <button class="scorebtn2" data-side="blue" data-pts="2">爆裂/擊飛 +2</button>
         <button class="scorebtn2" data-side="blue" data-pts="3">極限 +3</button>
       </div>
     </div>
     <div class="battle-actions">
-      <button id="backToSetupBtn">← 換陀螺</button>
+      <button id="backToSetupBtn">✕ 結束比賽</button>
       <button id="resetScoreBtn">重設比分</button>
     </div>
   </div>
@@ -1148,6 +1138,7 @@ document.getElementById('arenaEndBtn').addEventListener('click', ()=>{
   arenaQueue = [];
   arenaWinCounts = {};
   document.getElementById('battleScreen').classList.remove('show');
+  document.body.style.overflow = '';
   document.getElementById('arenaStatusWrap').style.display = 'none';
   document.getElementById('battleModeWrap').style.display = 'block';
   setBattleMode('normal');
@@ -1219,6 +1210,12 @@ async function runCountdown(){
   const textEl = document.getElementById('cdText');
   overlay.classList.add('show');
 
+  // Give everyone a few seconds to actually get their beyblades into position
+  // before the "get ready" announcement starts talking.
+  textEl.textContent = '準備...';
+  textEl.className = 'cd-text display cd-anim ready';
+  await wait(3000);
+
   // "各位選手就位" is always the fixed spoken announcement, not user-recordable.
   textEl.textContent = '各位選手就位';
   textEl.className = 'cd-text display cd-anim ready';
@@ -1262,6 +1259,7 @@ function showBattleScreen(){
   document.getElementById('battleScreen').classList.add('show');
   document.getElementById('bnRed').textContent = live.red.name;
   document.getElementById('bnBlue').textContent = live.blue.name;
+  document.body.style.overflow = 'hidden';
   updateScoreUI();
 }
 
@@ -1338,6 +1336,7 @@ document.getElementById('recordBtn').addEventListener('click', async ()=>{
 
 document.getElementById('backToSetupBtn').addEventListener('click', ()=>{
   document.getElementById('battleScreen').classList.remove('show');
+  document.body.style.overflow = '';
   if(arenaMode){
     document.getElementById('arenaStatusWrap').style.display='block';
   } else {
