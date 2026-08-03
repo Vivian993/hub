@@ -186,6 +186,7 @@
   .winner-combo-form{margin-top:16px; text-align:left;}
   .winner-combo-hint{font-size:11px; color:var(--muted); text-align:center; line-height:1.7; margin-bottom:6px;}
   .winner-actions{display:flex; gap:10px; margin-top:18px;}
+  .auto-next-text{width:100%; text-align:center; font-size:12.5px; color:var(--gold); line-height:1.6;}
   .winner-actions button{flex:1; padding:12px; border-radius:12px; border:none; font-family:'Rajdhani',sans-serif; font-weight:700; cursor:pointer;}
   .btn-primary{background:var(--gold); color:#1a1400;}
   .btn-ghost{background:var(--surface-2); color:var(--text); border:1px solid var(--line) !important;}
@@ -493,7 +494,7 @@
       📲 <b>加到手機主畫面：</b>把這個網頁加到主畫面時，手機大多會用官方的 icon。想放我們做的這個陀螺圖示，可以先把它存到相簿，再用手機「捷徑 / 小工具」功能把它設成自訂主畫面圖示 — 下面有單獨的圖片檔可以下載存檔。
     </div>
   </div>
-  <div class="sharednote">🌐 按下「記錄戰績」後，這場比賽會存到共用統計裡，打開同一個連結的同學都看得到、也會一起計算勝率。</div>
+  <div class="sharednote">🌐 每場比賽結束都會自動存到共用統計裡，打開同一個連結的同學都看得到、也會一起計算勝率。</div>
 </div>
 
 <!-- Countdown overlay -->
@@ -514,9 +515,8 @@
       <div class="field"><label>🔴 紅方配置</label><input type="text" id="comboRedInput" placeholder="例如：鮫鯊狂鱗 / 4-50 / K"></div>
       <div class="field"><label>🔵 藍方配置</label><input type="text" id="comboBlueInput" placeholder="例如：魔導神杖 / 1-60 / FB"></div>
     </div>
-    <div class="winner-actions">
-      <button class="btn-primary" id="recordBtn">✅ 記錄戰績</button>
-      <button class="btn-ghost" id="rematchBtn">🔁 再戰一場</button>
+    <div class="winner-actions" id="normalAutoWrap">
+      <div class="auto-next-text" id="autoNextNote">🔁 幾秒後自動開始下一場…不玩了就按右上角「✕」</div>
     </div>
     <div class="winner-actions" id="arenaNextWrap" style="display:none; margin-top:8px;">
       <button class="btn-primary" id="arenaNextBtn">🔁 換人・下一場</button>
@@ -698,7 +698,7 @@
   </header>
 
   <div class="mine-wrap">
-    <div class="mine-privacy-note">🔒 這個分頁的資料只存在這台裝置的瀏覽器裡，不會同步給任何人看到——跟「對戰」分頁按下「記錄戰績」會公開共用不一樣。</div>
+    <div class="mine-privacy-note">🔒 這個分頁的資料只存在這台裝置的瀏覽器裡，不會同步給任何人看到——跟「對戰」分頁比賽結束會自動公開共用不一樣。</div>
 
     <button class="bigbtn" id="addMineBtn" style="width:100%; margin-top:14px;">➕ 新增收藏</button>
 
@@ -1379,10 +1379,12 @@ document.querySelectorAll('.scorebtn2').forEach(btn=>{
   });
 });
 
+let autoNextTimer = null;
+
 function showWinner(side){
   const w = live[side];
   const overlay = document.getElementById('winnerOverlay');
-  document.getElementById('winnerName').textContent = w.name;
+  document.getElementById('winnerName').textContent = `🎉 ${w.name} 獲勝！`;
   document.getElementById('winnerName').style.color = side==='red' ? 'var(--red)' : 'var(--blue)';
   document.getElementById('winnerSub').textContent = `最終比分 ${live.s1} : ${live.s2}`;
   document.getElementById('comboRedInput').value = '';
@@ -1391,7 +1393,10 @@ function showWinner(side){
   overlay.dataset.winnerSide = side;
 
   document.getElementById('arenaNextWrap').style.display = arenaMode ? 'flex' : 'none';
-  document.querySelector('.winner-actions').style.display = arenaMode ? 'none' : 'flex';
+  document.getElementById('normalAutoWrap').style.display = arenaMode ? 'none' : 'flex';
+
+  // Announce the winner out loud.
+  try{ speakAsync(`${w.name} 獲勝`, 'zh-TW'); }catch(e){}
 
   if(arenaMode){
     if(arenaWinCounts[w.name] === undefined) arenaWinCounts[w.name] = 0;
@@ -1405,34 +1410,44 @@ function showWinner(side){
     }
     // If nobody is waiting (everyone's already in this match), the same two just keep playing.
     renderArenaStatus();
+  } else {
+    // Normal 2-player mode: save automatically and move straight to the next
+    // match — no button presses needed unless the person closes the card
+    // (which also stops here) or presses 結束比賽 to actually quit.
+    clearTimeout(autoNextTimer);
+    autoNextTimer = setTimeout(async ()=>{
+      await saveMatchRecordAuto(side);
+      overlay.classList.remove('show');
+      live.s1 = 0; live.s2 = 0;
+      updateScoreUI();
+      runCountdown();
+    }, 4500);
   }
 }
 
-document.getElementById('rematchBtn').addEventListener('click', ()=>{
-  document.getElementById('winnerOverlay').classList.remove('show');
-  live.s1 = 0; live.s2 = 0;
-  updateScoreUI();
-});
-document.getElementById('winnerCloseBtn').addEventListener('click', ()=>{
-  document.getElementById('winnerOverlay').classList.remove('show');
-});
-
-document.getElementById('recordBtn').addEventListener('click', async ()=>{
-  const side = document.getElementById('winnerOverlay').dataset.winnerSide;
+async function saveMatchRecordAuto(side){
   const record = {
     redName: live.red.name, redCombo: document.getElementById('comboRedInput').value.trim(),
     blueName: live.blue.name, blueCombo: document.getElementById('comboBlueInput').value.trim(),
     scoreRed: live.s1, scoreBlue: live.s2,
     winnerSide: side, ts: Date.now()
   };
-  try{
-    await appStorage.set('match:'+Date.now()+'_'+Math.floor(Math.random()*10000), JSON.stringify(record), true);
-  }catch(e){ console.error('save failed', e); }
-  document.getElementById('recordBtn').textContent = '✅ 已記錄！';
-  setTimeout(()=>{ document.getElementById('recordBtn').textContent='✅ 記錄戰績'; }, 1500);
+  try{ await appStorage.set('match:'+Date.now()+'_'+Math.floor(Math.random()*10000), JSON.stringify(record), true); }
+  catch(e){ console.error('save failed', e); }
+}
+
+document.getElementById('winnerCloseBtn').addEventListener('click', async ()=>{
+  clearTimeout(autoNextTimer);
+  const overlay = document.getElementById('winnerOverlay');
+  if(!arenaMode && overlay.classList.contains('show')){
+    // Still record this match even if the person stops the auto-loop early.
+    await saveMatchRecordAuto(overlay.dataset.winnerSide);
+  }
+  overlay.classList.remove('show');
 });
 
 document.getElementById('backToSetupBtn').addEventListener('click', ()=>{
+  clearTimeout(autoNextTimer);
   document.getElementById('battleScreen').classList.remove('show');
   document.body.style.overflow = '';
   if(arenaMode){
@@ -1460,7 +1475,7 @@ async function loadStats(){
     const keys = res && res.keys ? res.keys : [];
     if(keys.length===0){
       countEl.textContent = '目前 0 場記錄';
-      listEl.innerHTML = '<div class="statempty">還沒有任何比賽記錄，去「對戰」分頁打一場，記得按「記錄戰績」！</div>';
+      listEl.innerHTML = '<div class="statempty">還沒有任何比賽記錄，去「對戰」分頁打一場，比完會自動記錄！</div>';
       return;
     }
     const records = [];
