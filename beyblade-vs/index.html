@@ -146,11 +146,13 @@
     overflow-y:auto; min-height:0;}
   .scorepanel.red{background:linear-gradient(165deg, #FF3D68, #7A0E2C);}
   .scorepanel.blue{background:linear-gradient(165deg, #3E8CFF, #0E2E7A);}
-  .battle-name{font-family:'Rajdhani',sans-serif; font-weight:700; letter-spacing:0.02em; font-size:clamp(17px,4.8vw,26px); color:#fff; word-break:break-word; max-width:100%; flex-shrink:0;}
+  .battle-name{font-family:'Rajdhani',sans-serif; font-weight:700; letter-spacing:0.02em; font-size:clamp(20px,5.8vw,32px); color:#fff; word-break:break-word; max-width:100%; flex-shrink:0;
+    text-shadow:0 0 18px rgba(255,255,255,0.55);}
   .vs-center{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:5;
     font-family:'Bebas Neue',sans-serif; font-size:20px; color:#fff; background:rgba(0,0,0,0.4);
     width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; pointer-events:none;}
-  .bignum{font-family:'Bebas Neue',sans-serif; font-size:clamp(84px,25vw,168px); line-height:1; color:#fff; text-shadow:0 4px 26px rgba(0,0,0,0.3); flex-shrink:0;}
+  .bignum{font-family:'Bebas Neue',sans-serif; font-size:clamp(110px,34vw,240px); line-height:1; color:#fff;
+    text-shadow:0 0 40px rgba(255,255,255,0.85), 0 0 90px rgba(255,255,255,0.5), 0 4px 26px rgba(0,0,0,0.3); flex-shrink:0;}
   .scorebtns2{width:100%; display:flex; flex-direction:column; gap:9px; flex-shrink:0;}
   .scorebtn2{width:100%; padding:15px 6px; border-radius:14px; border:1px solid rgba(255,255,255,0.35);
     background:rgba(255,255,255,0.16); color:#fff; font-family:'Noto Sans TC',sans-serif; font-weight:700; font-size:clamp(13px,3.6vw,16px); cursor:pointer;}
@@ -159,8 +161,8 @@
   /* Landscape / short-viewport phones: shrink everything so it fits without needing to scroll. */
   @media (orientation:landscape) and (max-height:520px){
     .scorepanel{padding:calc(46px + env(safe-area-inset-top)) 10px calc(12px + env(safe-area-inset-bottom)); gap:6px;}
-    .battle-name{font-size:clamp(13px,3.2vh,18px);}
-    .bignum{font-size:clamp(46px,13vh,92px);}
+    .battle-name{font-size:clamp(15px,3.8vh,22px);}
+    .bignum{font-size:clamp(64px,20vh,140px);}
     .scorebtns2{gap:5px;}
     .scorebtn2{padding:7px 6px; font-size:clamp(10.5px,2.6vh,13px); border-radius:10px;}
     .vs-center{width:36px; height:36px; font-size:15px;}
