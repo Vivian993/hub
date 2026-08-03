@@ -276,7 +276,8 @@
   .plist{list-style:none; display:grid; gap:5px;}
   .plist li{display:flex; align-items:center; gap:7px; font-size:13px; padding:5px 7px; border-radius:7px; background:var(--surface-2);}
   .bracketwrap{max-width:100%; overflow-x:auto; padding:6px 18px 36px;}
-  .bracket{display:flex; gap:28px; min-width:max-content; padding:0 4px;}
+  .bracket{display:flex; gap:28px; min-width:max-content; padding:0 4px; position:relative;}
+  .bracket-lines{position:absolute; top:0; left:0; z-index:-1; pointer-events:none; overflow:visible;}
   .round{display:flex; flex-direction:column; justify-content:space-around; gap:16px; min-width:210px;}
   .round-title{font-family:'Rajdhani',sans-serif; font-size:11px; letter-spacing:0.1em; color:var(--muted); text-align:center; margin-bottom:4px; text-transform:uppercase;}
   .match{background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:9px; display:flex; flex-direction:column; gap:5px;}
@@ -699,6 +700,7 @@
     current = current === 'light' ? 'dark' : 'light';
     apply(current);
     try{ localStorage.setItem('bxvs-theme', current); }catch(e){}
+    if(typeof drawBracketConnectors === 'function') drawBracketConnectors();
   });
 })();
 
@@ -1840,7 +1842,57 @@ function renderBracket(){
     champBox.style.display='block';
     champBox.innerHTML = `<div class="champcard"><div class="crown">🏆</div><div class="cname display">${finalRound[0].winner} 是冠軍！</div></div>`;
   } else champBox.style.display='none';
+  requestAnimationFrame(drawBracketConnectors);
 }
+
+// Draws the elbow connector lines between each match and the match it feeds into,
+// like a real bracket sheet — computed from actual rendered positions so it stays
+// correct no matter how tall a card gets (long names, extra buttons, etc).
+function drawBracketConnectors(){
+  const bracketEl = document.getElementById('bracket');
+  if(!bracketEl) return;
+  let svg = document.getElementById('bracketLines');
+  if(!svg){
+    svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('id', 'bracketLines');
+    svg.setAttribute('class', 'bracket-lines');
+    bracketEl.insertBefore(svg, bracketEl.firstChild);
+  }
+  const totalW = bracketEl.scrollWidth;
+  const totalH = bracketEl.scrollHeight;
+  svg.setAttribute('width', totalW);
+  svg.setAttribute('height', totalH);
+  svg.style.width = totalW + 'px';
+  svg.style.height = totalH + 'px';
+  svg.innerHTML = '';
+
+  const lineColor = getComputedStyle(document.documentElement).getPropertyValue('--line').trim() || '#33325A';
+  const containerRect = bracketEl.getBoundingClientRect();
+  const rounds = bracketEl.querySelectorAll('.round');
+  for(let r=0; r<rounds.length-1; r++){
+    const matches = rounds[r].querySelectorAll('.match');
+    const nextMatches = rounds[r+1].querySelectorAll('.match');
+    matches.forEach((m, idx)=>{
+      const nextMatch = nextMatches[Math.floor(idx/2)];
+      if(!nextMatch) return;
+      const r1 = m.getBoundingClientRect();
+      const r2 = nextMatch.getBoundingClientRect();
+      const x1 = r1.right - containerRect.left;
+      const y1 = r1.top + r1.height/2 - containerRect.top;
+      const x2 = r2.left - containerRect.left;
+      const y2 = r2.top + r2.height/2 - containerRect.top;
+      const midX = x1 + (x2 - x1)/2;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', `M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', lineColor);
+      path.setAttribute('stroke-width', '2');
+      svg.appendChild(path);
+    });
+  }
+}
+window.addEventListener('resize', ()=>{ if(document.getElementById('bracketWrap').style.display !== 'none') drawBracketConnectors(); });
+
 function parseNames(){ return document.getElementById('playerNames').value.split('\n').map(s=>s.trim()).filter(Boolean); }
 document.getElementById('startBtn').addEventListener('click', ()=>{
   const names = parseNames();
