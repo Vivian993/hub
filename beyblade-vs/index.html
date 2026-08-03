@@ -398,13 +398,14 @@
         <div class="vs-badge">VS</div>
         <div class="corner red">
           <div class="corner-label">🔴 紅方</div>
-          <div class="field big-name-field"><input type="text" id="nameRed" placeholder="輸入紅方選手 / 陀螺暱稱"></div>
+          <div class="field big-name-field"><input type="text" id="nameRed" list="playerNameHistoryList" placeholder="輸入紅方選手 / 陀螺暱稱"></div>
         </div>
         <div class="corner blue">
           <div class="corner-label">🔵 藍方</div>
-          <div class="field big-name-field"><input type="text" id="nameBlue" placeholder="輸入藍方選手 / 陀螺暱稱"></div>
+          <div class="field big-name-field"><input type="text" id="nameBlue" list="playerNameHistoryList" placeholder="輸入藍方選手 / 陀螺暱稱"></div>
         </div>
       </div>
+      <datalist id="playerNameHistoryList"></datalist>
     </div>
   </div>
 
@@ -1312,12 +1313,45 @@ document.getElementById('goBtn').addEventListener('click', async ()=>{
   live.red = { name: document.getElementById('nameRed').value.trim() || '紅方陀螺' };
   live.blue = { name: document.getElementById('nameBlue').value.trim() || '藍方陀螺' };
   live.s1 = 0; live.s2 = 0;
+  rememberPlayerNames([live.red.name, live.blue.name]);
 
   document.getElementById('setupZone').style.display='none';
   document.getElementById('goRow').style.display='none';
   await runCountdown();
   showBattleScreen();
 });
+
+// ---- Name history: remembers everyone who's ever been typed into 紅方/藍方,
+// so tapping into either field next time offers them as autocomplete suggestions. ----
+const PLAYER_NAME_HISTORY_KEY = 'playerNameHistory';
+let playerNameHistory = [];
+async function loadPlayerNameHistory(){
+  try{
+    const r = await appStorage.get(PLAYER_NAME_HISTORY_KEY, false);
+    playerNameHistory = (r && r.value) ? JSON.parse(r.value) : [];
+  }catch(e){ playerNameHistory = []; }
+  renderPlayerNameHistoryList();
+}
+function renderPlayerNameHistoryList(){
+  const listEl = document.getElementById('playerNameHistoryList');
+  if(!listEl) return;
+  listEl.innerHTML = playerNameHistory.map(n=>`<option value="${n.replace(/"/g,'&quot;')}"></option>`).join('');
+}
+async function rememberPlayerNames(names){
+  let changed = false;
+  names.forEach(n=>{
+    if(!n) return;
+    const i = playerNameHistory.indexOf(n);
+    if(i !== -1) playerNameHistory.splice(i,1);
+    playerNameHistory.unshift(n);
+    changed = true;
+  });
+  if(!changed) return;
+  playerNameHistory = playerNameHistory.slice(0, 40);
+  renderPlayerNameHistoryList();
+  try{ await appStorage.set(PLAYER_NAME_HISTORY_KEY, JSON.stringify(playerNameHistory), false); }catch(e){}
+}
+loadPlayerNameHistory();
 
 function showBattleScreen(){
   document.getElementById('battleScreen').classList.add('show');
@@ -1474,7 +1508,15 @@ async function loadStats(){
     console.error(e);
   }
 }
-document.getElementById('refreshStatsBtn').addEventListener('click', loadStats);
+document.getElementById('refreshStatsBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('refreshStatsBtn');
+  const old = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '🔄 整理中...';
+  await loadStats();
+  btn.textContent = '✅ 已更新';
+  setTimeout(()=>{ btn.textContent = old; btn.disabled = false; }, 1000);
+});
 
 /* =====================================================
    PART 3b — QR code sharing (stats view)
@@ -1482,7 +1524,7 @@ document.getElementById('refreshStatsBtn').addEventListener('click', loadStats);
 let qrRendered = false;
 function renderShareQR(){
   if(qrRendered) return;
-  const url = baseAppUrl(); // always the plain app link — never whatever ?event=/?b= happens to be in the address bar right now
+  const url = statsShareUrl(); // always the plain app link — never whatever ?event=/?b= happens to be in the address bar right now
   document.getElementById('qrUrlText').textContent = url;
   const noteEl = document.getElementById('qrNote');
   if(noteEl){
@@ -1501,7 +1543,7 @@ function renderShareQR(){
   }catch(e){ console.error('QR render failed', e); }
 }
 document.getElementById('copyLinkBtn').addEventListener('click', async ()=>{
-  const url = baseAppUrl();
+  const url = statsShareUrl();
   try{
     await navigator.clipboard.writeText(url);
     const btn = document.getElementById('copyLinkBtn');
@@ -2044,6 +2086,13 @@ function decodeBracketData(b64){
   return { info: compact.i, rounds: compact.r };
 }
 function baseAppUrl(){ return window.location.origin + window.location.pathname; }
+// Same base link, but tagged so opening it jumps straight to the 統計 tab
+// instead of landing on the normal 對戰 home screen.
+function statsShareUrl(){
+  const url = new URL(baseAppUrl());
+  url.searchParams.set('view', 'stats');
+  return url.toString();
+}
 
 function renderEventBanner(){
   const info = eventInfo();
@@ -2133,6 +2182,20 @@ function applyBracketData(data){
   }catch(e){ console.error('apply bracket data failed', e); }
 }
 tryLoadSharedBracket();
+
+// If this link came from the stats page's QR code / copy-link button, jump
+// straight to the 統計 tab instead of landing on the normal 對戰 home screen.
+(function openStatsIfRequested(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('view') !== 'stats') return;
+  document.querySelectorAll('.applink').forEach(b=>b.classList.remove('active'));
+  const statsBtn = document.querySelector('.applink[data-view="stats"]');
+  if(statsBtn) statsBtn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-stats').classList.add('active');
+  loadStats();
+  renderShareQR();
+})();
 
 /* =====================================================
    PART 5b — bracket history (so past schedules aren't just gone
