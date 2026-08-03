@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>國語字典聽寫簿學習系統</title>
+
+  <link rel="apple-touch-icon" href="custom-icon.png">
+  <link rel="icon" type="image/png" href="custom-icon.png">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800;900&display=swap');
+
+    :root {
+      --bg-color: #FFF5F7;
+      --card-bg: #FFFFFF;
+      --m-pink: #FFB7B2;
+      --m-blue: #B5EAD7;
+      --m-green: #E2F0CB;
+      --m-yellow: #FFDAC1;
+      --m-purple: #CBAACB;
+      --text-main: #5D5D5D;
+      --border-color: #F8D8E8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+
+    header { background: linear-gradient(135deg, #fff 0%, var(--border-color) 100%); padding: 1.2rem 1rem; border-bottom: 3px dashed var(--m-pink); text-align: center; }
+    .subtitle { font-size: 0.9rem; font-weight: 800; color: #D48C9E; margin-bottom: 0.5rem; display: inline-block; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+
+    .header-title-group { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; font-size: 1.4rem; font-weight: 900; color: var(--m-purple); }
+    .header-title-group select { appearance: none; background: transparent; border: none; font-size: 1.4rem; font-weight: 900; color: var(--m-purple); cursor: pointer; outline: none; padding: 0 4px; text-align: center; border-bottom: 2px solid rgba(203, 170, 203, 0.4); }
+    .header-title-group select:hover { border-bottom-color: var(--m-pink); color: var(--m-pink); }
+    .header-title-group select option { font-size: 1rem; color: #333; background: #fff; }
+
+    .header-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+    .speed-select { appearance: none; background: #fff; border: 2px solid var(--m-green); border-radius: 20px; padding: 4px 12px; font-size: 0.85rem; font-weight: 700; color: #555; outline: none; cursor: pointer; }
+    .sound-toggle-btn { appearance: none; background: #fff; border: 2px solid var(--m-yellow); border-radius: 20px; padding: 4px 14px; font-size: 0.85rem; font-weight: 700; color: #555; outline: none; cursor: pointer; }
+
+    nav { background-color: white; border-bottom: 2px solid var(--border-color); position: sticky; top: 0; z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .nav-container { display: flex; overflow-x: auto; white-space: nowrap; scrollbar-width: none; max-width: 1000px; margin: 0 auto; }
+    .nav-container::-webkit-scrollbar { display: none; }
+    .nav-btn { flex: 1; padding: 0.8rem 1rem; font-size: 0.95rem; font-weight: 800; background: none; border: none; border-bottom: 4px solid transparent; color: #A4A4A4; cursor: pointer; transition: 0.3s; }
+    .nav-btn.active { color: #D48C9E; border-bottom-color: var(--m-pink); }
+
+    main { max-width: 1000px; margin: 0 auto; padding: 1rem; flex-grow: 1; width: 100%; }
+
+    .btn { padding: 0.5rem 1rem; font-size: 0.9rem; font-weight: 700; border-radius: 20px; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+    .btn:active { transform: scale(0.95); }
+    .btn-pink { background-color: var(--m-pink); color: #fff; }
+    .btn-blue { background-color: var(--m-blue); color: #5D5D5D; }
+    .btn-green { background-color: var(--m-green); color: #5D5D5D; }
+    .btn-yellow { background-color: var(--m-yellow); color: #5D5D5D; }
+    .btn-purple { background-color: var(--m-purple); color: #fff; }
+
+    .input-box, .textarea-box { width: 100%; border: 2px solid var(--border-color); border-radius: 12px; padding: 0.6rem; font-size: 1rem; outline: none; background: #fff; font-family: inherit; }
+    .input-box:focus, .textarea-box:focus { border-color: var(--m-pink); }
+    .hidden { display: none !important; }
+
+    /* 課文生字區 */
+    .lesson-selector-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; background: #fff; padding: 10px 15px; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+
+    .lesson-title-display { font-size: 1.3rem; font-weight: 900; padding: 0.6rem 1rem; border-radius: 12px; text-align: center; margin-bottom: 0.5rem; outline: none; cursor: text; }
+    .lesson-title-display:hover { background-color: rgba(0,0,0,0.03); border: 1px dashed var(--m-pink); }
+
+    .color-1 { background: var(--m-pink); color: #5D5D5D; }
+    .color-2 { background: var(--m-blue); color: #5D5D5D; }
+    .color-3 { background: var(--m-green); color: #5D5D5D; }
+    .color-4 { background: var(--m-yellow); color: #5D5D5D; }
+    .color-5 { background: var(--m-purple); color: #fff; }
+
+    details.batch-details { background: #fff; border: 2px dashed var(--m-blue); border-radius: 15px; padding: 0.5rem 1rem; margin-bottom: 1rem; }
+    details.batch-details summary { font-weight: 800; color: var(--text-main); cursor: pointer; outline: none; padding: 0.5rem 0; }
+
+    .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .swipe-container { position: relative; overflow: hidden; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: #FF9AA2; }
+    .delete-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; display: flex; align-items: center; justify-content: center; background: #FF9AA2; color: white; font-size: 1.8rem; font-weight: bold; border-radius: 0 20px 20px 0; cursor: pointer; }
+    .char-card { position: relative; background: #fff; padding: 1.2rem; border-radius: 20px; z-index: 2; transition: transform 0.3s ease; border: 2px solid #fff; }
+    .char-card.swiped { transform: translateX(-80px); }
+
+    .char-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.8rem; border-bottom: 2px dashed var(--border-color); padding-bottom: 0.8rem; }
+    .char-big { font-size: 2.2rem; font-weight: 900; color: #D48C9E; background: #FFF0F5; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-family: 'DFKai-SB', 'BiauKai', serif; }
+    .char-info { flex-grow: 1; }
+    .char-pinyin { font-size: 1.1rem; font-weight: 800; }
+    .char-radical { font-size: 0.8rem; color: #fff; background: var(--m-blue); padding: 2px 6px; border-radius: 8px; margin-left: 5px; }
+
+    /* === 直式聽寫田字格（由右至左、點狀格線，仿傳統生字練習單） === */
+    .test-panel { background: #fff; padding: 1.5rem; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 1rem; }
+
+    .tian-page-wrapper {
+      --tian-cell: 76px;
+      background: #fff; padding: 15px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      display: flex; flex-direction: row-reverse; justify-content: flex-start; align-items: flex-start; gap: 0;
+      overflow-x: auto;
+    }
+
+    .tian-sidebar {
+      writing-mode: vertical-rl; text-orientation: upright; white-space: nowrap;
+      padding: 4px 8px 4px 4px; margin-left: 8px; flex-shrink: 0;
+    }
+    .tian-sidebar div { color: #2b5faa; font-weight: 900; line-height: 1.5; }
+    .tian-sidebar div.sb-small { font-size: 0.7rem; font-weight: 700; }
+    .tian-sidebar div.sb-big { font-size: 1.05rem; }
+    .tian-sidebar div::before { content: '・'; }
+
+    /* 使用 CSS Grid 明確指定每格的欄/列位置，格子大小固定，內容絕不會影響格線位置 */
+    .tian-grid {
+      display: grid; flex-shrink: 0;
+      border-top: 1.2px dotted #555; border-left: 1.2px dotted #555;
+    }
+
+    .tian-cell-wrap {
+      box-sizing: border-box; width: var(--tian-cell); height: var(--tian-cell);
+      display: flex; flex-direction: row; align-items: stretch;
+      border-right: 1.2px dotted #555; border-bottom: 1.2px dotted #555;
+      cursor: default; user-select: none; background: #fff; overflow: hidden;
+    }
+    .tian-cell-wrap.tian-sep { justify-content: center; align-items: center; }
+    .tian-sep-dot { color: #bbb; font-size: 0.7rem; }
+
+    .tian-char-box {
+      width: 68%; height: 100%; position: relative; border-right: 1px dotted #999;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+    }
+    .tian-char-box::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dotted #bbb; z-index: 1; }
+    .tian-char-box::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px dotted #bbb; z-index: 1; }
+    .tian-char-text {
+      position: relative; z-index: 2; font-size: calc(var(--tian-cell) * 0.42); font-weight: normal; color: #000;
+      font-family: 'DFKai-SB', 'BiauKai', serif; transition: 0.2s;
+    }
+
+    /* 注音欄：符號由上到下排列，聲調符號改附標在最後一個符號右上角，更緊湊、更接近課本排版 */
+    .tian-zy-box {
+      flex: 1; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; min-width: 0;
+    }
+    .tian-zy-text {
+      position: relative; z-index: 2; color: #000; font-family: 'DFKai-SB', 'BiauKai', serif;
+      display: flex; flex-direction: column; align-items: center; line-height: 1.15;
+    }
+    .tian-zy-text .zy-line { display: block; font-size: calc(var(--tian-cell) * 0.16); }
+    .tian-zy-text .zy-tone-wrap { position: relative; }
+    .tian-zy-text .zy-tone { position: absolute; top: -3px; right: -9px; font-size: 0.6rem; }
+
+    .text-hidden { color: transparent !important; }
+
+    /* 字典區 */
+    .dict-result { background: #fff; padding: 1.5rem; border-radius: 20px; border: 2px solid var(--m-blue); margin-top: 1rem; min-height: 150px; }
+    .dict-result-text { font-size: 1.2rem; line-height: 1.8; color: #333; margin-top: 1rem; font-family: 'DFKai-SB', 'BiauKai', serif; }
+    .dict-result-text ul { padding-left: 1.4rem; margin: 4px 0 10px; }
+    .dict-result-text h4 { color: var(--m-purple); margin-bottom: 5px; }
+
+    .mistake-card { background: #FFF9E6; border-left: 5px solid var(--m-yellow); padding: 1rem; border-radius: 10px; margin-bottom: 10px; }
+    .mistake-char { font-size: 1.8rem; font-weight: 900; color: #D48C9E; font-family: 'DFKai-SB', 'BiauKai', serif; }
+
+
+    /* 資源連結區 */
+    .link-card { background: #fff; padding: 1.2rem; border-radius: 20px; border: 2px solid var(--border-color); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;}
+    .link-desc { font-size: 0.95rem; color: #5D5D5D; margin-top: 8px; padding: 10px; border-radius: 12px; font-weight: 700; line-height: 1.4; }
+    .desc-color-0 { background: #E2F0CB; }
+    .desc-color-1 { background: #FFDAC1; }
+    .desc-color-2 { background: #B5EAD7; }
+
+    /* 列印設定：直式文字、橫向紙張，欄數才能排得多 */
+    @media print {
+      @page { size: A4 landscape; margin: 8mm; }
+      body { background: #fff !important; }
+      header, nav, .lesson-selector-bar, .no-print { display: none !important; }
+      main { max-width: 100%; padding: 0; }
+      .test-panel { display: none !important; }
+      .tian-page-wrapper {
+        --tian-cell: 58px; box-shadow: none; padding: 0; overflow: visible;
+        width: 100%; transform-origin: top right;
+      }
+      .tian-sidebar { padding: 2px 6px 2px 2px; margin-left: 6px; }
+      .tian-sidebar div.sb-small { font-size: 0.6rem; }
+      .tian-sidebar div.sb-big { font-size: 0.85rem; }
+      .tian-grid { border-top: 1.2px dotted #000; border-left: 1.2px dotted #000; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .tian-cell-wrap { border-color: #000 !important; }
+      .tian-char-box { border-color: #333 !important; }
+      .tian-char-box::before, .tian-char-box::after { border-color: #555 !important; }
+      .tian-sidebar div { color: #000 !important; }
+      .text-hidden { color: transparent !important; }
+      .mistake-card { page-break-inside: avoid; border: 1px solid #ccc; background: #fff !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 標題與選單 -->
+  <header class="no-print">
+    <div class="subtitle">國語線上字典學習系統：詳細生字.成語圈詞.真人朗讀</div>
+    <div>
+      <div class="header-title-group">
+        <select id="sel-grade" onchange="saveData()">
+          <option value="一">一年級</option><option value="二">二年級</option><option value="三">三年級</option>
+          <option value="四">四年級</option><option value="五" selected>五年級</option><option value="六">六年級</option>
+        </select>
+        <span>(</span>
+        <select id="sel-semester" onchange="saveData()">
+          <option value="上">上</option><option value="下">下</option>
+        </select>
+        <span>)</span>
+        <select id="sel-publisher" onchange="saveData()">
+          <option value="康軒">康軒版</option><option value="翰林">翰林版</option><option value="南一">南一版</option>
+        </select>
+        <span>國語生字</span>
+      </div>
+    </div>
+    <div class="header-controls">
+      <select id="speech-speed" class="speed-select" onchange="saveData()">
+        <option value="0.5">🐢 語速慢 (0.5x)</option>
+        <option value="0.75" selected>🚶 語速中 (0.75x)</option>
+        <option value="1.0">🏃 語速快 (1.0x)</option>
+        <option value="1.25">🐇 語速極快 (1.25x)</option>
+      </select>
+      <button id="sound-toggle" class="sound-toggle-btn" onclick="toggleSound()">🔊 按鍵音效：開</button>
+    </div>
+  </header>
+
+  <!-- 固定導覽列 -->
+  <nav class="no-print">
+    <div class="nav-container">
+      <button class="nav-btn active" onclick="switchTab('view-lessons')">📖 課文生字</button>
+      <button class="nav-btn" onclick="switchTab('view-test')">✍️ 聽寫田字格</button>
+      <button class="nav-btn" onclick="switchTab('view-dict')">🔍 線上字典</button>
+      <button class="nav-btn" onclick="switchTab('view-mistakes')">⚠️ 易錯字本</button>
+      <button class="nav-btn" onclick="switchTab('view-links')">🔗 資源連結</button>
+      <button class="nav-btn" onclick="switchTab('view-backup')">⚙️ 備份還原</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- 📖 視圖 1: 課文生字 -->
+    <div id="view-lessons" class="tab-content">
+      <div class="lesson-selector-bar no-print">
+        <span style="font-weight: 800; color: var(--m-purple); white-space: nowrap;">跳轉單元：</span>
+        <select id="lesson-select" class="input-box" style="padding:0.4rem; cursor:pointer;" onchange="renderLessonView()"></select>
+      </div>
+      <div id="lesson-content-area"></div>
+    </div>
+
+    <!-- ✍️ 視圖 2: 聽寫與直式田字格 -->
+    <div id="view-test" class="tab-content hidden">
+      <div class="test-panel no-print">
+        <h2 style="color: var(--m-pink); margin-bottom: 0.5rem;">自動聽寫與直式田字格</h2>
+        <p style="font-size: 0.95rem; color: var(--text-light); margin-bottom: 1rem; line-height: 1.5;">
+          下方自動帶入本課圈詞，可自由修改；預設國字與注音都會顯示，列印時採直書、橫向紙張排版（由右至左），格線為點狀田字格。<br>
+          👉 <b>點擊格子中的國字或右側注音，可以把不想要的部分變不見，自訂聽寫考卷內容！</b>
+        </p>
+
+        <select id="test-lesson-select" class="input-box" style="margin-bottom: 10px; font-weight: bold; cursor:pointer;" onchange="loadTestTerms()"></select>
+
+        <label style="font-weight: 800; color: var(--m-purple); font-size: 0.9rem; display:block; margin-bottom:4px;">📘 本課圈詞（自動帶入，可修改）：</label>
+        <textarea id="test-terms-input" class="textarea-box" rows="3" placeholder="請輸入要考試的詞語..." onblur="generateGrid()"></textarea>
+
+        <label style="font-weight: 800; color: var(--m-purple); font-size: 0.9rem; display:block; margin: 10px 0 4px;">➕ 加強聽寫（自訂加強字詞，會加在本課圈詞後面）：</label>
+        <textarea id="test-extra-input" class="textarea-box" rows="2" placeholder="輸入需要額外加強練習的字詞..." onblur="saveExtraTerms(); generateGrid();"></textarea>
+
+        <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-green" onclick="generateGrid()">✅ 更新下方田字格</button>
+          <button class="btn btn-pink" id="btn-play" onclick="toggleDictation()">▶️ 播放聽寫 (間隔5秒)</button>
+          <button class="btn btn-blue" onclick="window.print()">🖨️ 列印直式田字格（橫向紙張）</button>
+        </div>
+      </div>
+
+      <div id="grid-render-area" class="tian-page-wrapper"></div>
+    </div>
+
+    <!-- 🔍 視圖 3: 線上查字典 -->
+    <div id="view-dict" class="tab-content hidden">
+      <div class="test-panel no-print">
+        <h2 style="color: var(--m-purple); margin-bottom: 1rem;">線上國語字典 (萌典直接顯示)</h2>
+        <p style="font-size: 0.9rem; color: #888; margin-bottom: 1rem;">輸入單字或成語，直接在下方顯示注音與詳細釋義。</p>
+        <div style="display: flex; gap: 10px;">
+          <input type="text" id="dict-input" class="input-box" placeholder="輸入字詞，例如：蚊" onkeypress="if(event.key==='Enter') searchMoedictRobust()">
+          <button class="btn btn-purple" style="white-space: nowrap; font-size:1rem;" onclick="searchMoedictRobust()">線上查字</button>
+        </div>
+      </div>
+
+      <div class="dict-result print-show">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;" class="no-print">
+          <h3 style="color: var(--m-green);">📖 查詢結果</h3>
+          <button class="btn btn-blue" id="btn-copy" onclick="copyDictText()">📋 複製</button>
+        </div>
+        <div id="dict-output" class="dict-result-text">
+          請在上方的輸入框輸入字詞開始查詢。
+        </div>
+      </div>
+    </div>
+
+    <!-- ⚠️ 視圖 4: 易錯字本 -->
+    <div id="view-mistakes" class="tab-content hidden">
+      <div class="test-panel no-print" style="margin-bottom: 1rem;">
+        <h2 style="color: var(--danger); margin-bottom: 0.5rem;">⚠️ 易錯字與備註收集區</h2>
+        <p style="font-size: 0.9rem; color: #888;">系統自動收集您在生字卡中填寫的「備註與易錯提醒」，方便考前列印複習。</p>
+        <button class="btn btn-pink" onclick="window.print()" style="margin-top:10px;">🖨️ 列印易錯字本</button>
+      </div>
+      <div id="mistakes-container" class="print-show"></div>
+    </div>
+
+    <!-- 🔗 視圖 5: 資源連結 -->
+    <div id="view-links" class="tab-content hidden">
+      <div class="test-panel no-print" style="margin-bottom: 1rem;">
+        <h2 style="color: var(--m-blue); margin-bottom: 1rem;">新增實用連結與說明</h2>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <select id="link-subj" class="input-box" style="width: 100px; border-radius: 20px;">
+            <option>國語</option><option>數學</option><option>社會</option><option>自然</option><option>英文</option><option>其它</option>
+          </select>
+          <input type="text" id="link-title" class="input-box" placeholder="網站標題" style="flex: 1; border-radius: 20px;">
+          <input type="text" id="link-url" class="input-box" placeholder="網址 (https://...)" style="flex: 2; border-radius: 20px;">
+        </div>
+        <input type="text" id="link-desc" class="input-box" placeholder="輸入關於這個網站的說明描述..." style="margin-top: 8px; border-radius: 20px;">
+        <button class="btn btn-blue" style="margin-top: 8px; width: 100%;" onclick="addLink()">➕ 儲存新增連結</button>
+      </div>
+      <div id="links-container"></div>
+    </div>
+
+    <!-- ⚙️ 視圖 6: 備份與還原 -->
+    <div id="view-backup" class="tab-content hidden no-print">
+      <div class="test-panel" style="text-align: center;">
+        <h2 style="color: var(--m-green); margin-bottom: 1rem;">資料備份與還原</h2>
+        <p style="margin-bottom: 1.5rem; color: #888;">
+          您的修改都會自動保存在此設備中。<br>若要分享給別人或換設備，請點擊「匯出備份檔」。
+        </p>
+        <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 2rem;">
+          <button class="btn btn-blue" onclick="exportJSON()">📤 匯出備份檔</button>
+          <button class="btn btn-pink" onclick="document.getElementById('file-import').click()">📥 匯入備份檔</button>
+          <input type="file" id="file-import" accept=".json" style="display:none" onchange="importJSON(event)">
+        </div>
+        <hr style="border: 0; border-top: 1px dashed #ccc; margin-bottom: 1rem;">
+        <button class="btn btn-yellow" onclick="resetData()">⚠️ 恢復原始範例資料 (會清除修改)</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // === 資料庫 ===
+    const lessonNames = [
+      "第一課：蚊帳大使", "第二課：走過大地傷痕", "第三課：迎向光的植物", "第四課：智救羊群",
+      "第五課：送愛到南非", "第六課：表演藝術饗宴", "第七課：珍珠試煉", "第八課：戰火下的溫情",
+      "第九課：探索植物的秘密", "第十課：古詩選", "第十一課：被遺忘的奇蹟", "第十二課：魯賓遜漂流記"
+    ];
+
+    const defaultData = {
+      grade: "五", semester: "上", publisher: "康軒", speed: "0.75", soundEnabled: true, zhuyinCache: {},
+      lessons: Array.from({length: 12}, (_, i) => ({
+        id: i + 1,
+        title: lessonNames[i],
+        summary: i === 0 ? "這是一篇關於非洲瘧疾與蚊帳的故事，提醒我們要懂得感恩與助人。" : "",
+        batchText: i === 0 ? "蚊,ㄨㄣˊ,虫部,蚊子，蚊帳\n帳,ㄓㄤˋ,巾部,蚊帳，帳篷\n洲,ㄓㄡ,水部,非洲，亞洲\n瘧,ㄋㄩㄝˋ,疒部,瘧疾，瘧蚊\n疾,ㄐㄧˊ,疒部,疾病，疾走\n死,ㄙˇ,歹部,死亡，死板\n叮,ㄉㄧㄥ,口部,叮咬，叮嚀\n鼓,ㄍㄨˇ,鼓部,鼓起，鼓勵\n募,ㄇㄨˋ,力部,募集，募款\n集,ㄐㄧˊ,隹部,聚集，集中\n寄,ㄐㄧˋ,宀部,寄信，寄託\n贈,ㄗㄥˋ,貝部,贈送，捐贈\n賣,ㄇㄞˋ,貝部,買賣，拍賣\n獎,ㄐㄧㄤˇ,大部,獎狀，獎金\n狀,ㄓㄨㄤˋ,犬部,狀態，獎狀\n誌,ㄓˋ,言部,雜誌，日誌\n基,ㄐㄧ,土部,基金會，基礎\n潛,ㄑㄧㄢˊ,水部,潛力，潛水" : "",
+        extraTerms: "",
+        chars: i === 0 ? [
+          { char: "蚊", zhuyin: "ㄨㄣˊ", rad: "虫部", terms: "蚊子，蚊帳", note: "右邊是文，不要多一撇" },
+          { char: "帳", zhuyin: "ㄓㄤˋ", rad: "巾部", terms: "蚊帳，帳篷", note: "" }
+        ] : []
+      })),
+      links: [
+        { id: 1, subj: "國語", title: "波波注音", desc: "參考田字格樣式，提供多種直式列印功能，幫助孩子把字寫端正。", url: "https://bopodoc.com/worksheets/" },
+        { id: 2, subj: "社會", title: "康軒學習網", desc: "提供各科目的線上影音教學與補充資料，適合課後複習。", url: "https://www.kanghsuan.com.tw/" }
+      ]
+    };
+
+    let appData = null;
+    let currentLessonId = 1;
+
+    // === 核心初始化 ===
+    window.onload = () => {
+      const stored = localStorage.getItem('MandarinAppV9');
+      if (stored) {
+        try { appData = JSON.parse(stored); } catch(e) { appData = JSON.parse(JSON.stringify(defaultData)); }
+      } else {
+        appData = JSON.parse(JSON.stringify(defaultData));
+      }
+
+      if (typeof appData.soundEnabled === 'undefined') appData.soundEnabled = true;
+      if (!appData.zhuyinCache) appData.zhuyinCache = {};
+      appData.lessons.forEach(l => { if (typeof l.extraTerms === 'undefined') l.extraTerms = ""; });
+
+      if(appData.lessons[0].chars.length <= 2 && appData.lessons[0].batchText.length > 50) {
+          parseBatchText(1, appData.lessons[0].batchText);
+      }
+
+      initHeader();
+      initSelectors();
+      renderLessonView();
+      renderLinks();
+      renderMistakes();
+      loadTestTerms();
+    };
+
+    function saveData() {
+      appData.grade = document.getElementById('sel-grade').value;
+      appData.semester = document.getElementById('sel-semester').value;
+      appData.publisher = document.getElementById('sel-publisher').value;
+      appData.speed = document.getElementById('speech-speed').value;
+      localStorage.setItem('MandarinAppV9', JSON.stringify(appData));
+    }
+
+    function initHeader() {
+      document.getElementById('sel-grade').value = appData.grade;
+      document.getElementById('sel-semester').value = appData.semester;
+      document.getElementById('sel-publisher').value = appData.publisher;
+      document.getElementById('speech-speed').value = appData.speed || "0.75";
+      updateSoundToggleLabel();
+    }
+
+    function initSelectors() {
+      const selLesson = document.getElementById('lesson-select');
+      const selTest = document.getElementById('test-lesson-select');
+      selLesson.innerHTML = ''; selTest.innerHTML = '';
+
+      appData.lessons.forEach(l => {
+        let opt = `<option value="${l.id}">${l.title}</option>`;
+        selLesson.innerHTML += opt;
+        selTest.innerHTML += opt;
+      });
+      selLesson.value = currentLessonId;
+      selTest.value = currentLessonId;
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.remove('hidden');
+      event.target.classList.add('active');
+      if(tabId === 'view-mistakes') renderMistakes();
+      if(tabId === 'view-test') loadTestTerms();
+      window.scrollTo(0, 0);
+    }
+
+    // === 📖 課文生字渲染 (標題可直接修改) ===
+    function renderLessonView() {
+      currentLessonId = parseInt(document.getElementById('lesson-select').value);
+      const lesson = appData.lessons.find(l => l.id === currentLessonId);
+      const container = document.getElementById('lesson-content-area');
+
+      const colorClass = `color-${((lesson.id - 1) % 5) + 1}`;
+
+      let html = `
+        <div class="lesson-title-display ${colorClass}" contenteditable="true" onblur="updateLessonTitle(${lesson.id}, this.innerText)">${lesson.title}</div>
+        <textarea class="textarea-box" rows="2" placeholder="在此輸入課文大意 (點擊外側自動存檔)..." onblur="saveLessonData(${lesson.id}, 'summary', this.value)">${lesson.summary}</textarea>
+
+        <details class="batch-details no-print" style="margin-top: 1rem;">
+          <summary>➕ 展開批次匯入生字 (格式：生字,注音,部首,圈詞)</summary>
+          <textarea id="batch-${lesson.id}" class="textarea-box" rows="4" style="margin-top:0.5rem;">${lesson.batchText}</textarea>
+          <button class="btn btn-green" style="margin-top:0.5rem;" onclick="applyBatch(${lesson.id})">一鍵覆蓋匯入</button>
+        </details>
+
+        <div class="char-grid">
+          ${lesson.chars.map((c, i) => `
+            <div class="swipe-container" ontouchstart="ts(event)" ontouchend="te(event, this, ${lesson.id}, ${i})">
+              <div class="delete-bg" onclick="deleteChar(${lesson.id}, ${i})">🗑️</div>
+              <div class="char-card">
+                <div class="char-header">
+                  <div class="char-big">${c.char}</div>
+                  <div class="char-info">
+                    <div class="char-pinyin">${c.zhuyin} <span class="char-radical">${c.rad}</span></div>
+                  </div>
+                  <button class="btn btn-blue" style="padding: 0.3rem;" onclick="speak('${c.char}')">🔊</button>
+                </div>
+                <div style="font-size:0.85rem; color:var(--m-purple); font-weight:800; margin-bottom:5px;">圈詞聽寫 (可修改)：</div>
+                <input type="text" class="input-box" style="padding:0.4rem; font-size:0.95rem; font-weight:bold;" value="${c.terms}" onblur="saveCharData(${lesson.id}, ${i}, 'terms', this.value)">
+                <input type="text" class="input-box" style="padding:0.4rem; font-size:0.9rem; margin-top:5px; background:#FFF9E6; border-color:#FFDAC1;" placeholder="⚠️ 易錯提醒或造句備註..." value="${c.note}" onblur="saveCharData(${lesson.id}, ${i}, 'note', this.value)">
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      container.innerHTML = html;
+      document.getElementById('test-lesson-select').value = currentLessonId;
+    }
+
+    function updateLessonTitle(lId, newTitle) {
+      const l = appData.lessons.find(x => x.id === lId);
+      if(l) {
+        l.title = newTitle.trim();
+        saveData();
+        initSelectors();
+      }
+    }
+
+    function saveLessonData(lId, key, val) {
+      const l = appData.lessons.find(x => x.id === lId);
+      if(l) { l[key] = val; saveData(); }
+    }
+
+    function saveCharData(lId, cIdx, key, val) {
+      const l = appData.lessons.find(x => x.id === lId);
+      if(l && l.chars[cIdx]) {
+        l.chars[cIdx][key] = val;
+        saveData();
+      }
+    }
+
+    function deleteChar(lId, cIdx) {
+      if(confirm("刪除此字？")) {
+        const l = appData.lessons.find(x => x.id === lId);
+        if(l) { l.chars.splice(cIdx, 1); saveData(); renderLessonView(); }
+      }
+    }
+
+    function ts(e) { e.currentTarget.dataset.x = e.touches[0].clientX; }
+    function te(e, el, lId, cIdx) {
+      let stX = parseFloat(el.dataset.x);
+      let enX = e.changedTouches[0].clientX;
+      let card = el.querySelector('.char-card');
+      if (stX - enX > 40) { card.classList.add('swiped'); }
+      else { card.classList.remove('swiped'); }
+    }
+
+    function applyBatch(lId) {
+      const text = document.getElementById(`batch-${lId}`).value.trim();
+      parseBatchText(lId, text);
+      renderLessonView();
+    }
+
+    function parseBatchText(lId, text) {
+      const l = appData.lessons.find(x => x.id === lId);
+      if(!l) return;
+      l.batchText = text;
+      l.chars = [];
+      text.split('\n').forEach(line => {
+        let p = line.split(',');
+        if(p.length >= 1 && p[0].trim() !== '') {
+          l.chars.push({
+            char: p[0].trim(),
+            zhuyin: p[1] ? p[1].trim() : "",
+            rad: p[2] ? p[2].trim() : "",
+            terms: p.slice(3).join('，').trim() || p[0].trim(),
+            note: ""
+          });
+        }
+      });
+      saveData();
+    }
+
+    // === ⚠️ 易錯字本 ===
+    function renderMistakes() {
+      const container = document.getElementById('mistakes-container');
+      container.innerHTML = '';
+      appData.lessons.forEach(l => {
+        l.chars.forEach(c => {
+          if(c.note && c.note.trim() !== '') {
+            container.innerHTML += `
+              <div class="mistake-card">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <div class="mistake-char">${c.char}</div>
+                  <div style="font-weight:700;">[${c.zhuyin}] <span style="color:#aaa; font-size:0.8rem;">(${l.title})</span></div>
+                </div>
+                <div style="margin-top:5px; color:#555; font-size:0.95rem; font-weight:bold;">⚠️ 備註：${c.note}</div>
+              </div>
+            `;
+          }
+        });
+      });
+      if(container.innerHTML === '') {
+        container.innerHTML = '<p style="color:#888;">目前沒有任何易錯字紀錄喔！請在生字卡中填寫備註。</p>';
+      }
+    }
+
+    // === ✍️ 聽寫與橫式田字格 ===
+    function loadTestTerms() {
+      const tId = parseInt(document.getElementById('test-lesson-select').value);
+      const l = appData.lessons.find(x => x.id === tId);
+      let termsArray = [];
+      if(l) {
+        l.chars.forEach(c => {
+          if(c.terms) termsArray.push(...c.terms.split(/[,，、\s]+/).filter(Boolean));
+        });
+      }
+      document.getElementById('test-terms-input').value = termsArray.join(' ');
+      document.getElementById('test-extra-input').value = (l && l.extraTerms) || '';
+      generateGrid();
+    }
+
+    function saveExtraTerms() {
+      const tId = parseInt(document.getElementById('test-lesson-select').value);
+      const l = appData.lessons.find(x => x.id === tId);
+      if(l) {
+        l.extraTerms = document.getElementById('test-extra-input').value;
+        saveData();
+      }
+    }
+
+    function combineAllTerms() {
+      const main = document.getElementById('test-terms-input').value || '';
+      const extra = document.getElementById('test-extra-input').value || '';
+      return (main + ' ' + extra).trim();
+    }
+
+    function splitWords(text) {
+      return text.replace(/[,，、]/g, ' ').split(/\s+/).filter(Boolean);
+    }
+
+    function findZhuyin(ch, preferredLessonId) {
+      if (preferredLessonId) {
+        const pl = appData.lessons.find(x => x.id === preferredLessonId);
+        if (pl) {
+          const found = pl.chars.find(c => c.char === ch);
+          if (found && found.zhuyin) return found.zhuyin;
+        }
+      }
+      for (const l of appData.lessons) {
+        const found = l.chars.find(c => c.char === ch);
+        if (found && found.zhuyin) return found.zhuyin;
+      }
+      if (appData.zhuyinCache && appData.zhuyinCache[ch]) return appData.zhuyinCache[ch];
+      return '';
+    }
+
+    // 針對本機資料庫查不到注音的字，自動向萌典線上查詢並快取起來，之後不用重查
+    async function fetchZhuyinForChar(ch) {
+      try {
+        const res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(ch)}.json`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        const het = data.heteronyms || data.h;
+        if (het && het[0]) return het[0].bopomofo || het[0].b || null;
+      } catch (e) { /* 查無網路或查無資料，略過 */ }
+      return null;
+    }
+
+    async function fetchMissingZhuyin(cells) {
+      const missing = [...new Set(
+        cells.filter(c => c.type === 'char' && !c.zhuyin).map(c => c.char)
+      )];
+      if (missing.length === 0) return;
+
+      await Promise.all(missing.map(async (ch) => {
+        if (appData.zhuyinCache[ch]) return;
+        const zy = await fetchZhuyinForChar(ch);
+        if (zy) {
+          appData.zhuyinCache[ch] = zy;
+          document.querySelectorAll(`.tian-cell-wrap[data-char="${cssEscape(ch)}"] .tian-zy-text`).forEach(el => {
+            if (!el.innerHTML.trim()) el.innerHTML = formatZhuyinVertical(zy);
+          });
+        }
+      }));
+      saveData();
+    }
+
+    function cssEscape(s) {
+      return (window.CSS && CSS.escape) ? CSS.escape(s) : s.replace(/["\\]/g, '\\$&');
+    }
+
+    function formatZhuyinVertical(zy) {
+      if (!zy) return "";
+      const toneChars = "ˊˇˋ˙";
+      let tone = "";
+      let base = zy;
+      if (base.length && toneChars.includes(base[base.length - 1])) {
+        tone = base[base.length - 1];
+        base = base.slice(0, -1);
+      }
+      let html = "";
+      if (base.length === 0 && tone) {
+        return `<span class="zy-line">${tone}</span>`;
+      }
+      for (let i = 0; i < base.length; i++) {
+        const isLast = i === base.length - 1;
+        if (isLast && tone) {
+          html += `<span class="zy-line zy-tone-wrap">${base[i]}<span class="zy-tone">${tone}</span></span>`;
+        } else {
+          html += `<span class="zy-line">${base[i]}</span>`;
+        }
+      }
+      return html;
+    }
+
+    function buildSidebar() {
+      const tId = parseInt(document.getElementById('test-lesson-select').value);
+      const l = appData.lessons.find(x => x.id === tId);
+      if (!l) return '';
+      const parts = l.title.split('：');
+      const lessonNo = parts[0] || l.title;
+      const lessonName = parts[1] || '';
+
+      // 最多只排 2 排：第 1 排（外側，靠近頁緣）放版本/年級/單張標題，第 2 排（靠近格子）放課別/課名
+      const col1 = [`${appData.publisher}版`, `${appData.grade}${appData.semester}國語`, `生字聽寫練習單`].join('<br>');
+      const col2 = lessonName ? `${lessonNo}<br>${lessonName}` : lessonNo;
+
+      return `<div class="tian-sidebar">
+        <div class="sb-small">${col1}</div>
+        <div class="sb-big">${col2}</div>
+      </div>`;
+    }
+
+    function generateGrid() {
+      const words = splitWords(combineAllTerms());
+      const area = document.getElementById('grid-render-area');
+      area.innerHTML = '';
+
+      if (words.length === 0) {
+        area.innerHTML = '<p style="color:#aaa; padding:1rem;">請於上方輸入圈詞或加強字詞，再點擊「更新下方田字格」。</p>';
+        return;
+      }
+
+      // 組成一整串「格子」資料：字詞之間插入小圓點分隔格
+      const currentLessonForZy = parseInt(document.getElementById('test-lesson-select').value);
+      let cells = [];
+      words.forEach((word, wIdx) => {
+        for (const ch of word) {
+          cells.push({ type: 'char', char: ch, zhuyin: findZhuyin(ch, currentLessonForZy) });
+        }
+        if (wIdx < words.length - 1) cells.push({ type: 'sep' });
+      });
+
+      const rowsPerCol = 10;
+      const totalCols = Math.max(8, Math.ceil(cells.length / rowsPerCol));
+      const totalCellsNeeded = rowsPerCol * totalCols;
+      while (cells.length < totalCellsNeeded) cells.push({ type: 'empty' });
+
+      area.insertAdjacentHTML('beforeend', buildSidebar());
+
+      // 用 CSS Grid 明確指定每一格的欄、列座標，內容多寡完全不影響格線位置，杜絕錯位問題
+      const gridDiv = document.createElement('div');
+      gridDiv.className = 'tian-grid';
+      gridDiv.style.gridTemplateColumns = `repeat(${totalCols}, var(--tian-cell))`;
+      gridDiv.style.gridTemplateRows = `repeat(${rowsPerCol}, var(--tian-cell))`;
+
+      cells.forEach((data, idx) => {
+        const dataCol = Math.floor(idx / rowsPerCol); // 資料上第幾欄（0 = 最先讀到的字）
+        const row = idx % rowsPerCol;
+        const gridCol = totalCols - dataCol; // 換算成畫面座標：由右至左排列，第 0 欄放在最右邊
+
+        const cellEl = document.createElement('div');
+        cellEl.style.gridColumn = String(gridCol);
+        cellEl.style.gridRow = String(row + 1);
+
+        if (data.type === 'sep') {
+          cellEl.className = 'tian-cell-wrap tian-sep';
+          cellEl.innerHTML = `<span class="tian-sep-dot">○</span>`;
+        } else if (data.type === 'empty') {
+          cellEl.className = 'tian-cell-wrap';
+        } else {
+          cellEl.className = 'tian-cell-wrap';
+          const ch = data.char || '';
+          const zy = data.zhuyin || '';
+          cellEl.setAttribute('data-char', ch);
+          cellEl.innerHTML = `
+            <div class="tian-char-box" onclick="this.querySelector('.tian-char-text').classList.toggle('text-hidden')">
+              <span class="tian-char-text">${ch}</span>
+            </div>
+            <div class="tian-zy-box" onclick="this.querySelector('.tian-zy-text').classList.toggle('text-hidden')">
+              <span class="tian-zy-text">${formatZhuyinVertical(zy)}</span>
+            </div>
+          `;
+        }
+        gridDiv.appendChild(cellEl);
+      });
+
+      area.appendChild(gridDiv);
+      fetchMissingZhuyin(cells);
+    }
+
+    // 聽寫語音控制
+    let isPlaying = false;
+
+    async function toggleDictation() {
+      const btn = document.getElementById('btn-play');
+      if(isPlaying) {
+        isPlaying = false;
+        window.speechSynthesis.cancel();
+        btn.innerText = "▶️ 播放聽寫 (間隔5秒)";
+        btn.classList.remove('btn-green'); btn.classList.add('btn-pink');
+        return;
+      }
+
+      const terms = splitWords(combineAllTerms());
+      if(terms.length === 0) return alert("請先輸入詞語！");
+
+      isPlaying = true;
+      btn.innerText = "⏹️ 停止測驗";
+      btn.classList.remove('btn-pink'); btn.classList.add('btn-green');
+
+      for(let i=0; i<terms.length; i++) {
+        if(!isPlaying) break;
+        await playSpeech(terms[i]);
+        if(!isPlaying) break;
+        await sleep(1000);
+        await playSpeech(terms[i]);
+        if(!isPlaying) break;
+
+        for(let s=5; s>0; s--) {
+          if(!isPlaying) break;
+          btn.innerText = `⏹️ 倒數 ${s}秒 (第 ${i+1}/${terms.length} 題)`;
+          await sleep(1000);
+        }
+      }
+      if(isPlaying) {
+        await playSpeech("測驗結束，大家辛苦了！");
+        toggleDictation();
+      }
+    }
+
+    function playSpeech(text) {
+      return new Promise(resolve => {
+        window.speechSynthesis.cancel();
+        let u = new SpeechSynthesisUtterance(text);
+        u.lang = 'zh-TW';
+        u.rate = parseFloat(document.getElementById('speech-speed').value) || 0.75;
+        u.onend = resolve; u.onerror = resolve;
+        window.speechSynthesis.speak(u);
+      });
+    }
+
+    function speak(text) {
+      window.speechSynthesis.cancel();
+      let u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-TW';
+      u.rate = parseFloat(document.getElementById('speech-speed').value) || 0.75;
+      window.speechSynthesis.speak(u);
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // === 🔍 線上查字典（改用正確的萌典 /uni/ 端點，並附備援方案）===
+    async function searchMoedictRobust() {
+      const q = document.getElementById('dict-input').value.trim();
+      const out = document.getElementById('dict-output');
+      if(!q) return;
+      out.innerHTML = `<span style="color:var(--m-purple); font-weight:bold;">🔍 正在查詢中...</span>`;
+
+      const endpoints = [
+        `https://www.moedict.tw/uni/${encodeURIComponent(q)}.json`,
+        `https://www.moedict.tw/a/${encodeURIComponent(q)}.json`
+      ];
+
+      for (const url of endpoints) {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) continue;
+          const data = await res.json();
+          const heteronyms = data.heteronyms || data.h;
+          if (!data || !heteronyms || !Array.isArray(heteronyms) || heteronyms.length === 0) continue;
+          renderDictResult(data, q);
+          return;
+        } catch (e) {
+          // 嘗試下一個端點
+        }
+      }
+
+      out.innerHTML = fallbackHtml(q);
+    }
+
+    function renderDictResult(data, q) {
+      const out = document.getElementById('dict-output');
+      let html = `<strong>【${data.title || q}】</strong><br>`;
+      if (data.radical) html += `<span style="font-size:1rem; color:#888;">部首：${data.radical}部${data.stroke_count ? (' | 筆畫：' + data.stroke_count + '畫') : ''}</span><br><br>`;
+
+      const heteronyms = data.heteronyms || data.h;
+      heteronyms.forEach(h => {
+        const bopomofo = h.bopomofo || h.b;
+        const definitions = h.definitions || h.d;
+        if (bopomofo) html += `<span style="color:var(--m-pink); font-weight:800; font-size:1.2rem;">[${bopomofo}]</span><br>`;
+        if (definitions && Array.isArray(definitions)) {
+          html += `<ul>`;
+          definitions.forEach(d => {
+            const def = (d && (d.def || d.f)) || '';
+            if (def) html += `<li>${def.replace(/`|~/g, '')}</li>`;
+          });
+          html += `</ul>`;
+        }
+      });
+
+      out.innerHTML = html || fallbackHtml(q);
+    }
+
+    function fallbackHtml(q) {
+      return `
+        <span style="color:#d9534f; font-weight:bold;">⚠️ 查無完整線上資料，請直接前往教育部官方辭典查詢。</span><br><br>
+        請點擊下方按鈕直接查詢「${q}」：<br><br>
+        <a href="https://dict.revised.moe.edu.tw/search.jsp?md=1&word=${encodeURIComponent(q)}" target="_blank" class="btn btn-pink" style="text-decoration:none; font-size:1.1rem; padding: 0.8rem 1.5rem;">🔗 前往教育部國語辭典查「${q}」</a>
+      `;
+    }
+
+    function copyDictText() {
+      const text = document.getElementById('dict-output').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const b = document.getElementById('btn-copy');
+        b.innerText = "✅ 已複製";
+        setTimeout(() => b.innerText = "📋 複製", 2000);
+      });
+    }
+
+    // === 🔗 資源連結 ===
+    function renderLinks() {
+      const container = document.getElementById('links-container');
+      container.innerHTML = '';
+      appData.links.forEach((l, i) => {
+        let colorClass = `desc-color-${i % 3}`;
+        container.innerHTML += `
+          <div class="link-card">
+            <div style="flex-grow:1; margin-right:10px;">
+              <span style="font-size:0.8rem; background:var(--m-purple); color:#fff; padding:4px 10px; border-radius:12px; font-weight:800;">${l.subj}</span>
+              <h3 style="color:#D48C9E; margin:8px 0; font-size:1.2rem;">${l.title}</h3>
+              <div class="link-desc ${colorClass}">${l.desc}</div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;" class="no-print">
+              <a href="${l.url}" target="_blank" class="btn btn-pink" style="text-decoration:none; padding:0.8rem 1.5rem;">🔗 前往</a>
+              <button class="btn" style="font-size:0.75rem; padding:0.4rem 0.8rem;" onclick="deleteLink(${i})">刪除</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function addLink() {
+      const s = document.getElementById('link-subj').value;
+      const t = document.getElementById('link-title').value.trim();
+      const u = document.getElementById('link-url').value.trim();
+      const d = document.getElementById('link-desc').value.trim();
+      if(!t || !u) return alert('網站標題與網址必填！');
+      appData.links.push({ id: Date.now(), subj: s, title: t, desc: d || "推薦學習好網站", url: u });
+      saveData();
+      document.getElementById('link-title').value = '';
+      document.getElementById('link-url').value = '';
+      document.getElementById('link-desc').value = '';
+      renderLinks();
+    }
+
+    function deleteLink(idx) {
+      if(confirm('確定刪除此連結？')) {
+        appData.links.splice(idx, 1);
+        saveData(); renderLinks();
+      }
+    }
+
+    // === ⚙️ 備份與還原 ===
+    function exportJSON() {
+      saveData();
+      const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "國語聽寫簿系統備份.json";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 0);
+    }
+
+    function importJSON(e) {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          appData = JSON.parse(evt.target.result);
+          saveData();
+          alert("資料還原成功！");
+          location.reload();
+        } catch(err) { alert("檔案格式錯誤！"); }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetData() {
+      if(confirm("警告：將清除您所有的修改內容，恢復為系統預設值。確定繼續嗎？")) {
+        localStorage.removeItem('MandarinAppV9');
+        location.reload();
+      }
+    }
+
+    // === 🔔 按鍵音效 ===
+    let audioCtx = null;
+    function ensureAudioCtx() {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) audioCtx = new AC();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playClickSound() {
+      if (!appData || !appData.soundEnabled) return;
+      const ctx = ensureAudioCtx();
+      if (!ctx) return;
+      try {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.16, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.13);
+      } catch (e) { /* 忽略音效錯誤 */ }
+    }
+
+    function toggleSound() {
+      appData.soundEnabled = !appData.soundEnabled;
+      saveData();
+      updateSoundToggleLabel();
+      playClickSound();
+    }
+
+    function updateSoundToggleLabel() {
+      const btn = document.getElementById('sound-toggle');
+      if (!btn) return;
+      btn.innerText = appData.soundEnabled ? "🔊 按鍵音效：開" : "🔇 按鍵音效：關";
+    }
+
+    document.addEventListener('click', function (e) {
+      const target = e.target.closest('.btn, .nav-btn, .tian-char-box, .tian-zy-box, .lesson-title-display, .delete-bg, select');
+      if (target) playClickSound();
+    }, true);
+  </script>
+</body>
+</html>
