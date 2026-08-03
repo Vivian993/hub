@@ -215,6 +215,14 @@
   .analysis{font-size:12px; line-height:1.7; color:#B7BECE; margin-top:10px;}
   .proof{margin-top:8px; font-size:10px; color:var(--gold); display:flex; align-items:center; gap:5px;}
   .empty{max-width:960px; margin:36px auto; padding:0 18px; text-align:center; color:var(--muted); font-size:13px; display:none;}
+
+  .addcard-row{max-width:960px; margin:0 auto; padding:0 18px 10px;}
+  .combo-editor{max-width:460px; margin:0 auto 20px; padding:18px; border:1px solid var(--gold); border-radius:16px; background:var(--surface);}
+  .combo-editor textarea{width:100%; min-height:70px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; color:var(--text); padding:10px 12px; font-size:13px; font-family:'Noto Sans TC',sans-serif; resize:vertical; margin-top:3px;}
+  .proof-check{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--muted); margin-top:10px;}
+  .card-thumb{width:100%; height:100%; object-fit:cover; border-radius:8px;}
+  .card-controls{display:flex; gap:6px; margin-top:10px;}
+  .card-controls button{flex:1; font-size:10px; padding:6px; border-radius:6px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); cursor:pointer;}
   footer{max-width:960px; margin:40px auto 0; padding:20px 18px 0; border-top:1px solid var(--line); font-size:11px; color:var(--muted); line-height:1.8;}
 
   /* ---- Bracket (reuse) ---- */
@@ -427,6 +435,7 @@
       <button class="tab" data-series="BX">BX 系列</button>
       <button class="tab" data-series="UX">UX 系列</button>
       <button class="tab" data-series="CX">CX 系列</button>
+      <button class="tab" data-series="MINE">🗂 我的配置</button>
     </div>
     <div class="filterrow" id="styleChips">
       <button class="chip active" data-style="all">所有打法</button>
@@ -437,6 +446,38 @@
       <button class="chip" data-style="proof">🏆 冠軍驗證</button>
     </div>
   </div>
+
+  <div class="addcard-row">
+    <button class="bigbtn" id="addComboBtn" style="width:100%;">＋ 新增我的配置卡片</button>
+  </div>
+
+  <div class="combo-editor" id="comboEditor" style="display:none;">
+    <div class="photobox" id="comboPhotoBox" style="aspect-ratio:1/1; max-width:140px; margin:0 auto;">
+      <span class="ph-hint"><span class="ph-icon">📷</span>點一下或長按上傳照片</span>
+    </div>
+    <input type="file" accept="image/*" id="comboFile">
+
+    <div class="setup-row" style="margin-top:12px; justify-content:center;">
+      <button class="modechip active" data-style="attack">攻擊型</button>
+      <button class="modechip" data-style="balance">均衡型</button>
+      <button class="modechip" data-style="defense">防守型</button>
+      <button class="modechip" data-style="stamina">耐久型</button>
+    </div>
+
+    <div class="field" style="margin-top:10px;"><label>陀螺名稱</label><input type="text" id="comboName" placeholder="例如：我的改裝陀螺"></div>
+    <div class="field"><label>英文名稱（選填）</label><input type="text" id="comboEn" placeholder="例如：My Custom Beyblade"></div>
+    <div class="field"><label>刀刃／上蓋</label><input type="text" id="comboBlade" placeholder="例如：鳳凰飛翼"></div>
+    <div class="field"><label>固鎖</label><input type="text" id="comboRatchet" placeholder="例如：9-60"></div>
+    <div class="field"><label>軸心</label><input type="text" id="comboBit" placeholder="例如：R"></div>
+    <div class="field"><label>心得分析（選填）</label><textarea id="comboText" placeholder="寫下你的使用心得或打法分析…"></textarea></div>
+    <label class="proof-check"><input type="checkbox" id="comboProof"> 標記為「賽場驗證」🏆</label>
+
+    <div class="setup-row" style="margin-top:14px;">
+      <button class="bigbtn" id="comboSaveBtn">💾 儲存卡片</button>
+      <button class="ghostbtn" id="comboCancelBtn">取消</button>
+    </div>
+  </div>
+
   <div class="grid" id="grid"></div>
   <div class="empty" id="emptyState">找不到符合的配置，換個關鍵字或分類看看。</div>
   <footer>配置資料整理自 BeybladeHub，文字已改寫摘要。零件圖示為手繪示意圖，非官方實體照片。戰鬥陀螺X™（BEYBLADE X™）為 TAKARA TOMY 版權所有，本頁為玩家整理的非官方參考資料。</footer>
@@ -1205,23 +1246,59 @@ function makeCard(item){
   div.style.setProperty('--style-color', meta.color);
   div.dataset.series = item.series; div.dataset.style = item.style; div.dataset.proof = item.proof ? '1':'0';
   div.dataset.search = (item.name+' '+item.en+' '+item.blade+' '+item.ratchet+' '+item.bit).toLowerCase();
+  const iconHtml = item.photo
+    ? `<img class="card-thumb" src="${item.photo}">`
+    : styleIconSVG(item.style);
   div.innerHTML = `
-    <div class="card-top"><div style="width:36px;height:36px;">${styleIconSVG(item.style)}</div><span class="series-badge">${item.series}</span></div>
+    <div class="card-top"><div style="width:36px;height:36px;">${iconHtml}</div><span class="series-badge">${item.isCustom ? '我的' : item.series}</span></div>
     <div class="name-cn">${item.name}</div>
     ${item.en ? `<div class="name-en">${item.en}</div>` : ''}
     <div class="style-tag"><span class="dot"></span>${meta.label}</div>
     <div class="parts">
-      <div class="part">${ICON_BLADE}<div class="part-label">刀刃／上蓋</div><div class="part-value">${item.blade}</div></div>
-      <div class="part">${ICON_RATCHET}<div class="part-label">固鎖</div><div class="part-value">${item.ratchet}</div></div>
-      <div class="part">${ICON_BIT}<div class="part-label">軸心</div><div class="part-value">${item.bit}</div></div>
+      <div class="part">${ICON_BLADE}<div class="part-label">刀刃／上蓋</div><div class="part-value">${item.blade||'—'}</div></div>
+      <div class="part">${ICON_RATCHET}<div class="part-label">固鎖</div><div class="part-value">${item.ratchet||'—'}</div></div>
+      <div class="part">${ICON_BIT}<div class="part-label">軸心</div><div class="part-value">${item.bit||'—'}</div></div>
     </div>
-    <p class="analysis">${item.text}</p>
+    ${item.text ? `<p class="analysis">${item.text}</p>` : ''}
     ${item.proof ? `<div class="proof">🏆 賽場前四強實戰驗證</div>` : ``}
+    ${item.isCustom ? `<div class="card-controls"><button class="combo-edit" data-id="${item.id}">✏️ 編輯</button><button class="combo-del" data-id="${item.id}">🗑 刪除</button></div>` : ''}
   `;
   return div;
 }
+
+let customCombos = [];
 const grid = document.getElementById('grid');
-DATA.forEach(item => grid.appendChild(makeCard(item)));
+
+function renderCatalogGrid(){
+  grid.innerHTML = '';
+  DATA.forEach(item => grid.appendChild(makeCard(item)));
+  customCombos.forEach(item => grid.appendChild(makeCard(item)));
+  grid.querySelectorAll('.combo-edit').forEach(b=>b.addEventListener('click', ()=>{
+    const item = customCombos.find(it=>it.id===b.dataset.id);
+    if(item) openComboEditor(item);
+  }));
+  grid.querySelectorAll('.combo-del').forEach(b=>b.addEventListener('click', async ()=>{
+    if(!confirm('確定要刪除這張卡片嗎？')) return;
+    customCombos = customCombos.filter(it=>it.id!==b.dataset.id);
+    await saveCustomCombos();
+    renderCatalogGrid();
+    applyFilter();
+  }));
+  applyFilter();
+}
+
+async function loadCustomCombos(){
+  try{
+    const r = await appStorage.get('customCombos', false);
+    customCombos = r && r.value ? JSON.parse(r.value) : [];
+  }catch(e){ customCombos = []; }
+  renderCatalogGrid();
+}
+async function saveCustomCombos(){
+  try{ await appStorage.set('customCombos', JSON.stringify(customCombos), false); }
+  catch(e){ console.error('customCombos save failed', e); }
+}
+
 let activeSeries='all', activeStyle='all', searchTerm='';
 function applyFilter(){
   const cards = grid.querySelectorAll('.card'); let visible=0;
@@ -1246,6 +1323,93 @@ document.getElementById('styleChips').addEventListener('click', e=>{
 });
 const searchInput = document.getElementById('searchInput');
 searchInput.addEventListener('input', e=>{ searchTerm = e.target.value.trim().toLowerCase(); applyFilter(); });
+
+/* ---- Custom catalog card editor (add/edit) ---- */
+let comboEditingId = null;
+let comboPhoto = null;
+let comboStyle = 'attack';
+
+function openComboEditor(existing){
+  document.getElementById('comboEditor').style.display = 'block';
+  document.getElementById('addComboBtn').style.display = 'none';
+  document.getElementById('comboPhotoBox').innerHTML = `<span class="ph-hint"><span class="ph-icon">📷</span>點一下或長按上傳照片</span>`;
+  comboPhoto = null; comboStyle = 'attack';
+
+  if(existing){
+    comboEditingId = existing.id;
+    comboStyle = existing.style;
+    document.getElementById('comboName').value = existing.name || '';
+    document.getElementById('comboEn').value = existing.en || '';
+    document.getElementById('comboBlade').value = existing.blade || '';
+    document.getElementById('comboRatchet').value = existing.ratchet || '';
+    document.getElementById('comboBit').value = existing.bit || '';
+    document.getElementById('comboText').value = existing.text || '';
+    document.getElementById('comboProof').checked = !!existing.proof;
+    if(existing.photo){
+      comboPhoto = existing.photo;
+      document.getElementById('comboPhotoBox').innerHTML = `<img src="${existing.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">`;
+    }
+  } else {
+    comboEditingId = null;
+    ['comboName','comboEn','comboBlade','comboRatchet','comboBit','comboText'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('comboProof').checked = false;
+  }
+  document.querySelectorAll('#comboEditor .modechip').forEach(b=>b.classList.toggle('active', b.dataset.style===comboStyle));
+  document.getElementById('comboEditor').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function closeComboEditor(){
+  document.getElementById('comboEditor').style.display = 'none';
+  document.getElementById('addComboBtn').style.display = 'block';
+}
+document.getElementById('addComboBtn').addEventListener('click', ()=>openComboEditor(null));
+document.getElementById('comboCancelBtn').addEventListener('click', closeComboEditor);
+document.querySelectorAll('#comboEditor .modechip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#comboEditor .modechip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    comboStyle = chip.dataset.style;
+  });
+});
+document.getElementById('comboPhotoBox').addEventListener('click', ()=> document.getElementById('comboFile').click());
+document.getElementById('comboFile').addEventListener('change', async ()=>{
+  const file = document.getElementById('comboFile').files[0];
+  if(!file) return;
+  const box = document.getElementById('comboPhotoBox');
+  box.innerHTML = `<span class="ph-hint">處理中…</span>`;
+  try{
+    comboPhoto = await compressImage(file, 480, 0.72);
+    box.innerHTML = `<img src="${comboPhoto}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">`;
+  }catch(e){
+    box.innerHTML = `<span class="ph-hint">讀取失敗，再試一次</span>`;
+  }
+});
+document.getElementById('comboSaveBtn').addEventListener('click', async ()=>{
+  const name = document.getElementById('comboName').value.trim();
+  if(!name){ alert('至少幫它取個名字吧！'); return; }
+  const payload = {
+    name,
+    en: document.getElementById('comboEn').value.trim(),
+    blade: document.getElementById('comboBlade').value.trim(),
+    ratchet: document.getElementById('comboRatchet').value.trim(),
+    bit: document.getElementById('comboBit').value.trim(),
+    text: document.getElementById('comboText').value.trim(),
+    proof: document.getElementById('comboProof').checked,
+    style: comboStyle,
+    series: 'MINE',
+    photo: comboPhoto,
+    isCustom: true
+  };
+  if(comboEditingId){
+    const idx = customCombos.findIndex(it=>it.id===comboEditingId);
+    if(idx>-1) customCombos[idx] = {...customCombos[idx], ...payload};
+  } else {
+    customCombos.push({id:'c'+Date.now(), ...payload});
+  }
+  await saveCustomCombos();
+  closeComboEditor();
+  renderCatalogGrid();
+});
+loadCustomCombos();
 
 /* =====================================================
    PART 5 — Bracket
