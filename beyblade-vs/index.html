@@ -4,20 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>陀螺對戰台 VS</title>
-<link rel="apple-touch-icon" href="custom-icon.png">
-<link rel="icon" type="image/png" href="custom-icon.png">
+<link rel="apple-touch-icon" href="custom-icon-v2.png">
+<link rel="icon" type="image/png" href="custom-icon-v2.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root{
-    --bg:#06070C; --surface:#12141E; --surface-2:#1A1D2B; --line:#2A2E42;
-    --text:#F3F5FB; --muted:#8891A8;
-    --red:#FF2D55; --red-dim:#5C0F26;
-    --blue:#2D8CFF; --blue-dim:#0E2A54;
-    --gold:#FFC94D;
-    --attack:#FF4B3E; --balance:#3ECFFF; --defense:#7CFF9E; --stamina:#C48CFF;
+    --bg:#0B0A14; --surface:#16152A; --surface-2:#1F1E3A; --line:#33325A;
+    --text:#F6F5FF; --muted:#9490B8;
+    --red:#FF3D68; --red-dim:#5C1030;
+    --blue:#3E8CFF; --blue-dim:#132A54;
+    --gold:#FFC24D;
+    --attack:#FF5A4D; --balance:#3ED4FF; --defense:#5CFF9E; --stamina:#C98CFF;
+    --nav-bg:rgba(11,10,20,0.92);
   }
+  html[data-theme="light"]{
+    --bg:#FFF7EC; --surface:#FFFFFF; --surface-2:#FFF0DC; --line:#F0DCC0;
+    --text:#231A2E; --muted:#7A7192;
+    --red:#F5305F; --red-dim:#FFD9E3;
+    --blue:#2F6FE0; --blue-dim:#DCE9FF;
+    --gold:#F5A300;
+    --attack:#F5493B; --balance:#0FA9D6; --defense:#22B876; --stamina:#9A4FE0;
+    --nav-bg:rgba(255,247,236,0.92);
+  }
+  .themebtn{width:40px; flex:none; border-radius:10px; border:1px solid var(--line); background:var(--surface);
+    color:var(--text); font-size:15px; cursor:pointer;}
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
   html{scroll-behavior:smooth;}
   body{
@@ -34,11 +46,11 @@
 
   /* ---- Nav ---- */
   .appnav{position:sticky; top:0; z-index:40; display:flex; gap:6px; padding:10px 12px;
-    background:rgba(6,7,12,0.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+    background:var(--nav-bg); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
   .applink{flex:1; text-align:center; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:13px;
     letter-spacing:0.02em; padding:11px 6px; border-radius:10px; color:var(--muted);
     border:1px solid var(--line); background:var(--surface); cursor:pointer;}
-  .applink.active{background:var(--text); color:#06070C; border-color:var(--text);}
+  .applink.active{background:var(--text); color:var(--bg); border-color:var(--text);}
   .view{display:none;} .view.active{display:block;}
 
   /* ---- Battle Hero ---- */
@@ -66,15 +78,11 @@
   .corner.red .corner-label{color:var(--red);}
   .corner.blue .corner-label{color:var(--blue);}
 
-  .photobox{margin-top:10px; aspect-ratio:1/1; border-radius:14px; border:2px dashed var(--line);
-    display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; cursor:pointer;
-    background:var(--surface-2);}
-  .photobox img{width:100%; height:100%; object-fit:cover; display:block;}
-  .photobox .ph-hint{font-size:11px; color:var(--muted); text-align:center; padding:0 10px; line-height:1.6;}
-  .photobox .ph-icon{font-size:26px; display:block; margin-bottom:4px;}
-  .photobox .clearbtn{position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%;
-    background:rgba(0,0,0,0.6); color:#fff; border:none; font-size:14px; display:none; align-items:center; justify-content:center;}
-  .photobox.has-photo .clearbtn{display:flex;}
+  .score-board{max-width:680px; margin:0 auto;}
+  .score-board-hint{font-size:11px; color:var(--muted); text-align:center; margin-bottom:10px; line-height:1.7;}
+  .big-name-field input{font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:0.02em; text-align:center;
+    padding:16px 8px; background:var(--surface-2); border:1px solid var(--line); border-radius:12px; color:var(--text); width:100%;}
+  .big-name-field input:focus{outline:none; border-color:var(--gold);}
 
   .field{margin-top:8px;}
   .field label{font-size:10px; color:var(--muted); letter-spacing:0.05em;}
@@ -85,12 +93,16 @@
   .voice-panel{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px 16px; margin-top:14px;}
   .voice-panel-title{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:14px; color:var(--gold);}
   .voice-panel-sub{font-size:11px; color:var(--muted); margin-top:4px; line-height:1.7;}
-  .cue-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:8px; margin-top:12px;}
-  .cuecard{background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:8px; text-align:center;}
-  .cuecard-label{font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:0.04em;}
-  .cuecard-btns{display:flex; gap:5px; justify-content:center; margin-top:6px; flex-wrap:wrap;}
-  .cuebtn{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:11px; padding:6px 8px; border-radius:7px; border:1px solid var(--line); background:transparent; color:var(--text); cursor:pointer;}
-  .cuebtn.rec{color:var(--red);} .cuebtn.play{color:var(--blue);} .cuebtn.del{color:var(--muted);}
+  .cue-mode-row{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px;}
+  .cue-mode-btn{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:13px; padding:12px 8px; border-radius:10px;
+    border:1px solid var(--line); background:var(--surface-2); color:var(--muted); cursor:pointer;}
+  .cue-mode-btn span{display:block; font-size:10px; font-weight:500; opacity:0.7; margin-top:2px;}
+  .cue-mode-btn.active{background:var(--gold); color:#1A1300; border-color:var(--gold);}
+  .cue-custom-box{margin-top:10px; text-align:center;}
+  .cue-custom-actions{display:flex; gap:8px; justify-content:center; margin-top:8px;}
+  .cuebtn{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:12px; padding:9px 14px; border-radius:8px; border:1px solid var(--line); background:transparent; color:var(--text); cursor:pointer;}
+  .cuebtn.rec{color:var(--red); border-color:var(--red-dim); width:100%;}
+  .cuebtn.play{color:var(--blue);} .cuebtn.del{color:var(--muted);}
 
   .go-row{max-width:680px; margin:18px auto 6px; padding:0 14px; text-align:center;}
   .go-btn{width:100%; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:0.06em;
@@ -115,17 +127,16 @@
   .battle-screen{display:none; max-width:680px; margin:0 auto; padding:16px 14px;}
   .battle-screen.show{display:block;}
   .battle-vs-row{display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px; margin-bottom:14px;}
-  .battle-photo{aspect-ratio:1/1; border-radius:16px; overflow:hidden; border:2px solid var(--line);}
-  .battle-photo img{width:100%; height:100%; object-fit:cover;}
-  .battle-photo.empty{display:flex; align-items:center; justify-content:center; background:var(--surface-2); font-size:28px;}
-  .battle-name{text-align:center; font-weight:700; font-size:14px; margin-top:6px;}
-  .battle-combo{text-align:center; font-size:11px; color:var(--muted); margin-top:2px;}
+  .battle-dot{width:22px; height:22px; border-radius:50%; margin:0 auto;}
+  .battle-dot.red{background:var(--red); box-shadow:0 0 16px rgba(255,61,104,0.6);}
+  .battle-dot.blue{background:var(--blue); box-shadow:0 0 16px rgba(62,140,255,0.6);}
+  .battle-name{text-align:center; font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:0.02em; margin-top:8px;}
   .vs-center{font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--gold);}
 
   .score-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
   .scorepanel{border-radius:16px; padding:14px; text-align:center; border:1px solid var(--line);}
-  .scorepanel.red{background:rgba(255,45,85,0.08); border-color:rgba(255,45,85,0.4);}
-  .scorepanel.blue{background:rgba(45,140,255,0.08); border-color:rgba(45,140,255,0.4);}
+  .scorepanel.red{background:rgba(255,61,104,0.08); border-color:rgba(255,61,104,0.4);}
+  .scorepanel.blue{background:rgba(62,140,255,0.08); border-color:rgba(62,140,255,0.4);}
   .bignum{font-family:'Bebas Neue',sans-serif; font-size:60px; line-height:1;}
   .scorepanel.red .bignum{color:var(--red);} .scorepanel.blue .bignum{color:var(--blue);}
   .scorebtn2{width:100%; margin-top:8px; padding:11px 6px; border-radius:10px; border:1px solid var(--line);
@@ -146,9 +157,10 @@
   .winner-close{position:absolute; top:12px; right:12px; width:30px; height:30px; border-radius:50%;
     background:var(--surface-2); border:1px solid var(--line); color:var(--muted); font-size:14px; cursor:pointer;}
   .winner-emoji{font-size:44px;}
-  .winner-photo{width:120px; height:120px; border-radius:50%; object-fit:cover; margin:10px auto; display:block; border:3px solid var(--gold);}
   .winner-name{font-family:'Bebas Neue',sans-serif; font-size:32px; margin-top:6px;}
   .winner-sub{font-size:12px; color:var(--muted); margin-top:4px;}
+  .winner-combo-form{margin-top:16px; text-align:left;}
+  .winner-combo-hint{font-size:11px; color:var(--muted); text-align:center; line-height:1.7; margin-bottom:6px;}
   .winner-actions{display:flex; gap:10px; margin-top:18px;}
   .winner-actions button{flex:1; padding:12px; border-radius:12px; border:none; font-family:'Rajdhani',sans-serif; font-weight:700; cursor:pointer;}
   .btn-primary{background:var(--gold); color:#1a1400;}
@@ -164,6 +176,12 @@
   .qr-card{background:var(--surface); border:1px solid var(--gold); border-radius:16px; padding:20px; text-align:center; margin-bottom:20px; box-shadow:0 0 30px rgba(255,201,77,0.12);}
   .qr-card-title{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:16px; color:var(--gold);}
   .qr-card-sub{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.7;}
+  .info-links{margin-top:22px; display:grid; gap:8px;}
+  .info-links-title{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:13px; color:var(--muted); margin-bottom:2px;}
+  .info-link{display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 14px; text-decoration:none; color:var(--text);}
+  .info-link-icon{font-size:20px;}
+  .info-link-name{display:block; font-weight:700; font-size:13px;}
+  .info-link-desc{display:block; font-size:11px; color:var(--muted); margin-top:2px;}
   #qrcodeBox{display:flex; justify-content:center; margin:16px 0 10px; background:#fff; padding:12px; border-radius:12px; width:fit-content; margin-left:auto; margin-right:auto;}
   .qr-url{font-family:'Rajdhani',sans-serif; font-size:12px; color:var(--muted); word-break:break-all; margin-bottom:12px;}
   .qr-note{font-size:11px; color:var(--muted); margin-top:10px;}
@@ -194,7 +212,7 @@
   .searchinput.show{display:block;}
   .tabrow{display:flex; gap:7px; flex-wrap:wrap;}
   .tab{font-family:'Rajdhani',sans-serif; font-weight:600; font-size:13px; padding:9px 15px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--muted); cursor:pointer;}
-  .tab.active{background:var(--text); color:#06070C; border-color:var(--text);}
+  .tab.active{background:var(--text); color:var(--bg); border-color:var(--text);}
   .filterrow{display:flex; gap:7px; flex-wrap:wrap; margin-top:9px;}
   .chip{font-size:11px; padding:7px 12px; border-radius:8px; border:1px solid var(--line); background:transparent; color:var(--muted); cursor:pointer; display:flex; align-items:center; gap:5px;}
   .chip.active{background:var(--surface-2); color:var(--text); border-color:var(--gold);}
@@ -210,6 +228,10 @@
   .parts{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:12px;}
   .part{background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:8px 6px; text-align:center;}
   .part svg{width:24px; height:24px;}
+  .part-icon-slot{position:relative; width:24px; height:24px; margin:0 auto; cursor:pointer; border-radius:6px;}
+  .part-icon-slot:active{opacity:0.7;}
+  .part-icon-slot img.card-thumb{width:24px; height:24px; border-radius:6px;}
+  .part-icon-clear{position:absolute; top:-7px; right:-9px; width:15px; height:15px; border-radius:50%; background:#000; color:#fff; border:1px solid var(--line); font-size:8px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;}
   .part-label{font-size:9px; color:var(--muted); margin-top:3px;}
   .part-value{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:12px;}
   .analysis{font-size:12px; line-height:1.7; color:#B7BECE; margin-top:10px;}
@@ -234,12 +256,18 @@
   .setup-card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px;}
   .setup-card h3{font-family:'Rajdhani',sans-serif; font-size:14px; margin-bottom:8px;}
   .setup-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
-  textarea, input[type=text]{width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; color:var(--text); padding:10px 12px; font-size:13px; font-family:'Noto Sans TC',sans-serif; resize:vertical;}
+  textarea, input[type=text], input[type=date], input[type=time]{width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; color:var(--text); padding:10px 12px; font-size:13px; font-family:'Noto Sans TC',sans-serif; resize:vertical;}
   textarea{min-height:100px; line-height:1.7;}
+  .event-info-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .event-banner{max-width:680px; margin:0 auto 4px; padding:0 18px; font-size:12px; color:var(--muted); text-align:center;}
+  .share-card{max-width:680px; margin:16px auto; padding:20px 18px; background:var(--surface); border:1px solid var(--gold); border-radius:16px; text-align:center; box-shadow:0 0 30px rgba(255,201,77,0.12);}
+  .share-card-title{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:15px; color:var(--gold);}
+  .share-card-sub{font-size:11px; color:var(--muted); line-height:1.7; margin-top:6px;}
+  .share-card #shareUrlText{font-family:'Rajdhani',sans-serif; font-size:12px; color:var(--muted); word-break:break-all; margin:10px 0;}
   .bigbtn{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:14px; padding:12px 20px; border-radius:11px; border:none; background:var(--gold); color:#1a1400; cursor:pointer;}
   .ghostbtn{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:13px; padding:10px 16px; border-radius:11px; border:1px solid var(--line); background:transparent; color:var(--text); cursor:pointer;}
   .modechip{padding:9px 14px; border-radius:9px; border:1px solid var(--line); background:var(--surface-2); color:var(--muted); cursor:pointer; font-size:12px;}
-  .modechip.active{background:var(--blue); color:#06070C; border-color:var(--blue); font-weight:700;}
+  .modechip.active{background:var(--blue); color:#fff; border-color:var(--blue); font-weight:700;}
   .hint{font-size:11px; color:var(--muted); margin-top:5px; line-height:1.7;}
   .groupswrap{max-width:960px; margin:0 auto; padding:0 18px 20px; display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px;}
   .groupcard{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px;}
@@ -287,10 +315,17 @@
 
   input[type=file]{display:none;}
 </style>
+<script>
+  try{
+    const savedTheme = localStorage.getItem('bxvs-theme');
+    if(savedTheme === 'light') document.documentElement.setAttribute('data-theme','light');
+  }catch(e){}
+</script>
 </head>
 <body>
 
 <div class="appnav">
+  <button class="themebtn" id="themeToggle" title="切換深／淺色">🌙</button>
   <button class="applink active" data-view="battle">⚔️ 對戰</button>
   <button class="applink" data-view="catalog">📖 圖鑑</button>
   <button class="applink" data-view="bracket">🏆 賽程</button>
@@ -302,66 +337,61 @@
 <div class="view active" id="view-battle">
 
   <div class="hero">
-    <div class="hero-icon"><img src="custom-icon.png" alt="icon"></div>
+    <div class="hero-icon"><img src="custom-icon-v2.png" alt="icon"></div>
     <h1 class="display">陀螺對戰台</h1>
     <p>拍下你的陀螺，倒數 3-2-1 開戰，比分打到 4 分先贏</p>
   </div>
 
   <div class="vs-wrap" id="setupZone">
-    <div class="vs-grid">
-      <div class="vs-badge">VS</div>
-      <div class="corner red">
-        <div class="corner-label">🔴 紅方</div>
-        <div class="photobox" id="photoRed">
-          <span class="ph-hint"><span class="ph-icon">📷</span>點一下或長按上傳照片<br><small>（會自動壓縮，可以放很多張）</small></span>
-          <button class="clearbtn" data-side="red">✕</button>
+    <div class="score-board">
+      <div class="score-board-hint">先只填名字——刀刃／固鎖／軸心等分出勝負後才會問，比賽中不會被對手看到。</div>
+      <div class="vs-grid">
+        <div class="vs-badge">VS</div>
+        <div class="corner red">
+          <div class="corner-label">🔴 紅方</div>
+          <div class="field big-name-field"><input type="text" id="nameRed" placeholder="輸入紅方選手 / 陀螺暱稱"></div>
         </div>
-        <input type="file" accept="image/*" id="fileRed">
-        <div class="field"><label>陀螺名稱</label><input type="text" id="nameRed" placeholder="例如：鮫鯊狂鱗"></div>
-        <div class="field"><label>刀刃／上蓋</label><input type="text" id="bladeRed" placeholder="例如：鮫鯊狂鱗"></div>
-        <div class="field"><label>固鎖</label><input type="text" id="ratchetRed" placeholder="例如：4-50"></div>
-        <div class="field"><label>軸心</label><input type="text" id="bitRed" placeholder="例如：K"></div>
-      </div>
-      <div class="corner blue">
-        <div class="corner-label">🔵 藍方</div>
-        <div class="photobox" id="photoBlue">
-          <span class="ph-hint"><span class="ph-icon">📷</span>點一下或長按上傳照片<br><small>（會自動壓縮，可以放很多張）</small></span>
-          <button class="clearbtn" data-side="blue">✕</button>
+        <div class="corner blue">
+          <div class="corner-label">🔵 藍方</div>
+          <div class="field big-name-field"><input type="text" id="nameBlue" placeholder="輸入藍方選手 / 陀螺暱稱"></div>
         </div>
-        <input type="file" accept="image/*" id="fileBlue">
-        <div class="field"><label>陀螺名稱</label><input type="text" id="nameBlue" placeholder="例如：魔導神杖"></div>
-        <div class="field"><label>刀刃／上蓋</label><input type="text" id="bladeBlue" placeholder="例如：魔導神杖"></div>
-        <div class="field"><label>固鎖</label><input type="text" id="ratchetBlue" placeholder="例如：1-60"></div>
-        <div class="field"><label>軸心</label><input type="text" id="bitBlue" placeholder="例如：FB"></div>
       </div>
     </div>
   </div>
 
   <div class="vs-wrap" id="voicePanelWrap">
     <div class="voice-panel">
-      <div class="voice-panel-title">🎙 自己錄倒數口令（選填）</div>
-      <div class="voice-panel-sub">六句都可以錄自己的聲音，錄過的會取代內建語音。沒錄的話系統會用英文語音唸出來：Three, Two, One, Go（拉長一點、音調上揚）, Shoot。</div>
-      <div class="cue-grid" id="cueButtons"></div>
+      <div class="voice-panel-title">🎙 倒數口令</div>
+      <div class="voice-panel-sub">選一種：內建語音，或錄一次自己的聲音（3、2、1、GO、SHOOT 一次錄完），「各位選手就位」固定用語音播報。</div>
+      <div class="cue-mode-row">
+        <button class="cue-mode-btn active" id="cueModeBuiltinBtn" data-mode="builtin">🔊 內建語音<span>（預設）</span></button>
+        <button class="cue-mode-btn" id="cueModeCustomBtn" data-mode="custom">🎙 我的聲音</button>
+      </div>
+      <div class="cue-custom-box" id="cueCustomBox" style="display:none;">
+        <button class="cuebtn rec" id="cueRecBtn">🎙 錄音（一次唸完：3、2、1、GO、SHOOT）</button>
+        <div class="cue-custom-actions" id="cueCustomActions" style="display:none;">
+          <button class="cuebtn play" id="cuePlayBtn">▶️ 試聽</button>
+          <button class="cuebtn del" id="cueDelBtn">✕ 刪除重錄</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="go-row" id="goRow">
     <button class="go-btn" id="goBtn">開戰！START</button>
-    <div class="go-hint">照片可以不放，但至少幫兩邊取個名字才能開打喔</div>
+    <div class="go-hint">記得幫紅方、藍方都取個名字才能開打喔（比賽中不會顯示配置，放心）</div>
   </div>
 
   <div class="battle-screen" id="battleScreen">
     <div class="battle-vs-row">
       <div>
-        <div class="battle-photo empty" id="bpRed">🔴</div>
+        <div class="battle-dot red"></div>
         <div class="battle-name" id="bnRed"></div>
-        <div class="battle-combo" id="bcRed"></div>
       </div>
       <div class="vs-center display">VS</div>
       <div>
-        <div class="battle-photo empty" id="bpBlue">🔵</div>
+        <div class="battle-dot blue"></div>
         <div class="battle-name" id="bnBlue"></div>
-        <div class="battle-combo" id="bcBlue"></div>
       </div>
     </div>
     <div class="score-row">
@@ -402,9 +432,13 @@
   <div class="winner-card">
     <button class="winner-close" id="winnerCloseBtn">✕</button>
     <div class="winner-emoji">🏆</div>
-    <img class="winner-photo" id="winnerPhoto" style="display:none;">
     <div class="winner-name display" id="winnerName"></div>
     <div class="winner-sub" id="winnerSub"></div>
+    <div class="winner-combo-form">
+      <div class="winner-combo-hint">比賽結束了，現在填配置才不算洩底 🙂（選填，用來記錄統計）</div>
+      <div class="field"><label>🔴 紅方配置</label><input type="text" id="comboRedInput" placeholder="例如：鮫鯊狂鱗 / 4-50 / K"></div>
+      <div class="field"><label>🔵 藍方配置</label><input type="text" id="comboBlueInput" placeholder="例如：魔導神杖 / 1-60 / FB"></div>
+    </div>
     <div class="winner-actions">
       <button class="btn-primary" id="recordBtn">✅ 記錄戰績</button>
       <button class="btn-ghost" id="rematchBtn">🔁 再戰一場</button>
@@ -497,6 +531,14 @@
   </header>
   <div class="setup" id="setupPanel">
     <div class="setup-card">
+      <h3>比賽資訊</h3>
+      <div class="event-info-row">
+        <div class="field"><label>📅 日期</label><input type="date" id="eventDate"></div>
+        <div class="field"><label>⏰ 時間（選填）</label><input type="time" id="eventTime"></div>
+      </div>
+      <div class="field"><label>📍 地點（選填）</label><input type="text" id="eventLocation" placeholder="例如：學校活動中心，留空也可以"></div>
+    </div>
+    <div class="setup-card">
       <h3>1. 選擇賽制</h3>
       <div class="setup-row">
         <button class="modechip active" data-mode="single">單淘汰賽</button>
@@ -521,6 +563,13 @@
   <div class="setup-row" id="toBracketRow" style="display:none; max-width:960px; margin:0 auto; padding:0 18px 20px;">
     <button class="bigbtn" id="toBracketBtn">✅ 用勾選的晉級選手產生淘汰賽</button>
   </div>
+  <div class="event-banner" id="eventBanner" style="display:none;"></div>
+  <div class="share-card" id="shareCard" style="display:none;">
+    <div class="share-card-title">🔗 分享這個賽程表給今天比賽的人</div>
+    <div class="share-card-sub">把連結傳出去，大家打開都看得到即時比分（在同一台裝置／同一個瀏覽器分享環境下最準；離開 claude.ai 自架網站時只會同步在自己這台裝置）。</div>
+    <div class="qr-url" id="shareUrlText"></div>
+    <button class="ghostbtn" id="copyShareLinkBtn">📋 複製連結</button>
+  </div>
   <div id="champBox" class="champbox" style="display:none;"></div>
   <div class="bracketwrap" id="bracketWrap" style="display:none;"><div class="bracket" id="bracket"></div></div>
 </div>
@@ -534,11 +583,11 @@
   </header>
   <div class="stats-wrap">
     <div class="qr-card">
-      <div class="qr-card-title">📱 大家一起連進來看</div>
-      <div class="qr-card-sub">掃這個 QR Code 打開同一個網頁，戰績會自動共用——同學那邊記錄的比賽，你這邊也看得到。</div>
+      <div class="qr-card-title">📱 查看紀錄表・分享給今天比賽的人</div>
+      <div class="qr-card-sub">把這個連結傳給大家，或掃 QR Code，打開就能看紀錄表——戰績會自動共用，同學那邊記錄的比賽，你這邊也看得到。</div>
       <div id="qrcodeBox"></div>
       <div class="qr-url" id="qrUrlText"></div>
-      <button class="ghostbtn" id="copyLinkBtn">📋 複製連結</button>
+      <button class="ghostbtn" id="copyLinkBtn">📋 複製紀錄表連結</button>
       <div class="qr-note" id="qrNote">⚠️ 這個網址是公開共用的，掃到的人都能看到大家的戰績。</div>
     </div>
     <div class="stats-head">
@@ -546,6 +595,18 @@
       <button class="refreshbtn" id="refreshStatsBtn">🔄 重新整理</button>
     </div>
     <div id="statsList"></div>
+
+    <div class="info-links">
+      <div class="info-links-title">🔎 外部情報站</div>
+      <a class="info-link" href="https://beybladehub.app/events" target="_blank" rel="noopener">
+        <span class="info-link-icon">📰</span>
+        <span><span class="info-link-name">戰鬥陀螺情報戰</span><span class="info-link-desc">各地賽事、活動情報整理</span></span>
+      </a>
+      <a class="info-link" href="https://beybladehub.app/combos" target="_blank" rel="noopener">
+        <span class="info-link-icon">🏆</span>
+        <span><span class="info-link-name">熱門配置排行</span><span class="info-link-desc">直接來自賽場結果，看現在最多人用什麼配置</span></span>
+      </a>
+    </div>
   </div>
 </div>
 
@@ -610,6 +671,25 @@
 
 <script>
 /* =====================================================
+   PART -2 — light/dark theme toggle
+   ===================================================== */
+(function(){
+  const btn = document.getElementById('themeToggle');
+  function apply(theme){
+    if(theme === 'light'){ document.documentElement.setAttribute('data-theme','light'); btn.textContent='☀️'; }
+    else { document.documentElement.removeAttribute('data-theme'); btn.textContent='🌙'; }
+  }
+  let current = 'dark';
+  try{ current = localStorage.getItem('bxvs-theme') || 'dark'; }catch(e){}
+  apply(current);
+  btn.addEventListener('click', ()=>{
+    current = current === 'light' ? 'dark' : 'light';
+    apply(current);
+    try{ localStorage.setItem('bxvs-theme', current); }catch(e){}
+  });
+})();
+
+/* =====================================================
    PART -1 — storage abstraction
    window.storage only exists inside claude.ai's artifact viewer.
    If this page is self-hosted (e.g. GitHub Pages) and opened directly
@@ -667,9 +747,8 @@ const appStorage = {
 };
 
 /* =====================================================
-   PART 0 — element upload helper (photo tap-to-upload)
+   PART 0 — image compression helper (still used by catalog/mine photos)
    ===================================================== */
-const photoData = {red:null, blue:null};
 
 // Resize + re-encode an uploaded image so lots of photos can be stored without
 // blowing past storage limits. Returns a JPEG data URL.
@@ -698,37 +777,6 @@ function compressImage(file, maxDim, quality){
   });
 }
 
-function wirePhotoBox(side, boxId, inputId){
-  const box = document.getElementById(boxId);
-  const input = document.getElementById(inputId);
-  box.addEventListener('click', (e)=>{
-    if(e.target.classList.contains('clearbtn')) return;
-    input.click();
-  });
-  input.addEventListener('change', async ()=>{
-    const file = input.files[0];
-    if(!file) return;
-    box.innerHTML = `<span class="ph-hint">壓縮中…</span>`;
-    try{
-      const compressed = await compressImage(file, 480, 0.72);
-      photoData[side] = compressed;
-      box.innerHTML = `<img src="${compressed}"><button class="clearbtn" data-side="${side}">✕</button>`;
-      box.classList.add('has-photo');
-    }catch(e){
-      box.innerHTML = `<span class="ph-hint">圖片讀取失敗，再試一次</span><button class="clearbtn" data-side="${side}">✕</button>`;
-    }
-  });
-  box.querySelector('.clearbtn').addEventListener('click', (e)=>{
-    e.stopPropagation();
-    photoData[side] = null;
-    input.value = '';
-    box.classList.remove('has-photo');
-    box.innerHTML = `<span class="ph-hint"><span class="ph-icon">📷</span>點一下或長按上傳照片<br><small>（會自動壓縮，可以放很多張）</small></span><button class="clearbtn" data-side="${side}">✕</button>`;
-  });
-}
-wirePhotoBox('red','photoRed','fileRed');
-wirePhotoBox('blue','photoBlue','fileBlue');
-
 /* =====================================================
    PART 0b — custom countdown voice recording
    ===================================================== */
@@ -740,48 +788,60 @@ const CUE_LIST = [
   {key:'go', label:'GO'},
   {key:'shoot', label:'SHOOT'},
 ];
-let audioCues = {}; // key -> data URL (base64 webm)
+let audioCues = {}; // key -> data URL (base64 webm) — legacy per-cue clips, still honored if present from an older save
+let cueMode = 'builtin'; // 'builtin' | 'custom'
+let customSequenceClip = null; // one recording covering 3-2-1-GO-SHOOT
 let activeRecorder = null;
 
 async function loadAudioCues(){
+  try{
+    const r = await appStorage.get('cueMode', false);
+    if(r && r.value) cueMode = r.value;
+  }catch(e){}
+  try{
+    const r2 = await appStorage.get('audiocue:sequence', false);
+    if(r2 && r2.value) customSequenceClip = r2.value;
+  }catch(e){}
+  // Back-compat: if someone previously recorded old-style per-word clips, still use them.
   for(const cue of CUE_LIST){
     try{
       const r = await appStorage.get('audiocue:'+cue.key, false);
       if(r && r.value) audioCues[cue.key] = r.value;
-    }catch(e){ /* not recorded yet */ }
+    }catch(e){}
   }
-  renderCueButtons();
+  renderCueUI();
 }
 
-function renderCueButtons(){
-  const wrap = document.getElementById('cueButtons');
-  if(!wrap) return;
-  wrap.innerHTML = CUE_LIST.map(cue => `
-    <div class="cuecard">
-      <div class="cuecard-label">${cue.label}</div>
-      <div class="cuecard-btns">
-        <button class="cuebtn rec" data-key="${cue.key}">${audioCues[cue.key] ? '🔴 重錄' : '🎙 錄音'}</button>
-        ${audioCues[cue.key] ? `<button class="cuebtn play" data-key="${cue.key}">▶️</button><button class="cuebtn del" data-key="${cue.key}">✕</button>` : ''}
-      </div>
-    </div>
-  `).join('');
-  wrap.querySelectorAll('.rec').forEach(b=>b.addEventListener('click', ()=>toggleRecord(b.dataset.key, b)));
-  wrap.querySelectorAll('.play').forEach(b=>b.addEventListener('click', ()=>{
-    const a = new Audio(audioCues[b.dataset.key]); a.play();
-  }));
-  wrap.querySelectorAll('.del').forEach(b=>b.addEventListener('click', async ()=>{
-    delete audioCues[b.dataset.key];
-    try{ await appStorage.delete('audiocue:'+b.dataset.key, false); }catch(e){}
-    renderCueButtons();
-  }));
+function renderCueUI(){
+  document.getElementById('cueModeBuiltinBtn').classList.toggle('active', cueMode==='builtin');
+  document.getElementById('cueModeCustomBtn').classList.toggle('active', cueMode==='custom');
+  document.getElementById('cueCustomBox').style.display = cueMode==='custom' ? '' : 'none';
+  const hasClip = !!customSequenceClip;
+  document.getElementById('cueRecBtn').textContent = hasClip ? '🔴 重新錄音' : '🎙 錄音（一次唸完：3、2、1、GO、SHOOT）';
+  document.getElementById('cueCustomActions').style.display = hasClip ? '' : 'none';
 }
 
-async function toggleRecord(key, btn){
-  if(activeRecorder && activeRecorder.key === key){
-    activeRecorder.recorder.stop();
-    return;
-  }
-  if(activeRecorder){ activeRecorder.recorder.stop(); }
+document.getElementById('cueModeBuiltinBtn').addEventListener('click', async ()=>{
+  cueMode = 'builtin';
+  try{ await appStorage.set('cueMode', cueMode, false); }catch(e){}
+  renderCueUI();
+});
+document.getElementById('cueModeCustomBtn').addEventListener('click', async ()=>{
+  cueMode = 'custom';
+  try{ await appStorage.set('cueMode', cueMode, false); }catch(e){}
+  renderCueUI();
+});
+document.getElementById('cuePlayBtn').addEventListener('click', ()=>{
+  if(customSequenceClip){ const a = new Audio(customSequenceClip); a.play(); }
+});
+document.getElementById('cueDelBtn').addEventListener('click', async ()=>{
+  customSequenceClip = null;
+  try{ await appStorage.delete('audiocue:sequence', false); }catch(e){}
+  renderCueUI();
+});
+document.getElementById('cueRecBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('cueRecBtn');
+  if(activeRecorder){ activeRecorder.recorder.stop(); return; }
   try{
     const stream = await navigator.mediaDevices.getUserMedia({audio:true});
     const recorder = new MediaRecorder(stream);
@@ -795,18 +855,18 @@ async function toggleRecord(key, btn){
         fr.onload = () => res(fr.result);
         fr.readAsDataURL(blob);
       });
-      audioCues[key] = dataUrl;
-      try{ await appStorage.set('audiocue:'+key, dataUrl, false); }catch(e){}
+      customSequenceClip = dataUrl;
+      try{ await appStorage.set('audiocue:sequence', dataUrl, false); }catch(e){}
       activeRecorder = null;
-      renderCueButtons();
+      renderCueUI();
     };
     recorder.start();
-    activeRecorder = {key, recorder};
-    btn.textContent = '⏺ 錄音中…點擊停止';
+    activeRecorder = {recorder};
+    btn.textContent = '⏺ 錄音中…再點一次停止';
   }catch(e){
-    alert('沒有拿到麥克風權限，請確認瀏覽器允許使用麥克風（需要用 https 開啟網頁）。');
+    alert('沒有拿到麥克風權限。請確認：1) 用 https 網址開啟（file:// 或 http 無法用麥克風）2) 瀏覽器有允許這個網站使用麥克風（可到手機設定裡檢查）。');
   }
-}
+});
 loadAudioCues();
 
 /* =====================================================
@@ -825,87 +885,6 @@ nav.forEach(btn=>btn.addEventListener('click', ()=>{
    PART 2 — Battle: countdown + scoring
    ===================================================== */
 let live = {red:{}, blue:{}, s1:0, s2:0};
-
-/* ---- Default countdown sound effects (synthesized, no sample files needed) ---- */
-let audioCtx = null;
-function getAudioCtx(){
-  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if(audioCtx.state === 'suspended') audioCtx.resume();
-  return audioCtx;
-}
-
-// A simple beep/tone, optionally sweeping from freqStart to freqEnd (a "rising" pitch).
-function playTone({freqStart, freqEnd, duration, type='square', gainPeak=0.32}){
-  return new Promise(resolve=>{
-    try{
-      const ctx = getAudioCtx();
-      const now = ctx.currentTime;
-      const dur = duration/1000;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freqStart, now);
-      if(freqEnd && freqEnd !== freqStart){
-        osc.frequency.linearRampToValueAtTime(freqEnd, now + dur);
-      }
-      gain.gain.setValueAtTime(0, now);
-      gain.gain.linearRampToValueAtTime(gainPeak, now + 0.02);
-      gain.gain.setValueAtTime(gainPeak, Math.max(now + 0.02, now + dur - 0.06));
-      gain.gain.linearRampToValueAtTime(0, now + dur);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + dur + 0.02);
-      let done = false;
-      const finish = ()=>{ if(!done){ done = true; resolve(); } };
-      osc.onended = finish;
-      setTimeout(finish, duration + 120);
-    }catch(e){ resolve(); }
-  });
-}
-
-// A punchy impact hit for SHOOT: noise burst + low thump, quick decay.
-function playShootHit(){
-  return new Promise(resolve=>{
-    try{
-      const ctx = getAudioCtx();
-      const now = ctx.currentTime;
-      const bufSize = Math.floor(ctx.sampleRate * 0.16);
-      const buffer = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for(let i=0;i<bufSize;i++){ data[i] = (Math.random()*2-1) * (1 - i/bufSize); }
-      const noise = ctx.createBufferSource();
-      noise.buffer = buffer;
-      const noiseGain = ctx.createGain();
-      noiseGain.gain.setValueAtTime(0.45, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
-      noise.connect(noiseGain).connect(ctx.destination);
-      noise.start(now);
-
-      const osc = ctx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(240, now);
-      osc.frequency.exponentialRampToValueAtTime(55, now + 0.22);
-      const oGain = ctx.createGain();
-      oGain.gain.setValueAtTime(0.5, now);
-      oGain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
-      osc.connect(oGain).connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.32);
-
-      setTimeout(resolve, 320);
-    }catch(e){ resolve(); }
-  });
-}
-
-// Default SFX per countdown step (used only when the user hasn't recorded their own clip).
-// GO is held ~0.5s longer than the beeps and rises in pitch; SHOOT is a sharp hit, not a beep.
-const DEFAULT_SFX = {
-  '3':     ()=>playTone({freqStart:420, freqEnd:420, duration:220}),
-  '2':     ()=>playTone({freqStart:480, freqEnd:480, duration:220}),
-  '1':     ()=>playTone({freqStart:560, freqEnd:560, duration:220}),
-  'go':    ()=>playTone({freqStart:560, freqEnd:920, duration:800, type:'sawtooth', gainPeak:0.34}),
-  'shoot': ()=>playShootHit(),
-};
 
 // Speak text via TTS and resolve once it has actually finished (not a guessed delay).
 function speakAsync(text, lang, opts){
@@ -930,23 +909,41 @@ function speakAsync(text, lang, opts){
 function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
 
 // Play a recorded clip for `key` if the user has recorded one; otherwise speak the word aloud.
-async function playCue(key, fallbackText, fallbackLang, minMs, opts){
-  const clip = audioCues[key];
-  if(clip){
-    await new Promise(resolve=>{
-      const audio = new Audio(clip);
-      let done = false;
-      const finish = ()=>{ if(!done){ done = true; resolve(); } };
-      audio.addEventListener('ended', finish);
-      audio.addEventListener('error', finish);
-      audio.play().catch(finish);
-      // safety cap so a long recording never freezes the countdown forever
-      setTimeout(finish, 3500);
+// Play the user's one custom recording (3-2-1-GO-SHOOT said in one take) while
+// cycling the overlay text in proportional sync with however long the clip is.
+function runCustomSequence(overlay, textEl){
+  return new Promise(resolve=>{
+    const audio = new Audio(customSequenceClip);
+    const timers = [];
+    let done = false;
+    const finish = ()=>{
+      if(done) return; done = true;
+      timers.forEach(clearTimeout);
+      resolve();
+    };
+    audio.addEventListener('loadedmetadata', ()=>{
+      let dur = audio.duration;
+      if(!isFinite(dur) || dur <= 0) dur = 3;
+      const stages = [
+        {t:'3', cls:'num3', at:0},
+        {t:'2', cls:'num2', at:dur*0.2},
+        {t:'1', cls:'num1', at:dur*0.4},
+        {t:'GO!', cls:'go', at:dur*0.6},
+        {t:'SHOOT!', cls:'shoot', at:dur*0.8},
+      ];
+      stages.forEach(s=>{
+        timers.push(setTimeout(()=>{
+          textEl.textContent = s.t;
+          textEl.className = 'cd-text display cd-anim ' + s.cls;
+          if(s.cls==='shoot') overlay.classList.add('shake');
+        }, s.at*1000));
+      });
     });
-  } else {
-    await speakAsync(fallbackText, fallbackLang, opts);
-    await wait(minMs);
-  }
+    audio.addEventListener('ended', finish);
+    audio.addEventListener('error', finish);
+    audio.play().catch(finish);
+    setTimeout(finish, 8000); // safety cap in case metadata/ended never fire
+  });
 }
 
 async function runCountdown(){
@@ -954,42 +951,37 @@ async function runCountdown(){
   const textEl = document.getElementById('cdText');
   overlay.classList.add('show');
 
+  // "各位選手就位" is always the fixed spoken announcement, not user-recordable.
   textEl.textContent = '各位選手就位';
   textEl.className = 'cd-text display cd-anim ready';
-  await playCue('ready', '各位選手就位', 'zh-TW', 250);
+  await speakAsync('各位選手就位', 'zh-TW');
+  await wait(200);
 
-  const steps = [
-    {t:'3', cls:'num3', key:'3', speak:'Three', lang:'en-US'},
-    {t:'2', cls:'num2', key:'2', speak:'Two', lang:'en-US'},
-    {t:'1', cls:'num1', key:'1', speak:'One', lang:'en-US'},
-    {t:'GO!', cls:'go', key:'go', speak:'Go', lang:'en-US', opts:{rate:0.75, pitch:1.25}, extraHold:300},
-    {t:'SHOOT!', cls:'shoot', key:'shoot', speak:'Shoot', lang:'en-US'},
-  ];
-  for(const step of steps){
-    textEl.textContent = step.t;
-    textEl.className = 'cd-text display cd-anim ' + step.cls;
-    if(step.cls==='shoot'){ overlay.classList.add('shake'); }
-    await playCue(step.key, step.speak, step.lang, step.cls==='shoot' ? 300 : 200, step.opts);
-    if(step.extraHold && !audioCues[step.key]) await wait(step.extraHold);
+  if(cueMode === 'custom' && customSequenceClip){
+    await runCustomSequence(overlay, textEl);
+  } else {
+    const steps = [
+      {t:'3', cls:'num3', speak:'Three', lang:'en-US'},
+      {t:'2', cls:'num2', speak:'Two', lang:'en-US'},
+      {t:'1', cls:'num1', speak:'One', lang:'en-US'},
+      {t:'GO!', cls:'go', speak:'Go', lang:'en-US'},
+      {t:'SHOOT!', cls:'shoot', speak:'Shoot', lang:'en-US'},
+    ];
+    for(const step of steps){
+      textEl.textContent = step.t;
+      textEl.className = 'cd-text display cd-anim ' + step.cls;
+      if(step.cls==='shoot'){ overlay.classList.add('shake'); }
+      await speakAsync(step.speak, step.lang);
+      // GO snaps straight into SHOOT at real match pace instead of a held announcement.
+      await wait(step.cls==='go' ? 150 : (step.cls==='shoot' ? 300 : 200));
+    }
   }
   overlay.classList.remove('show','shake');
 }
 
 document.getElementById('goBtn').addEventListener('click', async ()=>{
-  live.red = {
-    name: document.getElementById('nameRed').value.trim() || '紅方陀螺',
-    blade: document.getElementById('bladeRed').value.trim(),
-    ratchet: document.getElementById('ratchetRed').value.trim(),
-    bit: document.getElementById('bitRed').value.trim(),
-    photo: photoData.red
-  };
-  live.blue = {
-    name: document.getElementById('nameBlue').value.trim() || '藍方陀螺',
-    blade: document.getElementById('bladeBlue').value.trim(),
-    ratchet: document.getElementById('ratchetBlue').value.trim(),
-    bit: document.getElementById('bitBlue').value.trim(),
-    photo: photoData.blue
-  };
+  live.red = { name: document.getElementById('nameRed').value.trim() || '紅方陀螺' };
+  live.blue = { name: document.getElementById('nameBlue').value.trim() || '藍方陀螺' };
   live.s1 = 0; live.s2 = 0;
 
   document.getElementById('setupZone').style.display='none';
@@ -998,23 +990,10 @@ document.getElementById('goBtn').addEventListener('click', async ()=>{
   showBattleScreen();
 });
 
-function comboStr(p){
-  const parts = [p.blade, p.ratchet, p.bit].filter(Boolean);
-  return parts.join(' / ');
-}
-
 function showBattleScreen(){
   document.getElementById('battleScreen').classList.add('show');
   document.getElementById('bnRed').textContent = live.red.name;
   document.getElementById('bnBlue').textContent = live.blue.name;
-  document.getElementById('bcRed').textContent = comboStr(live.red);
-  document.getElementById('bcBlue').textContent = comboStr(live.blue);
-  const bpRed = document.getElementById('bpRed');
-  const bpBlue = document.getElementById('bpBlue');
-  if(live.red.photo){ bpRed.classList.remove('empty'); bpRed.innerHTML = `<img src="${live.red.photo}">`; }
-  else { bpRed.classList.add('empty'); bpRed.innerHTML = '🔴'; }
-  if(live.blue.photo){ bpBlue.classList.remove('empty'); bpBlue.innerHTML = `<img src="${live.blue.photo}">`; }
-  else { bpBlue.classList.add('empty'); bpBlue.innerHTML = '🔵'; }
   updateScoreUI();
 }
 
@@ -1041,9 +1020,9 @@ function showWinner(side){
   const overlay = document.getElementById('winnerOverlay');
   document.getElementById('winnerName').textContent = w.name;
   document.getElementById('winnerName').style.color = side==='red' ? 'var(--red)' : 'var(--blue)';
-  document.getElementById('winnerSub').textContent = comboStr(w) + `　最終比分 ${live.s1} : ${live.s2}`;
-  const img = document.getElementById('winnerPhoto');
-  if(w.photo){ img.src = w.photo; img.style.display='block'; } else { img.style.display='none'; }
+  document.getElementById('winnerSub').textContent = `最終比分 ${live.s1} : ${live.s2}`;
+  document.getElementById('comboRedInput').value = '';
+  document.getElementById('comboBlueInput').value = '';
   overlay.classList.add('show');
   overlay.dataset.winnerSide = side;
 }
@@ -1060,8 +1039,8 @@ document.getElementById('winnerCloseBtn').addEventListener('click', ()=>{
 document.getElementById('recordBtn').addEventListener('click', async ()=>{
   const side = document.getElementById('winnerOverlay').dataset.winnerSide;
   const record = {
-    redName: live.red.name, redCombo: comboStr(live.red),
-    blueName: live.blue.name, blueCombo: comboStr(live.blue),
+    redName: live.red.name, redCombo: document.getElementById('comboRedInput').value.trim(),
+    blueName: live.blue.name, blueCombo: document.getElementById('comboBlueInput').value.trim(),
     scoreRed: live.s1, scoreBlue: live.s2,
     winnerSide: side, ts: Date.now()
   };
@@ -1245,6 +1224,15 @@ function styleIconSVG(style){
 const ICON_BLADE  = `<svg viewBox="0 0 40 40"><path d="M20 3 L34 20 L20 37 L6 20 Z" fill="none" stroke="#FFC94D" stroke-width="2"/><circle cx="20" cy="20" r="4" fill="none" stroke="#FFC94D" stroke-width="1.4"/></svg>`;
 const ICON_RATCHET = `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="13" fill="none" stroke="#FFC94D" stroke-width="2"/><g fill="#FFC94D"><rect x="18.4" y="4" width="3.2" height="6" rx="1"/><rect x="18.4" y="30" width="3.2" height="6" rx="1"/><rect x="4" y="18.4" width="6" height="3.2" rx="1"/><rect x="30" y="18.4" width="6" height="3.2" rx="1"/></g></svg>`;
 const ICON_BIT = `<svg viewBox="0 0 40 40"><path d="M14 6 H26 L22 26 H18 Z" fill="none" stroke="#FFC94D" stroke-width="2"/><circle cx="20" cy="31" r="4" fill="none" stroke="#FFC94D" stroke-width="1.6"/></svg>`;
+function partIconSlot(item, partKey, defaultSvg, label){
+  const photo = partPhotos[item.id+':'+partKey];
+  const inner = photo ? `<img class="card-thumb" src="${photo}">` : defaultSvg;
+  return `<div class="part-icon-slot" data-cardid="${item.id}" data-part="${partKey}" title="點一下換成${label}照片">
+      ${inner}
+      ${photo ? `<button class="icon-clear part-icon-clear" data-cardid="${item.id}" data-part="${partKey}">✕</button>` : ''}
+    </div>`;
+}
+
 function makeCard(item){
   const meta = STYLE_META[item.style];
   const div = document.createElement('div');
@@ -1267,9 +1255,9 @@ function makeCard(item){
     ${item.en ? `<div class="name-en">${item.en}</div>` : ''}
     <div class="style-tag"><span class="dot"></span>${meta.label}</div>
     <div class="parts">
-      <div class="part">${ICON_BLADE}<div class="part-label">刀刃／上蓋</div><div class="part-value">${item.blade||'—'}</div></div>
-      <div class="part">${ICON_RATCHET}<div class="part-label">固鎖</div><div class="part-value">${item.ratchet||'—'}</div></div>
-      <div class="part">${ICON_BIT}<div class="part-label">軸心</div><div class="part-value">${item.bit||'—'}</div></div>
+      <div class="part">${partIconSlot(item,'blade',ICON_BLADE,'刀刃／上蓋')}<div class="part-label">刀刃／上蓋</div><div class="part-value">${item.blade||'—'}</div></div>
+      <div class="part">${partIconSlot(item,'ratchet',ICON_RATCHET,'固鎖')}<div class="part-label">固鎖</div><div class="part-value">${item.ratchet||'—'}</div></div>
+      <div class="part">${partIconSlot(item,'bit',ICON_BIT,'軸心')}<div class="part-label">軸心</div><div class="part-value">${item.bit||'—'}</div></div>
     </div>
     ${item.text ? `<p class="analysis">${item.text}</p>` : ''}
     ${item.proof ? `<div class="proof">🏆 賽場前四強實戰驗證</div>` : ``}
@@ -1280,7 +1268,9 @@ function makeCard(item){
 
 let customCombos = [];
 let officialPhotos = {}; // id -> compressed data URL, personal only
+let partPhotos = {}; // "id:blade"/"id:ratchet"/"id:bit" -> compressed data URL, personal only
 let officialPhotoTargetId = null;
+let officialPhotoTargetPart = null; // null = main card icon, else 'blade'|'ratchet'|'bit'
 const grid = document.getElementById('grid');
 
 function renderCatalogGrid(){
@@ -1300,19 +1290,39 @@ function renderCatalogGrid(){
     applyFilter();
   }));
 
-  // Official card photo upload / clear
+  // Main card icon (top-left) photo upload / clear
   grid.querySelectorAll('.icon-slot').forEach(slot=>{
     slot.addEventListener('click', (e)=>{
       if(e.target.classList.contains('icon-clear')) return;
       officialPhotoTargetId = slot.dataset.cardid;
+      officialPhotoTargetPart = null;
       document.getElementById('officialCardFile').click();
     });
   });
-  grid.querySelectorAll('.icon-clear').forEach(btn=>{
+  grid.querySelectorAll('.icon-slot .icon-clear').forEach(btn=>{
     btn.addEventListener('click', async (e)=>{
       e.stopPropagation();
       delete officialPhotos[btn.dataset.cardid];
       await saveOfficialPhotos();
+      renderCatalogGrid();
+      applyFilter();
+    });
+  });
+
+  // Per-part icon (刀刃／固鎖／軸心) photo upload / clear
+  grid.querySelectorAll('.part-icon-slot').forEach(slot=>{
+    slot.addEventListener('click', (e)=>{
+      if(e.target.classList.contains('part-icon-clear')) return;
+      officialPhotoTargetId = slot.dataset.cardid;
+      officialPhotoTargetPart = slot.dataset.part;
+      document.getElementById('officialCardFile').click();
+    });
+  });
+  grid.querySelectorAll('.part-icon-clear').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      delete partPhotos[btn.dataset.cardid+':'+btn.dataset.part];
+      await savePartPhotos();
       renderCatalogGrid();
       applyFilter();
     });
@@ -1329,12 +1339,18 @@ document.getElementById('officialCardFile').addEventListener('change', async ()=
     // Compressed to 480px / ~0.7 quality, same as everywhere else in the app,
     // so lots of card photos can be stored without filling up space.
     const compressed = await compressImage(file, 480, 0.7);
-    officialPhotos[officialPhotoTargetId] = compressed;
-    await saveOfficialPhotos();
+    if(officialPhotoTargetPart){
+      partPhotos[officialPhotoTargetId+':'+officialPhotoTargetPart] = compressed;
+      await savePartPhotos();
+    } else {
+      officialPhotos[officialPhotoTargetId] = compressed;
+      await saveOfficialPhotos();
+    }
     renderCatalogGrid();
   }catch(e){ console.error('official card photo failed', e); }
   input.value = '';
   officialPhotoTargetId = null;
+  officialPhotoTargetPart = null;
 });
 
 async function loadOfficialPhotos(){
@@ -1347,6 +1363,16 @@ async function saveOfficialPhotos(){
   try{ await appStorage.set('officialCardPhotos', JSON.stringify(officialPhotos), false); }
   catch(e){ console.error('officialPhotos save failed', e); }
 }
+async function loadPartPhotos(){
+  try{
+    const r = await appStorage.get('officialPartPhotos', false);
+    partPhotos = r && r.value ? JSON.parse(r.value) : {};
+  }catch(e){ partPhotos = {}; }
+}
+async function savePartPhotos(){
+  try{ await appStorage.set('officialPartPhotos', JSON.stringify(partPhotos), false); }
+  catch(e){ console.error('partPhotos save failed', e); }
+}
 
 async function loadCustomCombos(){
   try{
@@ -1354,6 +1380,7 @@ async function loadCustomCombos(){
     customCombos = r && r.value ? JSON.parse(r.value) : [];
   }catch(e){ customCombos = []; }
   await loadOfficialPhotos();
+  await loadPartPhotos();
   renderCatalogGrid();
 }
 async function saveCustomCombos(){
@@ -1486,6 +1513,90 @@ document.querySelectorAll('.modechip').forEach(chip=>{
 });
 function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 let bracketRounds = [];
+let currentEventId = null;
+
+// Default the date field to today so nobody has to think about it; still editable.
+(function(){
+  const d = new Date();
+  const iso = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const dateInput = document.getElementById('eventDate');
+  if(dateInput) dateInput.value = iso;
+})();
+
+function eventInfo(){
+  return {
+    date: document.getElementById('eventDate').value || '',
+    time: document.getElementById('eventTime').value || '',
+    location: document.getElementById('eventLocation').value.trim() || ''
+  };
+}
+function renderEventBanner(){
+  const info = eventInfo();
+  const banner = document.getElementById('eventBanner');
+  const parts = [];
+  if(info.date) parts.push('📅 '+info.date);
+  if(info.time) parts.push('⏰ '+info.time);
+  if(info.location) parts.push('📍 '+info.location);
+  if(parts.length===0){ banner.style.display='none'; return; }
+  banner.style.display='block';
+  banner.textContent = parts.join('　');
+}
+
+async function persistBracket(){
+  if(!currentEventId) return;
+  try{
+    await appStorage.set('bracket:'+currentEventId, JSON.stringify({info: eventInfo(), rounds: bracketRounds}), true);
+  }catch(e){ console.error('bracket save failed', e); }
+}
+
+function showShareCard(){
+  const url = new URL(window.location.href);
+  url.search = '';
+  url.searchParams.set('event', currentEventId);
+  document.getElementById('shareUrlText').textContent = url.toString();
+  document.getElementById('shareCard').style.display='block';
+}
+document.getElementById('copyShareLinkBtn').addEventListener('click', async ()=>{
+  const text = document.getElementById('shareUrlText').textContent;
+  try{
+    await navigator.clipboard.writeText(text);
+    const btn = document.getElementById('copyShareLinkBtn');
+    btn.textContent = '✅ 已複製';
+    setTimeout(()=>{ btn.textContent = '📋 複製連結'; }, 1500);
+  }catch(e){ alert('複製失敗，請自己選取上面那串網址複製。'); }
+});
+
+// If this page was opened via a shared bracket link (?event=xxxx), load and show that bracket.
+async function tryLoadSharedBracket(){
+  const params = new URLSearchParams(window.location.search);
+  const eventId = params.get('event');
+  if(!eventId) return;
+  try{
+    const r = await appStorage.get('bracket:'+eventId, true);
+    if(r && r.value){
+      const data = JSON.parse(r.value);
+      currentEventId = eventId;
+      if(data.info){
+        document.getElementById('eventDate').value = data.info.date || '';
+        document.getElementById('eventTime').value = data.info.time || '';
+        document.getElementById('eventLocation').value = data.info.location || '';
+      }
+      bracketRounds = data.rounds || [];
+      document.getElementById('setupPanel').style.display = 'none';
+      document.getElementById('bracketWrap').style.display = 'block';
+      renderEventBanner();
+      renderBracket();
+      showShareCard();
+      // Switch to the bracket tab so the shared link opens straight to it.
+      document.querySelectorAll('.applink').forEach(b=>b.classList.remove('active'));
+      document.querySelector('.applink[data-view="bracket"]').classList.add('active');
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      document.getElementById('view-bracket').classList.add('active');
+    }
+  }catch(e){ console.error('load shared bracket failed', e); }
+}
+tryLoadSharedBracket();
+
 function buildBracket(players){
   let n=1; while(n<players.length) n*=2;
   const padded = players.slice(); while(padded.length<n) padded.push(null);
@@ -1496,6 +1607,10 @@ function buildBracket(players){
   let count = round1.length;
   while(count>1){ const r=[]; for(let i=0;i<count/2;i++) r.push(makeMatch(null,null)); bracketRounds.push(r); count/=2; }
   resolveByes(); renderBracket();
+  renderEventBanner();
+  currentEventId = (eventInfo().date || 'x') + '-' + Math.random().toString(36).slice(2,8);
+  persistBracket();
+  showShareCard();
 }
 function makeMatch(p1,p2){ return {p1, p2, s1:0, s2:0, winner: p2===undefined?undefined:(p1&&!p2?p1:(p2&&!p1?p2:null)), locked:false}; }
 function resolveByes(){
@@ -1520,6 +1635,7 @@ function addScore(r, idx, side, pts){
     placeInNextRound(r, idx, m.winner); resolveByes();
   }
   renderBracket();
+  persistBracket();
 }
 function resetMatch(r, idx){
   const m = bracketRounds[r][idx];
@@ -1528,6 +1644,7 @@ function resetMatch(r, idx){
     bracketRounds[rr].forEach(dm=>{ dm.p1=null; dm.p2=null; dm.s1=0; dm.s2=0; dm.locked=false; dm.winner=null; });
   }
   resolveByes(); renderBracket();
+  persistBracket();
 }
 function roundLabel(totalRounds, r){
   const remaining = totalRounds - r;
@@ -1624,6 +1741,9 @@ document.getElementById('resetBtn').addEventListener('click', ()=>{
   document.getElementById('toBracketRow').style.display='none';
   document.getElementById('bracketWrap').style.display='none';
   document.getElementById('champBox').style.display='none';
+  document.getElementById('shareCard').style.display='none';
+  document.getElementById('eventBanner').style.display='none';
+  currentEventId = null;
   bracketRounds = [];
 });
 
