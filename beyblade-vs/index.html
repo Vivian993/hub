@@ -134,23 +134,37 @@
   .cd-anim{animation:cdpop 0.32s cubic-bezier(.2,1.4,.4,1);}
   @keyframes shake{0%,100%{transform:translate(0,0);} 20%{transform:translate(-8px,4px);} 40%{transform:translate(7px,-5px);} 60%{transform:translate(-6px,-3px);} 80%{transform:translate(6px,5px);}}
   .shake{animation:shake 0.4s ease;}
+  @keyframes flashpop{0%{opacity:0.95;} 100%{opacity:0;}}
+  .cd-flash{position:absolute; inset:0; z-index:5; background:#fff; pointer-events:none; opacity:0;}
+  .cd-flash.active{animation:flashpop 0.45s ease-out;}
 
   /* ---- Battle screen: full-bleed split-color scoreboard ---- */
   .battle-screen{display:none; position:fixed; inset:0; z-index:150; flex-direction:row; overflow:hidden;}
   .battle-screen.show{display:flex;}
   .scorepanel{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:space-between;
-    padding:calc(64px + env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom)); text-align:center; position:relative; gap:14px;}
+    padding:calc(64px + env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom)); text-align:center; position:relative; gap:14px;
+    overflow-y:auto; min-height:0;}
   .scorepanel.red{background:linear-gradient(165deg, #FF3D68, #7A0E2C);}
   .scorepanel.blue{background:linear-gradient(165deg, #3E8CFF, #0E2E7A);}
-  .battle-name{font-family:'Rajdhani',sans-serif; font-weight:700; letter-spacing:0.02em; font-size:clamp(17px,4.8vw,26px); color:#fff; word-break:break-word; max-width:100%;}
+  .battle-name{font-family:'Rajdhani',sans-serif; font-weight:700; letter-spacing:0.02em; font-size:clamp(17px,4.8vw,26px); color:#fff; word-break:break-word; max-width:100%; flex-shrink:0;}
   .vs-center{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:5;
     font-family:'Bebas Neue',sans-serif; font-size:20px; color:#fff; background:rgba(0,0,0,0.4);
     width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; pointer-events:none;}
-  .bignum{font-family:'Bebas Neue',sans-serif; font-size:clamp(84px,25vw,168px); line-height:1; color:#fff; text-shadow:0 4px 26px rgba(0,0,0,0.3);}
-  .scorebtns2{width:100%; display:flex; flex-direction:column; gap:9px;}
+  .bignum{font-family:'Bebas Neue',sans-serif; font-size:clamp(84px,25vw,168px); line-height:1; color:#fff; text-shadow:0 4px 26px rgba(0,0,0,0.3); flex-shrink:0;}
+  .scorebtns2{width:100%; display:flex; flex-direction:column; gap:9px; flex-shrink:0;}
   .scorebtn2{width:100%; padding:15px 6px; border-radius:14px; border:1px solid rgba(255,255,255,0.35);
     background:rgba(255,255,255,0.16); color:#fff; font-family:'Noto Sans TC',sans-serif; font-weight:700; font-size:clamp(13px,3.6vw,16px); cursor:pointer;}
   .scorebtn2:active{transform:scale(0.96); background:rgba(255,255,255,0.32);}
+
+  /* Landscape / short-viewport phones: shrink everything so it fits without needing to scroll. */
+  @media (orientation:landscape) and (max-height:520px){
+    .scorepanel{padding:calc(46px + env(safe-area-inset-top)) 10px calc(12px + env(safe-area-inset-bottom)); gap:6px;}
+    .battle-name{font-size:clamp(13px,3.2vh,18px);}
+    .bignum{font-size:clamp(46px,13vh,92px);}
+    .scorebtns2{gap:5px;}
+    .scorebtn2{padding:7px 6px; font-size:clamp(10.5px,2.6vh,13px); border-radius:10px;}
+    .vs-center{width:36px; height:36px; font-size:15px;}
+  }
 
   .battle-actions{position:fixed; top:calc(10px + env(safe-area-inset-top)); left:0; right:0; z-index:160;
     display:flex; justify-content:space-between; padding:0 14px; pointer-events:none;}
@@ -482,6 +496,7 @@
 <!-- Countdown overlay -->
 <div class="countdown-overlay" id="cdOverlay">
   <div class="cd-text display" id="cdText"></div>
+  <div class="cd-flash" id="cdFlash"></div>
 </div>
 
 <!-- Winner overlay -->
@@ -954,6 +969,31 @@ function getSfxCtx(){
   if(sfxCtx.state === 'suspended') sfxCtx.resume();
   return sfxCtx;
 }
+// Some mobile browsers (especially when launched from an "Add to Home Screen"
+// icon) keep ALL audio — Web Audio ticks and speech synthesis alike — silently
+// muted until there's been at least one real, synchronous user tap. Fire an
+// inaudible/empty sound + utterance on the very first tap anywhere on the page
+// so everything else (click ticks, countdown voice, music) actually plays.
+let audioUnlocked = false;
+function unlockAudioOnce(){
+  if(audioUnlocked) return;
+  audioUnlocked = true;
+  try{
+    const ctx = getSfxCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    gain.gain.value = 0.0001;
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + 0.01);
+  }catch(e){}
+  try{
+    if('speechSynthesis' in window){
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+    }
+  }catch(e){}
+}
+document.addEventListener('touchend', unlockAudioOnce, {capture:true});
+document.addEventListener('click', unlockAudioOnce, {capture:true});
 function playClickTick(){
   try{
     const ctx = getSfxCtx();
@@ -1194,7 +1234,7 @@ function runCustomSequence(overlay, textEl){
         timers.push(setTimeout(()=>{
           textEl.textContent = s.t;
           textEl.className = 'cd-text display cd-anim ' + s.cls;
-          if(s.cls==='shoot') overlay.classList.add('shake');
+          if(s.cls==='shoot') triggerShootFlash(overlay);
         }, s.at*1000));
       });
     });
@@ -1209,6 +1249,16 @@ async function runCountdown(){
   const overlay = document.getElementById('cdOverlay');
   const textEl = document.getElementById('cdText');
   overlay.classList.add('show');
+
+  // Re-affirm the speech engine right here, still inside the click gesture that
+  // called us, before the artificial wait below — otherwise some mobile browsers
+  // treat the delayed speak() call as not user-initiated and just stay silent.
+  try{
+    if('speechSynthesis' in window){
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+    }
+  }catch(e){}
 
   // Give everyone a few seconds to actually get their beyblades into position
   // before the "get ready" announcement starts talking.
@@ -1235,13 +1285,25 @@ async function runCountdown(){
     for(const step of steps){
       textEl.textContent = step.t;
       textEl.className = 'cd-text display cd-anim ' + step.cls;
-      if(step.cls==='shoot'){ overlay.classList.add('shake'); }
+      if(step.cls==='shoot'){ triggerShootFlash(overlay); }
       await speakAsync(step.speak, step.lang);
       // GO snaps straight into SHOOT at real match pace instead of a held announcement.
       await wait(step.cls==='go' ? 150 : (step.cls==='shoot' ? 300 : 200));
     }
   }
   overlay.classList.remove('show','shake');
+}
+
+// Bright white flash + screen shake for the SHOOT moment.
+function triggerShootFlash(overlay){
+  overlay.classList.add('shake');
+  const flash = document.getElementById('cdFlash');
+  if(flash){
+    flash.classList.remove('active');
+    // force reflow so the animation restarts if triggered again quickly
+    void flash.offsetWidth;
+    flash.classList.add('active');
+  }
 }
 
 document.getElementById('goBtn').addEventListener('click', async ()=>{
