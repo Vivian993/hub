@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>陀螺對戰台 VS</title>
+<link rel="apple-touch-icon" href="custom-icon.png">
+<link rel="icon" type="image/png" href="custom-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#06070C; --surface:#12141E; --surface-2:#1A1D2B; --line:#2A2E42;
+    --text:#F3F5FB; --muted:#8891A8;
+    --red:#FF2D55; --red-dim:#5C0F26;
+    --blue:#2D8CFF; --blue-dim:#0E2A54;
+    --gold:#FFC94D;
+    --attack:#FF4B3E; --balance:#3ECFFF; --defense:#7CFF9E; --stamina:#C48CFF;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:
+      radial-gradient(900px 500px at 8% -8%, rgba(255,45,85,0.14), transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, rgba(45,140,255,0.14), transparent 55%),
+      var(--bg);
+    color:var(--text); font-family:'Noto Sans TC', sans-serif; min-height:100vh; padding-bottom:90px;
+    overflow-x:hidden;
+  }
+  button{font-family:inherit; -webkit-tap-highlight-color:transparent;}
+  .display{font-family:'Bebas Neue', 'Rajdhani', sans-serif; letter-spacing:0.02em;}
+  .eyebrow{font-family:'Rajdhani',sans-serif; letter-spacing:0.28em; font-size:11px; color:var(--muted); text-transform:uppercase;}
+
+  /* ---- Nav ---- */
+  .appnav{position:sticky; top:0; z-index:40; display:flex; gap:6px; padding:10px 12px;
+    background:rgba(6,7,12,0.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+  .applink{flex:1; text-align:center; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:13px;
+    letter-spacing:0.02em; padding:11px 6px; border-radius:10px; color:var(--muted);
+    border:1px solid var(--line); background:var(--surface); cursor:pointer;}
+  .applink.active{background:var(--text); color:#06070C; border-color:var(--text);}
+  .view{display:none;} .view.active{display:block;}
+
+  /* ---- Battle Hero ---- */
+  .hero{max-width:680px; margin:0 auto; padding:26px 18px 6px; text-align:center;}
+  .hero-icon{width:74px; height:74px; margin:0 auto 10px; border-radius:20px; overflow:hidden;
+    box-shadow:0 0 0 1px var(--line), 0 10px 30px rgba(255,45,85,0.25);}
+  .hero-icon img{width:100%; height:100%; display:block;}
+  .hero h1{font-size:clamp(38px,10vw,56px); line-height:0.95; text-transform:uppercase;
+    background:linear-gradient(90deg, var(--red), var(--gold) 50%, var(--blue));
+    -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .hero p{color:var(--muted); font-size:13px; margin-top:8px;}
+
+  /* ---- VS Setup ---- */
+  .vs-wrap{max-width:680px; margin:0 auto; padding:16px 14px 8px;}
+  .vs-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; position:relative;}
+  .vs-badge{position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:5;
+    font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--gold);
+    background:var(--bg); border:2px solid var(--gold); border-radius:50%;
+    width:52px; height:52px; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 20px rgba(255,201,77,0.4);}
+  .corner{border-radius:18px; padding:14px; border:1px solid var(--line); position:relative; overflow:hidden;}
+  .corner.red{background:linear-gradient(160deg, rgba(255,45,85,0.16), var(--surface) 60%); border-color:rgba(255,45,85,0.4);}
+  .corner.blue{background:linear-gradient(200deg, rgba(45,140,255,0.16), var(--surface) 60%); border-color:rgba(45,140,255,0.4);}
+  .corner-label{font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:0.06em; display:flex; align-items:center; gap:6px;}
+  .corner.red .corner-label{color:var(--red);}
+  .corner.blue .corner-label{color:var(--blue);}
+
+  .photobox{margin-top:10px; aspect-ratio:1/1; border-radius:14px; border:2px dashed var(--line);
+    display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; cursor:pointer;
+    background:var(--surface-2);}
+  .photobox img{width:100%; height:100%; object-fit:cover; display:block;}
+  .photobox .ph-hint{font-size:11px; color:var(--muted); text-align:center; padding:0 10px; line-height:1.6;}
+  .photobox .ph-icon{font-size:26px; display:block; margin-bottom:4px;}
+  .photobox .clearbtn{position:absolute; top:6px; right:6px; width:26px; height:26px; border-radius:50%;
+    background:rgba(0,0,0,0.6); color:#fff; border:none; font-size:14px; display:none; align-items:center; justify-content:center;}
+  .photobox.has-photo .clearbtn{display:flex;}
+
+  .field{margin-top:8px;}
+  .field label{font-size:10px; color:var(--muted); letter-spacing:0.05em;}
+  .field input{width:100%; margin-top:3px; background:var(--surface-2); border:1px solid var(--line); border-radius:8px;
+    color:var(--text); padding:8px 10px; font-size:13px; font-family:'Noto Sans TC',sans-serif;}
+  .field input:focus{outline:none; border-color:var(--gold);}
+
+  .voice-panel{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px 16px; margin-top:14px;}
+  .voice-panel-title{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:14px; color:var(--gold);}
+  .voice-panel-sub{font-size:11px; color:var(--muted); margin-top:4px; line-height:1.7;}
+  .cue-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:8px; margin-top:12px;}
+  .cuecard{background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:8px; text-align:center;}
+  .cuecard-label{font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:0.04em;}
+  .cuecard-btns{display:flex; gap:5px; justify-content:center; margin-top:6px; flex-wrap:wrap;}
+  .cuebtn{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:11px; padding:6px 8px; border-radius:7px; border:1px solid var(--line); background:transparent; color:var(--text); cursor:pointer;}
+  .cuebtn.rec{color:var(--red);} .cuebtn.play{color:var(--blue);} .cuebtn.del{color:var(--muted);}
+
+  .go-row{max-width:680px; margin:18px auto 6px; padding:0 14px; text-align:center;}
+  .go-btn{width:100%; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:0.06em;
+    padding:16px; border-radius:16px; border:none; cursor:pointer; color:#08090E;
+    background:linear-gradient(90deg, var(--red), var(--gold), var(--blue)); box-shadow:0 8px 26px rgba(255,201,77,0.25);}
+  .go-hint{font-size:11px; color:var(--muted); margin-top:10px; line-height:1.7;}
+
+  /* ---- Countdown overlay ---- */
+  .countdown-overlay{position:fixed; inset:0; z-index:100; display:none; align-items:center; justify-content:center;
+    background:#000; overflow:hidden;}
+  .countdown-overlay.show{display:flex;}
+  .cd-text{font-family:'Bebas Neue',sans-serif; font-size:clamp(90px,32vw,340px); color:#fff; text-shadow:0 0 50px currentColor, 0 0 100px currentColor; text-align:center; padding:0 12px;}
+  .cd-text.ready{color:#fff; font-size:clamp(40px,13vw,120px); letter-spacing:0.04em;}
+  .cd-text.num3{color:var(--gold);} .cd-text.num2{color:var(--gold);} .cd-text.num1{color:var(--gold);}
+  .cd-text.go{color:var(--blue); font-size:clamp(80px,28vw,300px);} .cd-text.shoot{color:var(--red); font-size:clamp(70px,24vw,260px);}
+  @keyframes cdpop{0%{transform:scale(0.3); opacity:0;} 55%{transform:scale(1.15); opacity:1;} 100%{transform:scale(1); opacity:1;}}
+  .cd-anim{animation:cdpop 0.32s cubic-bezier(.2,1.4,.4,1);}
+  @keyframes shake{0%,100%{transform:translate(0,0);} 20%{transform:translate(-8px,4px);} 40%{transform:translate(7px,-5px);} 60%{transform:translate(-6px,-3px);} 80%{transform:translate(6px,5px);}}
+  .shake{animation:shake 0.4s ease;}
+
+  /* ---- Battle screen ---- */
+  .battle-screen{display:none; max-width:680px; margin:0 auto; padding:16px 14px;}
+  .battle-screen.show{display:block;}
+  .battle-vs-row{display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px; margin-bottom:14px;}
+  .battle-photo{aspect-ratio:1/1; border-radius:16px; overflow:hidden; border:2px solid var(--line);}
+  .battle-photo img{width:100%; height:100%; object-fit:cover;}
+  .battle-photo.empty{display:flex; align-items:center; justify-content:center; background:var(--surface-2); font-size:28px;}
+  .battle-name{text-align:center; font-weight:700; font-size:14px; margin-top:6px;}
+  .battle-combo{text-align:center; font-size:11px; color:var(--muted); margin-top:2px;}
+  .vs-center{font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--gold);}
+
+  .score-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .scorepanel{border-radius:16px; padding:14px; text-align:center; border:1px solid var(--line);}
+  .scorepanel.red{background:rgba(255,45,85,0.08); border-color:rgba(255,45,85,0.4);}
+  .scorepanel.blue{background:rgba(45,140,255,0.08); border-color:rgba(45,140,255,0.4);}
+  .bignum{font-family:'Bebas Neue',sans-serif; font-size:60px; line-height:1;}
+  .scorepanel.red .bignum{color:var(--red);} .scorepanel.blue .bignum{color:var(--blue);}
+  .scorebtn2{width:100%; margin-top:8px; padding:11px 6px; border-radius:10px; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--text); font-family:'Rajdhani',sans-serif; font-weight:700; font-size:12.5px; cursor:pointer;}
+  .scorebtn2:active{transform:scale(0.96);}
+  .scorepanel.red .scorebtn2:hover{border-color:var(--red);}
+  .scorepanel.blue .scorebtn2:hover{border-color:var(--blue);}
+
+  .battle-actions{display:flex; gap:10px; margin-top:16px;}
+  .battle-actions button{flex:1; padding:12px; border-radius:12px; border:1px solid var(--line); background:var(--surface);
+    color:var(--text); font-family:'Rajdhani',sans-serif; font-weight:700; cursor:pointer;}
+
+  .winner-overlay{position:fixed; inset:0; z-index:90; display:none; align-items:center; justify-content:center;
+    background:rgba(0,0,0,0.86); padding:20px;}
+  .winner-overlay.show{display:flex;}
+  .winner-card{max-width:340px; width:100%; text-align:center; background:var(--surface); border:2px solid var(--gold);
+    border-radius:22px; padding:26px 20px; box-shadow:0 0 60px rgba(255,201,77,0.3); position:relative;}
+  .winner-close{position:absolute; top:12px; right:12px; width:30px; height:30px; border-radius:50%;
+    background:var(--surface-2); border:1px solid var(--line); color:var(--muted); font-size:14px; cursor:pointer;}
+  .winner-emoji{font-size:44px;}
+  .winner-photo{width:120px; height:120px; border-radius:50%; object-fit:cover; margin:10px auto; display:block; border:3px solid var(--gold);}
+  .winner-name{font-family:'Bebas Neue',sans-serif; font-size:32px; margin-top:6px;}
+  .winner-sub{font-size:12px; color:var(--muted); margin-top:4px;}
+  .winner-actions{display:flex; gap:10px; margin-top:18px;}
+  .winner-actions button{flex:1; padding:12px; border-radius:12px; border:none; font-family:'Rajdhani',sans-serif; font-weight:700; cursor:pointer;}
+  .btn-primary{background:var(--gold); color:#1a1400;}
+  .btn-ghost{background:var(--surface-2); color:var(--text); border:1px solid var(--line) !important;}
+
+  .icon-tip{max-width:680px; margin:20px auto 0; padding:0 14px;}
+  .tipcard{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 16px; font-size:12px; color:var(--muted); line-height:1.8;}
+  .tipcard b{color:var(--gold);}
+  .sharednote{max-width:680px; margin:14px auto 0; padding:0 14px; font-size:11px; color:var(--muted); text-align:center; line-height:1.7;}
+
+  /* ---- Stats ---- */
+  .stats-wrap{max-width:680px; margin:0 auto; padding:20px 16px;}
+  .qr-card{background:var(--surface); border:1px solid var(--gold); border-radius:16px; padding:20px; text-align:center; margin-bottom:20px; box-shadow:0 0 30px rgba(255,201,77,0.12);}
+  .qr-card-title{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:16px; color:var(--gold);}
+  .qr-card-sub{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.7;}
+  #qrcodeBox{display:flex; justify-content:center; margin:16px 0 10px; background:#fff; padding:12px; border-radius:12px; width:fit-content; margin-left:auto; margin-right:auto;}
+  .qr-url{font-family:'Rajdhani',sans-serif; font-size:12px; color:var(--muted); word-break:break-all; margin-bottom:12px;}
+  .qr-note{font-size:11px; color:var(--muted); margin-top:10px;}
+  .stats-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .refreshbtn{padding:9px 16px; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-family:'Rajdhani',sans-serif; font-weight:700; cursor:pointer;}
+  .statrow{display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:var(--surface); border:1px solid var(--line); margin-bottom:8px;}
+  .statrank{font-family:'Bebas Neue',sans-serif; font-size:20px; color:var(--gold); width:28px; text-align:center;}
+  .statmain{flex:1;}
+  .statname{font-weight:700; font-size:14px;}
+  .statmeta{font-size:11px; color:var(--muted); margin-top:2px;}
+  .statwr{font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--blue);}
+  .statempty{text-align:center; color:var(--muted); font-size:13px; padding:40px 0;}
+
+  /* ---- Catalog (reuse) ---- */
+  header.cat-header{padding:26px 18px 14px; max-width:960px; margin:0 auto;}
+  .honest-note{font-size:12px; color:var(--muted); line-height:1.8; margin-top:12px; padding:10px 12px; background:var(--surface); border:1px solid var(--line); border-radius:10px;}
+  .honest-note a{color:var(--gold);}
+  .honest-note b{color:var(--text);}
+  .searchbtn-static{width:42px; height:42px; border-radius:10px; background:var(--surface); border:1px solid var(--line); color:var(--muted); font-size:16px; flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+  .legend{display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line);}
+  .legend-item{display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted);}
+  .dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+  .controls{max-width:960px; margin:0 auto; padding:0 18px 14px;}
+  .searchbar{display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+  .searchbtn{width:42px; height:42px; border-radius:10px; background:var(--surface); border:1px solid var(--line); color:var(--muted); font-size:16px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center;}
+  .searchbtn.active{background:var(--surface-2); color:var(--text); border-color:var(--gold);}
+  .searchinput{flex:1; height:42px; border-radius:10px; background:var(--surface); border:1px solid var(--line); color:var(--text); padding:0 12px; font-size:14px; display:none;}
+  .searchinput.show{display:block;}
+  .tabrow{display:flex; gap:7px; flex-wrap:wrap;}
+  .tab{font-family:'Rajdhani',sans-serif; font-weight:600; font-size:13px; padding:9px 15px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--muted); cursor:pointer;}
+  .tab.active{background:var(--text); color:#06070C; border-color:var(--text);}
+  .filterrow{display:flex; gap:7px; flex-wrap:wrap; margin-top:9px;}
+  .chip{font-size:11px; padding:7px 12px; border-radius:8px; border:1px solid var(--line); background:transparent; color:var(--muted); cursor:pointer; display:flex; align-items:center; gap:5px;}
+  .chip.active{background:var(--surface-2); color:var(--text); border-color:var(--gold);}
+  .grid{max-width:960px; margin:0 auto; padding:6px 18px 0; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:12px;}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; position:relative; overflow:hidden;}
+  .card::before{content:""; position:absolute; top:0; left:0; right:0; height:3px; background:var(--style-color);}
+  .card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .series-badge{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:10px; letter-spacing:0.06em; color:var(--muted); border:1px solid var(--line); padding:3px 8px; border-radius:6px;}
+  .name-cn{font-size:17px; font-weight:700; margin-top:8px;}
+  .name-en{font-family:'Rajdhani',sans-serif; font-size:11px; color:var(--muted); margin-top:1px;}
+  .style-tag{display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; color:var(--style-color); margin-top:8px;}
+  .style-tag .dot{background:var(--style-color);}
+  .parts{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:12px;}
+  .part{background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:8px 6px; text-align:center;}
+  .part svg{width:24px; height:24px;}
+  .part-label{font-size:9px; color:var(--muted); margin-top:3px;}
+  .part-value{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:12px;}
+  .analysis{font-size:12px; line-height:1.7; color:#B7BECE; margin-top:10px;}
+  .proof{margin-top:8px; font-size:10px; color:var(--gold); display:flex; align-items:center; gap:5px;}
+  .empty{max-width:960px; margin:36px auto; padding:0 18px; text-align:center; color:var(--muted); font-size:13px; display:none;}
+  footer{max-width:960px; margin:40px auto 0; padding:20px 18px 0; border-top:1px solid var(--line); font-size:11px; color:var(--muted); line-height:1.8;}
+
+  /* ---- Bracket (reuse) ---- */
+  .setup{max-width:680px; margin:0 auto; padding:20px 16px; display:grid; gap:14px;}
+  .setup-card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px;}
+  .setup-card h3{font-family:'Rajdhani',sans-serif; font-size:14px; margin-bottom:8px;}
+  .setup-row{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  textarea, input[type=text]{width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; color:var(--text); padding:10px 12px; font-size:13px; font-family:'Noto Sans TC',sans-serif; resize:vertical;}
+  textarea{min-height:100px; line-height:1.7;}
+  .bigbtn{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:14px; padding:12px 20px; border-radius:11px; border:none; background:var(--gold); color:#1a1400; cursor:pointer;}
+  .ghostbtn{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:13px; padding:10px 16px; border-radius:11px; border:1px solid var(--line); background:transparent; color:var(--text); cursor:pointer;}
+  .modechip{padding:9px 14px; border-radius:9px; border:1px solid var(--line); background:var(--surface-2); color:var(--muted); cursor:pointer; font-size:12px;}
+  .modechip.active{background:var(--blue); color:#06070C; border-color:var(--blue); font-weight:700;}
+  .hint{font-size:11px; color:var(--muted); margin-top:5px; line-height:1.7;}
+  .groupswrap{max-width:960px; margin:0 auto; padding:0 18px 20px; display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px;}
+  .groupcard{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px;}
+  .groupcard h4{font-family:'Rajdhani',sans-serif; font-size:13px; color:var(--gold); margin-bottom:8px;}
+  .plist{list-style:none; display:grid; gap:5px;}
+  .plist li{display:flex; align-items:center; gap:7px; font-size:13px; padding:5px 7px; border-radius:7px; background:var(--surface-2);}
+  .bracketwrap{max-width:100%; overflow-x:auto; padding:6px 18px 36px;}
+  .bracket{display:flex; gap:28px; min-width:max-content; padding:0 4px;}
+  .round{display:flex; flex-direction:column; justify-content:space-around; gap:16px; min-width:210px;}
+  .round-title{font-family:'Rajdhani',sans-serif; font-size:11px; letter-spacing:0.1em; color:var(--muted); text-align:center; margin-bottom:4px; text-transform:uppercase;}
+  .match{background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:9px; display:flex; flex-direction:column; gap:5px;}
+  .slot{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 9px; border-radius:7px; background:var(--surface-2);}
+  .slot.winner{background:rgba(255,201,77,0.14); border:1px solid var(--gold);}
+  .slot .pname{font-size:12px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .slot .pscore{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:14px; color:var(--gold); flex-shrink:0;}
+  .slot.bye .pname{color:var(--muted); font-weight:400;}
+  .scorebtns{display:flex; gap:4px; flex-wrap:wrap; margin-top:3px;}
+  .sbtn{font-family:'Rajdhani',sans-serif; font-size:9px; font-weight:700; padding:5px 6px; border-radius:6px; border:1px solid var(--line); background:transparent; color:var(--muted); cursor:pointer;}
+  .matchreset{align-self:flex-end; font-size:10px; color:var(--muted); background:none; border:none; cursor:pointer; text-decoration:underline;}
+  .champbox{max-width:960px; margin:0 auto; padding:0 18px 36px;}
+  .champcard{background:linear-gradient(135deg, rgba(255,201,77,0.15), transparent); border:1px solid var(--gold); border-radius:14px; padding:22px; text-align:center;}
+  .champcard .crown{font-size:30px;}
+  .champcard .cname{font-family:'Bebas Neue',sans-serif; font-size:28px; margin-top:6px;}
+
+  /* ---- My Collection ---- */
+  .mine-wrap{max-width:680px; margin:0 auto; padding:16px 16px 40px;}
+  .mine-editor{background:var(--surface); border:1px solid var(--gold); border-radius:16px; padding:16px; margin-top:14px;}
+  .filter-panel{margin-top:12px;}
+  .filter-row{display:flex; align-items:center; gap:10px; font-size:12px; color:var(--muted);}
+  .filter-row input[type=range]{flex:1; accent-color:var(--gold);}
+  .filter-presets{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;}
+  .presetchip{font-size:11px; padding:7px 11px; border-radius:8px; border:1px solid var(--line); background:var(--surface-2); color:var(--muted); cursor:pointer;}
+  .presetchip.active{background:var(--gold); color:#1a1400; border-color:var(--gold); font-weight:700;}
+  .mine-filter-tabs{display:flex; gap:7px; margin-top:22px; flex-wrap:wrap;}
+  .mine-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin-top:14px;}
+  .minecard{background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  .minecard img{width:100%; aspect-ratio:4/3; object-fit:cover; display:block;}
+  .minecard-body{padding:9px 10px;}
+  .minecard-type{font-size:9px; color:var(--gold); font-family:'Rajdhani',sans-serif; letter-spacing:0.08em;}
+  .minecard-name{font-size:13px; font-weight:700; margin-top:2px;}
+  .minecard-note{font-size:11px; color:var(--muted); margin-top:2px;}
+  .minecard-actions{display:flex; gap:6px; margin-top:8px;}
+  .minecard-actions button{flex:1; font-size:10px; padding:6px; border-radius:6px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); cursor:pointer;}
+  .mine-privacy-note{font-size:11px; color:var(--muted); margin-top:10px; padding:10px 12px; background:var(--surface); border:1px solid var(--line); border-radius:10px; line-height:1.7;}
+
+  input[type=file]{display:none;}
+</style>
+</head>
+<body>
+
+<div class="appnav">
+  <button class="applink active" data-view="battle">⚔️ 對戰</button>
+  <button class="applink" data-view="catalog">📖 圖鑑</button>
+  <button class="applink" data-view="bracket">🏆 賽程</button>
+  <button class="applink" data-view="stats">📊 統計</button>
+  <button class="applink" data-view="mine">🗂 我的</button>
+</div>
+
+<!-- ============ BATTLE VIEW ============ -->
+<div class="view active" id="view-battle">
+
+  <div class="hero">
+    <div class="hero-icon"><img src="custom-icon.png" alt="icon"></div>
+    <h1 class="display">陀螺對戰台</h1>
+    <p>拍下你的陀螺，倒數 3-2-1 開戰，比分打到 4 分先贏</p>
+  </div>
+
+  <div class="vs-wrap" id="setupZone">
+    <div class="vs-grid">
+      <div class="vs-badge">VS</div>
+      <div class="corner red">
+        <div class="corner-label">🔴 紅方</div>
+        <div class="photobox" id="photoRed">
+          <span class="ph-hint"><span class="ph-icon">📷</span>點一下或長按上傳照片<br><small>（會自動壓縮，可以放很多張）</small></span>
+          <button class="clearbtn" data-side="red">✕</button>
+        </div>
+        <input type="file" accept="image/*" id="fileRed">
+        <div class="field"><label>陀螺名稱</label><input type="text" id="nameRed" placeholder="例如：鮫鯊狂鱗"></div>
+        <div class="field"><label>刀刃／上蓋</label><input type="text" id="bladeRed" placeholder="例如：鮫鯊狂鱗"></div>
+        <div class="field"><label>固鎖</label><input type="text" id="ratchetRed" placeholder="例如：4-50"></div>
+        <div class="field"><label>軸心</label><input type="text" id="bitRed" placeholder="例如：K"></div>
+      </div>
+      <div class="corner blue">
+        <div class="corner-label">🔵 藍方</div>
+        <div class="photobox" id="photoBlue">
+          <span class="ph-hint"><span class="ph-icon">📷</span>點一下或長按上傳照片<br><small>（會自動壓縮，可以放很多張）</small></span>
+          <button class="clearbtn" data-side="blue">✕</button>
+        </div>
+        <input type="file" accept="image/*" id="fileBlue">
+        <div class="field"><label>陀螺名稱</label><input type="text" id="nameBlue" placeholder="例如：魔導神杖"></div>
+        <div class="field"><label>刀刃／上蓋</label><input type="text" id="bladeBlue" placeholder="例如：魔導神杖"></div>
+        <div class="field"><label>固鎖</label><input type="text" id="ratchetBlue" placeholder="例如：1-60"></div>
+        <div class="field"><label>軸心</label><input type="text" id="bitBlue" placeholder="例如：FB"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="vs-wrap" id="voicePanelWrap">
+    <div class="voice-panel">
+      <div class="voice-panel-title">🎙 自己錄倒數口令（選填）</div>
+      <div class="voice-panel-sub">六句都可以錄自己的聲音，錄過的會取代內建語音。沒錄的話系統會用英文語音唸出來：Three, Two, One, Go（拉長一點、音調上揚）, Shoot。</div>
+      <div class="cue-grid" id="cueButtons"></div>
+    </div>
+  </div>
+
+  <div class="go-row" id="goRow">
+    <button class="go-btn" id="goBtn">開戰！START</button>
+    <div class="go-hint">照片可以不放，但至少幫兩邊取個名字才能開打喔</div>
+  </div>
+
+  <div class="battle-screen" id="battleScreen">
+    <div class="battle-vs-row">
+      <div>
+        <div class="battle-photo empty" id="bpRed">🔴</div>
+        <div class="battle-name" id="bnRed"></div>
+        <div class="battle-combo" id="bcRed"></div>
+      </div>
+      <div class="vs-center display">VS</div>
+      <div>
+        <div class="battle-photo empty" id="bpBlue">🔵</div>
+        <div class="battle-name" id="bnBlue"></div>
+        <div class="battle-combo" id="bcBlue"></div>
+      </div>
+    </div>
+    <div class="score-row">
+      <div class="scorepanel red">
+        <div class="bignum" id="scoreRed">0</div>
+        <button class="scorebtn2" data-side="red" data-pts="1">迴轉 +1</button>
+        <button class="scorebtn2" data-side="red" data-pts="2">爆裂/擊飛 +2</button>
+        <button class="scorebtn2" data-side="red" data-pts="3">極限 +3</button>
+      </div>
+      <div class="scorepanel blue">
+        <div class="bignum" id="scoreBlue">0</div>
+        <button class="scorebtn2" data-side="blue" data-pts="1">迴轉 +1</button>
+        <button class="scorebtn2" data-side="blue" data-pts="2">爆裂/擊飛 +2</button>
+        <button class="scorebtn2" data-side="blue" data-pts="3">極限 +3</button>
+      </div>
+    </div>
+    <div class="battle-actions">
+      <button id="backToSetupBtn">← 換陀螺</button>
+      <button id="resetScoreBtn">重設比分</button>
+    </div>
+  </div>
+
+  <div class="icon-tip">
+    <div class="tipcard">
+      📲 <b>加到手機主畫面：</b>把這個網頁加到主畫面時，手機大多會用官方的 icon。想放我們做的這個陀螺圖示，可以先把它存到相簿，再用手機「捷徑 / 小工具」功能把它設成自訂主畫面圖示 — 下面有單獨的圖片檔可以下載存檔。
+    </div>
+  </div>
+  <div class="sharednote">🌐 按下「記錄戰績」後，這場比賽會存到共用統計裡，打開同一個連結的同學都看得到、也會一起計算勝率。</div>
+</div>
+
+<!-- Countdown overlay -->
+<div class="countdown-overlay" id="cdOverlay">
+  <div class="cd-text display" id="cdText"></div>
+</div>
+
+<!-- Winner overlay -->
+<div class="winner-overlay" id="winnerOverlay">
+  <div class="winner-card">
+    <button class="winner-close" id="winnerCloseBtn">✕</button>
+    <div class="winner-emoji">🏆</div>
+    <img class="winner-photo" id="winnerPhoto" style="display:none;">
+    <div class="winner-name display" id="winnerName"></div>
+    <div class="winner-sub" id="winnerSub"></div>
+    <div class="winner-actions">
+      <button class="btn-primary" id="recordBtn">✅ 記錄戰績</button>
+      <button class="btn-ghost" id="rematchBtn">🔁 再戰一場</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CATALOG VIEW ============ -->
+<div class="view" id="view-catalog">
+  <header class="cat-header">
+    <span class="eyebrow">Beyblade X · 台灣賽場配置</span>
+    <h1 class="display" style="font-size:34px; margin-top:6px;">配置圖鑑</h1>
+    <p style="color:var(--muted); font-size:13px; margin-top:8px;">每張卡片列出上蓋（刀刃）、固鎖、軸心三個零件，可以直接搜尋名字或代號。</p>
+    <div class="honest-note">
+      這裡收錄的是 <b>22 組精選配置</b>，不是官方全部零件。官方目前有 116 款上蓋、35 種固鎖、51 顆軸心，資料量太大，沒辦法完整搬進這頁——想查任何一顆零件的完整規格，可以直接開
+      <a href="https://beybladehub.app/parts" target="_blank" rel="noopener">BeybladeHub 零件圖鑑 ↗</a>。
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="dot" style="background:var(--attack)"></span>攻擊型</div>
+      <div class="legend-item"><span class="dot" style="background:var(--balance)"></span>均衡型</div>
+      <div class="legend-item"><span class="dot" style="background:var(--defense)"></span>防守型</div>
+      <div class="legend-item"><span class="dot" style="background:var(--stamina)"></span>耐久型</div>
+    </div>
+  </header>
+  <div class="controls">
+    <div class="searchbar">
+      <span class="searchbtn-static">🔍</span>
+      <input type="text" class="searchinput show" id="searchInput" placeholder="搜尋這 22 組配置的名字或零件代號，例如：魔導神杖 / 9-60 / LR">
+    </div>
+    <div class="tabrow" id="seriesTabs">
+      <button class="tab active" data-series="all">全部</button>
+      <button class="tab" data-series="BX">BX 系列</button>
+      <button class="tab" data-series="UX">UX 系列</button>
+      <button class="tab" data-series="CX">CX 系列</button>
+    </div>
+    <div class="filterrow" id="styleChips">
+      <button class="chip active" data-style="all">所有打法</button>
+      <button class="chip" data-style="attack"><span class="dot" style="background:var(--attack)"></span>攻擊型</button>
+      <button class="chip" data-style="balance"><span class="dot" style="background:var(--balance)"></span>均衡型</button>
+      <button class="chip" data-style="defense"><span class="dot" style="background:var(--defense)"></span>防守型</button>
+      <button class="chip" data-style="stamina"><span class="dot" style="background:var(--stamina)"></span>耐久型</button>
+      <button class="chip" data-style="proof">🏆 冠軍驗證</button>
+    </div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="emptyState">找不到符合的配置，換個關鍵字或分類看看。</div>
+  <footer>配置資料整理自 BeybladeHub，文字已改寫摘要。零件圖示為手繪示意圖，非官方實體照片。戰鬥陀螺X™（BEYBLADE X™）為 TAKARA TOMY 版權所有，本頁為玩家整理的非官方參考資料。</footer>
+</div>
+
+<!-- ============ BRACKET VIEW ============ -->
+<div class="view" id="view-bracket">
+  <header class="cat-header">
+    <span class="eyebrow">照官方賽制設計</span>
+    <h1 class="display" style="font-size:34px; margin-top:6px;">比賽賽程表</h1>
+    <p style="color:var(--muted); font-size:13px; margin-top:8px;">官方 4 分制計分（迴轉 1 分／爆裂・擊飛 2 分／極限 3 分），輸入名單自動排對戰表。</p>
+  </header>
+  <div class="setup" id="setupPanel">
+    <div class="setup-card">
+      <h3>1. 選擇賽制</h3>
+      <div class="setup-row">
+        <button class="modechip active" data-mode="single">單淘汰賽</button>
+        <button class="modechip" data-mode="group">分組賽</button>
+      </div>
+    </div>
+    <div class="setup-card">
+      <h3>2. 輸入選手名單</h3>
+      <textarea id="playerNames" placeholder="一行一個名字，例如：&#10;小明&#10;小華&#10;阿德&#10;佳佳"></textarea>
+      <div class="hint">最少 3 人，最多 32 人。人數不是 2 的倍數時，前幾位選手會自動輪空晉級。</div>
+    </div>
+    <div class="setup-card" id="groupCountCard" style="display:none;">
+      <h3>3. 分幾組？</h3>
+      <div class="setup-row"><input type="text" id="groupCount" value="4" style="max-width:80px;"><span class="hint" style="margin-top:0;">組數</span></div>
+    </div>
+    <div class="setup-row">
+      <button class="bigbtn" id="startBtn">🎲 隨機排出賽程</button>
+      <button class="ghostbtn" id="resetBtn">重新開始</button>
+    </div>
+  </div>
+  <div id="groupsPanel" class="groupswrap" style="display:none;"></div>
+  <div class="setup-row" id="toBracketRow" style="display:none; max-width:960px; margin:0 auto; padding:0 18px 20px;">
+    <button class="bigbtn" id="toBracketBtn">✅ 用勾選的晉級選手產生淘汰賽</button>
+  </div>
+  <div id="champBox" class="champbox" style="display:none;"></div>
+  <div class="bracketwrap" id="bracketWrap" style="display:none;"><div class="bracket" id="bracket"></div></div>
+</div>
+
+<!-- ============ STATS VIEW ============ -->
+<div class="view" id="view-stats">
+  <header class="cat-header">
+    <span class="eyebrow">大家一起打出來的數據</span>
+    <h1 class="display" style="font-size:34px; margin-top:6px;">配置勝率統計</h1>
+    <p style="color:var(--muted); font-size:13px; margin-top:8px;">統計所有同學在「對戰」分頁按下「記錄戰績」的比賽結果，看哪組配置最會打。</p>
+  </header>
+  <div class="stats-wrap">
+    <div class="qr-card">
+      <div class="qr-card-title">📱 大家一起連進來看</div>
+      <div class="qr-card-sub">掃這個 QR Code 打開同一個網頁，戰績會自動共用——同學那邊記錄的比賽，你這邊也看得到。</div>
+      <div id="qrcodeBox"></div>
+      <div class="qr-url" id="qrUrlText"></div>
+      <button class="ghostbtn" id="copyLinkBtn">📋 複製連結</button>
+      <div class="qr-note" id="qrNote">⚠️ 這個網址是公開共用的，掃到的人都能看到大家的戰績。</div>
+    </div>
+    <div class="stats-head">
+      <span style="font-size:12px; color:var(--muted);" id="statsCount">尚未載入</span>
+      <button class="refreshbtn" id="refreshStatsBtn">🔄 重新整理</button>
+    </div>
+    <div id="statsList"></div>
+  </div>
+</div>
+
+<!-- ============ MY COLLECTION VIEW (personal device only) ============ -->
+<div class="view" id="view-mine">
+  <header class="cat-header">
+    <span class="eyebrow">只存在你自己手機裡</span>
+    <h1 class="display" style="font-size:34px; margin-top:6px;">我的收藏</h1>
+    <p style="color:var(--muted); font-size:13px; margin-top:8px;">幫你的刀刃、固鎖、軸心拍照存起來，可以調亮度、套濾鏡，隨時編輯或刪除。</p>
+  </header>
+
+  <div class="mine-wrap">
+    <div class="mine-privacy-note">🔒 這個分頁的資料只存在這台裝置的瀏覽器裡，不會同步給任何人看到——跟「對戰」分頁按下「記錄戰績」會公開共用不一樣。</div>
+
+    <button class="bigbtn" id="addMineBtn" style="width:100%; margin-top:14px;">➕ 新增收藏</button>
+
+    <div class="mine-editor" id="mineEditor" style="display:none;">
+      <div class="setup-row">
+        <button class="modechip active" data-type="blade">刀刃／上蓋</button>
+        <button class="modechip" data-type="ratchet">固鎖</button>
+        <button class="modechip" data-type="bit">軸心</button>
+      </div>
+      <div class="field" style="margin-top:10px;"><label>名稱</label><input type="text" id="mineName" placeholder="例如：我的魔導神杖"></div>
+      <div class="field"><label>備註（選填）</label><input type="text" id="mineNote" placeholder="例如：磨損但很順手"></div>
+
+      <div class="photobox" id="minePhotoBox" style="margin-top:10px; aspect-ratio:4/3;">
+        <span class="ph-hint"><span class="ph-icon">📷</span>點一下或長按上傳照片</span>
+      </div>
+      <input type="file" accept="image/*" id="mineFile">
+
+      <div class="filter-panel" id="mineFilterPanel" style="display:none;">
+        <div class="filter-row">
+          <label>☀️ 亮度</label>
+          <input type="range" id="mineBrightness" min="50" max="150" value="100">
+        </div>
+        <div class="filter-presets">
+          <button class="presetchip active" data-preset="none">原圖</button>
+          <button class="presetchip" data-preset="warm">暖色</button>
+          <button class="presetchip" data-preset="cool">冷色</button>
+          <button class="presetchip" data-preset="vivid">鮮豔</button>
+          <button class="presetchip" data-preset="bw">黑白</button>
+          <button class="presetchip" data-preset="vintage">復古</button>
+        </div>
+      </div>
+
+      <div class="setup-row" style="margin-top:14px;">
+        <button class="bigbtn" id="mineSaveBtn">💾 儲存</button>
+        <button class="ghostbtn" id="mineCancelBtn">取消</button>
+      </div>
+    </div>
+
+    <div class="mine-filter-tabs">
+      <button class="tab active" data-filter="all">全部</button>
+      <button class="tab" data-filter="blade">刀刃</button>
+      <button class="tab" data-filter="ratchet">固鎖</button>
+      <button class="tab" data-filter="bit">軸心</button>
+    </div>
+    <div class="mine-grid" id="mineGrid"></div>
+    <div class="statempty" id="mineEmpty" style="display:none;">還沒有收藏，點上面「新增收藏」開始建立你的零件相簿。</div>
+  </div>
+</div>
+
+<script>
+/* =====================================================
+   PART -1 — storage abstraction
+   window.storage only exists inside claude.ai's artifact viewer.
+   If this page is self-hosted (e.g. GitHub Pages) and opened directly
+   in a normal browser, window.storage won't exist at all. To avoid the
+   app breaking (or throwing popups) in that case, everything routes
+   through this wrapper: use window.storage when present, otherwise
+   fall back to localStorage so personal data (recordings, my collection)
+   still works on-device.
+   IMPORTANT: the "shared" match stats / QR feature relies on
+   window.storage's real cross-device backend. In the localStorage
+   fallback there is no server, so "shared" data only stays on that one
+   device/browser — it will not actually sync between classmates unless
+   this is opened inside claude.ai, or a real backend is added.
+   ===================================================== */
+const hasClaudeStorage = (typeof window.storage !== 'undefined');
+const LS_PREFIX = 'bxvs::';
+
+const appStorage = {
+  async get(key, shared){
+    if(hasClaudeStorage) return window.storage.get(key, shared);
+    try{
+      const raw = localStorage.getItem(LS_PREFIX + (shared?'shared::':'local::') + key);
+      if(raw === null) return null;
+      return {key, value: raw, shared: !!shared};
+    }catch(e){ return null; }
+  },
+  async set(key, value, shared){
+    if(hasClaudeStorage) return window.storage.set(key, value, shared);
+    try{
+      localStorage.setItem(LS_PREFIX + (shared?'shared::':'local::') + key, value);
+      return {key, value, shared: !!shared};
+    }catch(e){ return null; }
+  },
+  async delete(key, shared){
+    if(hasClaudeStorage) return window.storage.delete(key, shared);
+    try{
+      localStorage.removeItem(LS_PREFIX + (shared?'shared::':'local::') + key);
+      return {key, deleted:true, shared: !!shared};
+    }catch(e){ return null; }
+  },
+  async list(prefix, shared){
+    if(hasClaudeStorage) return window.storage.list(prefix, shared);
+    try{
+      const scope = LS_PREFIX + (shared?'shared::':'local::');
+      const keys = [];
+      for(let i=0;i<localStorage.length;i++){
+        const k = localStorage.key(i);
+        if(k && k.startsWith(scope + (prefix||''))){
+          keys.push(k.slice(scope.length));
+        }
+      }
+      return {keys, prefix, shared: !!shared};
+    }catch(e){ return {keys:[], prefix, shared: !!shared}; }
+  }
+};
+
+/* =====================================================
+   PART 0 — element upload helper (photo tap-to-upload)
+   ===================================================== */
+const photoData = {red:null, blue:null};
+
+// Resize + re-encode an uploaded image so lots of photos can be stored without
+// blowing past storage limits. Returns a JPEG data URL.
+function compressImage(file, maxDim, quality){
+  maxDim = maxDim || 480;
+  quality = quality || 0.72;
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let {width, height} = img;
+        if(width > height && width > maxDim){ height = Math.round(height * maxDim/width); width = maxDim; }
+        else if(height > maxDim){ width = Math.round(width * maxDim/height); height = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function wirePhotoBox(side, boxId, inputId){
+  const box = document.getElementById(boxId);
+  const input = document.getElementById(inputId);
+  box.addEventListener('click', (e)=>{
+    if(e.target.classList.contains('clearbtn')) return;
+    input.click();
+  });
+  input.addEventListener('change', async ()=>{
+    const file = input.files[0];
+    if(!file) return;
+    box.innerHTML = `<span class="ph-hint">壓縮中…</span>`;
+    try{
+      const compressed = await compressImage(file, 480, 0.72);
+      photoData[side] = compressed;
+      box.innerHTML = `<img src="${compressed}"><button class="clearbtn" data-side="${side}">✕</button>`;
+      box.classList.add('has-photo');
+    }catch(e){
+      box.innerHTML = `<span class="ph-hint">圖片讀取失敗，再試一次</span><button class="clearbtn" data-side="${side}">✕</button>`;
+    }
+  });
+  box.querySelector('.clearbtn').addEventListener('click', (e)=>{
+    e.stopPropagation();
+    photoData[side] = null;
+    input.value = '';
+    box.classList.remove('has-photo');
+    box.innerHTML = `<span class="ph-hint"><span class="ph-icon">📷</span>點一下或長按上傳照片<br><small>（會自動壓縮，可以放很多張）</small></span><button class="clearbtn" data-side="${side}">✕</button>`;
+  });
+}
+wirePhotoBox('red','photoRed','fileRed');
+wirePhotoBox('blue','photoBlue','fileBlue');
+
+/* =====================================================
+   PART 0b — custom countdown voice recording
+   ===================================================== */
+const CUE_LIST = [
+  {key:'ready', label:'各位選手就位'},
+  {key:'3', label:'3'},
+  {key:'2', label:'2'},
+  {key:'1', label:'1'},
+  {key:'go', label:'GO'},
+  {key:'shoot', label:'SHOOT'},
+];
+let audioCues = {}; // key -> data URL (base64 webm)
+let activeRecorder = null;
+
+async function loadAudioCues(){
+  for(const cue of CUE_LIST){
+    try{
+      const r = await appStorage.get('audiocue:'+cue.key, false);
+      if(r && r.value) audioCues[cue.key] = r.value;
+    }catch(e){ /* not recorded yet */ }
+  }
+  renderCueButtons();
+}
+
+function renderCueButtons(){
+  const wrap = document.getElementById('cueButtons');
+  if(!wrap) return;
+  wrap.innerHTML = CUE_LIST.map(cue => `
+    <div class="cuecard">
+      <div class="cuecard-label">${cue.label}</div>
+      <div class="cuecard-btns">
+        <button class="cuebtn rec" data-key="${cue.key}">${audioCues[cue.key] ? '🔴 重錄' : '🎙 錄音'}</button>
+        ${audioCues[cue.key] ? `<button class="cuebtn play" data-key="${cue.key}">▶️</button><button class="cuebtn del" data-key="${cue.key}">✕</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+  wrap.querySelectorAll('.rec').forEach(b=>b.addEventListener('click', ()=>toggleRecord(b.dataset.key, b)));
+  wrap.querySelectorAll('.play').forEach(b=>b.addEventListener('click', ()=>{
+    const a = new Audio(audioCues[b.dataset.key]); a.play();
+  }));
+  wrap.querySelectorAll('.del').forEach(b=>b.addEventListener('click', async ()=>{
+    delete audioCues[b.dataset.key];
+    try{ await appStorage.delete('audiocue:'+b.dataset.key, false); }catch(e){}
+    renderCueButtons();
+  }));
+}
+
+async function toggleRecord(key, btn){
+  if(activeRecorder && activeRecorder.key === key){
+    activeRecorder.recorder.stop();
+    return;
+  }
+  if(activeRecorder){ activeRecorder.recorder.stop(); }
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const recorder = new MediaRecorder(stream);
+    const chunks = [];
+    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.onstop = async () => {
+      stream.getTracks().forEach(t=>t.stop());
+      const blob = new Blob(chunks, {type:'audio/webm'});
+      const dataUrl = await new Promise(res=>{
+        const fr = new FileReader();
+        fr.onload = () => res(fr.result);
+        fr.readAsDataURL(blob);
+      });
+      audioCues[key] = dataUrl;
+      try{ await appStorage.set('audiocue:'+key, dataUrl, false); }catch(e){}
+      activeRecorder = null;
+      renderCueButtons();
+    };
+    recorder.start();
+    activeRecorder = {key, recorder};
+    btn.textContent = '⏺ 錄音中…點擊停止';
+  }catch(e){
+    alert('沒有拿到麥克風權限，請確認瀏覽器允許使用麥克風（需要用 https 開啟網頁）。');
+  }
+}
+loadAudioCues();
+
+/* =====================================================
+   PART 1 — nav
+   ===================================================== */
+const nav = document.querySelectorAll('.applink');
+nav.forEach(btn=>btn.addEventListener('click', ()=>{
+  nav.forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+btn.dataset.view).classList.add('active');
+  if(btn.dataset.view==='stats'){ loadStats(); renderShareQR(); }
+}));
+
+/* =====================================================
+   PART 2 — Battle: countdown + scoring
+   ===================================================== */
+let live = {red:{}, blue:{}, s1:0, s2:0};
+
+/* ---- Default countdown sound effects (synthesized, no sample files needed) ---- */
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+// A simple beep/tone, optionally sweeping from freqStart to freqEnd (a "rising" pitch).
+function playTone({freqStart, freqEnd, duration, type='square', gainPeak=0.32}){
+  return new Promise(resolve=>{
+    try{
+      const ctx = getAudioCtx();
+      const now = ctx.currentTime;
+      const dur = duration/1000;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freqStart, now);
+      if(freqEnd && freqEnd !== freqStart){
+        osc.frequency.linearRampToValueAtTime(freqEnd, now + dur);
+      }
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(gainPeak, now + 0.02);
+      gain.gain.setValueAtTime(gainPeak, Math.max(now + 0.02, now + dur - 0.06));
+      gain.gain.linearRampToValueAtTime(0, now + dur);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + dur + 0.02);
+      let done = false;
+      const finish = ()=>{ if(!done){ done = true; resolve(); } };
+      osc.onended = finish;
+      setTimeout(finish, duration + 120);
+    }catch(e){ resolve(); }
+  });
+}
+
+// A punchy impact hit for SHOOT: noise burst + low thump, quick decay.
+function playShootHit(){
+  return new Promise(resolve=>{
+    try{
+      const ctx = getAudioCtx();
+      const now = ctx.currentTime;
+      const bufSize = Math.floor(ctx.sampleRate * 0.16);
+      const buffer = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for(let i=0;i<bufSize;i++){ data[i] = (Math.random()*2-1) * (1 - i/bufSize); }
+      const noise = ctx.createBufferSource();
+      noise.buffer = buffer;
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.45, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+      noise.connect(noiseGain).connect(ctx.destination);
+      noise.start(now);
+
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(240, now);
+      osc.frequency.exponentialRampToValueAtTime(55, now + 0.22);
+      const oGain = ctx.createGain();
+      oGain.gain.setValueAtTime(0.5, now);
+      oGain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      osc.connect(oGain).connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.32);
+
+      setTimeout(resolve, 320);
+    }catch(e){ resolve(); }
+  });
+}
+
+// Default SFX per countdown step (used only when the user hasn't recorded their own clip).
+// GO is held ~0.5s longer than the beeps and rises in pitch; SHOOT is a sharp hit, not a beep.
+const DEFAULT_SFX = {
+  '3':     ()=>playTone({freqStart:420, freqEnd:420, duration:220}),
+  '2':     ()=>playTone({freqStart:480, freqEnd:480, duration:220}),
+  '1':     ()=>playTone({freqStart:560, freqEnd:560, duration:220}),
+  'go':    ()=>playTone({freqStart:560, freqEnd:920, duration:800, type:'sawtooth', gainPeak:0.34}),
+  'shoot': ()=>playShootHit(),
+};
+
+// Speak text via TTS and resolve once it has actually finished (not a guessed delay).
+function speakAsync(text, lang, opts){
+  return new Promise(resolve=>{
+    try{
+      if(!('speechSynthesis' in window)){ resolve(); return; }
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = lang || 'en-US';
+      u.rate = (opts && opts.rate) || 1.0;
+      u.pitch = (opts && opts.pitch) || 1.0;
+      let done = false;
+      const finish = ()=>{ if(!done){ done = true; resolve(); } };
+      u.onend = finish;
+      u.onerror = finish;
+      window.speechSynthesis.cancel(); // clear anything left over, then queue this one
+      window.speechSynthesis.speak(u);
+      // safety cap in case a browser/voice never fires onend
+      setTimeout(finish, 3500);
+    }catch(e){ resolve(); }
+  });
+}
+function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+// Play a recorded clip for `key` if the user has recorded one; otherwise speak the word aloud.
+async function playCue(key, fallbackText, fallbackLang, minMs, opts){
+  const clip = audioCues[key];
+  if(clip){
+    await new Promise(resolve=>{
+      const audio = new Audio(clip);
+      let done = false;
+      const finish = ()=>{ if(!done){ done = true; resolve(); } };
+      audio.addEventListener('ended', finish);
+      audio.addEventListener('error', finish);
+      audio.play().catch(finish);
+      // safety cap so a long recording never freezes the countdown forever
+      setTimeout(finish, 3500);
+    });
+  } else {
+    await speakAsync(fallbackText, fallbackLang, opts);
+    await wait(minMs);
+  }
+}
+
+async function runCountdown(){
+  const overlay = document.getElementById('cdOverlay');
+  const textEl = document.getElementById('cdText');
+  overlay.classList.add('show');
+
+  textEl.textContent = '各位選手就位';
+  textEl.className = 'cd-text display cd-anim ready';
+  await playCue('ready', '各位選手就位', 'zh-TW', 250);
+
+  const steps = [
+    {t:'3', cls:'num3', key:'3', speak:'Three', lang:'en-US'},
+    {t:'2', cls:'num2', key:'2', speak:'Two', lang:'en-US'},
+    {t:'1', cls:'num1', key:'1', speak:'One', lang:'en-US'},
+    {t:'GO!', cls:'go', key:'go', speak:'Go', lang:'en-US', opts:{rate:0.75, pitch:1.25}, extraHold:300},
+    {t:'SHOOT!', cls:'shoot', key:'shoot', speak:'Shoot', lang:'en-US'},
+  ];
+  for(const step of steps){
+    textEl.textContent = step.t;
+    textEl.className = 'cd-text display cd-anim ' + step.cls;
+    if(step.cls==='shoot'){ overlay.classList.add('shake'); }
+    await playCue(step.key, step.speak, step.lang, step.cls==='shoot' ? 300 : 200, step.opts);
+    if(step.extraHold && !audioCues[step.key]) await wait(step.extraHold);
+  }
+  overlay.classList.remove('show','shake');
+}
+
+document.getElementById('goBtn').addEventListener('click', async ()=>{
+  live.red = {
+    name: document.getElementById('nameRed').value.trim() || '紅方陀螺',
+    blade: document.getElementById('bladeRed').value.trim(),
+    ratchet: document.getElementById('ratchetRed').value.trim(),
+    bit: document.getElementById('bitRed').value.trim(),
+    photo: photoData.red
+  };
+  live.blue = {
+    name: document.getElementById('nameBlue').value.trim() || '藍方陀螺',
+    blade: document.getElementById('bladeBlue').value.trim(),
+    ratchet: document.getElementById('ratchetBlue').value.trim(),
+    bit: document.getElementById('bitBlue').value.trim(),
+    photo: photoData.blue
+  };
+  live.s1 = 0; live.s2 = 0;
+
+  document.getElementById('setupZone').style.display='none';
+  document.getElementById('goRow').style.display='none';
+  await runCountdown();
+  showBattleScreen();
+});
+
+function comboStr(p){
+  const parts = [p.blade, p.ratchet, p.bit].filter(Boolean);
+  return parts.join(' / ');
+}
+
+function showBattleScreen(){
+  document.getElementById('battleScreen').classList.add('show');
+  document.getElementById('bnRed').textContent = live.red.name;
+  document.getElementById('bnBlue').textContent = live.blue.name;
+  document.getElementById('bcRed').textContent = comboStr(live.red);
+  document.getElementById('bcBlue').textContent = comboStr(live.blue);
+  const bpRed = document.getElementById('bpRed');
+  const bpBlue = document.getElementById('bpBlue');
+  if(live.red.photo){ bpRed.classList.remove('empty'); bpRed.innerHTML = `<img src="${live.red.photo}">`; }
+  else { bpRed.classList.add('empty'); bpRed.innerHTML = '🔴'; }
+  if(live.blue.photo){ bpBlue.classList.remove('empty'); bpBlue.innerHTML = `<img src="${live.blue.photo}">`; }
+  else { bpBlue.classList.add('empty'); bpBlue.innerHTML = '🔵'; }
+  updateScoreUI();
+}
+
+function updateScoreUI(){
+  document.getElementById('scoreRed').textContent = live.s1;
+  document.getElementById('scoreBlue').textContent = live.s2;
+}
+
+document.querySelectorAll('.scorebtn2').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const side = btn.dataset.side;
+    const pts = parseInt(btn.dataset.pts);
+    if(side==='red') live.s1 += pts; else live.s2 += pts;
+    updateScoreUI();
+    if(live.s1>=4 || live.s2>=4){
+      const winnerSide = live.s1>=4 ? 'red' : 'blue';
+      showWinner(winnerSide);
+    }
+  });
+});
+
+function showWinner(side){
+  const w = live[side];
+  const overlay = document.getElementById('winnerOverlay');
+  document.getElementById('winnerName').textContent = w.name;
+  document.getElementById('winnerName').style.color = side==='red' ? 'var(--red)' : 'var(--blue)';
+  document.getElementById('winnerSub').textContent = comboStr(w) + `　最終比分 ${live.s1} : ${live.s2}`;
+  const img = document.getElementById('winnerPhoto');
+  if(w.photo){ img.src = w.photo; img.style.display='block'; } else { img.style.display='none'; }
+  overlay.classList.add('show');
+  overlay.dataset.winnerSide = side;
+}
+
+document.getElementById('rematchBtn').addEventListener('click', ()=>{
+  document.getElementById('winnerOverlay').classList.remove('show');
+  live.s1 = 0; live.s2 = 0;
+  updateScoreUI();
+});
+document.getElementById('winnerCloseBtn').addEventListener('click', ()=>{
+  document.getElementById('winnerOverlay').classList.remove('show');
+});
+
+document.getElementById('recordBtn').addEventListener('click', async ()=>{
+  const side = document.getElementById('winnerOverlay').dataset.winnerSide;
+  const record = {
+    redName: live.red.name, redCombo: comboStr(live.red),
+    blueName: live.blue.name, blueCombo: comboStr(live.blue),
+    scoreRed: live.s1, scoreBlue: live.s2,
+    winnerSide: side, ts: Date.now()
+  };
+  try{
+    await appStorage.set('match:'+Date.now()+'_'+Math.floor(Math.random()*10000), JSON.stringify(record), true);
+  }catch(e){ console.error('save failed', e); }
+  document.getElementById('recordBtn').textContent = '✅ 已記錄！';
+  setTimeout(()=>{ document.getElementById('recordBtn').textContent='✅ 記錄戰績'; }, 1500);
+});
+
+document.getElementById('backToSetupBtn').addEventListener('click', ()=>{
+  document.getElementById('battleScreen').classList.remove('show');
+  document.getElementById('setupZone').style.display='block';
+  document.getElementById('goRow').style.display='block';
+});
+document.getElementById('resetScoreBtn').addEventListener('click', ()=>{
+  live.s1=0; live.s2=0; updateScoreUI();
+});
+
+/* =====================================================
+   PART 3 — Stats (from shared storage)
+   ===================================================== */
+async function loadStats(){
+  const listEl = document.getElementById('statsList');
+  const countEl = document.getElementById('statsCount');
+  countEl.textContent = '載入中...';
+  listEl.innerHTML = '';
+  try{
+    const res = await appStorage.list('match:', true);
+    const keys = res && res.keys ? res.keys : [];
+    if(keys.length===0){
+      countEl.textContent = '目前 0 場記錄';
+      listEl.innerHTML = '<div class="statempty">還沒有任何比賽記錄，去「對戰」分頁打一場，記得按「記錄戰績」！</div>';
+      return;
+    }
+    const records = [];
+    for(const k of keys){
+      try{
+        const r = await appStorage.get(k, true);
+        if(r && r.value) records.push(JSON.parse(r.value));
+      }catch(e){}
+    }
+    countEl.textContent = `共 ${records.length} 場記錄`;
+    const agg = {};
+    records.forEach(rec=>{
+      const redCombo = rec.redCombo || rec.redName;
+      const blueCombo = rec.blueCombo || rec.blueName;
+      if(!agg[redCombo]) agg[redCombo] = {win:0, total:0};
+      if(!agg[blueCombo]) agg[blueCombo] = {win:0, total:0};
+      agg[redCombo].total++; agg[blueCombo].total++;
+      if(rec.winnerSide==='red') agg[redCombo].win++; else agg[blueCombo].win++;
+    });
+    const rows = Object.entries(agg)
+      .filter(([name])=>name)
+      .map(([name, v])=>({name, win:v.win, total:v.total, rate: v.total? (v.win/v.total*100):0}))
+      .sort((a,b)=> b.rate - a.rate || b.total - a.total);
+
+    if(rows.length===0){
+      listEl.innerHTML = '<div class="statempty">還沒有足夠資料。</div>';
+      return;
+    }
+    rows.forEach((r,i)=>{
+      const div = document.createElement('div');
+      div.className = 'statrow';
+      div.innerHTML = `
+        <div class="statrank">${i+1}</div>
+        <div class="statmain">
+          <div class="statname">${r.name}</div>
+          <div class="statmeta">${r.win} 勝 / 共 ${r.total} 場</div>
+        </div>
+        <div class="statwr">${r.rate.toFixed(0)}%</div>
+      `;
+      listEl.appendChild(div);
+    });
+  }catch(e){
+    countEl.textContent = '載入失敗';
+    listEl.innerHTML = '<div class="statempty">讀取共用資料時發生問題，稍後再試一次。</div>';
+    console.error(e);
+  }
+}
+document.getElementById('refreshStatsBtn').addEventListener('click', loadStats);
+
+/* =====================================================
+   PART 3b — QR code sharing (stats view)
+   ===================================================== */
+let qrRendered = false;
+function renderShareQR(){
+  if(qrRendered) return;
+  const url = window.location.href.split('#')[0];
+  document.getElementById('qrUrlText').textContent = url;
+  const noteEl = document.getElementById('qrNote');
+  if(noteEl){
+    noteEl.textContent = hasClaudeStorage
+      ? '⚠️ 這個網址是公開共用的，掃到的人都能看到大家的戰績。'
+      : '⚠️ 目前不是在 claude.ai 開啟，戰績只會存在「這一台裝置」，掃 QR Code 的同學看不到你的記錄（除非之後接上自己的共用資料庫）。';
+  }
+  try{
+    if(window.QRCode){
+      new QRCode(document.getElementById('qrcodeBox'), {
+        text: url, width: 176, height: 176,
+        colorDark: '#06070C', colorLight: '#ffffff'
+      });
+      qrRendered = true;
+    }
+  }catch(e){ console.error('QR render failed', e); }
+}
+document.getElementById('copyLinkBtn').addEventListener('click', async ()=>{
+  const url = window.location.href.split('#')[0];
+  try{
+    await navigator.clipboard.writeText(url);
+    const btn = document.getElementById('copyLinkBtn');
+    const old = btn.textContent;
+    btn.textContent = '已複製 ✓';
+    setTimeout(()=>{ btn.textContent = old; }, 1500);
+  }catch(e){ alert(url); }
+});
+
+/* =====================================================
+   PART 4 — Catalog
+   ===================================================== */
+const STYLE_META = {
+  attack:{label:'攻擊型', color:'var(--attack)'},
+  balance:{label:'均衡型', color:'var(--balance)'},
+  defense:{label:'防守型', color:'var(--defense)'},
+  stamina:{label:'耐久型', color:'var(--stamina)'}
+};
+const DATA = [
+  {series:'BX', name:'鳳凰飛翼', en:'Phoenix Wing', blade:'鳳凰飛翼', ratchet:'9-60', bit:'R', style:'attack', proof:true,
+   text:'新手三大常用上蓋之一。38.5g 偏重加上 9 凸固鎖抗撞性強，不容易被打爆；R 軸主動位移、進攻節奏快，但發射力道要夠，轉速跟不上容易掉速。'},
+  {series:'BX', name:'蒼穹龍騎士', en:'Cobalt Dragoon', blade:'蒼穹龍騎士', ratchet:'5-60', bit:'E', style:'balance', proof:true,
+   text:'5 凸固鎖搭配 E 揚升軸維持穩定轉速，不追求一擊致勝，靠續航力等對手先失誤。適合節奏穩健、喜歡攻守都顧到的打法。'},
+  {series:'BX', name:'暴龍霸擊', en:'Tyranno Beat', blade:'暴龍霸擊', ratchet:'1-60', bit:'LR', style:'attack', proof:false,
+   text:'1 凸固鎖讓每次撞擊力道集中爆發，LR 軸起步快，適合全場衝撞的打法，但同樣吃發射力，力道不足容易提早失速。'},
+  {series:'BX', name:'鮫鯊鋒鰭', en:'Shark Edge', blade:'鮫鯊鋒鰭', ratchet:'9-60', bit:'LF', style:'stamina', proof:false,
+   text:'磨損後依然能維持穩定是最大優點。9 凸固鎖配 LF 軸讓陀螺主動移動，形成耐久與攻擊混合的特殊打法。'},
+  {series:'BX', name:'巨鯨怒濤', en:'Whale Wave', blade:'巨鯨怒濤', ratchet:'5-60', bit:'F', style:'balance', proof:false,
+   text:'不靠速度衝撞，靠重量壓縮對手的旋轉空間。F 平底軸移動緩慢、形成封鎖，適合不急著決勝負的節奏型玩家。'},
+  {series:'BX', name:'武士魂斬', en:'Samurai Calibur', blade:'武士魂斬', ratchet:'7-70', bit:'T', style:'balance', proof:false,
+   text:'7 凸固鎖把整體重量拉到最大，搭配 T 耐久軸維持旋轉。偏穩健的均衡打法，重量感明顯但仍保有靈活度。'},
+  {series:'UX', name:'魔導神杖', en:'Wizard Rod', blade:'魔導神杖', ratchet:'1-60', bit:'FB', style:'balance', proof:true,
+   text:'2026 賽場最常見的奪冠配置，極限盃 G1 南北兩站都有選手用它拿下冠亞季軍。3-60 配 H 軸是新手起步版本，容易上手又能穩定拿分。'},
+  {series:'UX', name:'鮫鯊狂鱗', en:'Shark Scale', blade:'鮫鯊狂鱗', ratchet:'4-50', bit:'K', style:'attack', proof:true,
+   text:'新手三大常用上蓋之一，也是極限盃 G1 冠軍常用配置。4-50 低固鎖壓低重心，K 踢擊軸提供獨特節奏，在 UX 系列裡攻擊效率數一數二。'},
+  {series:'UX', name:'蒼龍爆刃', en:'Dran Buster', blade:'蒼龍爆刃', ratchet:'1-60', bit:'LR', style:'attack', proof:true,
+   text:'超偏心設計，撞誰都佔便宜的暴力攻擊流。1 凸固鎖集中撞擊、LR 軸快速起步，是攻擊型玩家的心頭好，但非常吃轉速。'},
+  {series:'UX', name:'隕星龍騎士', en:'Meteor Dragoon', blade:'隕星龍騎士', ratchet:'5-70', bit:'L', style:'balance', proof:true,
+   text:'UX 的均衡旗艦。5-70 固鎖維持重心穩定，L 水平軸拉長旋轉續航，面對攻擊型能以穩定換取對手失手的機會。'},
+  {series:'UX', name:'霜輝銀狼', en:'Silver Wolf', blade:'霜輝銀狼', ratchet:'5-60', bit:'FB', style:'attack', proof:true,
+   text:'5 凸固鎖穩住重量，FB 自由球軸讓移動路徑更奔放。抓對進攻角度威力不小，但需要一點判斷力才能抓到時機。'},
+  {series:'UX', name:'騎士圓甲', en:'Knight Mail', blade:'騎士圓甲', ratchet:'9-60', bit:'R', style:'attack', proof:true,
+   text:'刃型配 R 軸積極位移，速攻節奏快。9 凸固鎖提供不錯的抗撞性，進攻時不容易被對手反打切開。'},
+  {series:'UX', name:'天蠍長矛', en:'Scorpio Spear', blade:'天蠍長矛', ratchet:'7-60', bit:'T', style:'balance', proof:true,
+   text:'UX 系列最重的刃之一，接近 40g 配 7 凸固鎖等於重戰車。轉速要夠高才能發揮，不然重量反而變成拖累。'},
+  {series:'UX', name:'魔像奇岩', en:'Golem Rock', blade:'魔像奇岩', ratchet:'9-60', bit:'LR', style:'defense', proof:true,
+   text:'防守型刃搭配速攻固鎖，走「先守後打」路線。承受撞擊後靠穩定性續轉，LR 軸再主動找反擊機會。'},
+  {series:'UX', name:'衝擊龍神', en:'Impact Drake', blade:'衝擊龍神', ratchet:'1-60', bit:'T', style:'attack', proof:false,
+   text:'近 39g 重量配 1 凸固鎖，典型單次衝撞型配置。不靠出手頻率，靠一次命中的破壞力決勝負。'},
+  {series:'UX', name:'武士星劍', en:'Samurai Saber', blade:'武士星劍', ratchet:'9-60', bit:'LR', style:'attack', proof:false,
+   text:'9 凸連續撞擊配 LR 速攻軸，刃型讓連續進攻動作更精準，是賽場上常見的速攻節奏配置。'},
+  {series:'CX', name:'爆擊', en:'Blast', blade:'爆擊主刃＋J紋章', ratchet:'3-60', bit:'H', style:'attack', proof:true,
+   text:'CX 目前最主流的攻擊配置。J 斜切輔助戰刃被打到時會把對手「鏟」向主刃方向，形成標準攻擊组合，賽場出現率最高。'},
+  {series:'CX', name:'威能', en:'', blade:'威能主刃＋W紋章', ratchet:'7-60', bit:'H', style:'defense', proof:false,
+   text:'車輪型輔助戰刃讓整體偏向耐久防守，從攻擊路線轉為重量型耐久打法，適合以穩制快的玩家。'},
+  {series:'CX', name:'九尾', en:'', blade:'九尾主刃＋J紋章', ratchet:'1-60', bit:'LR', style:'attack', proof:false,
+   text:'CX-06 的標準攻擊配置，J 刃＋1-60＋LR 是 CX 攻擊型裡零件最容易湊齊、上手最快的組合。'},
+  {series:'CX', name:'獵魂', en:'', blade:'獵魂主刃＋S紋章', ratchet:'9-60', bit:'E', style:'stamina', proof:false,
+   text:'S 刃壓低重心，配 E 揚升軸形成耐久打法，靠旋轉續航壓制、等對手自己先失誤，不追求擊飛。'},
+  {series:'CX', name:'勇氣', en:'', blade:'勇氣主刃＋B紋章', ratchet:'1-60', bit:'LR', style:'balance', proof:false,
+   text:'B 緩衝輔助戰刃被打到場邊時容易彈回，攻守兼備，是許多玩家第一次接觸 CX 系列時的入門組合。'},
+  {series:'CX', name:'幽冥', en:'', blade:'幽冥主刃＋S紋章', ratchet:'7-60', bit:'T', style:'stamina', proof:false,
+   text:'S 刃壓低重心加上 7 凸固鎖形成穩定防守陣形，T 耐久軸進一步拉長旋轉時間，是純消耗戰型配置。'},
+];
+function styleIconSVG(style){
+  const c = 'var(--'+style+')';
+  if(style==='attack') return `<svg viewBox="0 0 48 48"><polygon points="24,3 29,18 45,18 32,28 37,44 24,34 11,44 16,28 3,18 19,18" fill="none" stroke="${c}" stroke-width="2"/></svg>`;
+  if(style==='balance') return `<svg viewBox="0 0 48 48"><polygon points="24,4 41,14 41,34 24,44 7,34 7,14" fill="none" stroke="${c}" stroke-width="2"/><circle cx="24" cy="24" r="6" fill="none" stroke="${c}" stroke-width="1.4"/></svg>`;
+  if(style==='defense') return `<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="none" stroke="${c}" stroke-width="2"/><circle cx="24" cy="24" r="12" fill="none" stroke="${c}" stroke-width="1.4"/></svg>`;
+  return `<svg viewBox="0 0 48 48"><path d="M24 4 A20 20 0 1 1 23.9 4" fill="none" stroke="${c}" stroke-width="2"/><circle cx="24" cy="4" r="2.4" fill="${c}"/></svg>`;
+}
+const ICON_BLADE  = `<svg viewBox="0 0 40 40"><path d="M20 3 L34 20 L20 37 L6 20 Z" fill="none" stroke="#FFC94D" stroke-width="2"/><circle cx="20" cy="20" r="4" fill="none" stroke="#FFC94D" stroke-width="1.4"/></svg>`;
+const ICON_RATCHET = `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="13" fill="none" stroke="#FFC94D" stroke-width="2"/><g fill="#FFC94D"><rect x="18.4" y="4" width="3.2" height="6" rx="1"/><rect x="18.4" y="30" width="3.2" height="6" rx="1"/><rect x="4" y="18.4" width="6" height="3.2" rx="1"/><rect x="30" y="18.4" width="6" height="3.2" rx="1"/></g></svg>`;
+const ICON_BIT = `<svg viewBox="0 0 40 40"><path d="M14 6 H26 L22 26 H18 Z" fill="none" stroke="#FFC94D" stroke-width="2"/><circle cx="20" cy="31" r="4" fill="none" stroke="#FFC94D" stroke-width="1.6"/></svg>`;
+function makeCard(item){
+  const meta = STYLE_META[item.style];
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.style.setProperty('--style-color', meta.color);
+  div.dataset.series = item.series; div.dataset.style = item.style; div.dataset.proof = item.proof ? '1':'0';
+  div.dataset.search = (item.name+' '+item.en+' '+item.blade+' '+item.ratchet+' '+item.bit).toLowerCase();
+  div.innerHTML = `
+    <div class="card-top"><div style="width:36px;height:36px;">${styleIconSVG(item.style)}</div><span class="series-badge">${item.series}</span></div>
+    <div class="name-cn">${item.name}</div>
+    ${item.en ? `<div class="name-en">${item.en}</div>` : ''}
+    <div class="style-tag"><span class="dot"></span>${meta.label}</div>
+    <div class="parts">
+      <div class="part">${ICON_BLADE}<div class="part-label">刀刃／上蓋</div><div class="part-value">${item.blade}</div></div>
+      <div class="part">${ICON_RATCHET}<div class="part-label">固鎖</div><div class="part-value">${item.ratchet}</div></div>
+      <div class="part">${ICON_BIT}<div class="part-label">軸心</div><div class="part-value">${item.bit}</div></div>
+    </div>
+    <p class="analysis">${item.text}</p>
+    ${item.proof ? `<div class="proof">🏆 賽場前四強實戰驗證</div>` : ``}
+  `;
+  return div;
+}
+const grid = document.getElementById('grid');
+DATA.forEach(item => grid.appendChild(makeCard(item)));
+let activeSeries='all', activeStyle='all', searchTerm='';
+function applyFilter(){
+  const cards = grid.querySelectorAll('.card'); let visible=0;
+  cards.forEach(c=>{
+    const seriesOk = activeSeries==='all' || c.dataset.series===activeSeries;
+    const styleOk = activeStyle==='all' || (activeStyle==='proof' ? c.dataset.proof==='1' : c.dataset.style===activeStyle);
+    const searchOk = !searchTerm || c.dataset.search.includes(searchTerm);
+    const show = seriesOk && styleOk && searchOk;
+    c.style.display = show ? '' : 'none'; if(show) visible++;
+  });
+  document.getElementById('emptyState').style.display = visible===0 ? 'block' : 'none';
+}
+document.getElementById('seriesTabs').addEventListener('click', e=>{
+  const btn = e.target.closest('.tab'); if(!btn) return;
+  document.querySelectorAll('#seriesTabs .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active'); activeSeries = btn.dataset.series; applyFilter();
+});
+document.getElementById('styleChips').addEventListener('click', e=>{
+  const btn = e.target.closest('.chip'); if(!btn) return;
+  document.querySelectorAll('#styleChips .chip').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active'); activeStyle = btn.dataset.style; applyFilter();
+});
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', e=>{ searchTerm = e.target.value.trim().toLowerCase(); applyFilter(); });
+
+/* =====================================================
+   PART 5 — Bracket
+   ===================================================== */
+let mode = 'single';
+document.querySelectorAll('.modechip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.modechip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active'); mode = chip.dataset.mode;
+    document.getElementById('groupCountCard').style.display = mode==='group' ? 'block' : 'none';
+  });
+});
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+let bracketRounds = [];
+function buildBracket(players){
+  let n=1; while(n<players.length) n*=2;
+  const padded = players.slice(); while(padded.length<n) padded.push(null);
+  const shuffled = shuffle(padded);
+  const round1 = [];
+  for(let i=0;i<shuffled.length;i+=2) round1.push(makeMatch(shuffled[i], shuffled[i+1]));
+  bracketRounds = [round1];
+  let count = round1.length;
+  while(count>1){ const r=[]; for(let i=0;i<count/2;i++) r.push(makeMatch(null,null)); bracketRounds.push(r); count/=2; }
+  resolveByes(); renderBracket();
+}
+function makeMatch(p1,p2){ return {p1, p2, s1:0, s2:0, winner: p2===undefined?undefined:(p1&&!p2?p1:(p2&&!p1?p2:null)), locked:false}; }
+function resolveByes(){
+  for(let r=0;r<bracketRounds.length-1;r++){
+    bracketRounds[r].forEach((m,idx)=>{
+      let winner=null;
+      if(m.p1 && !m.p2) winner=m.p1; else if(m.p2 && !m.p1) winner=m.p2;
+      if(winner){ m.winner=winner; placeInNextRound(r, idx, winner); }
+    });
+  }
+}
+function placeInNextRound(r, idx, winner){
+  const nextRound = bracketRounds[r+1]; if(!nextRound) return;
+  const matchIdx = Math.floor(idx/2); const slot = idx%2===0 ? 'p1' : 'p2';
+  nextRound[matchIdx][slot] = winner;
+}
+function addScore(r, idx, side, pts){
+  const m = bracketRounds[r][idx]; if(m.locked) return;
+  if(side===1) m.s1 += pts; else m.s2 += pts;
+  if(m.s1>=4 || m.s2>=4){
+    m.locked=true; m.winner = m.s1>=4 ? m.p1 : m.p2;
+    placeInNextRound(r, idx, m.winner); resolveByes();
+  }
+  renderBracket();
+}
+function resetMatch(r, idx){
+  const m = bracketRounds[r][idx];
+  m.s1=0; m.s2=0; m.locked=false; m.winner=(m.p1&&!m.p2)?m.p1:((m.p2&&!m.p1)?m.p2:null);
+  for(let rr=r+1; rr<bracketRounds.length; rr++){
+    bracketRounds[rr].forEach(dm=>{ dm.p1=null; dm.p2=null; dm.s1=0; dm.s2=0; dm.locked=false; dm.winner=null; });
+  }
+  resolveByes(); renderBracket();
+}
+function roundLabel(totalRounds, r){
+  const remaining = totalRounds - r;
+  if(remaining===1) return '冠軍賽'; if(remaining===2) return '準決賽'; if(remaining===3) return '八強賽';
+  return `第 ${r+1} 輪`;
+}
+function slotHTML(name, score, isWinner, isBye){
+  return `<div class="slot ${isWinner?'winner':''} ${isBye?'bye':''}"><span class="pname">${name || '（輪空）'}</span>${name && !isBye ? `<span class="pscore">${score}</span>` : ''}</div>`;
+}
+function renderBracket(){
+  const el = document.getElementById('bracket'); el.innerHTML='';
+  const totalRounds = bracketRounds.length;
+  bracketRounds.forEach((round, r)=>{
+    const col = document.createElement('div'); col.className='round';
+    const title = document.createElement('div'); title.className='round-title'; title.textContent = roundLabel(totalRounds, r);
+    col.appendChild(title);
+    round.forEach((m, idx)=>{
+      const box = document.createElement('div'); box.className='match';
+      const isBye1 = m.p1 && !m.p2; const isBye2 = m.p2 && !m.p1;
+      box.innerHTML = `${slotHTML(m.p1, m.s1, m.locked && m.winner===m.p1, isBye1)}${slotHTML(m.p2, m.s2, m.locked && m.winner===m.p2, isBye2)}`;
+      if(m.p1 && m.p2 && !m.locked){
+        const controls = document.createElement('div');
+        controls.innerHTML = `
+          <div class="scorebtns">
+            <button class="sbtn" data-r="${r}" data-i="${idx}" data-side="1" data-pts="1">${m.p1} +1</button>
+            <button class="sbtn" data-r="${r}" data-i="${idx}" data-side="1" data-pts="2">${m.p1} +2</button>
+            <button class="sbtn" data-r="${r}" data-i="${idx}" data-side="1" data-pts="3">${m.p1} +3</button>
+          </div>
+          <div class="scorebtns">
+            <button class="sbtn" data-r="${r}" data-i="${idx}" data-side="2" data-pts="1">${m.p2} +1</button>
+            <button class="sbtn" data-r="${r}" data-i="${idx}" data-side="2" data-pts="2">${m.p2} +2</button>
+            <button class="sbtn" data-r="${r}" data-i="${idx}" data-side="2" data-pts="3">${m.p2} +3</button>
+          </div>`;
+        box.appendChild(controls);
+      }
+      if(m.locked){
+        const rb = document.createElement('button'); rb.className='matchreset'; rb.textContent='重新計分';
+        rb.addEventListener('click', ()=>resetMatch(r, idx)); box.appendChild(rb);
+      }
+      col.appendChild(box);
+    });
+    el.appendChild(col);
+  });
+  el.querySelectorAll('.sbtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>addScore(parseInt(btn.dataset.r), parseInt(btn.dataset.i), parseInt(btn.dataset.side), parseInt(btn.dataset.pts)));
+  });
+  const champBox = document.getElementById('champBox');
+  const finalRound = bracketRounds[bracketRounds.length-1];
+  if(finalRound && finalRound.length===1 && finalRound[0].winner && finalRound[0].locked){
+    champBox.style.display='block';
+    champBox.innerHTML = `<div class="champcard"><div class="crown">🏆</div><div class="cname display">${finalRound[0].winner} 是冠軍！</div></div>`;
+  } else champBox.style.display='none';
+}
+function parseNames(){ return document.getElementById('playerNames').value.split('\n').map(s=>s.trim()).filter(Boolean); }
+document.getElementById('startBtn').addEventListener('click', ()=>{
+  const names = parseNames();
+  if(names.length<3){ alert('至少要輸入 3 位選手名字喔！'); return; }
+  if(names.length>32){ alert('最多 32 人，太多的話可以先分組再淘汰賽。'); return; }
+  if(mode==='single'){
+    document.getElementById('groupsPanel').style.display='none';
+    document.getElementById('toBracketRow').style.display='none';
+    document.getElementById('bracketWrap').style.display='block';
+    buildBracket(names);
+  } else {
+    const groupCount = Math.max(2, parseInt(document.getElementById('groupCount').value)||4);
+    renderGroups(names, groupCount);
+    document.getElementById('bracketWrap').style.display='none';
+    document.getElementById('champBox').style.display='none';
+  }
+});
+function renderGroups(names, groupCount){
+  const shuffled = shuffle(names);
+  const groups = Array.from({length:groupCount}, ()=>[]);
+  shuffled.forEach((name,i)=> groups[i%groupCount].push(name));
+  const panel = document.getElementById('groupsPanel'); panel.style.display='grid'; panel.innerHTML='';
+  groups.forEach((g,gi)=>{
+    const card = document.createElement('div'); card.className='groupcard';
+    card.innerHTML = `<h4>第 ${gi+1} 組</h4><ul class="plist">${g.map(n=>`<li><input type="checkbox" class="advcheck" value="${n}"> ${n}</li>`).join('')}</ul>`;
+    panel.appendChild(card);
+  });
+  document.getElementById('toBracketRow').style.display='flex';
+}
+document.getElementById('toBracketBtn').addEventListener('click', ()=>{
+  const checked = Array.from(document.querySelectorAll('.advcheck:checked')).map(c=>c.value);
+  if(checked.length<2){ alert('請至少勾選 2 位晉級選手'); return; }
+  document.getElementById('groupsPanel').style.display='none';
+  document.getElementById('toBracketRow').style.display='none';
+  document.getElementById('bracketWrap').style.display='block';
+  buildBracket(checked);
+});
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  document.getElementById('playerNames').value='';
+  document.getElementById('groupsPanel').style.display='none';
+  document.getElementById('toBracketRow').style.display='none';
+  document.getElementById('bracketWrap').style.display='none';
+  document.getElementById('champBox').style.display='none';
+  bracketRounds = [];
+});
+
+/* =====================================================
+   PART 6 — My Collection (personal photo album, shared:false)
+   Everything here is stored ONLY on this device. Nothing here
+   is ever written with shared:true, unlike match records.
+   ===================================================== */
+let mineItems = [];
+let mineEditingId = null;
+let minePhotoRaw = null; // compressed original, before filter is baked in
+let mineType = 'blade';
+let minePreset = 'none';
+
+const FILTER_PRESETS = {
+  none: '',
+  warm: 'sepia(0.25) saturate(1.25) hue-rotate(-8deg)',
+  cool: 'saturate(1.15) hue-rotate(15deg) contrast(1.05)',
+  vivid: 'saturate(1.6) contrast(1.1)',
+  bw: 'grayscale(1) contrast(1.1)',
+  vintage: 'sepia(0.4) contrast(0.9) brightness(1.05) saturate(0.85)'
+};
+
+function currentFilterString(){
+  const brightness = document.getElementById('mineBrightness').value;
+  const preset = FILTER_PRESETS[minePreset] || '';
+  return `brightness(${brightness}%) ${preset}`.trim();
+}
+
+async function loadMineItems(){
+  try{
+    const r = await appStorage.get('mycollection', false);
+    mineItems = r && r.value ? JSON.parse(r.value) : [];
+  }catch(e){ mineItems = []; }
+  renderMineGrid();
+}
+async function saveMineItems(){
+  try{ await appStorage.set('mycollection', JSON.stringify(mineItems), false); }
+  catch(e){ console.error('mycollection save failed', e); }
+}
+
+function openMineEditor(existing){
+  document.getElementById('mineEditor').style.display = 'block';
+  document.getElementById('addMineBtn').style.display = 'none';
+  minePhotoRaw = null;
+  minePreset = 'none';
+  document.getElementById('mineBrightness').value = 100;
+  document.querySelectorAll('.presetchip').forEach(b=>b.classList.toggle('active', b.dataset.preset==='none'));
+  document.getElementById('mineFilterPanel').style.display = 'none';
+  document.getElementById('minePhotoBox').innerHTML = `<span class="ph-hint"><span class="ph-icon">📷</span>點一下或長按上傳照片</span>`;
+
+  if(existing){
+    mineEditingId = existing.id;
+    mineType = existing.type;
+    document.getElementById('mineName').value = existing.name || '';
+    document.getElementById('mineNote').value = existing.note || '';
+    if(existing.photo){
+      minePhotoRaw = existing.photoRaw || existing.photo;
+      document.getElementById('minePhotoBox').innerHTML = `<img id="minePreviewImg" src="${existing.photo}">`;
+      document.getElementById('mineFilterPanel').style.display = 'block';
+    }
+  } else {
+    mineEditingId = null;
+    mineType = 'blade';
+    document.getElementById('mineName').value = '';
+    document.getElementById('mineNote').value = '';
+  }
+  document.querySelectorAll('#mineEditor .modechip').forEach(b=>b.classList.toggle('active', b.dataset.type===mineType));
+  document.getElementById('mineEditor').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function closeMineEditor(){
+  document.getElementById('mineEditor').style.display = 'none';
+  document.getElementById('addMineBtn').style.display = 'block';
+}
+document.getElementById('addMineBtn').addEventListener('click', ()=>openMineEditor(null));
+document.getElementById('mineCancelBtn').addEventListener('click', closeMineEditor);
+
+document.querySelectorAll('#mineEditor .modechip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('#mineEditor .modechip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    mineType = chip.dataset.type;
+  });
+});
+
+document.getElementById('minePhotoBox').addEventListener('click', ()=> document.getElementById('mineFile').click());
+document.getElementById('mineFile').addEventListener('change', async ()=>{
+  const file = document.getElementById('mineFile').files[0];
+  if(!file) return;
+  const box = document.getElementById('minePhotoBox');
+  box.innerHTML = `<span class="ph-hint">處理中…</span>`;
+  try{
+    minePhotoRaw = await compressImage(file, 640, 0.78);
+    box.innerHTML = `<img id="minePreviewImg" src="${minePhotoRaw}">`;
+    document.getElementById('mineFilterPanel').style.display = 'block';
+    minePreset = 'none';
+    document.getElementById('mineBrightness').value = 100;
+    document.querySelectorAll('.presetchip').forEach(b=>b.classList.toggle('active', b.dataset.preset==='none'));
+    updateMinePreview();
+  }catch(e){
+    box.innerHTML = `<span class="ph-hint">讀取失敗，再試一次</span>`;
+  }
+});
+
+function updateMinePreview(){
+  const img = document.getElementById('minePreviewImg');
+  if(img) img.style.filter = currentFilterString();
+}
+document.getElementById('mineBrightness').addEventListener('input', updateMinePreview);
+document.querySelectorAll('.presetchip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    document.querySelectorAll('.presetchip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+    minePreset = chip.dataset.preset;
+    updateMinePreview();
+  });
+});
+
+function bakeFilterToDataURL(srcDataUrl, filterString){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.filter = filterString || 'none';
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = reject;
+    img.src = srcDataUrl;
+  });
+}
+
+document.getElementById('mineSaveBtn').addEventListener('click', async ()=>{
+  const name = document.getElementById('mineName').value.trim();
+  if(!name){ alert('至少幫它取個名字吧！'); return; }
+  let finalPhoto = null;
+  if(minePhotoRaw){
+    try{ finalPhoto = await bakeFilterToDataURL(minePhotoRaw, currentFilterString()); }
+    catch(e){ finalPhoto = minePhotoRaw; }
+  }
+  const note = document.getElementById('mineNote').value.trim();
+
+  if(mineEditingId){
+    const idx = mineItems.findIndex(it=>it.id===mineEditingId);
+    if(idx>-1){
+      mineItems[idx] = {
+        ...mineItems[idx], type:mineType, name, note,
+        photo: finalPhoto || mineItems[idx].photo,
+        photoRaw: minePhotoRaw || mineItems[idx].photoRaw
+      };
+    }
+  } else {
+    mineItems.push({id:'m'+Date.now(), type:mineType, name, note, photo:finalPhoto, photoRaw:minePhotoRaw, createdAt:Date.now()});
+  }
+  await saveMineItems();
+  closeMineEditor();
+  renderMineGrid();
+});
+
+let mineActiveFilter = 'all';
+document.querySelectorAll('.mine-filter-tabs .tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.mine-filter-tabs .tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    mineActiveFilter = tab.dataset.filter;
+    renderMineGrid();
+  });
+});
+
+const MINE_TYPE_LABEL = {blade:'刀刃／上蓋', ratchet:'固鎖', bit:'軸心'};
+
+function renderMineGrid(){
+  const grid = document.getElementById('mineGrid');
+  const empty = document.getElementById('mineEmpty');
+  const items = mineActiveFilter==='all' ? mineItems : mineItems.filter(it=>it.type===mineActiveFilter);
+  if(items.length===0){
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = items.map(it => `
+    <div class="minecard">
+      ${it.photo ? `<img src="${it.photo}">` : `<div style="aspect-ratio:4/3; display:flex; align-items:center; justify-content:center; background:var(--surface-2); font-size:24px;">📦</div>`}
+      <div class="minecard-body">
+        <div class="minecard-type">${MINE_TYPE_LABEL[it.type]||''}</div>
+        <div class="minecard-name">${it.name}</div>
+        ${it.note ? `<div class="minecard-note">${it.note}</div>` : ''}
+        <div class="minecard-actions">
+          <button class="mine-edit" data-id="${it.id}">✏️ 編輯</button>
+          <button class="mine-del" data-id="${it.id}">🗑 刪除</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  grid.querySelectorAll('.mine-edit').forEach(b=>b.addEventListener('click', ()=>{
+    const item = mineItems.find(it=>it.id===b.dataset.id);
+    if(item) openMineEditor(item);
+  }));
+  grid.querySelectorAll('.mine-del').forEach(b=>b.addEventListener('click', async ()=>{
+    if(!confirm('確定要刪除這個收藏嗎？')) return;
+    mineItems = mineItems.filter(it=>it.id!==b.dataset.id);
+    await saveMineItems();
+    renderMineGrid();
+  }));
+}
+loadMineItems();
+
+</script>
+</body>
+</html>
