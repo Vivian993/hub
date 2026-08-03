@@ -2,7 +2,11 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0A0714">
 <title>陀螺對戰台 VS</title>
 <!-- 📌 重要：iPhone「加入主畫面」的桌面圖示，一定要抓外部檔案（放內嵌的圖沒有用），
      所以這兩行需要 custom-icon.png 這個檔案跟這支 HTML 放在同一層資料夾／同一個 GitHub repo 裡。
@@ -35,12 +39,16 @@
     color:var(--text); font-size:15px; cursor:pointer;}
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
   html{scroll-behavior:smooth;}
+  html, body{width:100%; min-height:100%;}
   body{
     background:
       radial-gradient(900px 500px at 8% -8%, rgba(255,45,85,0.14), transparent 55%),
       radial-gradient(900px 500px at 100% 0%, rgba(45,140,255,0.14), transparent 55%),
       var(--bg);
-    color:var(--text); font-family:'Noto Sans TC', sans-serif; min-height:100vh; padding-bottom:90px;
+    color:var(--text); font-family:'Noto Sans TC', sans-serif; min-height:100vh; min-height:100dvh;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:calc(90px + env(safe-area-inset-bottom));
+    padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right);
     overflow-x:hidden;
   }
   button{font-family:inherit; -webkit-tap-highlight-color:transparent;}
@@ -177,7 +185,13 @@
 
   /* ---- Stats ---- */
   .stats-wrap{max-width:680px; margin:0 auto; padding:20px 16px;}
-  .qr-card{background:var(--surface); border:1px solid var(--gold); border-radius:16px; padding:20px; text-align:center; margin-bottom:20px; box-shadow:0 0 30px rgba(255,201,77,0.12);}
+  .qr-card{background:var(--surface); border:1px solid var(--gold); border-radius:16px; padding:20px; text-align:center; margin-bottom:16px; box-shadow:0 0 30px rgba(255,201,77,0.12);}
+  .qr-card-collapsible{padding:14px 20px;}
+  .qr-card-collapsible[open]{padding:14px 20px 20px;}
+  .qr-card-collapsible summary::-webkit-details-marker{display:none;}
+  .qr-card-collapsible summary::after{content:'▾'; float:right; color:var(--muted); font-size:13px;}
+  .qr-card-collapsible[open] summary::after{content:'▴';}
+  .qr-card-collapsible .qr-card-sub, .qr-card-collapsible #qrcodeBox, .qr-card-collapsible .qr-url, .qr-card-collapsible #copyLinkBtn, .qr-card-collapsible .qr-note{margin-top:12px;}
   .qr-card-title{font-family:'Rajdhani',sans-serif; font-weight:700; font-size:16px; color:var(--gold);}
   .qr-card-sub{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.7;}
   .info-links{margin-top:22px; display:grid; gap:8px;}
@@ -189,6 +203,17 @@
   #qrcodeBox{display:flex; justify-content:center; margin:16px 0 10px; background:#fff; padding:12px; border-radius:12px; width:fit-content; margin-left:auto; margin-right:auto;}
   .qr-url{font-family:'Rajdhani',sans-serif; font-size:12px; color:var(--muted); word-break:break-all; margin-bottom:12px;}
   .qr-note{font-size:11px; color:var(--muted); margin-top:10px;}
+  .bracket-history{background:var(--surface); border:1px solid var(--line); border-radius:14px; margin-bottom:16px;}
+  .bracket-history summary{padding:14px 16px; cursor:pointer; list-style:none; font-family:'Rajdhani',sans-serif; font-weight:700; font-size:14px; color:var(--gold);}
+  .bracket-history summary::-webkit-details-marker{display:none;}
+  .bracket-history summary::after{content:'▾'; float:right; color:var(--muted); font-size:13px;}
+  .bracket-history[open] summary::after{content:'▴';}
+  .bracket-history-list{padding:0 12px 12px;}
+  .bracket-history-row{display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--surface-2); border-radius:9px; padding:9px 12px; margin-top:8px;}
+  .bracket-history-row .bh-meta{font-size:12px; color:var(--muted);}
+  .bracket-history-row .bh-title{font-size:13px; font-weight:600;}
+  .bracket-history-row button{background:var(--gold); color:#1a1330; border:none; border-radius:7px; padding:6px 12px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;}
+  .bracket-history-empty{font-size:12px; color:var(--muted); padding:2px 4px 8px;}
   .stats-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
   .refreshbtn{padding:9px 16px; border-radius:10px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-family:'Rajdhani',sans-serif; font-weight:700; cursor:pointer;}
   .statrow{display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; background:var(--surface); border:1px solid var(--line); margin-bottom:8px;}
@@ -251,8 +276,8 @@
   .icon-slot:active{opacity:0.7;}
   .icon-clear{position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%; background:#000; color:#fff; border:1px solid var(--line); font-size:10px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;}
   .icon-hint{font-size:10px; color:var(--muted); margin-top:10px;}
-  .card-controls{display:flex; gap:6px; margin-top:10px;}
-  .card-controls button{flex:1; font-size:10px; padding:6px; border-radius:6px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); cursor:pointer;}
+  .card-controls{display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;}
+  .card-controls button{flex:1; min-width:64px; font-size:9.5px; padding:6px 4px; border-radius:6px; border:1px solid var(--line); background:var(--surface-2); color:var(--text); cursor:pointer;}
   footer{max-width:960px; margin:40px auto 0; padding:20px 18px 0; border-top:1px solid var(--line); font-size:11px; color:var(--muted); line-height:1.8;}
 
   /* ---- Bracket (reuse) ---- */
@@ -347,6 +372,13 @@
     <p>拍下你的陀螺，倒數 3-2-1 開戰，比分打到 4 分先贏</p>
   </div>
 
+  <div class="vs-wrap" id="battleModeWrap">
+    <div class="cue-mode-row" style="grid-template-columns:1fr 1fr;">
+      <button class="cue-mode-btn active" id="modeNormalBtn" data-mode="normal">⚔️ 一般對戰<span>（2人）</span></button>
+      <button class="cue-mode-btn" id="modeArenaBtn" data-mode="arena">🔁 輪流擂台賽<span>（3人以上）</span></button>
+    </div>
+  </div>
+
   <div class="vs-wrap" id="setupZone">
     <div class="score-board">
       <div class="score-board-hint">先只填名字——刀刃／固鎖／軸心等分出勝負後才會問，比賽中不會被對手看到。</div>
@@ -363,6 +395,24 @@
       </div>
     </div>
   </div>
+
+  <div class="vs-wrap" id="arenaSetupZone" style="display:none;">
+    <div class="score-board">
+      <div class="score-board-hint">3 個人以上輪流打：輸的人下去，換候補的人上場，一直輪替。每個人依序輸入一行名字，順序會決定候補次序。</div>
+      <div class="field"><label>選手名單（一行一個，至少 3 人）</label><textarea id="arenaNames" style="width:100%; min-height:110px; background:var(--surface-2); border:1px solid var(--line); border-radius:9px; color:var(--text); padding:10px 12px; font-size:14px; font-family:'Noto Sans TC',sans-serif; resize:vertical;" placeholder="阿明&#10;阿華&#10;阿德&#10;佳佳"></textarea></div>
+      <button class="bigbtn" id="arenaStartBtn" style="width:100%; margin-top:12px;">🔁 開始輪流擂台賽</button>
+    </div>
+  </div>
+
+  <div class="vs-wrap" id="arenaStatusWrap" style="display:none;">
+    <div class="voice-panel">
+      <div class="voice-panel-title">🏆 擂台賽戰況</div>
+      <div id="arenaQueueLine" style="font-size:13px; color:var(--muted); margin-top:6px;"></div>
+      <div id="arenaLeaderboard" style="margin-top:10px;"></div>
+      <button class="ghostbtn" id="arenaEndBtn" style="width:100%; margin-top:12px;">🔚 結束擂台賽</button>
+    </div>
+  </div>
+
 
   <div class="vs-wrap" id="voicePanelWrap">
     <div class="voice-panel">
@@ -460,6 +510,9 @@
       <button class="btn-primary" id="recordBtn">✅ 記錄戰績</button>
       <button class="btn-ghost" id="rematchBtn">🔁 再戰一場</button>
     </div>
+    <div class="winner-actions" id="arenaNextWrap" style="display:none; margin-top:8px;">
+      <button class="btn-primary" id="arenaNextBtn">🔁 換人・下一場</button>
+    </div>
   </div>
 </div>
 
@@ -546,6 +599,7 @@
     <h1 class="display" style="font-size:34px; margin-top:6px;">比賽賽程表</h1>
     <p style="color:var(--muted); font-size:13px; margin-top:8px;">官方 4 分制計分（迴轉 1 分／爆裂・擊飛 2 分／極限 3 分），輸入名單自動排對戰表。</p>
   </header>
+  <div id="bracketHistoryWrap" style="max-width:960px; margin:0 auto; padding:0 18px;"></div>
   <div class="setup" id="setupPanel">
     <div class="setup-card">
       <h3>比賽資訊</h3>
@@ -583,7 +637,7 @@
   <div class="event-banner" id="eventBanner" style="display:none;"></div>
   <div class="share-card" id="shareCard" style="display:none;">
     <div class="share-card-title">🔗 分享這個賽程表給今天比賽的人</div>
-    <div class="share-card-sub">把連結傳出去，大家打開都看得到即時比分（在同一台裝置／同一個瀏覽器分享環境下最準；離開 claude.ai 自架網站時只會同步在自己這台裝置）。</div>
+    <div class="share-card-sub">這個連結裡面直接帶著整張賽程表的資料，傳給任何人、用任何手機打開都看得到一樣的賽程表。之後比分有更新，記得重新複製一次最新的連結再傳一次（離開 claude.ai 自架網站時，比分不會自動即時同步給已經拿到舊連結的人）。</div>
     <div class="qr-url" id="shareUrlText"></div>
     <button class="ghostbtn" id="copyShareLinkBtn">📋 複製連結</button>
   </div>
@@ -593,25 +647,25 @@
 
 <!-- ============ STATS VIEW ============ -->
 <div class="view" id="view-stats">
-  <header class="cat-header">
+  <header class="cat-header" style="padding-bottom:6px;">
     <span class="eyebrow">大家一起打出來的數據</span>
-    <h1 class="display" style="font-size:34px; margin-top:6px;">配置勝率統計</h1>
-    <p style="color:var(--muted); font-size:13px; margin-top:8px;">統計所有同學在「對戰」分頁按下「記錄戰績」的比賽結果，看哪組配置最會打。</p>
+    <h1 class="display" style="font-size:26px; margin-top:4px;">配置勝率統計</h1>
   </header>
-  <div class="stats-wrap">
-    <div class="qr-card">
-      <div class="qr-card-title">📱 查看紀錄表・分享給今天比賽的人</div>
-      <div class="qr-card-sub">把這個連結傳給大家，或掃 QR Code，打開就能看紀錄表——戰績會自動共用，同學那邊記錄的比賽，你這邊也看得到。</div>
+  <div class="stats-wrap" style="padding-top:8px;">
+    <details class="qr-card qr-card-collapsible">
+      <summary class="qr-card-title" style="cursor:pointer; list-style:none;">📱 查看紀錄表連結・分享給今天比賽的人</summary>
+      <div class="qr-card-sub">這是「總戰績紀錄表」的固定連結，跟賽程表分頁那個連結是兩個不同的東西——這個沒有比賽資訊，一直都長一樣；把它傳給大家或掃 QR Code，打開就能看紀錄表。</div>
       <div id="qrcodeBox"></div>
       <div class="qr-url" id="qrUrlText"></div>
       <button class="ghostbtn" id="copyLinkBtn">📋 複製紀錄表連結</button>
       <div class="qr-note" id="qrNote">⚠️ 這個網址是公開共用的，掃到的人都能看到大家的戰績。</div>
-    </div>
+    </details>
     <div class="stats-head">
       <span style="font-size:12px; color:var(--muted);" id="statsCount">尚未載入</span>
       <button class="refreshbtn" id="refreshStatsBtn">🔄 重新整理</button>
     </div>
     <div id="statsList"></div>
+
 
     <div class="info-links">
       <div class="info-links-title">🔎 外部情報站</div>
@@ -953,7 +1007,7 @@ function playKickThump(ctx, time){
   osc.type = 'sine';
   osc.frequency.setValueAtTime(140, time);
   osc.frequency.exponentialRampToValueAtTime(45, time + 0.15);
-  gain.gain.setValueAtTime(0.45, time);
+  gain.gain.setValueAtTime(0.7, time);
   gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
   osc.connect(gain).connect(ctx.destination);
   osc.start(time); osc.stop(time + 0.2);
@@ -964,7 +1018,7 @@ function playHatTick(ctx, time){
   const data = buffer.getChannelData(0);
   for(let i=0;i<bufSize;i++){ data[i] = (Math.random()*2-1) * (1 - i/bufSize); }
   const noise = ctx.createBufferSource(); noise.buffer = buffer;
-  const gain = ctx.createGain(); gain.gain.setValueAtTime(0.09, time);
+  const gain = ctx.createGain(); gain.gain.setValueAtTime(0.18, time);
   noise.connect(gain).connect(ctx.destination);
   noise.start(time);
 }
@@ -979,7 +1033,7 @@ function scheduleMusicStep(){
   const pattern = isRock ? ROCK_RIFF : POP_RIFF;
   const stepDur = isRock ? 0.2 : 0.24;
   const note = pattern[musicStep % pattern.length];
-  playSynthNote(ctx, note, now, stepDur*0.9, isRock ? 'sawtooth' : 'triangle', isRock ? 0.09 : 0.07);
+  playSynthNote(ctx, note, now, stepDur*0.9, isRock ? 'sawtooth' : 'triangle', isRock ? 0.22 : 0.18);
   if(musicStep % 2 === 0) playKickThump(ctx, now);
   if(!isRock && musicStep % 2 === 1) playHatTick(ctx, now);
   if(isRock) playHatTick(ctx, now + stepDur*0.5);
@@ -1033,6 +1087,72 @@ nav.forEach(btn=>btn.addEventListener('click', ()=>{
    PART 2 — Battle: countdown + scoring
    ===================================================== */
 let live = {red:{}, blue:{}, s1:0, s2:0};
+
+/* =====================================================
+   PART 0d — rotation "arena" mode for 3+ people practicing
+   casually (loser sits out, next person in line steps up,
+   everyone keeps count of who's won the most).
+   ===================================================== */
+let arenaMode = false;
+let arenaQueue = [];       // names waiting their turn
+let arenaWinCounts = {};   // name -> wins
+document.getElementById('modeNormalBtn').addEventListener('click', ()=>setBattleMode('normal'));
+document.getElementById('modeArenaBtn').addEventListener('click', ()=>setBattleMode('arena'));
+function setBattleMode(mode){
+  document.getElementById('modeNormalBtn').classList.toggle('active', mode==='normal');
+  document.getElementById('modeArenaBtn').classList.toggle('active', mode==='arena');
+  document.getElementById('setupZone').style.display = mode==='normal' ? 'block' : 'none';
+  document.getElementById('arenaSetupZone').style.display = mode==='arena' ? 'block' : 'none';
+  document.getElementById('goRow').style.display = mode==='normal' ? 'block' : 'none';
+}
+function renderArenaStatus(){
+  const wrap = document.getElementById('arenaStatusWrap');
+  if(!arenaMode){ wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  document.getElementById('arenaQueueLine').textContent = arenaQueue.length
+    ? '⏳ 候補中：' + arenaQueue.join('、')
+    : '⏳ 候補中：（沒有人候補了，繞了一圈）';
+  const rows = Object.entries(arenaWinCounts).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('arenaLeaderboard').innerHTML = rows.length
+    ? rows.map(([name,wins],i)=>`<div class="bracket-history-row"><div class="bh-title">${i+1}. ${name}</div><div class="bh-meta">${wins} 勝</div></div>`).join('')
+    : '<div class="bracket-history-empty">還沒有人贏過一場。</div>';
+}
+document.getElementById('arenaStartBtn').addEventListener('click', async ()=>{
+  const names = document.getElementById('arenaNames').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(names.length < 3){ alert('至少要輸入 3 位選手才能玩輪流擂台賽喔！'); return; }
+  arenaMode = true;
+  arenaWinCounts = {};
+  names.forEach(n => arenaWinCounts[n] = 0);
+  const shuffled = names.slice();
+  for(let i=shuffled.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]; }
+  live.red = { name: shuffled[0] };
+  live.blue = { name: shuffled[1] };
+  arenaQueue = shuffled.slice(2);
+  live.s1 = 0; live.s2 = 0;
+  document.getElementById('arenaSetupZone').style.display = 'none';
+  document.getElementById('battleModeWrap').style.display = 'none';
+  renderArenaStatus();
+  await runCountdown();
+  showBattleScreen();
+});
+document.getElementById('arenaNextBtn').addEventListener('click', async ()=>{
+  document.getElementById('winnerOverlay').classList.remove('show');
+  live.s1 = 0; live.s2 = 0;
+  document.getElementById('battleScreen').classList.remove('show');
+  await runCountdown();
+  showBattleScreen();
+});
+document.getElementById('arenaEndBtn').addEventListener('click', ()=>{
+  if(!confirm('確定要結束這場擂台賽嗎？（排行榜會清空）')) return;
+  arenaMode = false;
+  arenaQueue = [];
+  arenaWinCounts = {};
+  document.getElementById('battleScreen').classList.remove('show');
+  document.getElementById('arenaStatusWrap').style.display = 'none';
+  document.getElementById('battleModeWrap').style.display = 'block';
+  setBattleMode('normal');
+});
+
 
 // Speak text via TTS and resolve once it has actually finished (not a guessed delay).
 function speakAsync(text, lang, opts){
@@ -1173,6 +1293,23 @@ function showWinner(side){
   document.getElementById('comboBlueInput').value = '';
   overlay.classList.add('show');
   overlay.dataset.winnerSide = side;
+
+  document.getElementById('arenaNextWrap').style.display = arenaMode ? 'flex' : 'none';
+  document.querySelector('.winner-actions').style.display = arenaMode ? 'none' : 'flex';
+
+  if(arenaMode){
+    if(arenaWinCounts[w.name] === undefined) arenaWinCounts[w.name] = 0;
+    arenaWinCounts[w.name]++;
+    const loserSide = side === 'red' ? 'blue' : 'red';
+    const loserName = live[loserSide].name;
+    const nextChallenger = arenaQueue.length ? arenaQueue.shift() : null;
+    if(nextChallenger){
+      live[loserSide] = { name: nextChallenger };
+      arenaQueue.push(loserName);
+    }
+    // If nobody is waiting (everyone's already in this match), the same two just keep playing.
+    renderArenaStatus();
+  }
 }
 
 document.getElementById('rematchBtn').addEventListener('click', ()=>{
@@ -1201,8 +1338,13 @@ document.getElementById('recordBtn').addEventListener('click', async ()=>{
 
 document.getElementById('backToSetupBtn').addEventListener('click', ()=>{
   document.getElementById('battleScreen').classList.remove('show');
-  document.getElementById('setupZone').style.display='block';
-  document.getElementById('goRow').style.display='block';
+  if(arenaMode){
+    document.getElementById('arenaStatusWrap').style.display='block';
+  } else {
+    document.getElementById('setupZone').style.display='block';
+    document.getElementById('goRow').style.display='block';
+    document.getElementById('battleModeWrap').style.display='block';
+  }
 });
 document.getElementById('resetScoreBtn').addEventListener('click', ()=>{
   live.s1=0; live.s2=0; updateScoreUI();
@@ -1277,7 +1419,7 @@ document.getElementById('refreshStatsBtn').addEventListener('click', loadStats);
 let qrRendered = false;
 function renderShareQR(){
   if(qrRendered) return;
-  const url = window.location.href.split('#')[0];
+  const url = baseAppUrl(); // always the plain app link — never whatever ?event=/?b= happens to be in the address bar right now
   document.getElementById('qrUrlText').textContent = url;
   const noteEl = document.getElementById('qrNote');
   if(noteEl){
@@ -1296,7 +1438,7 @@ function renderShareQR(){
   }catch(e){ console.error('QR render failed', e); }
 }
 document.getElementById('copyLinkBtn').addEventListener('click', async ()=>{
-  const url = window.location.href.split('#')[0];
+  const url = baseAppUrl();
   try{
     await navigator.clipboard.writeText(url);
     const btn = document.getElementById('copyLinkBtn');
@@ -1409,7 +1551,7 @@ function makeCard(item){
     </div>
     ${item.text ? `<p class="analysis">${item.text}</p>` : ''}
     ${item.proof ? `<div class="proof">🏆 賽場前四強實戰驗證</div>` : ``}
-    ${item.isCustom ? `<div class="card-controls"><button class="combo-edit" data-id="${item.id}">✏️ 編輯</button><button class="combo-del" data-id="${item.id}">🗑 刪除</button></div>` : `<div class="icon-hint">點縮圖可放自己的照片</div>`}
+    ${item.isCustom ? `<div class="card-controls"><button class="combo-edit" data-id="${item.id}">✏️ 編輯</button><button class="combo-share" data-id="${item.id}">🖼 分享圖片</button><button class="combo-del" data-id="${item.id}">🗑 刪除</button></div>` : `<div class="icon-hint">點縮圖可放自己的照片</div>`}
   `;
   return div;
 }
@@ -1421,6 +1563,142 @@ let officialPhotoTargetId = null;
 let officialPhotoTargetPart = null; // null = main card icon, else 'blade'|'ratchet'|'bit'
 const grid = document.getElementById('grid');
 
+/* =====================================================
+   PART 4b — export a custom combo as one shareable image
+   (photo + name + blade/ratchet/bit all in one picture, so it can be
+   sent as-is instead of asking a friend to open the app)
+   ===================================================== */
+function loadImageAsync(src){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.onload = ()=>resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+function svgToDataUri(svg){
+  // These SVG strings are normally just innerHTML'd into the page, where the
+  // namespace is inherited — but as a standalone image source they need their
+  // own xmlns or the browser silently fails to decode them.
+  if(!/xmlns=/.test(svg)) svg = svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+function resolvedStyleIconSVG(style){
+  const color = getComputedStyle(document.documentElement).getPropertyValue('--'+style).trim() || '#FFC94D';
+  return styleIconSVG(style).replace(new RegExp('var\\(--'+style+'\\)', 'g'), color);
+}
+function drawRoundedImage(ctx, img, x, y, w, h, radius){
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x+radius, y);
+  ctx.arcTo(x+w, y, x+w, y+h, radius);
+  ctx.arcTo(x+w, y+h, x, y+h, radius);
+  ctx.arcTo(x, y+h, x, y, radius);
+  ctx.arcTo(x, y, x+w, y, radius);
+  ctx.closePath();
+  ctx.clip();
+  // cover-fit
+  const scale = Math.max(w/img.width, h/img.height);
+  const dw = img.width*scale, dh = img.height*scale;
+  ctx.drawImage(img, x + (w-dw)/2, y + (h-dh)/2, dw, dh);
+  ctx.restore();
+}
+async function shareComboCardImage(item){
+  if(document.fonts && document.fonts.ready) await document.fonts.ready;
+  const meta = STYLE_META[item.style];
+  const styleColor = getComputedStyle(document.documentElement).getPropertyValue('--'+item.style).trim() || '#FFC94D';
+
+  const W = 720, H = 980;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#1B1533'); bg.addColorStop(1, '#0A0714');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = styleColor; ctx.fillRect(0, 0, W, 12);
+
+  // main photo (or the style icon as a fallback), centered near the top
+  const mainSrc = item.photo || svgToDataUri(resolvedStyleIconSVG(item.style));
+  const mainImg = await loadImageAsync(mainSrc);
+  const mainSize = 260, mainX = (W-mainSize)/2, mainY = 60;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(mainX+mainSize/2, mainY+mainSize/2, mainSize/2+6, 0, Math.PI*2);
+  ctx.strokeStyle = styleColor; ctx.lineWidth = 6; ctx.stroke();
+  ctx.restore();
+  if(item.photo) drawRoundedImage(ctx, mainImg, mainX, mainY, mainSize, mainSize, mainSize/2);
+  else ctx.drawImage(mainImg, mainX+40, mainY+40, mainSize-80, mainSize-80);
+
+  // name
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#F5F3FF';
+  ctx.font = "bold 52px 'Noto Sans TC', sans-serif";
+  ctx.fillText(item.name || '我的配置', W/2, mainY+mainSize+80);
+  if(item.en){
+    ctx.font = "24px 'Rajdhani', sans-serif";
+    ctx.fillStyle = '#9C97B8';
+    ctx.fillText(item.en, W/2, mainY+mainSize+114);
+  }
+
+  // style tag pill
+  const tagY = mainY+mainSize+150;
+  ctx.font = "bold 22px 'Noto Sans TC', sans-serif";
+  const tagText = meta ? meta.label : '';
+  const tagW = ctx.measureText(tagText).width + 60;
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(W/2-tagW/2, tagY-18, tagW, 40, 20) : ctx.rect(W/2-tagW/2, tagY-18, tagW, 40);
+  ctx.fill();
+  ctx.fillStyle = styleColor;
+  ctx.beginPath(); ctx.arc(W/2-tagW/2+22, tagY+2, 6, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#F5F3FF';
+  ctx.fillText(tagText, W/2+12, tagY+9);
+
+  // three parts row: blade / ratchet / bit
+  const parts = [
+    { key:'blade', label:'刀刃／上蓋', value: item.blade || '—', fallback: ICON_BLADE },
+    { key:'ratchet', label:'固鎖', value: item.ratchet || '—', fallback: ICON_RATCHET },
+    { key:'bit', label:'軸心', value: item.bit || '—', fallback: ICON_BIT }
+  ];
+  const rowY = tagY + 70;
+  const colW = (W-120)/3, boxSize = 150;
+  for(let i=0;i<parts.length;i++){
+    const p = parts[i];
+    const cx = 60 + colW*i + colW/2;
+    const boxX = cx - boxSize/2;
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(boxX, rowY, boxSize, boxSize, 18); else ctx.rect(boxX, rowY, boxSize, boxSize);
+    ctx.fill();
+    const partPhoto = partPhotos[item.id+':'+p.key];
+    const iconSrc = partPhoto || svgToDataUri(p.fallback);
+    const iconImg = await loadImageAsync(iconSrc);
+    if(partPhoto) drawRoundedImage(ctx, iconImg, boxX+14, rowY+14, boxSize-28, boxSize-28, 12);
+    else ctx.drawImage(iconImg, cx-40, rowY+35, 80, 80);
+    ctx.font = "18px 'Noto Sans TC', sans-serif";
+    ctx.fillStyle = '#9C97B8';
+    ctx.fillText(p.label, cx, rowY+boxSize+30);
+    ctx.font = "bold 26px 'Rajdhani', sans-serif";
+    ctx.fillStyle = '#F5F3FF';
+    ctx.fillText(p.value, cx, rowY+boxSize+62);
+  }
+
+  // footer watermark
+  ctx.font = "16px 'Rajdhani', sans-serif";
+  ctx.fillStyle = '#6B6690';
+  ctx.fillText('陀螺對戰台 VS', W/2, H-30);
+
+  const dataUrl = canvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = (item.name || '我的配置') + '.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+
 function renderCatalogGrid(){
   grid.innerHTML = '';
   DATA.forEach(item => { item.photo = officialPhotos[item.id] || null; grid.appendChild(makeCard(item)); });
@@ -1429,6 +1707,17 @@ function renderCatalogGrid(){
   grid.querySelectorAll('.combo-edit').forEach(b=>b.addEventListener('click', ()=>{
     const item = customCombos.find(it=>it.id===b.dataset.id);
     if(item) openComboEditor(item);
+  }));
+  grid.querySelectorAll('.combo-share').forEach(b=>b.addEventListener('click', async ()=>{
+    const item = customCombos.find(it=>it.id===b.dataset.id);
+    if(!item) return;
+    b.textContent = '產生中…';
+    b.disabled = true;
+    try{
+      await shareComboCardImage(item);
+    }catch(e){ console.error('export combo image failed', e); alert('圖片產生失敗，請再試一次。'); }
+    b.textContent = '🖼 分享圖片';
+    b.disabled = false;
   }));
   grid.querySelectorAll('.combo-del').forEach(b=>b.addEventListener('click', async ()=>{
     if(!confirm('確定要刪除這張卡片嗎？')) return;
@@ -1678,6 +1967,21 @@ function eventInfo(){
     location: document.getElementById('eventLocation').value.trim() || ''
   };
 }
+// Outside claude.ai there is no real shared backend — "shared" storage only
+// really lives on the device that created it. So on a self-hosted page, the
+// only way a link actually shows the right bracket on someone else's phone
+// is to carry the whole bracket inside the link itself, not a lookup key.
+function utf8ToB64(str){ return btoa(unescape(encodeURIComponent(str))); }
+function b64ToUtf8(str){ return decodeURIComponent(escape(atob(str))); }
+function encodeBracketData(){
+  return utf8ToB64(JSON.stringify({ i: eventInfo(), r: bracketRounds }));
+}
+function decodeBracketData(b64){
+  const compact = JSON.parse(b64ToUtf8(b64));
+  return { info: compact.i, rounds: compact.r };
+}
+function baseAppUrl(){ return window.location.origin + window.location.pathname; }
+
 function renderEventBanner(){
   const info = eventInfo();
   const banner = document.getElementById('eventBanner');
@@ -1695,12 +1999,20 @@ async function persistBracket(){
   try{
     await appStorage.set('bracket:'+currentEventId, JSON.stringify({info: eventInfo(), rounds: bracketRounds}), true);
   }catch(e){ console.error('bracket save failed', e); }
+  showShareCard(); // keep the copyable link's embedded snapshot in sync with the latest score
 }
 
 function showShareCard(){
-  const url = new URL(window.location.href);
-  url.search = '';
-  url.searchParams.set('event', currentEventId);
+  const url = new URL(baseAppUrl());
+  if(hasClaudeStorage){
+    // Inside claude.ai, appStorage really is shared, so a short lookup key is enough.
+    url.searchParams.set('event', currentEventId);
+  } else {
+    // Self-hosted (e.g. GitHub Pages): no shared backend, so embed the whole
+    // bracket in the link itself — this is what actually makes it work when
+    // someone opens it on a different phone.
+    url.searchParams.set('b', encodeBracketData());
+  }
   document.getElementById('shareUrlText').textContent = url.toString();
   document.getElementById('shareCard').style.display='block';
 }
@@ -1714,36 +2026,107 @@ document.getElementById('copyShareLinkBtn').addEventListener('click', async ()=>
   }catch(e){ alert('複製失敗，請自己選取上面那串網址複製。'); }
 });
 
-// If this page was opened via a shared bracket link (?event=xxxx), load and show that bracket.
+// If this page was opened via a shared bracket link, load and show that bracket.
+// Two formats are supported: ?b=<embedded data> (works anywhere, no backend needed)
+// and ?event=<id> (claude.ai only, where appStorage is genuinely shared).
 async function tryLoadSharedBracket(){
   const params = new URLSearchParams(window.location.search);
+  const bParam = params.get('b');
   const eventId = params.get('event');
-  if(!eventId) return;
+  let data = null;
+  if(bParam){
+    try{ data = decodeBracketData(bParam); currentEventId = 'shared-' + ((data.info && data.info.date) || 'x'); }
+    catch(e){ console.error('decode shared bracket link failed', e); return; }
+  } else if(eventId){
+    try{
+      const r = await appStorage.get('bracket:'+eventId, true);
+      if(r && r.value){ data = JSON.parse(r.value); currentEventId = eventId; }
+    }catch(e){ console.error('load shared bracket failed', e); }
+  } else {
+    return;
+  }
+  if(data) applyBracketData(data);
+}
+
+// Puts a loaded bracket (from a share link OR from the history list) on screen.
+function applyBracketData(data){
   try{
-    const r = await appStorage.get('bracket:'+eventId, true);
-    if(r && r.value){
-      const data = JSON.parse(r.value);
-      currentEventId = eventId;
-      if(data.info){
-        document.getElementById('eventDate').value = data.info.date || '';
-        document.getElementById('eventTime').value = data.info.time || '';
-        document.getElementById('eventLocation').value = data.info.location || '';
-      }
-      bracketRounds = data.rounds || [];
-      document.getElementById('setupPanel').style.display = 'none';
-      document.getElementById('bracketWrap').style.display = 'block';
-      renderEventBanner();
-      renderBracket();
-      showShareCard();
-      // Switch to the bracket tab so the shared link opens straight to it.
-      document.querySelectorAll('.applink').forEach(b=>b.classList.remove('active'));
-      document.querySelector('.applink[data-view="bracket"]').classList.add('active');
-      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-      document.getElementById('view-bracket').classList.add('active');
+    if(data.info){
+      document.getElementById('eventDate').value = data.info.date || '';
+      document.getElementById('eventTime').value = data.info.time || '';
+      document.getElementById('eventLocation').value = data.info.location || '';
     }
-  }catch(e){ console.error('load shared bracket failed', e); }
+    bracketRounds = data.rounds || [];
+    document.getElementById('setupPanel').style.display = 'none';
+    document.getElementById('bracketWrap').style.display = 'block';
+    renderEventBanner();
+    renderBracket();
+    showShareCard();
+    // Switch to the bracket tab so the shared link opens straight to it.
+    document.querySelectorAll('.applink').forEach(b=>b.classList.remove('active'));
+    document.querySelector('.applink[data-view="bracket"]').classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-bracket').classList.add('active');
+  }catch(e){ console.error('apply bracket data failed', e); }
 }
 tryLoadSharedBracket();
+
+/* =====================================================
+   PART 5b — bracket history (so past schedules aren't just gone
+   after "重新開始" — this is personal, on-device only, since it's
+   just a convenience list for the person who ran the tournament)
+   ===================================================== */
+async function loadBracketHistory(){
+  try{
+    const r = await appStorage.get('bracketHistoryList', false);
+    return r && r.value ? JSON.parse(r.value) : [];
+  }catch(e){ return []; }
+}
+async function saveBracketHistory(list){
+  try{ await appStorage.set('bracketHistoryList', JSON.stringify(list), false); }
+  catch(e){ console.error('bracketHistoryList save failed', e); }
+}
+async function addToBracketHistory(entry){
+  let list = await loadBracketHistory();
+  list = list.filter(e=>e.id !== entry.id);
+  list.unshift(entry);
+  if(list.length > 30) list = list.slice(0, 30);
+  await saveBracketHistory(list);
+  renderBracketHistory();
+}
+async function renderBracketHistory(){
+  const wrap = document.getElementById('bracketHistoryWrap');
+  if(!wrap) return;
+  const list = await loadBracketHistory();
+  if(list.length === 0){ wrap.innerHTML = ''; return; }
+  const rows = list.map(e => {
+    const parts = [];
+    if(e.date) parts.push(e.date);
+    if(e.time) parts.push(e.time);
+    if(e.location) parts.push(e.location);
+    const meta = parts.join('　') || '（沒有填時間地點）';
+    return `<div class="bracket-history-row">
+      <div>
+        <div class="bh-title">${e.playerCount ? e.playerCount+'人賽程' : '賽程表'}</div>
+        <div class="bh-meta">${meta}</div>
+      </div>
+      <button class="bh-load" data-id="${e.id}">查看</button>
+    </div>`;
+  }).join('');
+  wrap.innerHTML = `<details class="bracket-history">
+    <summary>🗂 先前的賽程表（${list.length}）</summary>
+    <div class="bracket-history-list">${rows}</div>
+  </details>`;
+  wrap.querySelectorAll('.bh-load').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      try{
+        const r = await appStorage.get('bracket:'+btn.dataset.id, true);
+        if(r && r.value){ currentEventId = btn.dataset.id; applyBracketData(JSON.parse(r.value)); }
+      }catch(e){ console.error('load bracket from history failed', e); }
+    });
+  });
+}
+renderBracketHistory();
 
 function buildBracket(players){
   let n=1; while(n<players.length) n*=2;
@@ -1759,6 +2142,8 @@ function buildBracket(players){
   currentEventId = (eventInfo().date || 'x') + '-' + Math.random().toString(36).slice(2,8);
   persistBracket();
   showShareCard();
+  const info = eventInfo();
+  addToBracketHistory({ id: currentEventId, date: info.date, time: info.time, location: info.location, playerCount: players.length });
 }
 function makeMatch(p1,p2){ return {p1, p2, s1:0, s2:0, winner: p2===undefined?undefined:(p1&&!p2?p1:(p2&&!p1?p2:null)), locked:false}; }
 function resolveByes(){
