@@ -665,6 +665,7 @@
     <h1 class="display" style="font-size:26px; margin-top:4px;">配置勝率統計</h1>
   </header>
   <div class="stats-wrap" style="padding-top:8px;">
+    <button class="bigbtn" id="mvpCardBtn" style="display:none; margin-bottom:14px;">👑 產生今日 MVP 小卡</button>
     <details class="qr-card qr-card-collapsible">
       <summary class="qr-card-title" style="cursor:pointer; list-style:none;">📱 查看紀錄表連結・分享給今天比賽的人</summary>
       <div class="qr-card-sub">這是「總戰績紀錄表」的固定連結，跟賽程表分頁那個連結是兩個不同的東西——這個沒有比賽資訊，一直都長一樣；把它傳給大家或掃 QR Code，打開就能看紀錄表。</div>
@@ -1483,6 +1484,9 @@ function showWinner(side){
     arenaWinCounts[w.name]++;
     const loserSide = side === 'red' ? 'blue' : 'red';
     const loserName = live[loserSide].name;
+    // Save this match to shared stats too, same as normal mode — read the
+    // combo fields now (before the swap below changes who's on the losing side).
+    saveMatchRecordAuto(side);
     const nextChallenger = arenaQueue.length ? arenaQueue.shift() : null;
     if(nextChallenger){
       live[loserSide] = { name: nextChallenger };
@@ -1548,11 +1552,15 @@ document.getElementById('resetScoreBtn').addEventListener('click', ()=>{
 /* =====================================================
    PART 3 — Stats (from shared storage)
    ===================================================== */
+let currentTopStat = null; // {name, win, total, rate} for whoever's currently #1 on the leaderboard
 async function loadStats(){
   const listEl = document.getElementById('statsList');
   const countEl = document.getElementById('statsCount');
+  const mvpBtn = document.getElementById('mvpCardBtn');
   countEl.textContent = '載入中...';
   listEl.innerHTML = '';
+  mvpBtn.style.display = 'none';
+  currentTopStat = null;
   try{
     const res = await appStorage.list('match:', true);
     const keys = res && res.keys ? res.keys : [];
@@ -1587,6 +1595,8 @@ async function loadStats(){
       listEl.innerHTML = '<div class="statempty">還沒有足夠資料。</div>';
       return;
     }
+    currentTopStat = rows[0];
+    mvpBtn.style.display = 'block';
     rows.forEach((r,i)=>{
       const div = document.createElement('div');
       div.className = 'statrow';
@@ -1606,6 +1616,83 @@ async function loadStats(){
     console.error(e);
   }
 }
+// A celebratory shareable "MVP card" for whoever's currently #1 on the
+// leaderboard — same hand-drawn canvas approach as the combo cards in 圖鑑,
+// just simpler (no photos/parts, just a name, trophy, and record).
+async function shareMvpCardImage(stat){
+  if(document.fonts && document.fonts.ready) await document.fonts.ready;
+
+  const W = 720, H = 860;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#2A1F0A'); bg.addColorStop(1, '#0A0714');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#FFC94D'; ctx.fillRect(0, 0, W, 12);
+
+  ctx.textAlign = 'center';
+
+  // trophy
+  ctx.font = "160px sans-serif";
+  ctx.fillText('🏆', W/2, 260);
+
+  // eyebrow label
+  ctx.font = "24px 'Rajdhani', sans-serif";
+  ctx.fillStyle = '#FFC94D';
+  ctx.fillText('今日 MVP', W/2, 330);
+
+  // name
+  ctx.font = "bold 64px 'Noto Sans TC', sans-serif";
+  ctx.fillStyle = '#F5F3FF';
+  ctx.fillText(stat.name, W/2, 430);
+
+  // record pill
+  const pillY = 480;
+  const pillText = `${stat.win} 勝 / 共 ${stat.total} 場`;
+  ctx.font = "bold 28px 'Noto Sans TC', sans-serif";
+  const pillW = ctx.measureText(pillText).width + 70;
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(W/2-pillW/2, pillY-24, pillW, 52, 26); else ctx.rect(W/2-pillW/2, pillY-24, pillW, 52);
+  ctx.fill();
+  ctx.fillStyle = '#F5F3FF';
+  ctx.fillText(pillText, W/2, pillY+10);
+
+  // big win-rate number
+  ctx.font = "bold 140px 'Rajdhani', sans-serif";
+  ctx.fillStyle = '#FFC94D';
+  ctx.fillText(`${stat.rate.toFixed(0)}%`, W/2, 680);
+  ctx.font = "22px 'Noto Sans TC', sans-serif";
+  ctx.fillStyle = '#9C97B8';
+  ctx.fillText('目前勝率', W/2, 720);
+
+  // footer watermark
+  ctx.font = "16px 'Rajdhani', sans-serif";
+  ctx.fillStyle = '#6B6690';
+  ctx.fillText('陀螺對戰台 VS', W/2, H-30);
+
+  const dataUrl = canvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = `MVP_${stat.name}.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+document.getElementById('mvpCardBtn').addEventListener('click', async ()=>{
+  if(!currentTopStat) return;
+  const btn = document.getElementById('mvpCardBtn');
+  const old = btn.textContent;
+  btn.textContent = '產生中…';
+  btn.disabled = true;
+  try{ await shareMvpCardImage(currentTopStat); }
+  catch(e){ console.error('mvp card export failed', e); alert('圖片產生失敗，請再試一次。'); }
+  btn.textContent = old;
+  btn.disabled = false;
+});
+
 document.getElementById('refreshStatsBtn').addEventListener('click', async ()=>{
   const btn = document.getElementById('refreshStatsBtn');
   const old = btn.textContent;
