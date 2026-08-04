@@ -443,6 +443,11 @@
           <button class="cuebtn del" id="cueDelBtn">✕ 刪除重錄</button>
         </div>
       </div>
+      <div class="voice-panel-sub" style="margin-top:10px;">連續打好幾場的時候，口令要每場都唸，還是只唸第一場？</div>
+      <div class="cue-mode-row">
+        <button class="cue-mode-btn active" id="voiceRepeatAlwaysBtn" data-repeat="always">🔁 每場都唸<span>（預設）</span></button>
+        <button class="cue-mode-btn" id="voiceRepeatOnceBtn" data-repeat="once">1️⃣ 只唸第一場</button>
+      </div>
     </div>
   </div>
 
@@ -872,6 +877,8 @@ let audioCues = {}; // key -> data URL (base64 webm) — legacy per-cue clips, s
 let cueMode = 'builtin'; // 'builtin' | 'custom'
 let customSequenceClip = null; // one recording covering 3-2-1-GO-SHOOT
 let activeRecorder = null;
+let voiceRepeatMode = 'always'; // 'always' | 'once' — whether the countdown voice repeats every auto-continued match
+let hasAnnouncedOnce = false; // reset whenever a fresh battle session starts (not on auto-continue/next-challenger)
 
 async function loadAudioCues(){
   try{
@@ -881,6 +888,10 @@ async function loadAudioCues(){
   try{
     const r2 = await appStorage.get('audiocue:sequence', false);
     if(r2 && r2.value) customSequenceClip = r2.value;
+  }catch(e){}
+  try{
+    const r3 = await appStorage.get('voiceRepeatMode', false);
+    if(r3 && r3.value) voiceRepeatMode = r3.value;
   }catch(e){}
   // Back-compat: if someone previously recorded old-style per-word clips, still use them.
   for(const cue of CUE_LIST){
@@ -899,7 +910,20 @@ function renderCueUI(){
   const hasClip = !!customSequenceClip;
   document.getElementById('cueRecBtn').textContent = hasClip ? '🔴 重新錄音' : '🎙 錄音（一次唸完：3、2、1、GO、SHOOT）';
   document.getElementById('cueCustomActions').style.display = hasClip ? '' : 'none';
+  document.getElementById('voiceRepeatAlwaysBtn').classList.toggle('active', voiceRepeatMode==='always');
+  document.getElementById('voiceRepeatOnceBtn').classList.toggle('active', voiceRepeatMode==='once');
 }
+
+document.getElementById('voiceRepeatAlwaysBtn').addEventListener('click', async ()=>{
+  voiceRepeatMode = 'always';
+  try{ await appStorage.set('voiceRepeatMode', voiceRepeatMode, false); }catch(e){}
+  renderCueUI();
+});
+document.getElementById('voiceRepeatOnceBtn').addEventListener('click', async ()=>{
+  voiceRepeatMode = 'once';
+  try{ await appStorage.set('voiceRepeatMode', voiceRepeatMode, false); }catch(e){}
+  renderCueUI();
+});
 
 document.getElementById('cueModeBuiltinBtn').addEventListener('click', async ()=>{
   cueMode = 'builtin';
@@ -1155,6 +1179,7 @@ document.getElementById('arenaStartBtn').addEventListener('click', async ()=>{
   if(names.length < 3){ alert('至少要輸入 3 位選手才能玩輪流擂台賽喔！'); return; }
   arenaMode = true;
   arenaWinCounts = {};
+  hasAnnouncedOnce = false;
   names.forEach(n => arenaWinCounts[n] = 0);
   const shuffled = names.slice();
   for(let i=shuffled.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]; }
@@ -1172,6 +1197,10 @@ document.getElementById('arenaNextBtn').addEventListener('click', async ()=>{
   document.getElementById('winnerOverlay').classList.remove('show');
   live.s1 = 0; live.s2 = 0;
   document.getElementById('battleScreen').classList.remove('show');
+  if(pendingChallengerAnnouncement){
+    try{ await speakAsync(`${pendingChallengerAnnouncement} 請準備`, 'zh-TW'); }catch(e){}
+    pendingChallengerAnnouncement = null;
+  }
   await runCountdown();
   showBattleScreen();
 });
@@ -1213,8 +1242,32 @@ function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
 // Play a recorded clip for `key` if the user has recorded one; otherwise speak the word aloud.
 // Play the user's one custom recording (3-2-1-GO-SHOOT said in one take) while
 // cycling the overlay text in proportional sync with however long the clip is.
-function runCustomSequence(overlay, textEl){
+// If playAudio is false (repeat-voice setting is "只唸第一場" and this isn't the
+// first match), skip playing the clip and just run the same visual stages on a
+// fixed timer instead, so the pacing still feels consistent match to match.
+function runCustomSequence(overlay, textEl, playAudio){
+  if(playAudio === undefined) playAudio = true;
   return new Promise(resolve=>{
+    const stagesFor = (dur)=>[
+      {t:'3', cls:'num3', at:0},
+      {t:'2', cls:'num2', at:dur*0.2},
+      {t:'1', cls:'num1', at:dur*0.4},
+      {t:'GO!', cls:'go', at:dur*0.6},
+      {t:'SHOOT!', cls:'shoot', at:dur*0.8},
+    ];
+    if(!playAudio){
+      const dur = 3.2;
+      const timers = [];
+      stagesFor(dur).forEach(s=>{
+        timers.push(setTimeout(()=>{
+          textEl.textContent = s.t;
+          textEl.className = 'cd-text display cd-anim ' + s.cls;
+          if(s.cls==='shoot') triggerShootFlash(overlay);
+        }, s.at*1000));
+      });
+      setTimeout(resolve, dur*1000);
+      return;
+    }
     const audio = new Audio(customSequenceClip);
     const timers = [];
     let done = false;
@@ -1226,14 +1279,7 @@ function runCustomSequence(overlay, textEl){
     audio.addEventListener('loadedmetadata', ()=>{
       let dur = audio.duration;
       if(!isFinite(dur) || dur <= 0) dur = 3;
-      const stages = [
-        {t:'3', cls:'num3', at:0},
-        {t:'2', cls:'num2', at:dur*0.2},
-        {t:'1', cls:'num1', at:dur*0.4},
-        {t:'GO!', cls:'go', at:dur*0.6},
-        {t:'SHOOT!', cls:'shoot', at:dur*0.8},
-      ];
-      stages.forEach(s=>{
+      stagesFor(dur).forEach(s=>{
         timers.push(setTimeout(()=>{
           textEl.textContent = s.t;
           textEl.className = 'cd-text display cd-anim ' + s.cls;
@@ -1253,6 +1299,8 @@ async function runCountdown(){
   const textEl = document.getElementById('cdText');
   overlay.classList.add('show');
 
+  const shouldAnnounce = voiceRepeatMode === 'always' || !hasAnnouncedOnce;
+
   // Re-affirm the speech engine right here, still inside the click gesture that
   // called us, before the artificial wait below — otherwise some mobile browsers
   // treat the delayed speak() call as not user-initiated and just stay silent.
@@ -1269,14 +1317,15 @@ async function runCountdown(){
   textEl.className = 'cd-text display cd-anim ready';
   await wait(3000);
 
-  // "各位選手就位" is always the fixed spoken announcement, not user-recordable.
+  // "各位選手就位" is always the fixed spoken announcement, not user-recordable —
+  // but only actually spoken if the repeat setting calls for it this time.
   textEl.textContent = '各位選手就位';
   textEl.className = 'cd-text display cd-anim ready';
-  await speakAsync('各位選手就位', 'zh-TW');
+  if(shouldAnnounce){ await speakAsync('各位選手就位', 'zh-TW'); } else { await wait(500); }
   await wait(200);
 
   if(cueMode === 'custom' && customSequenceClip){
-    await runCustomSequence(overlay, textEl);
+    await runCustomSequence(overlay, textEl, shouldAnnounce);
   } else {
     const steps = [
       {t:'3', cls:'num3', speak:'Three', lang:'en-US'},
@@ -1289,12 +1338,13 @@ async function runCountdown(){
       textEl.textContent = step.t;
       textEl.className = 'cd-text display cd-anim ' + step.cls;
       if(step.cls==='shoot'){ triggerShootFlash(overlay); }
-      await speakAsync(step.speak, step.lang);
+      if(shouldAnnounce){ await speakAsync(step.speak, step.lang); }
       // GO snaps straight into SHOOT at real match pace instead of a held announcement.
       await wait(step.cls==='go' ? 150 : (step.cls==='shoot' ? 300 : 200));
     }
   }
   overlay.classList.remove('show','shake');
+  hasAnnouncedOnce = true;
 }
 
 // Bright white flash + screen shake for the SHOOT moment.
@@ -1313,6 +1363,7 @@ document.getElementById('goBtn').addEventListener('click', async ()=>{
   live.red = { name: document.getElementById('nameRed').value.trim() || '紅方陀螺' };
   live.blue = { name: document.getElementById('nameBlue').value.trim() || '藍方陀螺' };
   live.s1 = 0; live.s2 = 0;
+  hasAnnouncedOnce = false;
   rememberPlayerNames([live.red.name, live.blue.name]);
 
   document.getElementById('setupZone').style.display='none';
@@ -1380,6 +1431,7 @@ document.querySelectorAll('.scorebtn2').forEach(btn=>{
 });
 
 let autoNextTimer = null;
+let pendingChallengerAnnouncement = null; // arena mode: name of the incoming challenger to call out when "換人・下一場" is pressed
 
 function showWinner(side){
   const w = live[side];
@@ -1407,6 +1459,9 @@ function showWinner(side){
     if(nextChallenger){
       live[loserSide] = { name: nextChallenger };
       arenaQueue.push(loserName);
+      pendingChallengerAnnouncement = nextChallenger;
+    } else {
+      pendingChallengerAnnouncement = null;
     }
     // If nobody is waiting (everyone's already in this match), the same two just keep playing.
     renderArenaStatus();
