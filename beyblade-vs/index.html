@@ -1036,10 +1036,36 @@ function playClickTick(){
     osc.start(now); osc.stop(now + 0.07);
   }catch(e){}
 }
-// Every button in the app gets a short tap sound (event delegation, so this
-// also covers buttons that get re-rendered later like catalog/bracket cards).
+// A punchier, lower "hit" sound specifically for scoring a point during a match —
+// distinct from the light tap tick used for regular buttons everywhere else.
+function playScoreHit(pts){
+  try{
+    const ctx = getSfxCtx();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    const startFreq = 220 + pts*40; // bigger scores (極限+3) land a bit higher/punchier
+    osc.frequency.setValueAtTime(startFreq, now);
+    osc.frequency.exponentialRampToValueAtTime(80, now + 0.16);
+    gain.gain.setValueAtTime(0.28, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now); osc.stop(now + 0.2);
+  }catch(e){}
+}
+// Short haptic buzz on supported devices (mainly Android — iOS Safari doesn't
+// support the Vibration API at all, so this silently does nothing there).
+function vibrateShort(ms){
+  try{ if('vibrate' in navigator) navigator.vibrate(ms); }catch(e){}
+}
+// Every button in the app gets a short tap sound + light vibration (event
+// delegation, so this also covers buttons that get re-rendered later like
+// catalog/bracket cards). Score buttons get their own punchier hit sound +
+// stronger vibration instead, wired separately where they're scored.
 document.addEventListener('click', (e)=>{
-  if(e.target.closest('button')) playClickTick();
+  if(e.target.closest('.scorebtn2')) return; // handled separately with the heavier hit feedback
+  if(e.target.closest('button')){ playClickTick(); vibrateShort(10); }
 }, true);
 
 // --- Original background music loops (not real songs) ---
@@ -1421,6 +1447,8 @@ document.querySelectorAll('.scorebtn2').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     const side = btn.dataset.side;
     const pts = parseInt(btn.dataset.pts);
+    playScoreHit(pts);
+    vibrateShort(pts>=3 ? [25,40,25] : (pts===2 ? 30 : 18));
     if(side==='red') live.s1 += pts; else live.s2 += pts;
     updateScoreUI();
     if(live.s1>=4 || live.s2>=4){
