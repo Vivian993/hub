@@ -2678,6 +2678,14 @@ function renderMineGrid(){
 }
 loadMineItems();
 
+// 離線支援：註冊 service-worker.js（要跟這個 html 放同一個資料夾）。
+// 如果檔案不存在或瀏覽器不支援，就直接跳過，不影響網頁其他功能。
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  });
+}
+
 </script>
 </body>
 </html>
