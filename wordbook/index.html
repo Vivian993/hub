@@ -110,7 +110,7 @@
 
   <div class="sticky top-0 z-20 bg-[color:var(--cream)] -mx-4 px-4 sm:-mx-8 sm:px-8 pt-2 pb-1">
   <div class="flex justify-center gap-2 flex-wrap no-print">
-    <button onclick="switchTab('idiom')" id="tabIdiom" class="tab-btn px-4 sm:px-5 py-3 font-bold display text-base sm:text-lg bg-[color:var(--coral)] text-white">📖 成語漫畫</button>
+    <button onclick="switchTab('idiom')" id="tabIdiom" class="tab-btn px-4 sm:px-5 py-3 font-bold display text-base sm:text-lg bg-[color:var(--coral)] text-white">📖 成語圖說</button>
     <button onclick="switchTab('vocab')" id="tabVocab" class="tab-btn px-4 sm:px-5 py-3 font-bold display text-base sm:text-lg bg-white text-[color:var(--ink)]">🔤 生字字典</button>
     <button onclick="switchTab('quiz')" id="tabQuiz" class="tab-btn px-4 sm:px-5 py-3 font-bold display text-base sm:text-lg bg-white text-[color:var(--ink)]">📝 測驗遊戲</button>
     <button onclick="switchTab('manage')" id="tabManage" class="tab-btn px-4 sm:px-5 py-3 font-bold display text-base sm:text-lg bg-white text-[color:var(--ink)]">⚙️ 圖卡管理</button>
@@ -299,6 +299,15 @@
       </div>
     </div>
 
+    <!-- 新增 API Key 管理區塊 -->
+    <div class="crayon-border bg-[color:var(--yellow)]/10 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div>
+            <h3 class="display text-xl text-[color:var(--ink)]">🔑 AI 畫家金鑰設定</h3>
+            <p class="text-sm mt-1">設定您專屬的 Gemini API Key，讓手機與 GitHub 都能隨時免費生圖！</p>
+        </div>
+        <button onclick="resetApiKey()" class="btn-doodle bg-[color:var(--yellow)] text-[color:var(--ink)] px-4 py-2 font-bold text-sm">設定 / 更換金鑰</button>
+    </div>
+
     <div class="crayon-border bg-[color:var(--green)]/10 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
             <h3 class="display text-xl text-[color:var(--green)]">📦 辭典資料備份</h3>
@@ -332,8 +341,38 @@
 </div>
 
 <script>
-// 📌 執行環境自動提供 apiKey，預設傳傳入空字串即可
-const apiKey = ""; 
+// --- API 金鑰管理模組 ---
+function getGeminiApiKey() {
+    // 預設先檢查有沒有環境代墊的 key (預覽環境)
+    const envKey = ""; 
+    if (envKey && envKey.length > 5) return envKey;
+
+    // 如果沒有，就從使用者的手機/瀏覽器儲存中拿
+    let userKey = localStorage.getItem('my_gemini_api_key');
+    if (!userKey) {
+        userKey = prompt("【首次使用設定】\n\n為了讓 AI 畫家在您的手機上也能順利畫圖，請貼上您的免費 Gemini API 金鑰 (API Key)：\n\n👉 如果您還沒有，請搜尋「Google AI Studio」免費申請一組喔！");
+        if (userKey && userKey.trim().length > 10) {
+            localStorage.setItem('my_gemini_api_key', userKey.trim());
+        } else {
+            return null;
+        }
+    }
+    return userKey;
+}
+
+function resetApiKey() {
+    const newKey = prompt("請輸入新的 Gemini API 金鑰：\n(若要清除目前的金鑰，請留空並按下確定)");
+    if (newKey !== null) {
+        if (newKey.trim() === "") {
+            localStorage.removeItem('my_gemini_api_key');
+            alert("金鑰已清除！");
+        } else {
+            localStorage.setItem('my_gemini_api_key', newKey.trim());
+            alert("金鑰設定成功！");
+        }
+    }
+}
+// ----------------------
 
 let currentIdiomData=null, currentVocabData=null;
 let batchVocabList = [];
@@ -405,7 +444,31 @@ async function updateStorageUsage(){
   }catch(e){ el.innerText=''; }
 }
 
-// 指數退避重試工具
+function compressImageToWebP(dataUrlOrFile, maxDim=800, quality=0.82){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      let w=img.width, h=img.height;
+      if(w>h && w>maxDim){ h=Math.round(h*maxDim/w); w=maxDim; }
+      else if(h>maxDim){ w=Math.round(w*maxDim/h); h=maxDim; }
+      
+      const canvas = document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = reject;
+    
+    if(typeof dataUrlOrFile === 'string') {
+        img.src = dataUrlOrFile;
+    } else {
+        const reader = new FileReader();
+        reader.onload = e => img.src = e.target.result;
+        reader.readAsDataURL(dataUrlOrFile);
+    }
+  });
+}
+
 async function fetchWithRetry(url, options, retries = 5) {
     const delays = [1000, 2000, 4000, 8000, 16000];
     for (let i = 0; i < retries; i++) {
@@ -420,60 +483,10 @@ async function fetchWithRetry(url, options, retries = 5) {
     }
 }
 
-// 圖片壓縮優化
-function compressImageToWebP(dataUrl, maxDim=800, quality=0.82){
-  return new Promise((resolve,reject)=>{
-    const img = new Image();
-    img.onload = ()=>{
-      let w=img.width, h=img.height;
-      if(w>h && w>maxDim){ h=Math.round(h*maxDim/w); w=maxDim; }
-      else if(h>maxDim){ w=Math.round(w*maxDim/h); h=maxDim; }
-      
-      const canvas = document.createElement('canvas');
-      canvas.width=w; canvas.height=h;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img,0,0,w,h);
-      resolve(canvas.toDataURL('image/jpeg', quality));
-    };
-    img.onerror = reject;
-    img.src = dataUrl;
-  });
-}
-
-// 🎨 核心生圖功能：使用 Gemini 2.5 Flash Image 模型生成水彩故事解說圖卡
-async function generateAiImage(idiom, meaning) {
-    const prompt = `溫暖水彩繪本風格插畫，解說國語成語「${idiom}」。畫面左上角要有古典木牌或捲軸，寫著標題「${idiom}」與簡短解析：「${meaning}」。畫面中央詳細繪製成語「${idiom}」的經典故事場景，人物表情生動、背景為風景農田水彩畫，色彩溫馨和諧，整體如同一張精美的成語故事解說卡片。`;
-    
-    // 首選：gemini-2.5-flash-image-preview
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
-    const payload = {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
-    };
-
-    try {
-        const data = await fetchWithRetry(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        
-        const part = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-        if (part && part.inlineData?.data) {
-            const mime = part.inlineData.mimeType || 'image/png';
-            const rawDataUrl = `data:${mime};base64,${part.inlineData.data}`;
-            return await compressImageToWebP(rawDataUrl, 800, 0.82);
-        } else {
-            return await generateImagenFallback(idiom, meaning);
-        }
-    } catch(err) {
-        return await generateImagenFallback(idiom, meaning);
-    }
-}
-
-// 備用生圖：imagen-4.0-generate-001
-async function generateImagenFallback(idiom, meaning) {
+// 🎨 真實 AI 繪製：產生精美的水彩成語圖
+async function generateAiImage(idiom, meaning, apiKey) {
     const prompt = `WaterColor storybook illustration card for Chinese idiom "${idiom}". Traditional Chinese title text banner saying "${idiom}". Scene depicting the story of ${idiom}: ${meaning}. Charming children book watercolor style, warm colors, detailed background.`;
+    
     const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
     const payload = { instances: { prompt: prompt }, parameters: { sampleCount: 1 } };
     
@@ -487,7 +500,7 @@ async function generateImagenFallback(idiom, meaning) {
         throw new Error("生成圖片失敗");
     }
     const rawDataUrl = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
-    return await compressImageToWebP(rawDataUrl, 800, 0.82);
+    return await compressImageToWebP(rawDataUrl, 800, 0.85);
 }
 
 async function fetchMoedict(word){
@@ -608,9 +621,9 @@ async function generateIdiomContent(forceIdiom = null){
       </div>`;
     } else {
       cm.innerHTML = `<div class="crayon-border bg-white p-8 text-center wobble-l max-w-xl mx-auto" id="ai-draw-container">
-        <div class="text-5xl mb-4">🎨</div>
-        <h5 class="display text-xl mb-2 text-[color:var(--ink)]">這個成語還沒有插畫喔！</h5>
-        <button onclick="handleGenerateImage('${d.idiom}')" class="btn-doodle px-6 py-3 bg-[color:var(--yellow)] hover:bg-[#ffcf61] text-lg font-bold">🪄 召喚 AI 小畫家繪製故事圖卡</button>
+        <div class="text-5xl mb-4">🪄</div>
+        <h5 class="display text-xl mb-2 text-[color:var(--ink)]">這個成語還沒有故事圖卡喔！</h5>
+        <button onclick="handleGenerateImage('${d.idiom}')" class="btn-doodle px-6 py-3 bg-[color:var(--yellow)] hover:bg-[#ffcf61] text-lg font-bold">🎨 召喚 AI 小畫家繪製水彩圖</button>
       </div>`;
     }
 
@@ -627,24 +640,31 @@ async function generateIdiomContent(forceIdiom = null){
   }
 }
 
-// 呼叫 AI 產生繪本講義插畫
+// 帶有金鑰驗證的生圖呼叫
 async function handleGenerateImage(idiom) {
+    const key = getGeminiApiKey();
+    if(!key) {
+        alert("必須輸入 API 金鑰，小畫家才能幫您畫圖喔！");
+        return;
+    }
+
     const meaning = currentIdiomData.meaning;
     const container = document.getElementById('ai-draw-container');
     container.innerHTML = `<div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[color:var(--coral)] border-t-transparent mb-4"></div>
-        <h5 class="display text-xl text-[color:var(--coral)] mb-2">AI 畫家正在揮灑水彩繪製「${idiom}」故事圖卡...</h5>
-        <p class="text-sm font-bold text-[color:var(--ink)]/70">預計需要 5 ~ 10 秒鐘，請稍候 🎨</p>`;
+        <h5 class="display text-xl text-[color:var(--coral)] mb-2">魔法小畫家正在繪製專屬水彩圖...</h5><p class="text-sm font-bold">約需 10 秒 🎨</p>`;
     
     try {
-        const imageUrl = await generateAiImage(idiom, meaning);
+        const imageUrl = await generateAiImage(idiom, meaning, key);
         container.innerHTML = `
             <div class="tape -top-2 left-1/2 -translate-x-1/2"></div>
-            <img src="${imageUrl}" class="w-full rounded-xl border-2 border-[color:var(--ink)]/10 mb-4 bg-white shadow-sm">
-            <button onclick="saveAiImageToLibrary('${idiom}', '${imageUrl}')" class="btn-doodle w-full py-3 bg-[color:var(--green)] text-white font-bold text-lg hover:scale-105 transition-transform">💾 儲存水彩圖卡</button>`;
+            <img src="${imageUrl}" class="w-full rounded-xl border-2 border-[color:var(--ink)]/10 mb-4 bg-white">
+            <button onclick="saveAiImageToLibrary('${idiom}', '${imageUrl}')" class="btn-doodle w-full py-2 bg-[color:var(--green)] text-white font-bold">💾 儲存水彩圖卡</button>`;
     } catch (e) {
-        container.innerHTML = `<div class="text-5xl mb-4">😭</div><h5 class="display text-xl text-[color:var(--coral)] mb-2">生成失敗了！</h5>
-            <p class="text-xs mb-3 text-[color:var(--ink)]/60">請確認網路連線正常，或稍後再嘗試一次。</p>
-            <button onclick="handleGenerateImage('${idiom}')" class="btn-doodle px-6 py-2 bg-[color:var(--yellow)] font-bold">🔄 重新召喚小畫家</button>`;
+        console.error(e);
+        container.innerHTML = `<div class="text-5xl mb-4">😭</div>
+            <h5 class="display text-xl text-[color:var(--coral)] mb-2">繪製失敗了！</h5>
+            <p class="text-sm text-[color:var(--ink)]/70 mb-4">可能是網路不穩，或是您的 API 金鑰無效/額度用盡。</p>
+            <button onclick="handleGenerateImage('${idiom}')" class="btn-doodle px-6 py-2 bg-[color:var(--yellow)] font-bold">🔄 重試</button>`;
     }
 }
 
@@ -1085,4 +1105,5 @@ window.onload = async function(){
 </script>
 </body>
 </html>
+
 
