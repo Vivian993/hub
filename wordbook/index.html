@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>小樹苗國語文故事辭典</title>
 
-<!-- 📌 iPhone 桌面 App 圖示 -->
+<!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
   <link rel="apple-touch-icon" href="custom-icon.png">
   <link rel="icon" type="image/png" href="custom-icon.png">
 
@@ -172,8 +172,13 @@
 
       <div class="crayon-border bg-[color:var(--yellow)]/20 p-5">
         <h4 class="display text-xl text-[color:var(--ink)] mb-2">✍️ 意思與造句</h4>
-        <p id="cardMeaning" class="font-bold text-[color:var(--ink)] mb-3 p-3 bg-white/60 rounded-xl"></p>
+        <p id="cardMeaning" class="font-bold text-[color:var(--ink)] mb-1 p-3 bg-white/60 rounded-xl"></p>
+        <p id="cardMeaningOriginal" class="text-xs text-[color:var(--ink)]/50 italic mb-3 px-1"></p>
         <p id="cardSentence" class="font-medium mb-2 leading-relaxed text-lg bg-white/60 p-3 rounded-xl border border-dashed border-[color:var(--ink)]/30"></p>
+        <div class="no-print flex items-center gap-2 mb-2">
+          <button onclick="handleGenerateChildSentence()" class="btn-doodle bg-[color:var(--purple)] text-white px-3 py-1.5 text-xs font-bold">✍️ AI 幫我造一句適合小朋友的例句</button>
+        </div>
+        <div id="childSentenceResult" class="text-sm"></div>
         <ul id="cardExtra" class="list-disc list-inside text-sm text-[color:var(--ink)]/80 space-y-1"></ul>
       </div>
     </div>
@@ -370,6 +375,28 @@ function resetApiKey() {
     }
 }
 
+// 🔔 按鍵音效：用 Web Audio API 合成一個清脆的「叮」聲，不需要額外的音檔
+function playClickSound(){
+  try{
+    const ctx = window._appAudioCtx || (window._appAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
+    if(ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.13);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.13);
+  }catch(e){}
+}
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('.btn-doodle, .tab-btn');
+  if(btn) playClickSound();
+}, true);
+
 let currentIdiomData=null, currentVocabData=null;
 let batchVocabList = [];
 
@@ -517,10 +544,171 @@ async function generateAiImage(idiom, meaning, apiKey) {
     throw new Error("AI 未回傳圖片，請確認金鑰額度或稍後再試");
 }
 
+// 使用者提供的 Gemini Gem 連結（網頁版生圖，配額與 API 不同，目前仍可免費使用）
+const GEMINI_GEM_URL = 'https://gemini.google.com/gem/1bUY4OWhqZjcUfelEIKe50aYu7573XsnS?usp=sharing';
+
+function openGeminiGem(idiom){
+  const meaning = (currentIdiomData && currentIdiomData.idiom === idiom) ? (currentIdiomData.meaning || '') : '';
+  const promptText = `請幫我畫一張中文成語「${idiom}」的繪本風水彩插圖，畫面呈現這個情境：${meaning}`;
+  const openIt = ()=> window.open(GEMINI_GEM_URL, '_blank');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(promptText).then(()=>{
+      alert('✅ 提示詞已複製！\n\n即將開啟 Gemini，貼上（長按畫面選擇「貼上」）後送出即可生圖。完成後請把圖片存到手機相簿，再回來這裡點「📷 上傳圖片」喔！');
+      openIt();
+    }).catch(()=>{
+      alert('請自行輸入以下提示詞給 Gemini：\n\n' + promptText);
+      openIt();
+    });
+  } else {
+    alert('請自行輸入以下提示詞給 Gemini：\n\n' + promptText);
+    openIt();
+  }
+}
+
+function manualUploadHtml(idiom){
+  return `<div class="mt-4 pt-4 border-t-2 border-dashed border-[color:var(--ink)]/20">
+      <p class="text-xs text-[color:var(--ink)]/60 mb-2">或者，也可以手動用您的 Gemini 生圖，完成後上傳回來：</p>
+      <div class="flex gap-2 justify-center flex-wrap">
+        <button onclick="openGeminiGem('${idiom}')" class="btn-doodle bg-[color:var(--blue)] text-white px-4 py-2 text-sm font-bold">🔗 開啟 Gemini 手動生圖</button>
+        <label class="btn-doodle bg-white text-[color:var(--ink)] px-4 py-2 text-sm font-bold cursor-pointer">
+          📷 上傳圖片
+          <input type="file" accept="image/*" class="hidden" onchange="handleManualImageUpload(event,'${idiom}')">
+        </label>
+      </div>
+    </div>`;
+}
+
+async function handleManualImageUpload(event, idiom){
+  const file = event.target.files[0];
+  if(!file) return;
+  try{
+    const dataUrl = await compressImageToWebP(file, 800, 0.82);
+    await saveAiImageToLibrary(idiom, dataUrl);
+  }catch(e){
+    console.error(e);
+    alert('圖片處理失敗，請換一張圖片再試試！');
+  }
+}
+
+function getStoredApiKeyOnly(){
+    return localStorage.getItem('my_gemini_api_key') || null;
+}
+
+async function generateSimpleMeaning(idiom, meaning){
+    const key = getStoredApiKeyOnly();
+    if(!key) throw new Error('NO_KEY');
+    const prompt = `你是一位親切有耐心的國小老師。請把成語「${idiom}」的意思，改寫成國小中年級學生聽得懂的口語化中文解釋，可以用簡單的比喻或生活情境幫助理解，30字以內。只回傳解釋本身，不要有任何前言、引號或其他文字。原本的字典解釋是：「${meaning || '無'}」`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+    const payload = { contents: [{ parts: [{ text: prompt }] }] };
+    const data = await fetchWithRetry(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }, 3);
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if(!text) throw new Error('AI 沒有回傳解釋內容');
+    return text.replace(/^["「]|["」]$/g, '');
+}
+
+// 查詢成語時，如果使用者已經設定過金鑰，就自動把意思改寫成小朋友聽得懂的版本
+async function autoSimplifyMeaning(d){
+    const idiom = d.idiom;
+    const meaningEl = document.getElementById('cardMeaning');
+
+    if(d.meaningSimple){ return; } // 已經有快取版本，上面已經直接顯示了
+
+    const key = getStoredApiKeyOnly();
+    if(!key){ return; } // 還沒設定金鑰，就維持顯示原本字典解釋，不強迫跳出金鑰視窗
+
+    // 避免使用者切換頁籤後，舊的非同步結果覆蓋新的卡片內容
+    const requestToken = idiom + '|' + Date.now();
+    meaningEl.dataset.token = requestToken;
+
+    try{
+        const simple = await generateSimpleMeaning(idiom, d.meaning);
+        if(meaningEl.dataset.token !== requestToken || !currentIdiomData || currentIdiomData.idiom !== idiom) return; // 使用者已經查別的成語了
+        meaningEl.innerText = simple;
+        d.meaningSimple = simple;
+        if(currentIdiomData) currentIdiomData.meaningSimple = simple;
+
+        // 存回收藏庫／個人圖卡庫，之後查詢就不用再問一次 AI
+        const idx = savedLibrary.findIndex(i => i.idiom === idiom && i.type === 'idiom');
+        if(idx >= 0){
+            savedLibrary[idx].meaningSimple = simple;
+            localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+        }
+        if(userLibrary[idiom]){
+            userLibrary[idiom].meaningSimple = simple;
+            idbPut({ idiom, ...userLibrary[idiom] }).catch(()=>{});
+        }
+    }catch(e){
+        // 失敗就靜靜維持原本字典解釋，不用跳錯誤打擾使用者
+        console.log('AI 簡化解釋失敗：', e);
+    }
+}
+
 async function fetchMoedict(word){
   const res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(word)}.json`);
   if(!res.ok) throw new Error('查無此字詞');
   return await res.json();
+}
+
+// ✍️ AI 造句：用文字模型（跟圖片模型是不同的免費額度，通常不受圖片配額問題影響）
+async function generateChildSentence(idiom, meaning){
+    const key = getGeminiApiKey();
+    if(!key) throw new Error('NO_KEY');
+    const prompt = `你是一位親切的國小國語老師。請針對成語「${idiom}」（意思：${meaning || '無'}），寫一句適合國小中高年級學生程度、貼近生活情境的中文造句，句子裡要包含「${idiom}」這個成語。只回傳造句本身，不要加任何說明、引號或其他文字。`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+    const payload = { contents: [{ parts: [{ text: prompt }] }] };
+    const data = await fetchWithRetry(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }, 3);
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if(!text) throw new Error('AI 沒有回傳造句內容');
+    return text.replace(/^["「]|["」]$/g, '');
+}
+
+async function handleGenerateChildSentence(){
+    if(!currentIdiomData){ return; }
+    const idiom = currentIdiomData.idiom;
+    const meaning = currentIdiomData.meaning;
+    const resultDiv = document.getElementById('childSentenceResult');
+
+    const key = getGeminiApiKey();
+    if(!key){
+        alert('需要先設定 API 金鑰，AI 才能幫您造句喔！');
+        return;
+    }
+
+    resultDiv.innerHTML = '<span class="text-[color:var(--purple)]">🤔 AI 老師正在想例句...</span>';
+    try{
+        const sentence = await generateChildSentence(idiom, meaning);
+        resultDiv.innerHTML = `<div class="bg-white/70 p-3 rounded-xl border border-dashed border-[color:var(--purple)]/40 mb-2">${sentence.replace(/</g,'&lt;')}</div>
+            <div class="flex gap-2">
+                <button onclick="saveChildSentence(this)" data-sentence="${sentence.replace(/"/g,'&quot;')}" class="no-print btn-doodle bg-[color:var(--green)] text-white px-3 py-1 text-xs font-bold">💾 存為這個成語的造句</button>
+                <button onclick="handleGenerateChildSentence()" class="no-print btn-doodle bg-white px-3 py-1 text-xs font-bold">🔄 再想一句</button>
+            </div>`;
+    }catch(e){
+        const msg = (e && e.message) ? e.message : String(e);
+        resultDiv.innerHTML = `<span class="text-[color:var(--coral)] text-xs">造句失敗：${msg.replace(/</g,'&lt;')}</span>`;
+    }
+}
+
+function saveChildSentence(btnEl){
+    const sentence = btnEl.dataset.sentence;
+    if(!currentIdiomData || !sentence) return;
+    currentIdiomData.sentence = sentence;
+    document.getElementById('cardSentence').innerText = `「${sentence}」`;
+    const idx = savedLibrary.findIndex(i => i.idiom === currentIdiomData.idiom && i.type === 'idiom');
+    if(idx >= 0){
+        savedLibrary[idx].sentence = sentence;
+        localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+        alert('✅ 造句已更新並存入收藏庫！');
+    } else {
+        alert('✅ 造句已更新！記得按上方「📥 收藏」把整張圖卡存進收藏庫喔～');
+    }
 }
 
 let _cachedVoices = [];
@@ -645,7 +833,9 @@ async function generateIdiomContent(forceIdiom = null){
     document.getElementById('cardMeta').innerText = `${grade} / ${lesson}`;
     document.getElementById('cardTitle').innerText = d.idiom;
     document.getElementById('cardZhuyin').innerText = d.zhuyin;
-    document.getElementById('cardMeaning').innerText = d.meaning || '（無解釋）';
+    document.getElementById('cardMeaning').innerText = d.meaningSimple || d.meaning || '（無解釋）';
+    document.getElementById('cardMeaningOriginal').innerText = d.meaning ? `📖 原辭典解釋：${d.meaning}` : '';
+    autoSimplifyMeaning(d);
 
     const bd = document.getElementById('cardBreakdown'); bd.innerHTML='';
     (d.breakdown||[]).forEach(item=>{
@@ -666,6 +856,7 @@ async function generateIdiomContent(forceIdiom = null){
         <div class="text-5xl mb-4">🪄</div>
         <h5 class="display text-xl mb-2 text-[color:var(--ink)]">這個成語還沒有故事圖卡喔！</h5>
         <button onclick="handleGenerateImage('${d.idiom}')" class="btn-doodle px-6 py-3 bg-[color:var(--yellow)] hover:bg-[#ffcf61] text-lg font-bold">🎨 召喚 AI 小畫家繪製水彩圖</button>
+        ${manualUploadHtml(d.idiom)}
       </div>`;
     }
 
@@ -673,6 +864,7 @@ async function generateIdiomContent(forceIdiom = null){
     document.getElementById('cardAntonyms').innerHTML = (d.antonyms||[]).map(w=>`<span class="crayon-border bg-white px-3 py-1 text-sm font-bold">${w}</span>`).join('') || '<span class="text-sm text-[color:var(--ink)]/50">（無）</span>';
     document.getElementById('cardSentence').innerText = d.sentence ? `「${d.sentence}」` : '（請自行發揮想像力造句喔）';
     document.getElementById('cardExtra').innerHTML = (d.extraSentences||[]).map(s=>`<li>${s}</li>`).join('');
+    document.getElementById('childSentenceResult').innerHTML = '';
 
     document.getElementById('loadingIdiom').classList.add('hidden');
     document.getElementById('cardResult').classList.remove('hidden');
@@ -708,7 +900,8 @@ async function handleGenerateImage(idiom) {
             <p class="text-sm text-[color:var(--ink)]/70 mb-2">可能是網路不穩，或是您的 API 金鑰無效/額度用盡。</p>
             <p class="text-xs text-left bg-[color:var(--coral)]/10 p-3 rounded-lg break-all mb-4 text-[color:var(--ink)]/80">錯誤訊息：${rawMsg.replace(/</g,'&lt;')}</p>
             <button onclick="handleGenerateImage('${idiom}')" class="btn-doodle px-6 py-2 bg-[color:var(--yellow)] font-bold mr-2">🔄 重試</button>
-            <button onclick="resetApiKey()" class="btn-doodle px-6 py-2 bg-white font-bold">🔑 更換金鑰</button>`;
+            <button onclick="resetApiKey()" class="btn-doodle px-6 py-2 bg-white font-bold">🔑 更換金鑰</button>
+            ${manualUploadHtml(idiom)}`;
     }
 }
 
@@ -1028,7 +1221,8 @@ function renderLibrary(){
     if(item.type === 'idiom') {
         detailBox.innerHTML = `
             <p><strong>注音：</strong>${item.zhuyin || '（無）'}</p>
-            <p><strong>意思：</strong>${item.meaning || '（無）'}</p>
+            <p><strong>意思：</strong>${item.meaningSimple || item.meaning || '（無）'}</p>
+            ${item.meaningSimple ? `<p class="text-xs text-[color:var(--ink)]/50 italic">📖 原辭典解釋：${item.meaning || '（無）'}</p>` : ''}
             <p><strong>造句：</strong>${item.sentence || '（無）'}</p>
             <div class="flex gap-2 mt-2">
                 <span class="bg-[color:var(--green)]/20 px-2 py-1 rounded">近義詞：${(item.synonyms||[]).join('、') || '無'}</span>
