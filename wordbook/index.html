@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>小樹苗國語文故事辭典</title>
 
-<!-- 📌 iPhone 桌面 App 圖示 -->
+<!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
   <link rel="apple-touch-icon" href="custom-icon.png">
   <link rel="icon" type="image/png" href="custom-icon.png">
 
@@ -67,16 +67,15 @@
   ::-webkit-scrollbar{height:8px;width:8px;}
   ::-webkit-scrollbar-thumb{background:#d9c092;border-radius:8px;}
 
-  /* A4 直式列印規範與防斷頁設定 */
   @page {
     size: A4 portrait;
-    margin: 10mm;
+    margin: 15mm;
   }
 
   @media print{
     .no-print{display:none!important;}
     body{background:white!important; background-image:none!important;}
-    .panel{box-shadow:none!important; border:none!important; padding: 0 !important;}
+    .panel{box-shadow:none!important; border:none!important;}
     
     body.print-mode-quiz * { visibility: hidden; }
     body.print-mode-quiz #printQuizArea, body.print-mode-quiz #printQuizArea * { visibility: visible; }
@@ -86,14 +85,12 @@
     body.print-mode-idiom #cardResult, body.print-mode-idiom #cardResult * { visibility: visible; }
     body.print-mode-idiom #cardResult { position: absolute; left: 0; top: 0; width: 100%; }
 
-    /* 圖卡管理列印模式：強制展開、防止卡片被從中間切斷 */
     body.print-mode-manage * { visibility: hidden; }
     body.print-mode-manage #panelManage, body.print-mode-manage #panelManage * { visibility: visible; }
     body.print-mode-manage #panelManage { position: absolute; left: 0; top: 0; width: 100%; background: white !important; }
     body.print-mode-manage .lib-detail-box { display: block !important; }
     body.print-mode-manage button { display: none !important; }
     
-    /* 關鍵：每一個清單卡片獨立成塊，絕對不從中間斷開 */
     .library-card-item {
       break-inside: avoid !important;
       page-break-inside: avoid !important;
@@ -436,71 +433,68 @@ async function fetchMoedict(word){
   return await res.json();
 }
 
+// 🎨 修復 Canvas 繪圖排版：嚴格分行計算，防止文字疊在同一個位置
 function generateCanvasIllustration(idiom, meaning) {
     return new Promise((resolve) => {
         const canvas = document.createElement('canvas');
-        canvas.width = 400;
-        canvas.height = 300;
+        canvas.width = 500;
+        canvas.height = 350;
         const ctx = canvas.getContext('2d');
 
+        // 背景
         ctx.fillStyle = "#FFFDF5";
-        ctx.fillRect(0, 0, 400, 300);
+        ctx.fillRect(0, 0, 500, 350);
 
+        // 底色草地
         ctx.fillStyle = "#E8F5E9";
         ctx.beginPath();
-        ctx.moveTo(0, 240);
-        ctx.quadraticCurveTo(200, 220, 400, 250);
-        ctx.lineTo(400, 300);
-        ctx.lineTo(0, 300);
+        ctx.moveTo(0, 280);
+        ctx.quadraticCurveTo(250, 260, 500, 290);
+        ctx.lineTo(500, 350);
+        ctx.lineTo(0, 350);
         ctx.fill();
 
+        // 框線
         ctx.strokeStyle = "#4A3728";
         ctx.lineWidth = 4;
-        ctx.strokeRect(6, 6, 388, 288);
+        ctx.strokeRect(6, 6, 488, 338);
 
-        ctx.fillStyle = "#5FAE7F";
-        ctx.beginPath();
-        ctx.arc(60, 240, 25, 0, Math.PI * 2);
-        ctx.fill();
+        // 內側白色對話框背景
+        ctx.fillStyle = "rgba(255, 252, 244, 0.95)";
+        ctx.fillRect(35, 30, 430, 220);
         ctx.strokeStyle = "#4A3728";
         ctx.lineWidth = 3;
-        ctx.stroke();
+        ctx.strokeRect(35, 30, 430, 220);
 
+        // 成語標題
         ctx.fillStyle = "#FF6F5E";
-        ctx.beginPath();
-        ctx.arc(330, 80, 30, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = "rgba(255, 252, 244, 0.9)";
-        ctx.fillRect(40, 40, 320, 150);
-        ctx.strokeStyle = "#4A3728";
-        ctx.lineWidth = 3;
-        ctx.strokeRect(40, 40, 320, 150);
-
-        ctx.fillStyle = "#FF6F5E";
-        ctx.font = "bold 32px 'ZCOOL KuaiLe', sans-serif";
+        ctx.font = "bold 36px 'ZCOOL KuaiLe', sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(idiom, 200, 90);
+        ctx.fillText(idiom, 250, 85);
 
+        // 意思自動換行與排版 (解決文字重疊)
         ctx.fillStyle = "#4A3728";
         ctx.font = "16px 'Noto Sans TC', sans-serif";
-        const maxCharPerLine = 18;
-        let line = "";
-        let currentY = 125;
-        for (let n = 0; n < meaning.length; n++) {
-            let testLine = line + meaning[n];
-            if (testLine.length > maxCharPerLine && n > 0) {
-                ctx.fillText(line, 200, currentY);
-                line = meaning[n];
-                currentY += 24;
-            } else {
-                line = testLine;
+        ctx.textAlign = "center";
+        
+        const maxCharPerLine = 24;
+        let lines = [];
+        let currentLine = "";
+        
+        for (let i = 0; i < meaning.length; i++) {
+            currentLine += meaning[i];
+            if (currentLine.length >= maxCharPerLine || i === meaning.length - 1) {
+                lines.push(currentLine);
+                currentLine = "";
             }
         }
-        ctx.fillText(line, 200, currentY);
 
-        resolve(canvas.toDataURL('image/webp', 0.8));
+        let startY = 125;
+        lines.slice(0, 4).forEach((lineText, index) => {
+            ctx.fillText(lineText, 250, startY + (index * 28));
+        });
+
+        resolve(canvas.toDataURL('image/webp', 0.85));
     });
 }
 
@@ -936,7 +930,6 @@ function renderLibrary(){
   
   filtered.forEach((item,idx)=>{
     const cardWrapper = document.createElement('div');
-    // 加入 library-card-item 類別供列印防斷頁控制
     cardWrapper.className = "library-card-item crayon-border bg-white p-4 flex flex-col gap-3 transition-all";
     
     const mainRow = document.createElement('div');
