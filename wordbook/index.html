@@ -479,46 +479,30 @@ async function fetchWithRetry(url, options, retries = 5) {
     }
 }
 
-// 🎨 雙軌備援智慧生圖引擎：兼顧穩定與繪本水彩質感
+// 🎨 智慧生圖引擎：使用 Gemini 2.5 Flash Image（正式版，具免費額度）
 async function generateAiImage(idiom, meaning, apiKey) {
     const prompt = `WaterColor storybook illustration card for Chinese idiom "${idiom}". Traditional Chinese title text banner saying "${idiom}". Scene depicting the story of ${idiom}: ${meaning}. Charming children book watercolor style, warm colors, detailed background.`;
-    
-    // 軌道一：嘗試 gemini-2.5-flash-image-preview
-    try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
-        const payload = {
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
-        };
-        const data = await fetchWithRetry(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        }, 2); // 失敗快速轉軌道二
-        
-        const part = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-        if (part && part.inlineData?.data) {
-            const mime = part.inlineData.mimeType || 'image/png';
-            return await compressImageToWebP(`data:${mime};base64,${part.inlineData.data}`, 800, 0.82);
-        }
-    } catch(e) {
-        console.log("軌道一未成功，切換至備援繪圖引擎...");
-    }
 
-    // 軌道二：備援 imagen-4.0-generate-001
-    const urlFallback = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
-    const payloadFallback = { instances: { prompt: prompt }, parameters: { sampleCount: 1 } };
-    
-    const dataFb = await fetchWithRetry(urlFallback, {
+    // 使用正式版 gemini-2.5-flash-image（免費額度約每天 500 張）
+    // 注意：不要使用 -preview 版本，該版本免費額度已被 Google 設為 0
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
+    const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+    };
+    const data = await fetchWithRetry(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payloadFallback)
-    });
-    
-    if(!dataFb.predictions || !dataFb.predictions[0] || !dataFb.predictions[0].bytesBase64Encoded) {
-        throw new Error("雙軌繪圖皆失敗");
+        body: JSON.stringify(payload)
+    }, 5);
+
+    const part = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    if (part && part.inlineData?.data) {
+        const mime = part.inlineData.mimeType || 'image/png';
+        return await compressImageToWebP(`data:${mime};base64,${part.inlineData.data}`, 800, 0.82);
     }
-    return await compressImageToWebP(`data:image/png;base64,${dataFb.predictions[0].bytesBase64Encoded}`, 800, 0.82);
+
+    throw new Error("AI 未回傳圖片，請確認金鑰額度或稍後再試");
 }
 
 async function fetchMoedict(word){
@@ -668,7 +652,7 @@ async function handleGenerateImage(idiom) {
     const meaning = currentIdiomData.meaning;
     const container = document.getElementById('ai-draw-container');
     container.innerHTML = `<div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[color:var(--coral)] border-t-transparent mb-4"></div>
-        <h5 class="display text-xl text-[color:var(--coral)] mb-2">魔法小畫家正在雙軌並行繪製水彩圖...</h5><p class="text-sm font-bold">約需 10 秒 🎨</p>`;
+        <h5 class="display text-xl text-[color:var(--coral)] mb-2">魔法小畫家正在繪製水彩圖...</h5><p class="text-sm font-bold">約需 10 秒 🎨</p>`;
     
     try {
         const imageUrl = await generateAiImage(idiom, meaning, key);
@@ -1122,4 +1106,3 @@ window.onload = async function(){
 </script>
 </body>
 </html>
-
