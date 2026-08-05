@@ -80,7 +80,21 @@
     .char-card.swiped { transform: translateX(-80px); }
 
     .char-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.8rem; border-bottom: 2px dashed var(--border-color); padding-bottom: 0.8rem; }
-    .char-big { font-size: 2.2rem; font-weight: 900; color: #D48C9E; background: #FFF0F5; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-family: 'DFKai-SB', 'BiauKai', serif; }
+    .char-big { font-size: 2.2rem; font-weight: 900; color: #D48C9E; background: #FFF0F5; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-family: 'DFKai-SB', 'BiauKai', serif; cursor: pointer; transition: 0.15s; }
+    .char-big:active { transform: scale(0.92); background: #FFE0EC; }
+
+    .terms-chips { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 5px; }
+    .term-chip { display: inline-block; background: #FFF0F5; color: #D48C9E; font-weight: 700; padding: 4px 10px; border-radius: 14px; font-size: 0.85rem; cursor: pointer; border: 1px solid #FFD6E5; }
+    .term-chip:active { transform: scale(0.93); background: #FFE0EC; }
+
+    .def-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+    .def-popup-overlay.hidden { display: none !important; }
+    .def-popup-card { background: #fff; border-radius: 20px; max-width: 420px; width: 100%; max-height: 75vh; overflow-y: auto; padding: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+    .def-popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed var(--border-color); padding-bottom: 0.6rem; margin-bottom: 0.6rem; }
+    #def-popup-title { font-size: 1.5rem; font-weight: 900; color: #D48C9E; font-family: 'DFKai-SB', 'BiauKai', serif; }
+    .def-popup-close { background: var(--m-pink); color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; cursor: pointer; flex-shrink: 0; }
+    .def-popup-body { font-size: 1.05rem; line-height: 1.7; font-family: 'DFKai-SB', 'BiauKai', serif; color: #333; }
+    .def-popup-body ul { padding-left: 1.3rem; margin: 4px 0 10px; }
     .char-info { flex-grow: 1; }
     .char-pinyin { font-size: 1.1rem; font-weight: 800; }
     .char-radical { font-size: 0.8rem; color: #fff; background: var(--m-blue); padding: 2px 6px; border-radius: 8px; margin-left: 5px; }
@@ -134,6 +148,8 @@
     .tian-zy-box {
       flex: 1; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; min-width: 0;
     }
+    .tian-page-wrapper.correct-mode .tian-zy-box { background: #FFF3CD; }
+    .tian-page-wrapper.correct-mode .tian-zy-box::after { content: '✏️'; position: absolute; top: 1px; right: 1px; font-size: 0.5rem; opacity: 0.6; }
     .tian-zy-text {
       position: relative; z-index: 2; color: #000; font-family: 'DFKai-SB', 'BiauKai', serif;
       display: flex; flex-direction: column; align-items: center; line-height: 1.15;
@@ -181,6 +197,8 @@
       .tian-char-box { border-color: #333 !important; }
       .tian-char-box::before, .tian-char-box::after { border-color: #555 !important; }
       .tian-sidebar div { color: #000 !important; }
+      .tian-page-wrapper.correct-mode .tian-zy-box { background: transparent !important; }
+      .tian-page-wrapper.correct-mode .tian-zy-box::after { content: none !important; }
       .text-hidden { color: transparent !important; }
       .mistake-card { page-break-inside: avoid; border: 1px solid #ccc; background: #fff !important; }
     }
@@ -247,7 +265,8 @@
         <h2 style="color: var(--m-pink); margin-bottom: 0.5rem;">自動聽寫與直式田字格</h2>
         <p style="font-size: 0.95rem; color: var(--text-light); margin-bottom: 1rem; line-height: 1.5;">
           下方自動帶入本課圈詞，可自由修改；預設國字與注音都會顯示，列印時採直書、橫向紙張排版（由右至左），格線為點狀田字格。<br>
-          👉 <b>點擊格子中的國字或右側注音，可以把不想要的部分變不見，自訂聽寫考卷內容！</b>
+          👉 <b>點擊格子中的國字或右側注音，可以把不想要的部分變不見，自訂聽寫考卷內容！</b><br>
+          ✏️ <b>注音查錯了？（例如破音字）</b>點一下「校正注音模式」按鈕打開後，再點格子裡的注音就能手動修改；改好的內容會記住，之後都會用您校正過的讀音。
         </p>
 
         <select id="test-lesson-select" class="input-box" style="margin-bottom: 10px; font-weight: bold; cursor:pointer;" onchange="loadTestTerms()"></select>
@@ -258,11 +277,28 @@
         <label style="font-weight: 800; color: var(--m-purple); font-size: 0.9rem; display:block; margin: 10px 0 4px;">➕ 加強聽寫（自訂加強字詞，會加在本課圈詞後面）：</label>
         <textarea id="test-extra-input" class="textarea-box" rows="2" placeholder="輸入需要額外加強練習的字詞..." onblur="saveExtraTerms(); generateGrid();"></textarea>
 
+        <label style="font-weight: 800; color: var(--m-purple); font-size: 0.9rem; display:block; margin: 10px 0 4px;">🔁 同一詞語念兩次的中間間隔：</label>
+        <select id="repeat-gap" class="input-box" style="padding:0.4rem; font-weight:bold; cursor:pointer;" onchange="saveData()">
+          <option value="1">間隔 1 秒</option>
+          <option value="1.5" selected>間隔 1.5 秒</option>
+          <option value="2">間隔 2 秒</option>
+          <option value="3">間隔 3 秒</option>
+          <option value="4">間隔 4 秒</option>
+        </select>
+
         <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center; flex-wrap: wrap;">
           <button class="btn btn-green" onclick="generateGrid()">✅ 更新下方田字格</button>
-          <button class="btn btn-pink" id="btn-play" onclick="toggleDictation()">▶️ 播放聽寫 (間隔5秒)</button>
+          <button class="btn btn-yellow" id="btn-correct-mode" onclick="toggleCorrectMode()">✏️ 校正注音模式：關</button>
           <button class="btn btn-blue" onclick="window.print()">🖨️ 列印直式田字格（橫向紙張）</button>
         </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-pink" id="btn-play" onclick="startDictation()">▶️ 播放聽寫</button>
+          <button class="btn btn-yellow hidden" id="btn-pause" onclick="togglePauseDictation()">⏸️ 暫停</button>
+          <button class="btn btn-blue hidden" id="btn-replay" onclick="replayCurrentTerm()">🔁 重播這題</button>
+          <button class="btn btn-pink hidden" id="btn-stop" onclick="stopDictation()">⏹️ 停止測驗</button>
+        </div>
+        <div id="dictation-status" style="text-align:center; font-weight:800; color:var(--m-purple); min-height:1.4em; margin-top:6px;"></div>
       </div>
 
       <div id="grid-render-area" class="tian-page-wrapper"></div>
@@ -336,6 +372,17 @@
 
   </main>
 
+  <!-- 👆 點生字/語詞看解釋的彈窗 -->
+  <div id="def-popup-overlay" class="def-popup-overlay hidden no-print" onclick="if(event.target===this) closeDefPopup()">
+    <div class="def-popup-card">
+      <div class="def-popup-header">
+        <span id="def-popup-title"></span>
+        <button class="def-popup-close" onclick="closeDefPopup()">✕</button>
+      </div>
+      <div id="def-popup-body" class="def-popup-body">請點生字或語詞查看意思。</div>
+    </div>
+  </div>
+
   <script>
     // === 資料庫 ===
     const lessonNames = [
@@ -345,7 +392,7 @@
     ];
 
     const defaultData = {
-      grade: "五", semester: "上", publisher: "康軒", speed: "0.75", soundEnabled: true, zhuyinCache: {},
+      grade: "五", semester: "上", publisher: "康軒", speed: "0.75", soundEnabled: true, zhuyinCache: {}, definitionCache: {}, zhuyinOverride: {},
       lessons: Array.from({length: 12}, (_, i) => ({
         id: i + 1,
         title: lessonNames[i],
@@ -377,6 +424,8 @@
 
       if (typeof appData.soundEnabled === 'undefined') appData.soundEnabled = true;
       if (!appData.zhuyinCache) appData.zhuyinCache = {};
+      if (!appData.zhuyinOverride) appData.zhuyinOverride = {};
+      if (!appData.definitionCache) appData.definitionCache = {};
       appData.lessons.forEach(l => { if (typeof l.extraTerms === 'undefined') l.extraTerms = ""; });
 
       if(appData.lessons[0].chars.length <= 2 && appData.lessons[0].batchText.length > 50) {
@@ -396,6 +445,8 @@
       appData.semester = document.getElementById('sel-semester').value;
       appData.publisher = document.getElementById('sel-publisher').value;
       appData.speed = document.getElementById('speech-speed').value;
+      const gapEl = document.getElementById('repeat-gap');
+      if (gapEl) appData.repeatGap = gapEl.value;
       localStorage.setItem('MandarinAppV9', JSON.stringify(appData));
     }
 
@@ -404,6 +455,8 @@
       document.getElementById('sel-semester').value = appData.semester;
       document.getElementById('sel-publisher').value = appData.publisher;
       document.getElementById('speech-speed').value = appData.speed || "0.75";
+      const gapEl = document.getElementById('repeat-gap');
+      if (gapEl) gapEl.value = appData.repeatGap || "1.5";
       updateSoundToggleLabel();
     }
 
@@ -455,14 +508,16 @@
               <div class="delete-bg" onclick="deleteChar(${lesson.id}, ${i})">🗑️</div>
               <div class="char-card">
                 <div class="char-header">
-                  <div class="char-big">${c.char}</div>
+                  <div class="char-big" data-word="${c.char}" title="點一下聽發音、看字義">${c.char}</div>
                   <div class="char-info">
                     <div class="char-pinyin">${c.zhuyin} <span class="char-radical">${c.rad}</span></div>
+                    <div style="font-size:0.72rem; color:#bbb; margin-top:2px;">👆 點字聽發音＋看意思</div>
                   </div>
                   <button class="btn btn-blue" style="padding: 0.3rem;" onclick="speak('${c.char}')">🔊</button>
                 </div>
-                <div style="font-size:0.85rem; color:var(--m-purple); font-weight:800; margin-bottom:5px;">圈詞聽寫 (可修改)：</div>
-                <input type="text" class="input-box" style="padding:0.4rem; font-size:0.95rem; font-weight:bold;" value="${c.terms}" onblur="saveCharData(${lesson.id}, ${i}, 'terms', this.value)">
+                <div style="font-size:0.85rem; color:var(--m-purple); font-weight:800; margin-bottom:5px;">圈詞聽寫 (可修改，點下方詞語可發音＋看語詞意思)：</div>
+                <input type="text" class="input-box" style="padding:0.4rem; font-size:0.95rem; font-weight:bold;" value="${c.terms}" onblur="saveCharData(${lesson.id}, ${i}, 'terms', this.value); updateTermsChips(${lesson.id}, ${i}, this.value)">
+                <div class="terms-chips" id="chips-${lesson.id}-${i}">${buildTermsChipsHtml(c.terms)}</div>
                 <input type="text" class="input-box" style="padding:0.4rem; font-size:0.9rem; margin-top:5px; background:#FFF9E6; border-color:#FFDAC1;" placeholder="⚠️ 易錯提醒或造句備註..." value="${c.note}" onblur="saveCharData(${lesson.id}, ${i}, 'note', this.value)">
               </div>
             </div>
@@ -471,6 +526,16 @@
       `;
       container.innerHTML = html;
       document.getElementById('test-lesson-select').value = currentLessonId;
+    }
+
+    function buildTermsChipsHtml(terms) {
+      const words = (terms || '').split(/[,，、\s]+/).filter(Boolean);
+      return words.map(w => `<span class="term-chip" data-word="${w}">🔊 ${w}</span>`).join('');
+    }
+
+    function updateTermsChips(lId, cIdx, val) {
+      const container = document.getElementById(`chips-${lId}-${cIdx}`);
+      if (container) container.innerHTML = buildTermsChipsHtml(val);
     }
 
     function updateLessonTitle(lId, newTitle) {
@@ -596,6 +661,7 @@
     }
 
     function findZhuyin(ch, preferredLessonId) {
+      if (appData.zhuyinOverride && appData.zhuyinOverride[ch]) return appData.zhuyinOverride[ch];
       if (preferredLessonId) {
         const pl = appData.lessons.find(x => x.id === preferredLessonId);
         if (pl) {
@@ -741,10 +807,10 @@
           const zy = data.zhuyin || '';
           cellEl.setAttribute('data-char', ch);
           cellEl.innerHTML = `
-            <div class="tian-char-box" onclick="this.querySelector('.tian-char-text').classList.toggle('text-hidden')">
+            <div class="tian-char-box">
               <span class="tian-char-text">${ch}</span>
             </div>
-            <div class="tian-zy-box" onclick="this.querySelector('.tian-zy-text').classList.toggle('text-hidden')">
+            <div class="tian-zy-box">
               <span class="tian-zy-text">${formatZhuyinVertical(zy)}</span>
             </div>
           `;
@@ -756,63 +822,174 @@
       fetchMissingZhuyin(cells);
     }
 
-    // 聽寫語音控制
+    // 聽寫語音控制：支援暫停/繼續（繼續時會先重播目前這題）、單獨重播、可調整兩次朗讀間隔
     let isPlaying = false;
+    let isPaused = false;
+    let currentTermIndex = 0;
+    let currentTermsList = [];
 
-    async function toggleDictation() {
-      const btn = document.getElementById('btn-play');
-      if(isPlaying) {
-        isPlaying = false;
-        window.speechSynthesis.cancel();
-        btn.innerText = "▶️ 播放聽寫 (間隔5秒)";
-        btn.classList.remove('btn-green'); btn.classList.add('btn-pink');
-        return;
+    function updateDictationButtons() {
+      const playBtn = document.getElementById('btn-play');
+      const pauseBtn = document.getElementById('btn-pause');
+      const replayBtn = document.getElementById('btn-replay');
+      const stopBtn = document.getElementById('btn-stop');
+      if (isPlaying) {
+        playBtn.classList.add('hidden');
+        pauseBtn.classList.remove('hidden');
+        replayBtn.classList.remove('hidden');
+        stopBtn.classList.remove('hidden');
+        pauseBtn.innerText = isPaused ? '▶️ 繼續（重播這題）' : '⏸️ 暫停';
+      } else {
+        playBtn.classList.remove('hidden');
+        pauseBtn.classList.add('hidden');
+        replayBtn.classList.add('hidden');
+        stopBtn.classList.add('hidden');
+        document.getElementById('dictation-status').innerText = '';
       }
+    }
 
-      const terms = splitWords(combineAllTerms());
-      if(terms.length === 0) return alert("請先輸入詞語！");
+    function setDictationStatus(text) {
+      const el = document.getElementById('dictation-status');
+      if (el) el.innerText = text;
+    }
 
+    // 暫停時卡在這裡等待，直到使用者按繼續或停止
+    function waitWhilePaused() {
+      return new Promise(resolve => {
+        const check = () => {
+          if (!isPlaying || !isPaused) return resolve();
+          setTimeout(check, 200);
+        };
+        check();
+      });
+    }
+
+    async function startDictation() {
+      currentTermsList = splitWords(combineAllTerms());
+      if (currentTermsList.length === 0) return alert("請先輸入詞語！");
       isPlaying = true;
-      btn.innerText = "⏹️ 停止測驗";
-      btn.classList.remove('btn-pink'); btn.classList.add('btn-green');
+      isPaused = false;
+      currentTermIndex = 0;
+      updateDictationButtons();
+      await runDictationLoop();
+    }
 
-      for(let i=0; i<terms.length; i++) {
-        if(!isPlaying) break;
-        await playSpeech(terms[i]);
-        if(!isPlaying) break;
-        await sleep(1000);
-        await playSpeech(terms[i]);
-        if(!isPlaying) break;
+    function togglePauseDictation() {
+      if (!isPlaying) return;
+      isPaused = !isPaused;
+      if (isPaused) {
+        window.speechSynthesis.cancel();
+        setDictationStatus('⏸️ 已暫停，按「繼續」會重播剛才的詞語再接續播放');
+      }
+      updateDictationButtons();
+      if (!isPaused) {
+        // 繼續時，先重播目前這一題，孩子沒聽清楚也不怕
+        playSpeech(currentTermsList[currentTermIndex]);
+      }
+    }
 
-        for(let s=5; s>0; s--) {
-          if(!isPlaying) break;
-          btn.innerText = `⏹️ 倒數 ${s}秒 (第 ${i+1}/${terms.length} 題)`;
+    function replayCurrentTerm() {
+      if (!isPlaying || !currentTermsList[currentTermIndex]) return;
+      window.speechSynthesis.cancel();
+      playSpeech(currentTermsList[currentTermIndex]);
+    }
+
+    function stopDictation() {
+      isPlaying = false;
+      isPaused = false;
+      window.speechSynthesis.cancel();
+      updateDictationButtons();
+    }
+
+    async function runDictationLoop() {
+      const terms = currentTermsList;
+      const gapMs = Math.round((parseFloat(document.getElementById('repeat-gap').value) || 1.5) * 1000);
+
+      for (let i = currentTermIndex; i < terms.length; i++) {
+        currentTermIndex = i;
+        if (!isPlaying) return;
+        await waitWhilePaused();
+        if (!isPlaying) return;
+
+        setDictationStatus(`第 ${i + 1} / ${terms.length} 題`);
+        await playSpeech(terms[i]);
+        if (!isPlaying) return;
+        await waitWhilePaused();
+        if (!isPlaying) return;
+
+        await sleep(gapMs); // 兩次朗讀之間的間隔（可在上方調整）
+        if (!isPlaying) return;
+        await waitWhilePaused();
+        if (!isPlaying) return;
+
+        await playSpeech(terms[i]);
+        if (!isPlaying) return;
+
+        for (let s = 5; s > 0; s--) {
+          if (!isPlaying) return;
+          await waitWhilePaused();
+          if (!isPlaying) return;
+          setDictationStatus(`第 ${i + 1} / ${terms.length} 題．倒數 ${s} 秒`);
           await sleep(1000);
         }
       }
-      if(isPlaying) {
+
+      if (isPlaying) {
+        setDictationStatus('測驗結束，大家辛苦了！');
         await playSpeech("測驗結束，大家辛苦了！");
-        toggleDictation();
+        stopDictation();
       }
+    }
+
+    // === 🔊 語音朗讀（強化穩定性：預載中文語音、避免 utterance 被提前回收造成無聲）===
+    let cachedVoices = [];
+    let lastUtterance = null;
+
+    function loadVoices() {
+      cachedVoices = window.speechSynthesis.getVoices() || [];
+    }
+    loadVoices();
+    if (window.speechSynthesis && 'onvoiceschanged' in window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function pickZhVoice() {
+      if (!cachedVoices.length) loadVoices();
+      return (
+        cachedVoices.find(v => v.lang === 'zh-TW') ||
+        cachedVoices.find(v => v.lang && v.lang.toLowerCase().startsWith('zh-tw')) ||
+        cachedVoices.find(v => v.lang && v.lang.toLowerCase().startsWith('zh')) ||
+        null
+      );
+    }
+
+    function buildUtterance(text) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-TW';
+      const voice = pickZhVoice();
+      if (voice) u.voice = voice;
+      u.rate = parseFloat(document.getElementById('speech-speed').value) || 0.75;
+      lastUtterance = u; // 保留參考，避免被瀏覽器記憶體回收導致朗讀無聲
+      return u;
     }
 
     function playSpeech(text) {
       return new Promise(resolve => {
         window.speechSynthesis.cancel();
-        let u = new SpeechSynthesisUtterance(text);
-        u.lang = 'zh-TW';
-        u.rate = parseFloat(document.getElementById('speech-speed').value) || 0.75;
-        u.onend = resolve; u.onerror = resolve;
-        window.speechSynthesis.speak(u);
+        setTimeout(() => {
+          const u = buildUtterance(text);
+          u.onend = resolve; u.onerror = resolve;
+          window.speechSynthesis.speak(u);
+        }, 30);
       });
     }
 
     function speak(text) {
       window.speechSynthesis.cancel();
-      let u = new SpeechSynthesisUtterance(text);
-      u.lang = 'zh-TW';
-      u.rate = parseFloat(document.getElementById('speech-speed').value) || 0.75;
-      window.speechSynthesis.speak(u);
+      setTimeout(() => {
+        const u = buildUtterance(text);
+        window.speechSynthesis.speak(u);
+      }, 30);
     }
 
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -821,14 +998,17 @@
     async function searchMoedictRobust() {
       const q = document.getElementById('dict-input').value.trim();
       const out = document.getElementById('dict-output');
-      if(!q) return;
+      if (!q) return;
       out.innerHTML = `<span style="color:var(--m-purple); font-weight:bold;">🔍 正在查詢中...</span>`;
+      out.innerHTML = await fetchDefinitionHtml(q);
+    }
 
+    // 共用查詢函式：依序嘗試萌典端點，成功則回傳整理好的 HTML，失敗則回傳備援連結
+    async function fetchDefinitionHtml(q) {
       const endpoints = [
         `https://www.moedict.tw/uni/${encodeURIComponent(q)}.json`,
         `https://www.moedict.tw/a/${encodeURIComponent(q)}.json`
       ];
-
       for (const url of endpoints) {
         try {
           const res = await fetch(url);
@@ -836,18 +1016,15 @@
           const data = await res.json();
           const heteronyms = data.heteronyms || data.h;
           if (!data || !heteronyms || !Array.isArray(heteronyms) || heteronyms.length === 0) continue;
-          renderDictResult(data, q);
-          return;
+          return buildDictHtml(data, q);
         } catch (e) {
           // 嘗試下一個端點
         }
       }
-
-      out.innerHTML = fallbackHtml(q);
+      return fallbackHtml(q);
     }
 
-    function renderDictResult(data, q) {
-      const out = document.getElementById('dict-output');
+    function buildDictHtml(data, q) {
       let html = `<strong>【${data.title || q}】</strong><br>`;
       if (data.radical) html += `<span style="font-size:1rem; color:#888;">部首：${data.radical}部${data.stroke_count ? (' | 筆畫：' + data.stroke_count + '畫') : ''}</span><br><br>`;
 
@@ -866,7 +1043,7 @@
         }
       });
 
-      out.innerHTML = html || fallbackHtml(q);
+      return html || fallbackHtml(q);
     }
 
     function fallbackHtml(q) {
@@ -875,6 +1052,33 @@
         請點擊下方按鈕直接查詢「${q}」：<br><br>
         <a href="https://dict.revised.moe.edu.tw/search.jsp?md=1&word=${encodeURIComponent(q)}" target="_blank" class="btn btn-pink" style="text-decoration:none; font-size:1.1rem; padding: 0.8rem 1.5rem;">🔗 前往教育部國語辭典查「${q}」</a>
       `;
+    }
+
+    // === 👆 點生字／語詞馬上看解釋（彈窗） ===
+    async function showDefPopup(word) {
+      if (!word) return;
+      playClickSound();
+      const overlay = document.getElementById('def-popup-overlay');
+      const title = document.getElementById('def-popup-title');
+      const body = document.getElementById('def-popup-body');
+      title.innerText = word;
+      overlay.classList.remove('hidden');
+
+      if (!appData.definitionCache) appData.definitionCache = {};
+      if (appData.definitionCache[word]) {
+        body.innerHTML = appData.definitionCache[word];
+        return;
+      }
+
+      body.innerHTML = `<span style="color:var(--m-purple); font-weight:bold;">🔍 查詢中...</span>`;
+      const html = await fetchDefinitionHtml(word);
+      appData.definitionCache[word] = html;
+      saveData();
+      if (title.innerText === word) body.innerHTML = html; // 避免使用者已切換到別的字時覆蓋錯內容
+    }
+
+    function closeDefPopup() {
+      document.getElementById('def-popup-overlay').classList.add('hidden');
     }
 
     function copyDictText() {
@@ -1009,10 +1213,68 @@
       btn.innerText = appData.soundEnabled ? "🔊 按鍵音效：開" : "🔇 按鍵音效：關";
     }
 
+    // === ✏️ 校正注音模式（處理破音字或注音查錯的情況） ===
+    let correctMode = false;
+
+    function toggleCorrectMode() {
+      correctMode = !correctMode;
+      const btn = document.getElementById('btn-correct-mode');
+      const area = document.getElementById('grid-render-area');
+      if (btn) btn.innerText = correctMode ? '✏️ 校正注音模式：開（點注音修改）' : '✏️ 校正注音模式：關';
+      if (area) area.classList.toggle('correct-mode', correctMode);
+      playClickSound();
+    }
+
+    function editZhuyinForChar(ch) {
+      if (!ch) return;
+      const current = findZhuyin(ch) || '';
+      const input = prompt(`請輸入「${ch}」正確的注音符號（例如：ㄊㄡˊ）\n清空後按確定 = 取消手動校正，改回系統預設讀音`, current);
+      if (input === null) return; // 使用者按取消
+      const trimmed = input.trim();
+      if (!appData.zhuyinOverride) appData.zhuyinOverride = {};
+      if (trimmed) {
+        appData.zhuyinOverride[ch] = trimmed;
+      } else {
+        delete appData.zhuyinOverride[ch];
+      }
+      saveData();
+      generateGrid();
+    }
+
     document.addEventListener('click', function (e) {
       const target = e.target.closest('.btn, .nav-btn, .tian-char-box, .tian-zy-box, .lesson-title-display, .delete-bg, select');
       if (target) playClickSound();
     }, true);
+
+    // 田字格點擊：一般模式下切換顯示/隱藏；校正注音模式下點注音格改成手動輸入正確讀音
+    document.addEventListener('click', function (e) {
+      const zyBox = e.target.closest('.tian-zy-box');
+      if (zyBox) {
+        const cell = zyBox.closest('.tian-cell-wrap');
+        const ch = cell ? cell.dataset.char : '';
+        if (correctMode && ch) {
+          editZhuyinForChar(ch);
+        } else {
+          const span = zyBox.querySelector('.tian-zy-text');
+          if (span) span.classList.toggle('text-hidden');
+        }
+        return;
+      }
+      const charBox = e.target.closest('.tian-char-box');
+      if (charBox) {
+        const span = charBox.querySelector('.tian-char-text');
+        if (span) span.classList.toggle('text-hidden');
+      }
+    });
+
+    // 點生字（char-big）或語詞標籤（term-chip）：立刻朗讀發音，並彈窗顯示意思
+    document.addEventListener('click', function (e) {
+      const wordEl = e.target.closest('.char-big, .term-chip');
+      if (wordEl && wordEl.dataset.word) {
+        speak(wordEl.dataset.word);
+        showDefPopup(wordEl.dataset.word);
+      }
+    });
   </script>
 </body>
 </html>
