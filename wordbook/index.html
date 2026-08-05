@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>小樹苗國語文故事辭典</title>
 
-<!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
+<!-- 📌 iPhone 桌面 App 圖示 -->
   <link rel="apple-touch-icon" href="custom-icon.png">
   <link rel="icon" type="image/png" href="custom-icon.png">
 
@@ -299,7 +299,6 @@
       </div>
     </div>
 
-    <!-- 新增 API Key 管理區塊 -->
     <div class="crayon-border bg-[color:var(--yellow)]/10 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
             <h3 class="display text-xl text-[color:var(--ink)]">🔑 AI 畫家金鑰設定</h3>
@@ -341,13 +340,11 @@
 </div>
 
 <script>
-// --- API 金鑰管理模組 ---
+// API 金鑰管理模組
 function getGeminiApiKey() {
-    // 預設先檢查有沒有環境代墊的 key (預覽環境)
     const envKey = ""; 
     if (envKey && envKey.length > 5) return envKey;
 
-    // 如果沒有，就從使用者的手機/瀏覽器儲存中拿
     let userKey = localStorage.getItem('my_gemini_api_key');
     if (!userKey) {
         userKey = prompt("【首次使用設定】\n\n為了讓 AI 畫家在您的手機上也能順利畫圖，請貼上您的免費 Gemini API 金鑰 (API Key)：\n\n👉 如果您還沒有，請搜尋「Google AI Studio」免費申請一組喔！");
@@ -372,7 +369,6 @@ function resetApiKey() {
         }
     }
 }
-// ----------------------
 
 let currentIdiomData=null, currentVocabData=null;
 let batchVocabList = [];
@@ -483,24 +479,46 @@ async function fetchWithRetry(url, options, retries = 5) {
     }
 }
 
-// 🎨 真實 AI 繪製：產生精美的水彩成語圖
+// 🎨 雙軌備援智慧生圖引擎：兼顧穩定與繪本水彩質感
 async function generateAiImage(idiom, meaning, apiKey) {
     const prompt = `WaterColor storybook illustration card for Chinese idiom "${idiom}". Traditional Chinese title text banner saying "${idiom}". Scene depicting the story of ${idiom}: ${meaning}. Charming children book watercolor style, warm colors, detailed background.`;
     
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
-    const payload = { instances: { prompt: prompt }, parameters: { sampleCount: 1 } };
+    // 軌道一：嘗試 gemini-2.5-flash-image-preview
+    try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+        const payload = {
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+        };
+        const data = await fetchWithRetry(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }, 2); // 失敗快速轉軌道二
+        
+        const part = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+        if (part && part.inlineData?.data) {
+            const mime = part.inlineData.mimeType || 'image/png';
+            return await compressImageToWebP(`data:${mime};base64,${part.inlineData.data}`, 800, 0.82);
+        }
+    } catch(e) {
+        console.log("軌道一未成功，切換至備援繪圖引擎...");
+    }
+
+    // 軌道二：備援 imagen-4.0-generate-001
+    const urlFallback = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+    const payloadFallback = { instances: { prompt: prompt }, parameters: { sampleCount: 1 } };
     
-    const data = await fetchWithRetry(url, {
+    const dataFb = await fetchWithRetry(urlFallback, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payloadFallback)
     });
     
-    if(!data.predictions || !data.predictions[0] || !data.predictions[0].bytesBase64Encoded) {
-        throw new Error("生成圖片失敗");
+    if(!dataFb.predictions || !dataFb.predictions[0] || !dataFb.predictions[0].bytesBase64Encoded) {
+        throw new Error("雙軌繪圖皆失敗");
     }
-    const rawDataUrl = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
-    return await compressImageToWebP(rawDataUrl, 800, 0.85);
+    return await compressImageToWebP(`data:image/png;base64,${dataFb.predictions[0].bytesBase64Encoded}`, 800, 0.82);
 }
 
 async function fetchMoedict(word){
@@ -640,7 +658,6 @@ async function generateIdiomContent(forceIdiom = null){
   }
 }
 
-// 帶有金鑰驗證的生圖呼叫
 async function handleGenerateImage(idiom) {
     const key = getGeminiApiKey();
     if(!key) {
@@ -651,7 +668,7 @@ async function handleGenerateImage(idiom) {
     const meaning = currentIdiomData.meaning;
     const container = document.getElementById('ai-draw-container');
     container.innerHTML = `<div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[color:var(--coral)] border-t-transparent mb-4"></div>
-        <h5 class="display text-xl text-[color:var(--coral)] mb-2">魔法小畫家正在繪製專屬水彩圖...</h5><p class="text-sm font-bold">約需 10 秒 🎨</p>`;
+        <h5 class="display text-xl text-[color:var(--coral)] mb-2">魔法小畫家正在雙軌並行繪製水彩圖...</h5><p class="text-sm font-bold">約需 10 秒 🎨</p>`;
     
     try {
         const imageUrl = await generateAiImage(idiom, meaning, key);
@@ -1105,5 +1122,4 @@ window.onload = async function(){
 </script>
 </body>
 </html>
-
 
