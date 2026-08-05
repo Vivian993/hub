@@ -6,8 +6,8 @@
 <title>小樹苗國語文故事辭典</title>
 
 <!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
-<link rel="apple-touch-icon" href="custom-icon.png">
-<link rel="icon" type="image/png" href="custom-icon.png">
+  <link rel="apple-touch-icon" href="custom-icon.png">
+  <link rel="icon" type="image/png" href="custom-icon.png">
 
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -67,7 +67,6 @@
   ::-webkit-scrollbar{height:8px;width:8px;}
   ::-webkit-scrollbar-thumb{background:#d9c092;border-radius:8px;}
 
-  /* 強制設定 A4 直式列印 */
   @page {
     size: A4 portrait;
     margin: 15mm;
@@ -86,12 +85,18 @@
     body.print-mode-idiom #cardResult, body.print-mode-idiom #cardResult * { visibility: visible; }
     body.print-mode-idiom #cardResult { position: absolute; left: 0; top: 0; width: 100%; }
 
-    /* 圖卡管理列印模式：強制展開所有解析並保持整齊 */
     body.print-mode-manage * { visibility: hidden; }
     body.print-mode-manage #panelManage, body.print-mode-manage #panelManage * { visibility: visible; }
     body.print-mode-manage #panelManage { position: absolute; left: 0; top: 0; width: 100%; background: white !important; }
     body.print-mode-manage .lib-detail-box { display: block !important; }
     body.print-mode-manage button { display: none !important; }
+    
+    .library-card-item {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+      margin-bottom: 15px !important;
+      border: 2px solid #4A3728 !important;
+    }
   }
 </style>
 </head>
@@ -150,7 +155,7 @@
       </div>
 
       <div>
-        <h4 class="display text-xl text-[color:var(--coral)] mb-3">🎬 成語情境小漫畫</h4>
+        <h4 class="display text-xl text-[color:var(--coral)] mb-3">🎬 成語情境故事繪圖</h4>
         <div id="cardComicGrid" class="w-full"></div>
       </div>
 
@@ -327,6 +332,7 @@
 </div>
 
 <script>
+// 📌 執行環境自動提供 apiKey，預設傳傳入空字串即可
 const apiKey = ""; 
 
 let currentIdiomData=null, currentVocabData=null;
@@ -399,31 +405,7 @@ async function updateStorageUsage(){
   }catch(e){ el.innerText=''; }
 }
 
-function compressImageToWebP(dataUrlOrFile, maxDim=600, quality=0.7){
-  return new Promise((resolve,reject)=>{
-    const img = new Image();
-    img.onload = ()=>{
-      let w=img.width, h=img.height;
-      if(w>h && w>maxDim){ h=Math.round(h*maxDim/w); w=maxDim; }
-      else if(h>maxDim){ w=Math.round(w*maxDim/h); h=maxDim; }
-      
-      const canvas = document.createElement('canvas');
-      canvas.width=w; canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      resolve(canvas.toDataURL('image/webp', quality));
-    };
-    img.onerror = reject;
-    
-    if(typeof dataUrlOrFile === 'string') {
-        img.src = dataUrlOrFile;
-    } else {
-        const reader = new FileReader();
-        reader.onload = e => img.src = e.target.result;
-        reader.readAsDataURL(dataUrlOrFile);
-    }
-  });
-}
-
+// 指數退避重試工具
 async function fetchWithRetry(url, options, retries = 5) {
     const delays = [1000, 2000, 4000, 8000, 16000];
     for (let i = 0; i < retries; i++) {
@@ -438,31 +420,80 @@ async function fetchWithRetry(url, options, retries = 5) {
     }
 }
 
-async function fetchMoedict(word){
-  const res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(word)}.json`);
-  if(!res.ok) throw new Error('查無此字詞');
-  return await res.json();
+// 圖片壓縮優化
+function compressImageToWebP(dataUrl, maxDim=800, quality=0.82){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      let w=img.width, h=img.height;
+      if(w>h && w>maxDim){ h=Math.round(h*maxDim/w); w=maxDim; }
+      else if(h>maxDim){ w=Math.round(w*maxDim/h); h=maxDim; }
+      
+      const canvas = document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
 }
 
+// 🎨 核心生圖功能：使用 Gemini 2.5 Flash Image 模型生成水彩故事解說圖卡
 async function generateAiImage(idiom, meaning) {
-    const prompt = `兒童繪本插畫風格，色彩粉嫩溫暖，適合國小學生。畫出成語「${idiom}」的情境。意思：${meaning}。畫面中絕對不可以包含任何文字、漢字或拼音字母。`;
+    const prompt = `溫暖水彩繪本風格插畫，解說國語成語「${idiom}」。畫面左上角要有古典木牌或捲軸，寫著標題「${idiom}」與簡短解析：「${meaning}」。畫面中央詳細繪製成語「${idiom}」的經典故事場景，人物表情生動、背景為風景農田水彩畫，色彩溫馨和諧，整體如同一張精美的成語故事解說卡片。`;
+    
+    // 首選：gemini-2.5-flash-image-preview
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
     const payload = {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
     };
 
+    try {
+        const data = await fetchWithRetry(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        const part = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+        if (part && part.inlineData?.data) {
+            const mime = part.inlineData.mimeType || 'image/png';
+            const rawDataUrl = `data:${mime};base64,${part.inlineData.data}`;
+            return await compressImageToWebP(rawDataUrl, 800, 0.82);
+        } else {
+            return await generateImagenFallback(idiom, meaning);
+        }
+    } catch(err) {
+        return await generateImagenFallback(idiom, meaning);
+    }
+}
+
+// 備用生圖：imagen-4.0-generate-001
+async function generateImagenFallback(idiom, meaning) {
+    const prompt = `WaterColor storybook illustration card for Chinese idiom "${idiom}". Traditional Chinese title text banner saying "${idiom}". Scene depicting the story of ${idiom}: ${meaning}. Charming children book watercolor style, warm colors, detailed background.`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+    const payload = { instances: { prompt: prompt }, parameters: { sampleCount: 1 } };
+    
     const data = await fetchWithRetry(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     });
     
-    const part = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-    if (!part || !part.inlineData?.data) throw new Error("AI 產圖失敗");
-    
-    const rawDataUrl = `data:${part.inlineData.mimeType || 'image/png'};base64,${part.inlineData.data}`;
-    return await compressImageToWebP(rawDataUrl);
+    if(!data.predictions || !data.predictions[0] || !data.predictions[0].bytesBase64Encoded) {
+        throw new Error("生成圖片失敗");
+    }
+    const rawDataUrl = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+    return await compressImageToWebP(rawDataUrl, 800, 0.82);
+}
+
+async function fetchMoedict(word){
+  const res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(word)}.json`);
+  if(!res.ok) throw new Error('查無此字詞');
+  return await res.json();
 }
 
 function speak(text){
@@ -577,9 +608,9 @@ async function generateIdiomContent(forceIdiom = null){
       </div>`;
     } else {
       cm.innerHTML = `<div class="crayon-border bg-white p-8 text-center wobble-l max-w-xl mx-auto" id="ai-draw-container">
-        <div class="text-5xl mb-4">🪄</div>
+        <div class="text-5xl mb-4">🎨</div>
         <h5 class="display text-xl mb-2 text-[color:var(--ink)]">這個成語還沒有插畫喔！</h5>
-        <button onclick="handleAIGenerate('${d.idiom}')" class="btn-doodle px-6 py-3 bg-[color:var(--yellow)] hover:bg-[#ffcf61] text-lg font-bold">🎨 召喚 AI 小畫家</button>
+        <button onclick="handleGenerateImage('${d.idiom}')" class="btn-doodle px-6 py-3 bg-[color:var(--yellow)] hover:bg-[#ffcf61] text-lg font-bold">🪄 召喚 AI 小畫家繪製故事圖卡</button>
       </div>`;
     }
 
@@ -596,22 +627,27 @@ async function generateIdiomContent(forceIdiom = null){
   }
 }
 
-async function handleAIGenerate(idiom) {
+// 呼叫 AI 產生繪本講義插畫
+async function handleGenerateImage(idiom) {
     const meaning = currentIdiomData.meaning;
     const container = document.getElementById('ai-draw-container');
     container.innerHTML = `<div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[color:var(--coral)] border-t-transparent mb-4"></div>
-        <h5 class="display text-xl text-[color:var(--coral)] mb-2">魔法小畫家正在揮灑畫筆...</h5><p class="text-sm font-bold">約需 10 秒 🎨</p>`;
+        <h5 class="display text-xl text-[color:var(--coral)] mb-2">AI 畫家正在揮灑水彩繪製「${idiom}」故事圖卡...</h5>
+        <p class="text-sm font-bold text-[color:var(--ink)]/70">預計需要 5 ~ 10 秒鐘，請稍候 🎨</p>`;
+    
     try {
         const imageUrl = await generateAiImage(idiom, meaning);
         container.innerHTML = `
             <div class="tape -top-2 left-1/2 -translate-x-1/2"></div>
-            <img src="${imageUrl}" class="w-full rounded-xl border-2 border-[color:var(--ink)]/10 mb-4">
-            <button onclick="saveAiImageToLibrary('${idiom}', '${imageUrl}')" class="btn-doodle w-full py-2 bg-[color:var(--green)] text-white font-bold">💾 儲存畫作</button>`;
+            <img src="${imageUrl}" class="w-full rounded-xl border-2 border-[color:var(--ink)]/10 mb-4 bg-white shadow-sm">
+            <button onclick="saveAiImageToLibrary('${idiom}', '${imageUrl}')" class="btn-doodle w-full py-3 bg-[color:var(--green)] text-white font-bold text-lg hover:scale-105 transition-transform">💾 儲存水彩圖卡</button>`;
     } catch (e) {
-        container.innerHTML = `<div class="text-5xl mb-4">😭</div><h5 class="display text-xl text-[color:var(--coral)] mb-2">魔法棒故障了！</h5>
-            <button onclick="handleAIGenerate('${idiom}')" class="btn-doodle px-6 py-2 bg-[color:var(--yellow)] font-bold">🔄 重試</button>`;
+        container.innerHTML = `<div class="text-5xl mb-4">😭</div><h5 class="display text-xl text-[color:var(--coral)] mb-2">生成失敗了！</h5>
+            <p class="text-xs mb-3 text-[color:var(--ink)]/60">請確認網路連線正常，或稍後再嘗試一次。</p>
+            <button onclick="handleGenerateImage('${idiom}')" class="btn-doodle px-6 py-2 bg-[color:var(--yellow)] font-bold">🔄 重新召喚小畫家</button>`;
     }
 }
+
 async function saveAiImageToLibrary(idiom, imageUrl) {
     currentIdiomData.singleImage = imageUrl;
     const record = { ...currentIdiomData };
@@ -628,10 +664,8 @@ function printIdiom() {
     document.body.classList.remove('print-mode-idiom');
 }
 
-// 支援列印整個圖卡管理清單
 function printLibrary() {
     document.body.classList.add('print-mode-manage');
-    // 自動展開所有的解析內容以便列印
     document.querySelectorAll('.lib-detail-box').forEach(el => el.classList.remove('hidden'));
     window.print();
     document.body.classList.remove('print-mode-manage');
@@ -895,7 +929,7 @@ function renderLibrary(){
   
   filtered.forEach((item,idx)=>{
     const cardWrapper = document.createElement('div');
-    cardWrapper.className = "crayon-border bg-white p-4 flex flex-col gap-3 transition-all";
+    cardWrapper.className = "library-card-item crayon-border bg-white p-4 flex flex-col gap-3 transition-all";
     
     const mainRow = document.createElement('div');
     mainRow.className = "flex justify-between items-center cursor-pointer hover:opacity-80";
@@ -923,7 +957,6 @@ function renderLibrary(){
       <button onclick="event.stopPropagation(); removeItem(${idx})" class="no-print text-[color:var(--coral)] font-bold text-xl px-3 py-1 hover:scale-125 transition-transform">✕</button>`;
     }
 
-    // 內嵌隱藏的解析內容區塊 (加入 lib-detail-box class 以便列印時自動展開)
     const detailBox = document.createElement('div');
     detailBox.id = `lib-detail-${idx}`;
     detailBox.className = "lib-detail-box hidden pt-3 border-t-2 border-dashed border-[color:var(--ink)]/20 text-sm space-y-2";
