@@ -1236,33 +1236,18 @@ function renderDictResult(data, knownZh){
     `;
   });
 
-  // 背景翻譯：中文意思標題優先用「同義字」個別翻譯，拼成精簡的頓號清單（例如「移動、搬動」），
-  // 比翻譯一整句定義更簡單好懂；沒有同義字資料才退回翻譯定義本身
+  // 背景翻譯：中文意思標題用「字典定義」翻譯
+  // （試過用同義字個別翻譯，結果同義字資料庫常常包含比較少見、甚至過時的用法，
+  //   單獨翻譯反而更容易翻錯，例如 move 曾經翻成「攪拌」；改回翻譯定義句，相對穩定）
   if(!knownZh){
     const primaryDef = meanings[0]?.definitions?.[0];
-    const synonyms = (primaryDef?.synonyms?.length ? primaryDef.synonyms : meanings[0]?.synonyms) || [];
-    const shortSynonyms = synonyms.filter(s => s && s.split(' ').length <= 2).slice(0, 3);
-    const el = document.getElementById('dictZhLine');
-
-    if(shortSynonyms.length){
-      Promise.all(shortSynonyms.map(s => translateText(s, 'en|zh-TW'))).then(list=>{
-        const zhList = [...new Set(list.filter(Boolean))];
-        if(!el) return;
-        if(zhList.length) el.textContent = `🈶 中文意思：${zhList.join('、')}`;
-        else fallbackToDefinition();
-      });
-    } else {
-      fallbackToDefinition();
-    }
-
-    function fallbackToDefinition(){
-      const textForHeadline = primaryDef?.definition || entry.word;
-      translateText(textForHeadline, 'en|zh-TW').then(zh=>{
-        if(!el) return;
-        if(!zh){ el.textContent = '（找不到中文翻譯，請參考下方定義翻譯）'; return; }
-        el.textContent = `🈶 中文意思：${zh}`;
-      });
-    }
+    const textForHeadline = primaryDef?.definition || entry.word;
+    translateText(textForHeadline, 'en|zh-TW').then(zh=>{
+      const el = document.getElementById('dictZhLine');
+      if(!el) return;
+      if(!zh){ el.textContent = '（找不到中文翻譯，請參考下方定義翻譯）'; return; }
+      el.textContent = `🈶 中文意思：${zh}`;
+    });
   }
   // 背景翻譯：每個詞性選出的那一則定義與例句
   meanings.forEach((m, mi)=>{
