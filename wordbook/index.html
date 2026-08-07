@@ -122,7 +122,7 @@
     <div class="no-print grid grid-cols-1 sm:grid-cols-4 gap-3">
       <input id="idiomInput" placeholder="輸入成語，例如：守株待兔" class="sm:col-span-2 px-4 py-3 crayon-border text-lg bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--yellow)]">
       <select id="idiomGrade" class="px-3 py-3 crayon-border bg-white focus:outline-none">
-        <option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option selected>五年級</option><option>六年級</option>
+        <option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option selected>五年級</option><option>六年級</option><option>補充</option>
       </select>
       <select id="idiomLesson" class="px-3 py-3 crayon-border bg-white focus:outline-none"></select>
     </div>
@@ -189,7 +189,7 @@
     <div class="no-print grid grid-cols-1 sm:grid-cols-5 gap-3">
       <input id="vocabInput" placeholder="輸入單字，或貼上整課生字" class="sm:col-span-2 px-4 py-3 crayon-border text-lg bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--yellow)]">
       <select id="vocabGrade" class="px-3 py-3 crayon-border bg-white">
-        <option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option selected>五年級</option><option>六年級</option>
+        <option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option selected>五年級</option><option>六年級</option><option>補充</option>
       </select>
       <select id="vocabLesson" class="px-3 py-3 crayon-border bg-white"></select>
       <button onclick="fetchBatchVocab()" class="btn-doodle bg-[color:var(--yellow)] font-bold display text-lg">🔍 查生字</button>
@@ -296,7 +296,7 @@
         <div class="flex items-center gap-3 mb-4">
           <label class="font-bold">選擇年級：</label>
           <select id="lessonSetupGrade" onchange="loadLessonSetupForm()" class="px-3 py-2 crayon-border bg-white focus:outline-none">
-            <option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option selected>五年級</option><option>六年級</option>
+            <option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option selected>五年級</option><option>六年級</option><option>補充</option>
           </select>
         </div>
         <div id="lessonNameInputs" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4"></div>
@@ -546,6 +546,19 @@ async function generateAiImage(idiom, meaning, apiKey) {
 
 // 使用者提供的 Gemini Gem 連結（網頁版生圖，配額與 API 不同，目前仍可免費使用）
 const GEMINI_GEM_URL = 'https://gemini.google.com/gem/1bUY4OWhqZjcUfelEIKe50aYu7573XsnS?usp=sharing';
+
+function imageGenUiHtml(idiom){
+  return `<div class="crayon-border bg-white p-8 text-center wobble-l max-w-xl mx-auto" id="ai-draw-container">
+        <div class="text-5xl mb-4">🪄</div>
+        <h5 class="display text-xl mb-2 text-[color:var(--ink)]">${idiom} 的故事圖卡</h5>
+        <button onclick="handleGenerateImage('${idiom}')" class="btn-doodle px-6 py-3 bg-[color:var(--yellow)] hover:bg-[#ffcf61] text-lg font-bold">🎨 召喚 AI 小畫家繪製水彩圖</button>
+        ${manualUploadHtml(idiom)}
+      </div>`;
+}
+
+function switchToImageGenUI(idiom){
+  document.getElementById('cardComicGrid').innerHTML = imageGenUiHtml(idiom);
+}
 
 function openGeminiGem(idiom){
   const meaning = (currentIdiomData && currentIdiomData.idiom === idiom) ? (currentIdiomData.meaning || '') : '';
@@ -850,14 +863,12 @@ async function generateIdiomContent(forceIdiom = null){
       cm.innerHTML = `<div class="crayon-border bg-white p-2 wobble-r relative max-w-xl mx-auto shadow-md">
         <div class="tape -top-2 left-1/2 -translate-x-1/2"></div>
         <img src="${d.singleImage}" class="w-full rounded-xl border-2 border-[color:var(--ink)]/10">
+      </div>
+      <div class="text-center mt-3 no-print">
+        <a href="javascript:void(0)" onclick="switchToImageGenUI('${d.idiom}')" class="text-[color:var(--purple)] font-bold underline inline-flex items-center gap-1">🔄 更換這張成語情境圖</a>
       </div>`;
     } else {
-      cm.innerHTML = `<div class="crayon-border bg-white p-8 text-center wobble-l max-w-xl mx-auto" id="ai-draw-container">
-        <div class="text-5xl mb-4">🪄</div>
-        <h5 class="display text-xl mb-2 text-[color:var(--ink)]">這個成語還沒有故事圖卡喔！</h5>
-        <button onclick="handleGenerateImage('${d.idiom}')" class="btn-doodle px-6 py-3 bg-[color:var(--yellow)] hover:bg-[#ffcf61] text-lg font-bold">🎨 召喚 AI 小畫家繪製水彩圖</button>
-        ${manualUploadHtml(d.idiom)}
-      </div>`;
+      cm.innerHTML = imageGenUiHtml(d.idiom);
     }
 
     document.getElementById('cardSynonyms').innerHTML = (d.synonyms||[]).map(w=>`<span class="crayon-border bg-white px-3 py-1 text-sm font-bold">${w}</span>`).join('') || '<span class="text-sm text-[color:var(--ink)]/50">（無）</span>';
@@ -1332,7 +1343,7 @@ window.onload = async function(){
   document.getElementById('vocabGrade').addEventListener('change', ()=>refreshLessonDropdown('vocabGrade','vocabLesson'));
   document.getElementById('quizFilterGrade').addEventListener('change', ()=>refreshLessonDropdown('quizFilterGrade','quizFilterLesson'));
 
-  const gradeOptions = ['一','二','三','四','五','六'].map(g=>`<option value="${g}年級">${g}年級</option>`).join('');
+  const gradeOptions = ['一','二','三','四','五','六'].map(g=>`<option value="${g}年級">${g}年級</option>`).join('') + '<option value="補充">補充</option>';
   document.getElementById('filterGrade').innerHTML += gradeOptions;
   document.getElementById('quizFilterGrade').innerHTML += gradeOptions;
 
