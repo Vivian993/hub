@@ -325,6 +325,7 @@
   }
   .text-input:focus{border-color:var(--mint);}
   .modal-word-row{display:flex; justify-content:center;}
+  .unit-select-label{font-size:12px; color:var(--ink-soft); display:block; margin-bottom:4px;}
   .modal-buttons{display:flex; gap:10px; margin-top:4px;}
   .modal-buttons button{flex:1;}
 
@@ -482,7 +483,10 @@
       </div>
       <input type="text" id="modalZhInput" placeholder="中文意思（選填）" class="text-input">
       <input type="text" id="modalPosInput" placeholder="詞性縮寫，例如 n. / v.（選填）" class="text-input">
-      <select id="modalUnitSelect" class="text-input"></select>
+      <div id="modalUnitRow" style="display:none;">
+        <label class="unit-select-label">移到其他單元：</label>
+        <select id="modalUnitSelect" class="text-input"></select>
+      </div>
       <div class="modal-buttons">
         <button id="modalSaveBtn" class="primary-btn">儲存字卡</button>
         <button id="modalCancelBtn" class="ghost-btn">取消</button>
@@ -828,6 +832,7 @@ function openAddModal(cardId){
     zhInput.value = card.zh || '';
     posInput.value = card.pos || '';
     unitSelect.value = card.unitId || currentUnitId;
+    document.getElementById('modalUnitRow').style.display = 'block';
     modalPhotoData = card.image || null;
     modalPosX = card.posX||50; modalPosY = card.posY||50;
     photoCircle.innerHTML = modalPhotoData ? `<img src="${modalPhotoData}" style="object-position:${modalPosX}% ${modalPosY}%">` : '📷';
@@ -835,6 +840,7 @@ function openAddModal(cardId){
     titleEl.textContent = '新增字卡';
     wordInput.value = ''; zhInput.value = ''; posInput.value = '';
     unitSelect.value = currentUnitId;
+    document.getElementById('modalUnitRow').style.display = 'none'; // 新增時直接用目前選中的單元，不用每次都選一次
     modalPhotoData = null; modalPosX=50; modalPosY=50;
     photoCircle.innerHTML = '📷';
   }
@@ -1195,9 +1201,10 @@ function renderDictResult(data, knownZh){
   resultEl.innerHTML = html;
   document.getElementById('dictSpeakBtn').addEventListener('click', ()=> speakWithAudio(entry.word, audioUrl));
   document.getElementById('dictAddCardBtn').addEventListener('click', ()=>{
+    const imgTag = document.getElementById('dictImageSlot')?.querySelector('img');
     const zhLine = document.getElementById('dictZhLine')?.textContent.replace('🈶 中文意思：','').replace('🈶 中文意思查詢中...','').trim();
     const card = {
-      id:'c'+(idCounter++), word:entry.word, zh: zhLine || knownZh || '', pos: posAbbr(entry.meanings?.[0]?.partOfSpeech), image: null, posX:50, posY:50,
+      id:'c'+(idCounter++), word:entry.word, zh: zhLine || knownZh || '', pos: posAbbr(entry.meanings?.[0]?.partOfSpeech), image: imgTag ? imgTag.src : null, posX:50, posY:50,
       phonetic:phoneticText, audioUrl, mastered:false, unitId: currentUnitId,
       definition: entry.meanings?.[0]?.definitions?.[0]?.definition || ''
     };
