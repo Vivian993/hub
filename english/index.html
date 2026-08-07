@@ -217,14 +217,15 @@
   }
   .dict-image-credit{font-size:11px; color:var(--ink-soft); opacity:0.7; margin-top:4px;}
   .dict-zh-line{
-    font-size:14px; font-weight:700; color:var(--mint-deep); background:var(--paper-deep);
-    border-radius:10px; padding:8px 12px; margin-bottom:12px;
+    font-size:19px; font-weight:800; color:var(--mint-deep); background:var(--paper-deep);
+    border-radius:12px; padding:12px 14px; margin-bottom:12px; line-height:1.4;
+    border:2px solid var(--mint);
   }
   .dict-pos{
-    display:inline-block; background:var(--sand); color:var(--coral-deep); font-weight:700; font-size:12px;
+    display:inline-block; background:var(--sand); color:var(--coral-deep); font-weight:700; font-size:13px;
     border-radius:8px; padding:3px 10px; margin:10px 0 6px;
   }
-  .dict-pos-en{font-weight:500; opacity:0.75;}
+  .dict-pos-abbr{font-weight:800; font-family:'JetBrains Mono',monospace;}
   .dict-defs{margin:0 0 4px; padding-left:20px;}
   .dict-defs li{margin-bottom:10px; font-size:14px; line-height:1.5;}
   .dict-def-block{font-size:14px; line-height:1.6; margin-bottom:6px;}
@@ -1198,7 +1199,7 @@ function renderDictResult(data, knownZh){
     // 優先選有例句的那一則定義，這樣孩子可以直接看到怎麼使用；都沒有例句就用第一則
     const chosen = defs.find(d=>d.example) || defs[0] || {};
     html += `
-      <div class="dict-pos">${escapeHtml(posZh(m.partOfSpeech))}${m.partOfSpeech ? ` <span class="dict-pos-en">(${escapeHtml(m.partOfSpeech)})</span>` : ''}</div>
+      <div class="dict-pos"><span class="dict-pos-abbr">${escapeHtml(posAbbr(m.partOfSpeech))}</span> ${escapeHtml(posZh(m.partOfSpeech))}</div>
       <div class="dict-def-block">
         <div>${escapeHtml(chosen.definition||'')}</div>
         <div class="dict-def-zh" id="defZh_${mi}_0">中文翻譯中...</div>
@@ -1235,18 +1236,17 @@ function renderDictResult(data, knownZh){
     `;
   });
 
-  // 背景翻譯：中文意思標題改用「例句翻譯」推導，比直接翻譯單一個字準確很多
-  // （單獨翻譯一個字很容易因為多義字而翻錯，例如 leave 曾經誤翻成「歷史」）
+  // 背景翻譯：中文意思標題改用「字典定義」翻譯，比直接翻譯單一個字準確很多
+  // （單獨翻譯一個字很容易因為多義字而翻錯，例如 leave 曾經誤翻成「歷史」；
+  //   也不用例句翻譯，因為例句有時候是很特殊的情境句，不夠簡潔、沒辦法馬上看懂核心意思）
   if(!knownZh){
-    const primaryChosen = (meanings[0]?.definitions||[]).find(d=>d.example) || meanings[0]?.definitions?.[0];
-    const textForHeadline = primaryChosen?.example || primaryChosen?.definition || entry.word;
+    const primaryDef = meanings[0]?.definitions?.[0];
+    const textForHeadline = primaryDef?.definition || entry.word;
     translateText(textForHeadline, 'en|zh-TW').then(zh=>{
       const el = document.getElementById('dictZhLine');
       if(!el) return;
-      if(!zh){ el.textContent = '（找不到中文翻譯，請參考下方例句翻譯）'; return; }
-      el.textContent = primaryChosen?.example
-        ? `🈶 常見用法：${zh}`
-        : `🈶 中文意思：${zh}`;
+      if(!zh){ el.textContent = '（找不到中文翻譯，請參考下方定義翻譯）'; return; }
+      el.textContent = `🈶 中文意思：${zh}`;
     });
   }
   // 背景翻譯：每個詞性選出的那一則定義與例句
