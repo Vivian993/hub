@@ -166,8 +166,12 @@
   }
   .card:hover{ transform:translateY(-2px); box-shadow:0 8px 18px rgba(0,0,0,0.14); }
   .card h3{
-    margin:0; font-size:21px; line-height:1.35; font-weight:800;
-    display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+    margin:0; font-size:20px; line-height:1.3; font-weight:800;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .card .desc{
+    margin:6px 0 0; font-size:12.5px; line-height:1.5; opacity:.75; font-weight:500;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   }
 
   /* ---- flat grid (search mode) ---- */
@@ -400,90 +404,7 @@ const colorPool = [
 ];
 
 const defaultTools = [
-  {t:"閱讀理解分層教材", c:"閱讀理解", i:"📖", u:"https://gemini.google.com/gem/4909c3407986/c8a61daaf9d89385?usp=sharing"},
-  {t:"易讀教材轉換機器人", c:"閱讀理解", i:"🔤", u:"https://gemini.google.com/gem/1-Mfy6sMTwN4VWjmmkSsn855fmzq4CDTV?usp=sharing"},
-  {t:"閱讀測驗命題助手-凱西老師自訂機器人", c:"閱讀理解", i:"📝", u:"https://gemini.google.com/gem/1qcUU0opfKapJJhj-RoJLoJi_6SlXz-Bl?usp=sharing"},
-
-  {t:"國語生字部首語詞（匯入用）", c:"識字生字", i:"🔠", u:"https://gemini.google.com/gem/1IdKA-MGxGLU6uFHjaxLaJ1SceBSsABo4?usp=sharing", k:"國語"},
-  {t:"部件識字王", c:"識字生字", i:"🧩", u:"https://gemini.google.com/gem/1dD3jH8_CYrRTW1KsETxZzX_TR-0A8mPL?usp=sharing", k:"國語"},
-  {t:"識字主題樂園設計師", c:"識字生字", i:"🎡", u:"https://gemini.google.com/gem/1CuWGV2-PHFMnzwi5PmNcir7cEzpUGQlk?usp=sharing", k:"國語"},
-  {t:"漢字核心擴散架構師", c:"識字生字", i:"🀄", u:"https://gemini.google.com/gem/1splZ8KZHNOQ4Vjx7c8N2k5BIhaQL6IY6?usp=sharing", k:"國語"},
-  {t:"識字能力王 實作", c:"識字生字", i:"🏆", u:"https://gemini.google.com/gem/1uVkhV3jq2vVGvE0cn5GAcD5PTGR-b6az?usp=sharing", k:"國語"},
-  {t:"複雜句型教學製作機", c:"識字生字", i:"🧠", u:"https://gemini.google.com/gem/1JviJ0scproftfgBWOm_ATIZsqtq4XeeM?usp=sharing", k:"國語"},
-  {t:"詞語單張圖卡（分享版）", c:"識字生字", i:"🗂️", u:"https://gemini.google.com/gem/19WLmEUJnHbJGnvwHTryVu-riMpsPtH08?usp=sharing", k:"國語"},
-  {t:"字詞句卡（分享版）", c:"識字生字", i:"🃏", u:"https://gemini.google.com/gem/1JWMeC8PcSDnoXhycknjZY2NsfMTWqG3c?usp=sharing", k:"國語"},
-  {t:"字詞卡（小字分享版）", c:"識字生字", i:"🔡", u:"https://gemini.google.com/gem/1lHBc_bEeuWXiQMtsqJdt_vEvbrCevpeN?usp=sharing", k:"國語"},
-  {t:"造句小老師", c:"識字生字", i:"✍️", u:"https://gemini.google.com/gem/1pB8Mrbzjhc8iyygg43gUce4KYkJuZU1G?usp=sharing", k:"國語"},
-  {t:"九宮格詞語圖（分享版）", c:"識字生字", i:"🔲", u:"https://gemini.google.com/gem/1n2my3jyUmG6Gd4PYzQEf9lLHRlXxnMum?usp=sharing", k:"國語"},
-  {t:"語詞圖片教材生成器", c:"識字生字", i:"🖼️", u:"https://gemini.google.com/share/e1df92b38ab3?hl=zh-TW", k:"國語"},
-  {t:"句型練習單生成器", c:"識字生字", i:"📐", u:"https://gemini.google.com/share/2a29c9b20925?hl=zh-TW", k:"國語",
-   d:"選擇核心句型開始出題：並列複句、因果複句、承接複句、假設複句、條件複句、轉折複句、目的複句、遞進複句、選擇複句"},
-  {t:"錯字糾察隊（挑戰及試卷）", c:"識字生字", i:"🕵️", u:"https://sites.google.com/view/correcttypo/%E5%BA%B7%E8%BB%92/%E5%BA%B75b/%E5%BA%B75b02_%E6%99%BA%E6%95%91%E9%A4%8A%E9%A6%AC%E4%BA%BA", k:"國語",
-   d:"康軒版本錯字糾察挑戰與試卷（康5b 智救養馬人）"},
-  {t:"教材格式生成系統", c:"識字生字", i:"🛠️", u:"https://gemini.google.com/share/8313d03bf212?hl=zh-TW", k:"國語",
-   d:"十合一功能：課文簡化、語詞工具、圖識詞卡、高頻語詞、字詞對應、生活化例句、找錯字、圈出正確字、語詞填空、錯字搜查隊"},
-  {t:"常用字複習卷", c:"識字生字", i:"📋", u:"https://gemini.google.com/share/1f860c1633b1?hl=zh-TW", k:"國語"},
-  {t:"詞語理解練習", c:"識字生字", i:"🔗", u:"https://sites.google.com/view/sentencematch/康軒/康5a", k:"國語",
-   d:"康軒版本詞語配對理解練習（康5a）"},
-  {t:"國語考卷產生器", c:"識字生字", i:"📄", u:"https://zeroegg.tw/tools/exam", k:"國語"},
-  {t:"波波注音聽寫", c:"識字生字", i:"🎧", u:"https://bopodoc.com/files", k:"國語"},
-  {t:"熊筆順", c:"識字生字", i:"🐻", u:"https://gsyan888.blogspot.com/p/stroke.html?m=1", k:"國語",
-   d:"顏國雄老師製作的漢字筆順教學工具"},
-
-  {t:"成語故事生成", c:"成語", i:"📜", u:"https://gemini.google.com/gem/1bUY4OWhqZjcUfelEIKe50aYu7573XsnS?usp=sharing", k:"國語"},
-  {t:"協助理解之圖解成語學習卡", c:"成語", i:"🖼️", u:"https://gemini.google.com/gem/1DiVfnoNkBKsxV7yFfYonrlKVlTZwZ3vI?usp=sharing", k:"國語"},
-
-  {t:"國語【作文鷹架】教練", c:"作文寫作", i:"🏗️", u:"https://gemini.google.com/gem/1bWDlh53dK2-564ABlpX-xxUFeRyDTOKY?usp=sharing", k:"國語"},
-  {t:"低年級提早寫作學習單產生器", c:"作文寫作", i:"✏️", u:"https://gemini.google.com/gem/1jX8z1lWDVwrhbWbRIy36FSsnZTXaLwf_?usp=sharing", k:"國語"},
-  {t:"作文引導學習單圖文創作王", c:"作文寫作", i:"🎨", u:"https://gemini.google.com/gem/1OwygxLK5lgrJnhZsy8QmQmhm3jHGdJEF?usp=sharing", k:"國語"},
-  {t:"作文寫作引導機器人", c:"作文寫作", i:"🤖", u:"https://gemini.google.com/gem/1899SRDPRsH3gxDvl2iFf_L3hXjO4nt9T?usp=sharing", k:"國語"},
-  {t:"寫作「便利貼」王", c:"作文寫作", i:"📝", u:"https://gemini.google.com/gem/1j7GZx6l0IhuUwHepZeFjLUj1TFYk-gez?usp=sharing", k:"國語"},
-  {t:"語文表達練功坊", c:"作文寫作", i:"💬", u:"https://gemini.google.com/share/181d9ccea2ec?hl=zh-TW", k:"國語",
-   d:"智慧語文生成與文句美化平台"},
-
-  {t:"應用題圖像學習單小幫手", c:"數學", i:"🧮", u:"https://gemini.google.com/gem/1Bthm5Dz8a6TJgYLYxQx0_eJpipcij_-2?usp=sharing"},
-  {t:"數學錯誤分析與再教學", c:"數學", i:"🔍", u:"https://gemini.google.com/gem/1tw5o0rn1ilklDzRxx03olQvGnzX07xFv?usp=sharing"},
-  {t:"AI數學錯題助教", c:"數學", i:"🤖", u:"https://gemini.google.com/gem/11FctUgs_TAHIVdF1AV1r6smBpu8FK8B_?usp=sharing"},
-  {t:"數學應用題轉譯圖像與示意圖小幫手", c:"數學", i:"📐", u:"https://gemini.google.com/gem/1Y-sZj-YV65h-E2wdWGPEUER27FbkwGKn?usp=sharing"},
-  {t:"國小四年級數學科檢測命題機器人", c:"數學", i:"📊", u:"https://gemini.google.com/gem/1QeehwW6vdtenf8aayTM9DUcx89ujwj4T?usp=sharing"},
-  {t:"互動式數學—輸入版", c:"數學", i:"🔢", u:"https://gemini.google.com/gem/1FnYQ8WhRcj8dQQOUi6U9U44g04HMB-Mi?usp=sharing"},
-  {t:"10以內加減法", c:"數學", i:"➕", u:"https://gemini.google.com/share/4e1431fd95fd?hl=zh-TW"},
-  {t:"數學類題生成器", c:"數學", i:"🧮", u:"https://gemini.google.com/share/65def1b95d73?hl=zh-TW"},
-  {t:"乘法消消樂", c:"數學", i:"✖️", u:"https://senst365.github.io/MultiplicationMatch/"},
-
-  {t:"社會科概念圖教材（特殊教育）", c:"社會／特教", i:"🗺️", u:"https://gemini.google.com/gem/1rd11TM1Gqcx3MbOZ3OhmfxgFi85m3OoU?usp=sharing"},
-  {t:"數學具體化教材（特殊教育）", c:"社會／特教", i:"🧱", u:"https://gemini.google.com/gem/ebef52b4a515?usp=sharing",
-   d:"將分數單元設計成 CRA 具體—圖像—抽象教材，可將數學應用題改成操作版、圖像版和算式版"},
-
-  {t:"英文句型大師-台南在地版", c:"英文", i:"🇬🇧", u:"https://gemini.google.com/gem/15u-9V8kbIYZcB_uB2CcabRM9FfNa4W8X?usp=sharing"},
-  {t:"準備好挑戰 2000 單字了嗎？（國中英文單字）", c:"英文", i:"🔤", u:"https://gemini.google.com/share/fee390b85bc5?hl=zh-TW",
-   d:"選擇遊戲模式練習國中英文2000單字"},
-
-  {t:"貼圖生成大師", c:"視覺設計", i:"🏷️", u:"https://gemini.google.com/gem/1mswM_V_2QLGEcPl3zPeiguvaXoiK_PUl?usp=sharing"},
-  {t:"知識圖表生圖器", c:"視覺設計", i:"📊", u:"https://gemini.google.com/gem/1p7PAU2XgCjdfzZrPDYi6D4lPBfiQShGP?usp=sharing"},
-  {t:"風格復刻簡報產生器", c:"視覺設計", i:"🖥️", u:"https://gemini.google.com/gem/1WmCE5Dal0MAisFdP8gq04aknnVGH4IC9?usp=sharing"},
-  {t:"懶人包圖文產生器", c:"視覺設計", i:"🗞️", u:"https://gemini.google.com/gem/12NoLe59IYYpZkM1X1q3iVMWKLFloI02H?usp=sharing"},
-  {t:"手繪塗鴉風格貼紙設計師", c:"視覺設計", i:"🎨", u:"https://gemini.google.com/gem/1m2O_Fo8kiqgDeQgfWVhwjV8m0PxT7m0q?usp=sharing"},
-  {t:"對稱分割與視覺對比教學圖卡設計師", c:"視覺設計", i:"🔷", u:"https://gemini.google.com/gem/10k5UVG1KGpkXeULKtH6E9_-lttawYV_B?usp=sharing"},
-  {t:"迷宮封面設計師", c:"視覺設計", i:"🧩", u:"https://gemini.google.com/gem/1vdB6suL5zLLZyKoDTVzXHDG0OAYuq2X0?usp=sharing"},
-  {t:"極簡影像生成", c:"視覺設計", i:"🖼️", u:"https://gemini.google.com/gem/1brWKdbJ7QpTvQIL3c6VoD_jagj_aNzjN?usp=sharing"},
-  {t:"筆記圖像生成機器人", c:"視覺設計", i:"🗒️", u:"https://gemini.google.com/gem/1ycytx8L7pWjVKbmokTY_8ebPzGhtayWx?usp=sharing"},
-  {t:"遊覽車Q版導覽圖", c:"視覺設計", i:"🚌", u:"https://gemini.google.com/gem/1lxjigANOE6HgA9uDhxt2raXPj5v_JoG4?usp=sharing"},
-  {t:"Sonia老師Nano Banana AI生圖指令大禮包", c:"視覺設計", i:"🍌", u:"https://gemini.google.com/share/967a036f65b8?hl=zh-TW"},
-  {t:"🧩 趣味學習迷宮", c:"視覺設計", i:"🧩", u:"https://gemini.google.com/share/50ea1ff5b38a?hl=zh-TW"},
-  {t:"阿貴校長的影像與檔案批次處理工具", c:"視覺設計", i:"🗂️", u:"https://ezschool.tw/tools/image_tools.html",
-   d:"整合格式轉換、尺寸調整、飽和度調整、影像裁切與批次更名功能，支援拖曳多檔上傳與批次下載"},
-
-  {t:"學生作業追問產生器", c:"課室經營", i:"❓", u:"https://gemini.google.com/gem/1ouyT5M5DnTNSGL8IhFJuAUDSHYLh5-mC?usp=sharing"},
-  {t:"教學互動網頁 Code 製造師（GEN）", c:"課室經營", i:"💻", u:"https://gemini.google.com/gem/150qTKrDe6ManAqlCI3iu1o2vf0d2HVb5?usp=sharing"},
-  {t:"Sonia 老師的 AI 神隊友指南", c:"課室經營", i:"🤝", u:"https://gemini.google.com/gem/1N6m9pzaWes6AD2VvGHoUOpHHWShpkux5?usp=sharing"},
-  {t:"豐富的數位教學與管理工具", c:"課室經營", i:"⏱️", u:"https://twcampus.org/",
-   d:"倒數計時、線上點名、座位分配、音量檢測與教材加註工具，一鍵開啟協助教師高效課堂管理"},
-
-  {t:"仙姑凱西的教學工具", c:"教學資源網站", i:"🧙‍♀️", u:"https://kathy594520.github.io/new.github.io/AI/AI"},
-  {t:"Puti-AI 教學工具庫", c:"教學資源網站", i:"📚", u:"https://padlet.com/clongwh/puti-ai-teaching-tool-library-tifvrvjcpg51cw7r",
-   d:"屏東後庄國小黃朝榮老師整理的 AI 教學工具庫"},
-  {t:"米克師AI備課高手", c:"教學資源網站", i:"🧑‍🏫", u:"https://spedmix.pages.dev/"},
+  // 這是公開版本，工具清單留空，讓每位使用者自行新增自己的收藏
 ];
 
 let categoriesData = [];
@@ -501,24 +422,43 @@ function getCatMeta(name){
   return categoriesData.find(c=>c.name===name) || {name, bg:"#DDD6CC", dot:"#8A8177"};
 }
 
-async function loadData(){
+/* Storage helper: uses Claude's window.storage when available (inside this chat),
+   falls back to the browser's own localStorage when running as a standalone
+   webpage (e.g. hosted on GitHub Pages), so saved changes still persist there. */
+async function storageGet(key){
   try{
-    const res = await window.storage.get('toolbox-tools-v6');
-    if(res && res.value){
-      const parsed = JSON.parse(res.value);
+    const res = await window.storage.get(key);
+    return res ? res.value : null;
+  }catch(e){
+    try{ return localStorage.getItem(key); }catch(e2){ return null; }
+  }
+}
+async function storageSet(key, value){
+  try{
+    await window.storage.set(key, value);
+    return;
+  }catch(e){
+    try{ localStorage.setItem(key, value); }catch(e2){ /* no storage available at all */ }
+  }
+}
+
+async function loadData(){
+  const raw = await storageGet('toolbox-tools-v6');
+  if(raw){
+    try{
+      const parsed = JSON.parse(raw);
       categoriesData = parsed.categories || JSON.parse(JSON.stringify(defaultCategories));
       toolsData = parsed.tools || [];
       return;
-    }
-  }catch(e){ /* no saved data yet, or storage unavailable */ }
+    }catch(e){ /* corrupted data, fall through to defaults */ }
+  }
   const d = cloneDefault();
   categoriesData = d.categories;
   toolsData = d.tools;
 }
 
 async function saveData(){
-  try{ await window.storage.set('toolbox-tools-v6', JSON.stringify({categories:categoriesData, tools:toolsData})); }
-  catch(e){ /* storage unavailable, changes stay in-memory for this session */ }
+  await storageSet('toolbox-tools-v6', JSON.stringify({categories:categoriesData, tools:toolsData}));
 }
 
 const boardEl = document.getElementById('board');
@@ -548,6 +488,7 @@ function cardHTML(x, showTag){
     <a class="card" href="${x.u}" target="_blank" rel="noopener" style="background:${bg}; color:${textColor};">
       ${showTag ? `<div class="tag" style="color:${accentColor(col.dot)}">${x.c}</div>` : ''}
       <h3>${x.t}</h3>
+      ${x.d ? `<p class="desc">${x.d}</p>` : ''}
     </a>`;
 }
 
@@ -795,16 +736,15 @@ const fontFamilies = {
 let prefs = { font:'sans', theme:'light' };
 
 async function loadPrefs(){
-  try{
-    const res = await window.storage.get('toolbox-prefs-v1');
-    if(res && res.value){ prefs = JSON.parse(res.value); }
-  }catch(e){ /* use defaults */ }
+  const raw = await storageGet('toolbox-prefs-v1');
+  if(raw){
+    try{ prefs = JSON.parse(raw); }catch(e){ /* use defaults */ }
+  }
   applyPrefs();
 }
 
 async function savePrefs(){
-  try{ await window.storage.set('toolbox-prefs-v1', JSON.stringify(prefs)); }
-  catch(e){ /* in-memory only for this session */ }
+  await storageSet('toolbox-prefs-v1', JSON.stringify(prefs));
 }
 
 function applyPrefs(){
@@ -827,6 +767,31 @@ document.getElementById('themeToggle').addEventListener('click', async ()=>{
   applyPrefs();
   await savePrefs();
 });
+
+/* ---- button / card click sound (synthesized, no audio file needed) ---- */
+let audioCtx;
+function playClickSound(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(680, now);
+    osc.frequency.exponentialRampToValueAtTime(420, now + 0.07);
+    gain.gain.setValueAtTime(0.16, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.1);
+  }catch(e){ /* audio not available, silently ignore */ }
+}
+document.addEventListener('click', (e)=>{
+  if(e.target.closest('.card, .btn-manage, .btn-primary, .btn-secondary, .btn-danger, .btn-ghost, .mi-del, .cat-del, .close-x, .mi-body, .cat-chip button')){
+    playClickSound();
+  }
+}, true);
 </script>
 </body>
 </html>
