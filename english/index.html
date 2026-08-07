@@ -9,6 +9,8 @@
 <link rel="icon" type="image/png" href="custom-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<!-- 漢字筆順動畫／練習寫字函式庫（開源、免費，資料來自 Make Me a Hanzi 專案） -->
+<script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3/dist/hanzi-writer.min.js"></script>
 <style>
   :root{
     --paper:#F6FAF8; --paper-deep:#EAF4EF;
@@ -211,11 +213,6 @@
     display:inline-flex; align-items:center; gap:6px; background:var(--paper-deep); color:var(--sky-deep);
     border-radius:999px; padding:5px 12px; font-size:14px; margin-bottom:14px;
   }
-  .dict-image-slot{margin:2px 0 14px;}
-  .dict-image-slot img{
-    display:block; max-width:100%; max-height:200px; border-radius:14px; box-shadow:var(--shadow-sm);
-  }
-  .dict-image-credit{font-size:11px; color:var(--ink-soft); opacity:0.7; margin-top:4px;}
   .dict-zh-line{
     font-size:19px; font-weight:800; color:var(--mint-deep); background:var(--paper-deep);
     border-radius:12px; padding:12px 14px; margin-bottom:12px; line-height:1.4;
@@ -257,17 +254,31 @@
   .zh-evolution-title{font-weight:700; color:var(--coral-deep); margin-bottom:6px; font-size:14px;}
   .zh-evolution-text{font-size:12.5px; color:var(--ink-soft); line-height:1.6; margin-bottom:10px;}
   .zh-evolution-hint{font-size:11px; color:var(--ink-soft); opacity:0.75; margin-top:6px;}
+  .stroke-order-card{
+    background:var(--paper-deep); border-radius:14px; padding:14px; margin-bottom:12px;
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+  }
+  .stroke-order-char{font-size:14px; font-weight:700; color:var(--ink-soft);}
+  .stroke-order-canvas{width:180px; height:180px; background:#fff; border-radius:12px; box-shadow:var(--shadow-sm);}
+  .stroke-order-buttons{display:flex; gap:8px;}
+  .stroke-order-hint{font-size:12px; color:var(--ink-soft); opacity:0.75;}
   .dict-history{
     flex:1; min-width:180px; max-width:260px; background:#fff; border-radius:16px; padding:14px;
-    box-shadow:var(--shadow-sm); display:flex; flex-direction:column; max-height:70vh;
+    box-shadow:var(--shadow-sm); display:flex; flex-direction:column; max-height:70vh; overflow-y:auto;
   }
   .dict-history h3{font-size:15px; margin-bottom:8px; color:var(--ink-soft);}
-  #historyList{list-style:none; margin:0; padding:0; overflow-y:auto; flex:1;}
-  #historyList li{
+  .dict-history ul{list-style:none; margin:0 0 4px; padding:0;}
+  .dict-history li{
     padding:8px 10px; border-radius:10px; cursor:pointer; font-size:14px; margin-bottom:4px;
-    display:flex; justify-content:space-between; align-items:center;
+    display:flex; flex-direction:column; gap:2px;
   }
-  #historyList li:hover{background:var(--paper-deep);}
+  .dict-history li:hover{background:var(--paper-deep);}
+  .history-row-top{display:flex; justify-content:space-between; align-items:center; gap:6px;}
+  .history-word{font-weight:700;}
+  .history-check{flex-shrink:0;}
+  .history-zh-note{font-size:11.5px; color:var(--ink-soft); opacity:0.7; padding-left:22px;}
+  .history-subtitle{font-size:12px; color:var(--ink-soft); font-weight:700; margin:10px 0 4px;}
+  .history-subtitle.mastered-title{color:var(--mint-deep);}
 
   /* ---------- ROOTS TAB ---------- */
   .root-toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; align-items:center;}
@@ -430,7 +441,10 @@
         </div>
         <aside class="dict-history">
           <h3>🕘 查詢紀錄</h3>
-          <ul id="historyList"></ul>
+          <h4 class="history-subtitle">📖 學習中</h4>
+          <ul id="historyListLearning"></ul>
+          <h4 class="history-subtitle mastered-title">✅ 已完成</h4>
+          <ul id="historyListMastered"></ul>
           <button id="btnClearHistory" class="ghost-btn small">清除紀錄</button>
         </aside>
       </div>
@@ -463,7 +477,10 @@
         </div>
         <aside class="dict-history">
           <h3>🕘 查詢紀錄</h3>
-          <ul id="zhHistoryList"></ul>
+          <h4 class="history-subtitle">📖 學習中</h4>
+          <ul id="zhHistoryListLearning"></ul>
+          <h4 class="history-subtitle mastered-title">✅ 已完成</h4>
+          <ul id="zhHistoryListMastered"></ul>
           <button id="btnClearZhHistory" class="ghost-btn small">清除紀錄</button>
         </aside>
       </div>
@@ -918,7 +935,7 @@ document.getElementById('modalSaveBtn').addEventListener('click', async ()=>{
 /* ---------------------------------------------------------------- */
 document.getElementById('btnExportCards').addEventListener('click', ()=>{
   try{
-    const json = JSON.stringify({exportedAt:new Date().toISOString(), flashcards, rootNotes, units}, null, 2);
+    const json = JSON.stringify({exportedAt:new Date().toISOString(), flashcards, rootNotes, units, dictHistory, zhDictHistory}, null, 2);
     const blob = new Blob([json], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -947,6 +964,8 @@ document.getElementById('importCardsFile').addEventListener('change', (e)=>{
       });
       if(data.rootNotes && typeof data.rootNotes === 'object') rootNotes = data.rootNotes;
       if(Array.isArray(data.units) && data.units.length) units = data.units;
+      if(Array.isArray(data.dictHistory)){ dictHistory = data.dictHistory; renderHistory(); }
+      if(Array.isArray(data.zhDictHistory)){ zhDictHistory = data.zhDictHistory; renderZhHistory(); }
       currentUnitId = units[0].id;
       let maxId = 0;
       flashcards.forEach(c=>{ const m=/c(\d+)/.exec(c.id||''); if(m) maxId=Math.max(maxId,parseInt(m[1],10)); });
@@ -967,7 +986,7 @@ document.getElementById('importCardsFile').addEventListener('change', (e)=>{
 /* 查字典（Free Dictionary API）                                     */
 /* ---------------------------------------------------------------- */
 const dictCache = {};
-let dictHistory = []; // {text, dir}
+let dictHistory = []; // {text, dir, zh, mastered}
 
 /* 所有網路查詢都用這個包一層逾時保護，避免網路不好時畫面一直卡著 */
 async function fetchWithTimeout(url, ms=8000){
@@ -1068,17 +1087,6 @@ async function fetchDictionary(word){
 }
 
 /* 用 Openverse（開放版權圖庫，已過濾成人內容）找一張相關的圖片，找不到就靜靜跳過 */
-async function fetchWordImage(word){
-  try{
-    const res = await fetchWithTimeout(`https://api.openverse.org/v1/images/?q=${encodeURIComponent(word)}&page_size=3&mature=false`, 6000);
-    if(!res.ok) return null;
-    const data = await res.json();
-    const hit = (data.results||[]).find(r=> r.thumbnail || r.url);
-    if(!hit) return null;
-    return { thumb: hit.thumbnail || hit.url, source: hit.source || hit.provider || '', link: hit.foreign_landing_url || hit.url };
-  }catch(e){ return null; }
-}
-
 let dictDirection = 'en-zh'; // 'en-zh'（英翻中，可完整查字典）｜ 'zh-en'（中翻英，快速翻譯）
 document.querySelectorAll('.dir-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -1152,13 +1160,13 @@ async function lookupWord(word, knownZh){
   try{
     const data = await fetchDictionary(word);
     renderDictResult(data, knownZh);
-    addHistory(word.toLowerCase(), 'en-zh');
+    addHistory(word.toLowerCase(), 'en-zh', knownZh);
   }catch(e){
     if(e.message === 'NOT_FOUND'){
       const curated = CURATED_WORDS[word.trim().toLowerCase()];
       if(curated){
         renderDictResult(curated, knownZh);
-        addHistory(word.toLowerCase(), 'en-zh');
+        addHistory(word.toLowerCase(), 'en-zh', knownZh);
       } else {
         renderDictNotFound(word, false);
       }
@@ -1192,7 +1200,6 @@ function renderDictResult(data, knownZh){
     </div>
     ${phoneticText ? `<div class="phonetic-chip mono">${escapeHtml(phoneticText)}</div>` : ''}
     <div class="dict-zh-line" id="dictZhLine">${knownZh ? `🈶 中文意思：${escapeHtml(knownZh)}` : '🈶 中文意思查詢中...'}</div>
-    <div class="dict-image-slot" id="dictImageSlot"></div>
   `;
   meanings.forEach((m, mi)=>{
     const defs = m.definitions||[];
@@ -1212,28 +1219,15 @@ function renderDictResult(data, knownZh){
   resultEl.innerHTML = html;
   document.getElementById('dictSpeakBtn').addEventListener('click', ()=> speakWithAudio(entry.word, audioUrl));
   document.getElementById('dictAddCardBtn').addEventListener('click', ()=>{
-    const imgTag = document.getElementById('dictImageSlot')?.querySelector('img');
     const zhLine = document.getElementById('dictZhLine')?.textContent.replace('🈶 中文意思：','').replace('🈶 中文意思查詢中...','').trim();
     const card = {
-      id:'c'+(idCounter++), word:entry.word, zh: zhLine || knownZh || '', pos: posAbbr(meanings?.[0]?.partOfSpeech), image: imgTag ? imgTag.src : null, posX:50, posY:50,
+      id:'c'+(idCounter++), word:entry.word, zh: zhLine || knownZh || '', pos: posAbbr(meanings?.[0]?.partOfSpeech), image: null, posX:50, posY:50,
       phonetic:phoneticText, audioUrl, mastered:false, unitId: currentUnitId,
       definition: meanings?.[0]?.definitions?.[0]?.definition || ''
     };
     flashcards.push(card);
     renderCardGrid();
     switchTab('flashcards');
-  });
-
-  // 背景載入一張相關圖片，加上詞性當作上下文，減少同形異義字配到不相關圖片的機率
-  // （不過像「leave」這種抽象動作動詞，本來就很難用照片準確表達，這是圖庫搜尋本身的限制）
-  const imgQuery = meanings[0]?.partOfSpeech ? `${entry.word} ${meanings[0].partOfSpeech}` : entry.word;
-  fetchWordImage(imgQuery).then(img=>{
-    const slot = document.getElementById('dictImageSlot');
-    if(!slot || !img) return;
-    slot.innerHTML = `
-      <img src="${img.thumb}" alt="${escapeHtml(entry.word)}" loading="lazy">
-      <div class="dict-image-credit">圖片來源：${escapeHtml(img.source||'Openverse')}（開放版權圖庫，僅供參考，如果不合適請自行上傳照片）</div>
-    `;
   });
 
   // 背景翻譯：中文意思標題用「字典定義」翻譯
@@ -1247,6 +1241,7 @@ function renderDictResult(data, knownZh){
       if(!el) return;
       if(!zh){ el.textContent = '（找不到中文翻譯，請參考下方定義翻譯）'; return; }
       el.textContent = `🈶 中文意思：${zh}`;
+      updateHistoryZh(entry.word.toLowerCase(), 'en-zh', zh);
     });
   }
   // 背景翻譯：每個詞性選出的那一則定義與例句
@@ -1275,25 +1270,40 @@ function renderDictNotFound(word, isNetworkError){
   document.getElementById('dictResult').innerHTML = `<div class="dict-notfound">${msg}</div>`;
 }
 
-function addHistory(text, dir){
+function addHistory(text, dir, zh){
   dictHistory = dictHistory.filter(h=> !(h.text===text && h.dir===dir));
-  dictHistory.unshift({text, dir});
+  dictHistory.unshift({text, dir, zh: zh||'', mastered:false});
   if(dictHistory.length>30) dictHistory.pop();
   renderHistory();
 }
+function updateHistoryZh(text, dir, zh){
+  const h = dictHistory.find(h=> h.text===text && h.dir===dir);
+  if(h && zh){ h.zh = zh; renderHistory(); }
+}
 function renderHistory(){
-  const list = document.getElementById('historyList');
-  list.innerHTML = '';
+  const learningList = document.getElementById('historyListLearning');
+  const masteredList = document.getElementById('historyListMastered');
+  learningList.innerHTML = ''; masteredList.innerHTML = '';
   dictHistory.forEach(h=>{
     const li = document.createElement('li');
-    li.textContent = (h.dir==='zh-en' ? '🈶 ' : '🔤 ') + h.text;
-    li.addEventListener('click', ()=>{
+    li.innerHTML = `
+      <div class="history-row-top">
+        <label class="history-check" title="標記為已完成"><input type="checkbox" ${h.mastered?'checked':''}></label>
+        <span class="history-word" style="flex:1;">${(h.dir==='zh-en' ? '🈶 ' : '🔤 ')}${escapeHtml(h.text)}</span>
+      </div>
+      ${h.zh ? `<div class="history-zh-note">${escapeHtml(h.zh)}</div>` : ''}
+    `;
+    li.querySelector('.history-word').addEventListener('click', ()=>{
       const targetDir = h.dir === 'zh-en' ? 'zh-en' : 'en-zh';
       document.querySelector(`.dir-btn[data-dir="${targetDir}"]`).click();
       document.getElementById('dictInput').value = h.text;
       handleDictSearch();
     });
-    list.appendChild(li);
+    li.querySelector('input[type="checkbox"]').addEventListener('change', (e)=>{
+      h.mastered = e.target.checked;
+      renderHistory();
+    });
+    (h.mastered ? masteredList : learningList).appendChild(li);
   });
 }
 document.getElementById('btnClearHistory').addEventListener('click', ()=>{
@@ -1544,7 +1554,8 @@ async function handleZhSearch(){
   try{
     const data = await fetchChineseDict(word);
     renderZhDictResult(data, word);
-    addZhHistory(word);
+    const firstDef = data.heteronyms?.[0]?.definitions?.[0]?.def || '';
+    addZhHistory(word, firstDef);
   }catch(e){
     const msg = e.message === 'NOT_FOUND'
       ? `😕 找不到「${escapeHtml(word)}」<br>請確認字詞是否正確。`
@@ -1568,7 +1579,7 @@ function renderZhDictResult(data, word){
       ${data.stroke_count ? `<span class="zh-meta-chip">筆畫：${data.stroke_count}</span>` : ''}
       ${(data.non_radical_stroke_count!=null) ? `<span class="zh-meta-chip">部首外筆畫：${data.non_radical_stroke_count}</span>` : ''}
     </div>
-    <div class="dict-image-slot" id="zhImageSlot"></div>
+    <div id="strokeOrderSection"></div>
   `;
   (data.heteronyms||[]).forEach(h=>{
     html += `<div class="zh-bopomofo-row">
@@ -1599,34 +1610,87 @@ function renderZhDictResult(data, word){
     window.open(`https://www.chinese-linguipedia.org/search_source.html`, '_blank');
   });
 
-  // 背景載入一張相關圖片，找不到就不顯示（跟英文查詢共用同一個開放圖庫）
-  fetchWordImage(title).then(img=>{
-    const slot = document.getElementById('zhImageSlot');
-    if(!slot || !img) return;
-    slot.innerHTML = `
-      <img src="${img.thumb}" alt="${escapeHtml(title)}" loading="lazy">
-      <div class="dict-image-credit">圖片來源：${escapeHtml(img.source||'Openverse')}（開放版權圖庫）</div>
+  // 幫查詢的詞裡「每一個」中文字都建立一個筆順練習區塊（例如查兩個字的詞，就會有兩個字各自的筆順）
+  renderStrokeOrder(title);
+}
+
+/* 建立筆順動畫／練習寫字的區塊：每個字一個 HanziWriter，可以播放筆順動畫，也可以照著描寫練習 */
+function renderStrokeOrder(word){
+  const section = document.getElementById('strokeOrderSection');
+  if(!section || typeof HanziWriter === 'undefined') return;
+  section.innerHTML = '';
+  const chars = Array.from(word).filter(c => /[\u4e00-\u9fff]/.test(c)); // 只挑中文字，標點符號等跳過
+  chars.forEach((ch, idx)=>{
+    const boxId = `strokeBox_${idx}_${Date.now()}`;
+    const wrap = document.createElement('div');
+    wrap.className = 'stroke-order-card';
+    wrap.innerHTML = `
+      <div class="stroke-order-char">${escapeHtml(ch)}</div>
+      <div class="stroke-order-canvas" id="${boxId}"></div>
+      <div class="stroke-order-buttons">
+        <button class="secondary-btn small" data-action="play">▶️ 播放筆順</button>
+        <button class="secondary-btn small" data-action="quiz">✍️ 練習寫寫看</button>
+      </div>
+      <div class="stroke-order-hint" style="display:none;">找不到這個字的筆順資料</div>
     `;
+    section.appendChild(wrap);
+
+    let writer;
+    try{
+      writer = HanziWriter.create(boxId, ch, {
+        width: 180, height: 180, padding: 8,
+        showOutline: true,
+        strokeAnimationSpeed: 1, delayBetweenStrokes: 300,
+        strokeColor: '#2FA382', outlineColor: '#D9EDE5', drawingColor: '#3B8FBE',
+        charDataLoader: (c, onComplete)=>{
+          fetch(`https://cdn.jsdelivr.net/npm/hanzi-writer-data@2/${encodeURIComponent(c)}.json`)
+            .then(r=>{ if(!r.ok) throw new Error('not found'); return r.json(); })
+            .then(onComplete)
+            .catch(()=>{ wrap.querySelector('.stroke-order-hint').style.display = 'block'; });
+        }
+      });
+    }catch(e){ wrap.querySelector('.stroke-order-hint').style.display = 'block'; return; }
+
+    wrap.querySelector('[data-action="play"]').addEventListener('click', ()=>{
+      writer.showCharacter();
+      writer.animateCharacter();
+    });
+    wrap.querySelector('[data-action="quiz"]').addEventListener('click', ()=>{
+      writer.quiz({
+        onComplete: ()=>{ speak(ch, 'zh-TW'); }
+      });
+    });
   });
 }
 
-function addZhHistory(word){
-  zhDictHistory = zhDictHistory.filter(w=>w!==word);
-  zhDictHistory.unshift(word);
+function addZhHistory(word, zh){
+  zhDictHistory = zhDictHistory.filter(h=>h.word!==word);
+  zhDictHistory.unshift({word, zh: zh||'', mastered:false});
   if(zhDictHistory.length>30) zhDictHistory.pop();
   renderZhHistory();
 }
 function renderZhHistory(){
-  const list = document.getElementById('zhHistoryList');
-  list.innerHTML = '';
-  zhDictHistory.forEach(w=>{
+  const learningList = document.getElementById('zhHistoryListLearning');
+  const masteredList = document.getElementById('zhHistoryListMastered');
+  learningList.innerHTML = ''; masteredList.innerHTML = '';
+  zhDictHistory.forEach(h=>{
     const li = document.createElement('li');
-    li.textContent = w;
-    li.addEventListener('click', ()=>{
-      document.getElementById('zhInput').value = w;
+    li.innerHTML = `
+      <div class="history-row-top">
+        <label class="history-check" title="標記為已完成"><input type="checkbox" ${h.mastered?'checked':''}></label>
+        <span class="history-word" style="flex:1;">${escapeHtml(h.word)}</span>
+      </div>
+      ${h.zh ? `<div class="history-zh-note">${escapeHtml(h.zh)}</div>` : ''}
+    `;
+    li.querySelector('.history-word').addEventListener('click', ()=>{
+      document.getElementById('zhInput').value = h.word;
       handleZhSearch();
     });
-    list.appendChild(li);
+    li.querySelector('input[type="checkbox"]').addEventListener('change', (e)=>{
+      h.mastered = e.target.checked;
+      renderZhHistory();
+    });
+    (h.mastered ? masteredList : learningList).appendChild(li);
   });
 }
 document.getElementById('btnClearZhHistory').addEventListener('click', ()=>{
