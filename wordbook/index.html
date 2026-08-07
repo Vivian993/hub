@@ -1164,6 +1164,17 @@ function buildLessonOptions(grade){ return LESSONS.map((l,i)=>`<option value="${
 function refreshLessonDropdown(...ids){
     const grade = document.getElementById(ids[0]).value;
     document.getElementById(ids[1]).innerHTML = buildLessonOptions(grade);
+    toggleLessonVisibility(ids[0], ids[1]);
+}
+function toggleLessonVisibility(gradeId, lessonId){
+    const grade = document.getElementById(gradeId).value;
+    const lessonEl = document.getElementById(lessonId);
+    if(!lessonEl) return;
+    if(grade === '補充'){
+        lessonEl.style.display = 'none';
+    } else {
+        lessonEl.style.display = '';
+    }
 }
 
 function toggleLessonSetup(){
@@ -1361,6 +1372,7 @@ window.onload = async function(){
     else gradeId = 'quizFilterGrade';
     
     try { document.getElementById(id).innerHTML = buildLessonOptions(document.getElementById(gradeId).value); } catch(e){}
+    try { toggleLessonVisibility(gradeId, id); } catch(e){}
   });
 
   document.getElementById('idiomGrade').addEventListener('change', ()=>refreshLessonDropdown('idiomGrade','idiomLesson'));
