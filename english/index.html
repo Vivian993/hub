@@ -1171,7 +1171,17 @@ function renderDictResult(data, knownZh){
   const entry = data[0];
   const phoneticText = entry.phonetic || (entry.phonetics.find(p=>p.text)||{}).text || '';
   const audioUrl = (entry.phonetics.find(p=>p.audio)||{}).audio || '';
-  const meanings = (entry.meanings||[]).slice(0,3);
+
+  // 免費字典 API 有時候會把同一個字的不同字源（homograph）拆成好幾筆分開的資料，
+  // 如果只取 data[0]，可能剛好抓到比較少見的意思，而不是孩子最常用到的那個。
+  // 這裡把所有筆數的詞性都合併起來，並且優先顯示「有附例句」的（通常代表資料比較完整、也是比較常用的意思）。
+  const allMeanings = data.flatMap(e => e.meanings || []);
+  const sortedMeanings = [...allMeanings].sort((a,b)=>{
+    const aScore = (a.definitions||[]).filter(d=>d.example).length;
+    const bScore = (b.definitions||[]).filter(d=>d.example).length;
+    return bScore - aScore;
+  });
+  const meanings = sortedMeanings.slice(0,3);
 
   let html = `
     <div class="dict-word-row">
@@ -1204,30 +1214,39 @@ function renderDictResult(data, knownZh){
     const imgTag = document.getElementById('dictImageSlot')?.querySelector('img');
     const zhLine = document.getElementById('dictZhLine')?.textContent.replace('🈶 中文意思：','').replace('🈶 中文意思查詢中...','').trim();
     const card = {
-      id:'c'+(idCounter++), word:entry.word, zh: zhLine || knownZh || '', pos: posAbbr(entry.meanings?.[0]?.partOfSpeech), image: imgTag ? imgTag.src : null, posX:50, posY:50,
+      id:'c'+(idCounter++), word:entry.word, zh: zhLine || knownZh || '', pos: posAbbr(meanings?.[0]?.partOfSpeech), image: imgTag ? imgTag.src : null, posX:50, posY:50,
       phonetic:phoneticText, audioUrl, mastered:false, unitId: currentUnitId,
-      definition: entry.meanings?.[0]?.definitions?.[0]?.definition || ''
+      definition: meanings?.[0]?.definitions?.[0]?.definition || ''
     };
     flashcards.push(card);
     renderCardGrid();
     switchTab('flashcards');
   });
 
-  // 背景載入一張相關圖片，找不到就不顯示（不影響文字內容）
-  fetchWordImage(entry.word).then(img=>{
+  // 背景載入一張相關圖片，加上詞性當作上下文，減少同形異義字配到不相關圖片的機率
+  // （不過像「leave」這種抽象動作動詞，本來就很難用照片準確表達，這是圖庫搜尋本身的限制）
+  const imgQuery = meanings[0]?.partOfSpeech ? `${entry.word} ${meanings[0].partOfSpeech}` : entry.word;
+  fetchWordImage(imgQuery).then(img=>{
     const slot = document.getElementById('dictImageSlot');
     if(!slot || !img) return;
     slot.innerHTML = `
       <img src="${img.thumb}" alt="${escapeHtml(entry.word)}" loading="lazy">
-      <div class="dict-image-credit">圖片來源：${escapeHtml(img.source||'Openverse')}（開放版權圖庫）</div>
+      <div class="dict-image-credit">圖片來源：${escapeHtml(img.source||'Openverse')}（開放版權圖庫，僅供參考，如果不合適請自行上傳照片）</div>
     `;
   });
 
-  // 背景翻譯：單字本身的中文意思（若不是從中翻英過來，才需要重新查）
+  // 背景翻譯：中文意思標題改用「例句翻譯」推導，比直接翻譯單一個字準確很多
+  // （單獨翻譯一個字很容易因為多義字而翻錯，例如 leave 曾經誤翻成「歷史」）
   if(!knownZh){
-    translateText(entry.word, 'en|zh-TW').then(zh=>{
+    const primaryChosen = (meanings[0]?.definitions||[]).find(d=>d.example) || meanings[0]?.definitions?.[0];
+    const textForHeadline = primaryChosen?.example || primaryChosen?.definition || entry.word;
+    translateText(textForHeadline, 'en|zh-TW').then(zh=>{
       const el = document.getElementById('dictZhLine');
-      if(el) el.textContent = zh ? `🈶 中文意思：${zh}` : '（找不到中文翻譯）';
+      if(!el) return;
+      if(!zh){ el.textContent = '（找不到中文翻譯，請參考下方例句翻譯）'; return; }
+      el.textContent = primaryChosen?.example
+        ? `🈶 常見用法：${zh}`
+        : `🈶 中文意思：${zh}`;
     });
   }
   // 背景翻譯：每個詞性選出的那一則定義與例句
