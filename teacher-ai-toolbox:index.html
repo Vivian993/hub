@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>老師的 AI 教具箱</title>
+
+<!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
+  <link rel="apple-touch-icon" href="custom-icon.png">
+  <link rel="icon" type="image/png" href="custom-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@400;500;700;900&family=Huninn:wght@400;700&family=LXGW+WenKai+TC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF7F1;
+    --header-bg1:#F4E5E0;
+    --header-bg2:#EDDBDF;
+    --title-color:#A9695C;
+    --ink:#4A413A;
+    --ink-soft:#8C8177;
+    --panel:#FFFDFA;
+    --line:#E6DCD0;
+    --input-bg:#FBF8F3;
+    --hover-bg:rgba(120,105,90,0.08);
+  }
+  html[data-theme="dark"]{
+    --bg:#252220;
+    --header-bg1:#463838;
+    --header-bg2:#3A3038;
+    --title-color:#E3AFA2;
+    --ink:#EEE7DE;
+    --ink-soft:#B6AB9E;
+    --panel:#332D29;
+    --line:#4C443C;
+    --input-bg:#2B2622;
+    --hover-bg:rgba(255,255,255,0.06);
+  }
+  *{box-sizing:border-box;}
+  html{ background:var(--bg); }
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans TC', sans-serif;
+    font-size:17px;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    background:linear-gradient(135deg, var(--header-bg1), var(--header-bg2));
+    color:var(--ink);
+    padding:18px 20px 16px;
+  }
+  .header-top{
+    display:flex; align-items:center; gap:12px;
+    max-width:1200px; margin:0 auto;
+  }
+  .logo{ flex:none; }
+  .header-text{ flex:1; min-width:0; }
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:.14em;
+    color:var(--title-color);
+    font-weight:700;
+    margin-bottom:3px;
+  }
+  h1{
+    font-family:'ZCOOL KuaiLe', 'Noto Sans TC', sans-serif;
+    font-size:clamp(24px,4.2vw,36px);
+    margin:0 0 4px;
+    line-height:1.25;
+    color:var(--title-color);
+  }
+  header p.sub{
+    margin:0;
+    color:var(--ink-soft);
+    font-size:14.5px;
+    max-width:640px;
+    line-height:1.5;
+  }
+  .header-actions{
+    max-width:1200px; margin:12px auto 0;
+    display:flex; gap:10px; flex-wrap:wrap;
+  }
+  .btn-manage{
+    background:var(--panel);
+    color:var(--ink);
+    border:none;
+    border-radius:10px;
+    padding:9px 15px;
+    font-family:'Noto Sans TC', sans-serif;
+    font-size:14.5px;
+    font-weight:700;
+    cursor:pointer;
+    box-shadow:0 3px 10px rgba(0,0,0,0.1);
+  }
+  .btn-manage:hover{ background:var(--hover-bg); }
+
+  .search-wrap{ max-width:1200px; margin:12px auto 0; }
+  .search-box{
+    display:flex; align-items:center; gap:9px;
+    background:var(--panel);
+    border-radius:12px;
+    padding:11px 16px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.1);
+  }
+  .search-box svg{flex:none; opacity:.5;}
+  .search-box input{
+    border:none; outline:none; background:transparent;
+    font-family:'Noto Sans TC', sans-serif;
+    font-size:17.5px; width:100%; color:var(--ink);
+  }
+  .search-box input::placeholder{color:#b3a99c;}
+
+  main{ padding:26px 0 60px; background:var(--bg); }
+
+  /* ---- horizontal swipe of category columns ---- */
+  .board{
+    display:flex;
+    gap:18px;
+    overflow-x:auto;
+    padding:4px 20px 20px;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+    background:var(--bg);
+  }
+  .board::-webkit-scrollbar{ height:8px; }
+  .board::-webkit-scrollbar-thumb{ background:#DCD0C1; border-radius:6px; }
+  .board::-webkit-scrollbar-track{ background:transparent; }
+
+  .column{
+    flex:0 0 min(360px, 90vw);
+    scroll-snap-align:start;
+    display:flex;
+    flex-direction:column;
+    background:var(--bg);
+  }
+  .col-head{
+    display:flex; align-items:center; gap:10px;
+    padding:0 4px; margin-bottom:14px;
+  }
+  .col-dot{ width:14px; height:14px; border-radius:5px; flex:none; }
+  .col-title{ font-size:23px; font-weight:900; line-height:1.3; }
+  .col-count{ font-size:14px; color:var(--ink-soft); font-weight:700; margin-left:auto; }
+
+  .col-list{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:12px;
+  }
+
+  .card{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    aspect-ratio:1/1;
+    border-radius:18px;
+    padding:12px;
+    text-decoration:none;
+    border:1px solid rgba(0,0,0,0.04);
+    box-shadow:0 2px 7px rgba(74,65,58,0.08);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .card:hover{ transform:translateY(-2px); box-shadow:0 8px 18px rgba(0,0,0,0.14); }
+  .card h3{
+    margin:0; font-size:21px; line-height:1.35; font-weight:800;
+    display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+  }
+
+  /* ---- flat grid (search mode) ---- */
+  #grid{
+    display:none;
+    grid-template-columns:repeat(auto-fill, minmax(150px,1fr));
+    gap:14px;
+    padding:0 20px;
+  }
+  #grid.active{ display:grid; }
+  #grid .card .tag{
+    font-size:12px; font-weight:700; opacity:.7;
+    margin-bottom:4px; letter-spacing:.02em;
+  }
+
+  .empty{ display:none; text-align:center; padding:50px 20px; color:var(--ink-soft); font-size:17px; }
+
+  footer{ text-align:center; color:var(--ink-soft); font-size:14px; padding:16px 20px 30px; }
+
+  /* ---- manage panel ---- */
+  .overlay{
+    display:none;
+    position:fixed; inset:0; background:rgba(40,34,30,0.45);
+    z-index:50; padding:24px;
+    align-items:flex-start; justify-content:center;
+    overflow-y:auto;
+  }
+  .overlay.active{ display:flex; }
+  .panel{
+    background:var(--panel);
+    border-radius:18px;
+    max-width:680px; width:100%;
+    padding:28px 26px 26px;
+    margin:20px 0;
+  }
+  .panel h2{
+    font-size:24px; margin:0 0 4px; font-family:'ZCOOL KuaiLe','Noto Sans TC',sans-serif;
+    color:var(--title-color);
+  }
+  .panel h3{ font-size:18px; margin:0 0 10px; }
+  .panel .panel-sub{ font-size:15px; color:var(--ink-soft); margin:0 0 18px; line-height:1.6; }
+  .panel label{
+    display:block; font-size:15px; font-weight:700; margin:14px 0 6px;
+  }
+  .panel input[type=text], .panel input[type=url], .panel select, .panel textarea{
+    width:100%; font-family:'Noto Sans TC', sans-serif; font-size:16px;
+    padding:11px 13px; border:1px solid var(--line); border-radius:9px;
+    background:var(--input-bg); color:var(--ink);
+  }
+  .panel textarea{ resize:vertical; min-height:56px; }
+  .panel .row2{ display:flex; gap:10px; }
+  .panel .row2 > div{ flex:1; }
+  .btn-row{ display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
+  .btn-primary, .btn-secondary, .btn-danger, .btn-ghost{
+    font-family:'Noto Sans TC', sans-serif; font-size:15.5px; font-weight:700;
+    border-radius:9px; border:none; cursor:pointer; padding:12px 18px;
+  }
+  .btn-primary{ background:#8B9A7C; color:#fff; }
+  .btn-primary:hover{ background:#7A8A6C; }
+  .btn-secondary{ background:#EFE8DC; color:var(--ink); }
+  .btn-secondary:hover{ background:#E4DBCB; }
+  .btn-danger{ background:#E3B8B0; color:#5A3128; }
+  .btn-danger:hover{ background:#D9A69C; }
+  .btn-ghost{ background:transparent; color:var(--ink-soft); border:1px solid var(--line); }
+  .hr{ height:1px; background:var(--line); margin:22px 0; border:none; }
+  .manage-list{ max-height:280px; overflow-y:auto; border:1px solid var(--line); border-radius:10px; }
+  .manage-item{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:12px 14px; border-bottom:1px solid var(--line); font-size:15px;
+    cursor:pointer;
+  }
+  .manage-item:hover{ background:var(--hover-bg); }
+  .manage-item:last-child{ border-bottom:none; }
+  .manage-item .mi-name{ font-weight:700; }
+  .manage-item .mi-cat{ font-size:13px; color:var(--ink-soft); }
+  .mi-del{
+    background:none; border:none; color:#B3736A; font-size:19px; cursor:pointer; line-height:1;
+    padding:4px 6px;
+  }
+  .close-x{
+    position:absolute; top:20px; right:20px; background:none; border:none;
+    font-size:24px; cursor:pointer; color:var(--ink-soft);
+  }
+  .panel-wrap{ position:relative; }
+  .status-msg{ font-size:14px; color:#7A8A6C; font-weight:700; margin-top:8px; min-height:18px; }
+  input[type=file]{ font-size:14px; }
+
+  .cat-chip-list{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .cat-chip{
+    display:flex; align-items:center; gap:8px;
+    padding:8px 12px; border-radius:99px; font-size:14px; font-weight:700;
+  }
+  .cat-chip button{
+    background:none; border:none; cursor:pointer; font-size:15px; opacity:.6; line-height:1;
+  }
+  .add-cat-row{ display:flex; gap:8px; margin-top:12px; }
+  .add-cat-row input{ flex:1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo">
+      <svg width="42" height="42" viewBox="0 0 64 64" fill="none">
+        <rect x="2" y="2" width="60" height="60" rx="18" fill="#F4E9E4" stroke="#C9AFA5" stroke-width="2"/>
+        <path d="M17 24c5-5 25-5 30 0v18c-5-4-25-4-30 0V24z" fill="#B3766C" opacity="0.85"/>
+        <path d="M32 24v18" stroke="#F4E9E4" stroke-width="1.6"/>
+        <circle cx="45" cy="18" r="4" fill="#8E7A9E"/>
+        <circle cx="20" cy="16" r="3" fill="#7C8E63"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <div class="eyebrow">教學 GEM 收藏庫</div>
+      <h1>老師們的 AI 教具箱</h1>
+      <p class="sub">集合大家共同發想、貢獻的教學工具連結，依主題分類、左右滑動切換。點卡片直接開啟工具。</p>
+    </div>
+  </div>
+  <div class="search-wrap">
+    <div class="search-box">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="搜尋名稱或內容，例如：國語、因果複句、消消樂…">
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-manage" id="openManage">🛠️ 管理收藏（新增／編輯／分類）</button>
+    <select class="btn-manage" id="fontSelect" style="cursor:pointer;">
+      <option value="sans">預設字體（黑體）</option>
+      <option value="serif">襯線字體（宋體）</option>
+      <option value="rounded">圓體（可愛）</option>
+      <option value="kai">手寫風（楷體）</option>
+    </select>
+    <button class="btn-manage" id="themeToggle">🌙 深色模式</button>
+  </div>
+</header>
+
+<main>
+  <div class="board" id="board"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty">找不到符合的工具，換個關鍵字試試看。</div>
+</main>
+
+<footer>共 <span id="totalCount"></span> 個教學工具・來自大家共同整理</footer>
+
+<div class="overlay" id="overlay">
+  <div class="panel panel-wrap">
+    <button class="close-x" id="closeManage">✕</button>
+    <h2>管理收藏</h2>
+    <p class="panel-sub">新增、編輯或刪除工具；也可以新增自己的主題分類。修改會自動儲存。</p>
+
+    <h3 id="formTitle">新增工具</h3>
+    <label>工具名稱</label>
+    <input type="text" id="f-title" placeholder="例如：造句小老師">
+
+    <div class="row2">
+      <div>
+        <label>分類</label>
+        <select id="f-cat"></select>
+      </div>
+      <div>
+        <label>是否為國語相關</label>
+        <select id="f-guoyu">
+          <option value="">否</option>
+          <option value="國語">是</option>
+        </select>
+      </div>
+    </div>
+
+    <label>連結網址</label>
+    <input type="url" id="f-url" placeholder="https://...">
+
+    <label>說明（選填）</label>
+    <textarea id="f-desc" placeholder="簡短描述這個工具的功能或內容"></textarea>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="saveTool">＋ 新增工具</button>
+      <button class="btn-ghost" id="cancelEdit" style="display:none;">取消編輯</button>
+    </div>
+    <div class="status-msg" id="addStatus"></div>
+
+    <hr class="hr">
+    <h3>主題分類</h3>
+    <div class="cat-chip-list" id="catChips"></div>
+    <div class="add-cat-row">
+      <input type="text" id="newCatName" placeholder="新增主題名稱，例如：注音符號">
+      <button class="btn-secondary" id="addCatBtn">＋ 新增主題</button>
+    </div>
+    <div class="status-msg" id="catStatus"></div>
+
+    <hr class="hr">
+    <h3>目前所有工具（點項目可編輯，點 ✕ 刪除）</h3>
+    <div class="manage-list" id="manageList"></div>
+
+    <hr class="hr">
+    <h3>備份與還原</h3>
+    <div class="btn-row">
+      <button class="btn-secondary" id="exportBtn">⬇️ 下載備份（JSON）</button>
+      <label class="btn-secondary" style="display:inline-flex;align-items:center;cursor:pointer;">
+        ⬆️ 還原備份
+        <input type="file" id="importFile" accept="application/json" style="display:none;">
+      </label>
+      <button class="btn-danger" id="resetBtn">重置為預設清單</button>
+    </div>
+    <div class="status-msg" id="ioStatus"></div>
+  </div>
+</div>
+
+<script>
+const defaultCategories = [
+  {name:"閱讀理解", bg:"#DCE7E6", dot:"#5F7A7C"},
+  {name:"識字生字", bg:"#F3E1DC", dot:"#B3766C"},
+  {name:"成語",     bg:"#F2E8D3", dot:"#A98F55"},
+  {name:"作文寫作", bg:"#E5EADA", dot:"#7C8E63"},
+  {name:"數學",     bg:"#EBE3EE", dot:"#8E7A9E"},
+  {name:"社會／特教", bg:"#F3E1D4", dot:"#AD7C57"},
+  {name:"英文",     bg:"#DCEAE5", dot:"#5F8A7D"},
+  {name:"視覺設計", bg:"#F2E1E8", dot:"#AC7690"},
+  {name:"課室經營", bg:"#E4E6EC", dot:"#6C7488"},
+  {name:"教學資源網站", bg:"#F3E9DB", dot:"#9C8060"}
+];
+
+const colorPool = [
+  {bg:"#EBE2D4", dot:"#9C8F76"},
+  {bg:"#DCE7EA", dot:"#6C8890"},
+  {bg:"#EEDDE5", dot:"#A97D96"},
+  {bg:"#E1EBD9", dot:"#7E9468"},
+  {bg:"#F2E4D6", dot:"#B08F68"},
+  {bg:"#E2E2EF", dot:"#7A7AA8"},
+  {bg:"#F4E0D8", dot:"#B0715F"}
+];
+
+const defaultTools = [
+  {t:"閱讀理解分層教材", c:"閱讀理解", i:"📖", u:"https://gemini.google.com/gem/4909c3407986/c8a61daaf9d89385?usp=sharing"},
+  {t:"易讀教材轉換機器人", c:"閱讀理解", i:"🔤", u:"https://gemini.google.com/gem/1-Mfy6sMTwN4VWjmmkSsn855fmzq4CDTV?usp=sharing"},
+  {t:"閱讀測驗命題助手-凱西老師自訂機器人", c:"閱讀理解", i:"📝", u:"https://gemini.google.com/gem/1qcUU0opfKapJJhj-RoJLoJi_6SlXz-Bl?usp=sharing"},
+
+  {t:"國語生字部首語詞（匯入用）", c:"識字生字", i:"🔠", u:"https://gemini.google.com/gem/1IdKA-MGxGLU6uFHjaxLaJ1SceBSsABo4?usp=sharing", k:"國語"},
+  {t:"部件識字王", c:"識字生字", i:"🧩", u:"https://gemini.google.com/gem/1dD3jH8_CYrRTW1KsETxZzX_TR-0A8mPL?usp=sharing", k:"國語"},
+  {t:"識字主題樂園設計師", c:"識字生字", i:"🎡", u:"https://gemini.google.com/gem/1CuWGV2-PHFMnzwi5PmNcir7cEzpUGQlk?usp=sharing", k:"國語"},
+  {t:"漢字核心擴散架構師", c:"識字生字", i:"🀄", u:"https://gemini.google.com/gem/1splZ8KZHNOQ4Vjx7c8N2k5BIhaQL6IY6?usp=sharing", k:"國語"},
+  {t:"識字能力王 實作", c:"識字生字", i:"🏆", u:"https://gemini.google.com/gem/1uVkhV3jq2vVGvE0cn5GAcD5PTGR-b6az?usp=sharing", k:"國語"},
+  {t:"複雜句型教學製作機", c:"識字生字", i:"🧠", u:"https://gemini.google.com/gem/1JviJ0scproftfgBWOm_ATIZsqtq4XeeM?usp=sharing", k:"國語"},
+  {t:"詞語單張圖卡（分享版）", c:"識字生字", i:"🗂️", u:"https://gemini.google.com/gem/19WLmEUJnHbJGnvwHTryVu-riMpsPtH08?usp=sharing", k:"國語"},
+  {t:"字詞句卡（分享版）", c:"識字生字", i:"🃏", u:"https://gemini.google.com/gem/1JWMeC8PcSDnoXhycknjZY2NsfMTWqG3c?usp=sharing", k:"國語"},
+  {t:"字詞卡（小字分享版）", c:"識字生字", i:"🔡", u:"https://gemini.google.com/gem/1lHBc_bEeuWXiQMtsqJdt_vEvbrCevpeN?usp=sharing", k:"國語"},
+  {t:"造句小老師", c:"識字生字", i:"✍️", u:"https://gemini.google.com/gem/1pB8Mrbzjhc8iyygg43gUce4KYkJuZU1G?usp=sharing", k:"國語"},
+  {t:"九宮格詞語圖（分享版）", c:"識字生字", i:"🔲", u:"https://gemini.google.com/gem/1n2my3jyUmG6Gd4PYzQEf9lLHRlXxnMum?usp=sharing", k:"國語"},
+  {t:"語詞圖片教材生成器", c:"識字生字", i:"🖼️", u:"https://gemini.google.com/share/e1df92b38ab3?hl=zh-TW", k:"國語"},
+  {t:"句型練習單生成器", c:"識字生字", i:"📐", u:"https://gemini.google.com/share/2a29c9b20925?hl=zh-TW", k:"國語",
+   d:"選擇核心句型開始出題：並列複句、因果複句、承接複句、假設複句、條件複句、轉折複句、目的複句、遞進複句、選擇複句"},
+  {t:"錯字糾察隊（挑戰及試卷）", c:"識字生字", i:"🕵️", u:"https://sites.google.com/view/correcttypo/%E5%BA%B7%E8%BB%92/%E5%BA%B75b/%E5%BA%B75b02_%E6%99%BA%E6%95%91%E9%A4%8A%E9%A6%AC%E4%BA%BA", k:"國語",
+   d:"康軒版本錯字糾察挑戰與試卷（康5b 智救養馬人）"},
+  {t:"教材格式生成系統", c:"識字生字", i:"🛠️", u:"https://gemini.google.com/share/8313d03bf212?hl=zh-TW", k:"國語",
+   d:"十合一功能：課文簡化、語詞工具、圖識詞卡、高頻語詞、字詞對應、生活化例句、找錯字、圈出正確字、語詞填空、錯字搜查隊"},
+  {t:"常用字複習卷", c:"識字生字", i:"📋", u:"https://gemini.google.com/share/1f860c1633b1?hl=zh-TW", k:"國語"},
+  {t:"詞語理解練習", c:"識字生字", i:"🔗", u:"https://sites.google.com/view/sentencematch/康軒/康5a", k:"國語",
+   d:"康軒版本詞語配對理解練習（康5a）"},
+  {t:"國語考卷產生器", c:"識字生字", i:"📄", u:"https://zeroegg.tw/tools/exam", k:"國語"},
+  {t:"波波注音聽寫", c:"識字生字", i:"🎧", u:"https://bopodoc.com/files", k:"國語"},
+  {t:"熊筆順", c:"識字生字", i:"🐻", u:"https://gsyan888.blogspot.com/p/stroke.html?m=1", k:"國語",
+   d:"顏國雄老師製作的漢字筆順教學工具"},
+
+  {t:"成語故事生成", c:"成語", i:"📜", u:"https://gemini.google.com/gem/1bUY4OWhqZjcUfelEIKe50aYu7573XsnS?usp=sharing", k:"國語"},
+  {t:"協助理解之圖解成語學習卡", c:"成語", i:"🖼️", u:"https://gemini.google.com/gem/1DiVfnoNkBKsxV7yFfYonrlKVlTZwZ3vI?usp=sharing", k:"國語"},
+
+  {t:"國語【作文鷹架】教練", c:"作文寫作", i:"🏗️", u:"https://gemini.google.com/gem/1bWDlh53dK2-564ABlpX-xxUFeRyDTOKY?usp=sharing", k:"國語"},
+  {t:"低年級提早寫作學習單產生器", c:"作文寫作", i:"✏️", u:"https://gemini.google.com/gem/1jX8z1lWDVwrhbWbRIy36FSsnZTXaLwf_?usp=sharing", k:"國語"},
+  {t:"作文引導學習單圖文創作王", c:"作文寫作", i:"🎨", u:"https://gemini.google.com/gem/1OwygxLK5lgrJnhZsy8QmQmhm3jHGdJEF?usp=sharing", k:"國語"},
+  {t:"作文寫作引導機器人", c:"作文寫作", i:"🤖", u:"https://gemini.google.com/gem/1899SRDPRsH3gxDvl2iFf_L3hXjO4nt9T?usp=sharing", k:"國語"},
+  {t:"寫作「便利貼」王", c:"作文寫作", i:"📝", u:"https://gemini.google.com/gem/1j7GZx6l0IhuUwHepZeFjLUj1TFYk-gez?usp=sharing", k:"國語"},
+  {t:"語文表達練功坊", c:"作文寫作", i:"💬", u:"https://gemini.google.com/share/181d9ccea2ec?hl=zh-TW", k:"國語",
+   d:"智慧語文生成與文句美化平台"},
+
+  {t:"應用題圖像學習單小幫手", c:"數學", i:"🧮", u:"https://gemini.google.com/gem/1Bthm5Dz8a6TJgYLYxQx0_eJpipcij_-2?usp=sharing"},
+  {t:"數學錯誤分析與再教學", c:"數學", i:"🔍", u:"https://gemini.google.com/gem/1tw5o0rn1ilklDzRxx03olQvGnzX07xFv?usp=sharing"},
+  {t:"AI數學錯題助教", c:"數學", i:"🤖", u:"https://gemini.google.com/gem/11FctUgs_TAHIVdF1AV1r6smBpu8FK8B_?usp=sharing"},
+  {t:"數學應用題轉譯圖像與示意圖小幫手", c:"數學", i:"📐", u:"https://gemini.google.com/gem/1Y-sZj-YV65h-E2wdWGPEUER27FbkwGKn?usp=sharing"},
+  {t:"國小四年級數學科檢測命題機器人", c:"數學", i:"📊", u:"https://gemini.google.com/gem/1QeehwW6vdtenf8aayTM9DUcx89ujwj4T?usp=sharing"},
+  {t:"互動式數學—輸入版", c:"數學", i:"🔢", u:"https://gemini.google.com/gem/1FnYQ8WhRcj8dQQOUi6U9U44g04HMB-Mi?usp=sharing"},
+  {t:"10以內加減法", c:"數學", i:"➕", u:"https://gemini.google.com/share/4e1431fd95fd?hl=zh-TW"},
+  {t:"數學類題生成器", c:"數學", i:"🧮", u:"https://gemini.google.com/share/65def1b95d73?hl=zh-TW"},
+  {t:"乘法消消樂", c:"數學", i:"✖️", u:"https://senst365.github.io/MultiplicationMatch/"},
+
+  {t:"社會科概念圖教材（特殊教育）", c:"社會／特教", i:"🗺️", u:"https://gemini.google.com/gem/1rd11TM1Gqcx3MbOZ3OhmfxgFi85m3OoU?usp=sharing"},
+  {t:"數學具體化教材（特殊教育）", c:"社會／特教", i:"🧱", u:"https://gemini.google.com/gem/ebef52b4a515?usp=sharing",
+   d:"將分數單元設計成 CRA 具體—圖像—抽象教材，可將數學應用題改成操作版、圖像版和算式版"},
+
+  {t:"英文句型大師-台南在地版", c:"英文", i:"🇬🇧", u:"https://gemini.google.com/gem/15u-9V8kbIYZcB_uB2CcabRM9FfNa4W8X?usp=sharing"},
+  {t:"準備好挑戰 2000 單字了嗎？（國中英文單字）", c:"英文", i:"🔤", u:"https://gemini.google.com/share/fee390b85bc5?hl=zh-TW",
+   d:"選擇遊戲模式練習國中英文2000單字"},
+
+  {t:"貼圖生成大師", c:"視覺設計", i:"🏷️", u:"https://gemini.google.com/gem/1mswM_V_2QLGEcPl3zPeiguvaXoiK_PUl?usp=sharing"},
+  {t:"知識圖表生圖器", c:"視覺設計", i:"📊", u:"https://gemini.google.com/gem/1p7PAU2XgCjdfzZrPDYi6D4lPBfiQShGP?usp=sharing"},
+  {t:"風格復刻簡報產生器", c:"視覺設計", i:"🖥️", u:"https://gemini.google.com/gem/1WmCE5Dal0MAisFdP8gq04aknnVGH4IC9?usp=sharing"},
+  {t:"懶人包圖文產生器", c:"視覺設計", i:"🗞️", u:"https://gemini.google.com/gem/12NoLe59IYYpZkM1X1q3iVMWKLFloI02H?usp=sharing"},
+  {t:"手繪塗鴉風格貼紙設計師", c:"視覺設計", i:"🎨", u:"https://gemini.google.com/gem/1m2O_Fo8kiqgDeQgfWVhwjV8m0PxT7m0q?usp=sharing"},
+  {t:"對稱分割與視覺對比教學圖卡設計師", c:"視覺設計", i:"🔷", u:"https://gemini.google.com/gem/10k5UVG1KGpkXeULKtH6E9_-lttawYV_B?usp=sharing"},
+  {t:"迷宮封面設計師", c:"視覺設計", i:"🧩", u:"https://gemini.google.com/gem/1vdB6suL5zLLZyKoDTVzXHDG0OAYuq2X0?usp=sharing"},
+  {t:"極簡影像生成", c:"視覺設計", i:"🖼️", u:"https://gemini.google.com/gem/1brWKdbJ7QpTvQIL3c6VoD_jagj_aNzjN?usp=sharing"},
+  {t:"筆記圖像生成機器人", c:"視覺設計", i:"🗒️", u:"https://gemini.google.com/gem/1ycytx8L7pWjVKbmokTY_8ebPzGhtayWx?usp=sharing"},
+  {t:"遊覽車Q版導覽圖", c:"視覺設計", i:"🚌", u:"https://gemini.google.com/gem/1lxjigANOE6HgA9uDhxt2raXPj5v_JoG4?usp=sharing"},
+  {t:"Sonia老師Nano Banana AI生圖指令大禮包", c:"視覺設計", i:"🍌", u:"https://gemini.google.com/share/967a036f65b8?hl=zh-TW"},
+  {t:"🧩 趣味學習迷宮", c:"視覺設計", i:"🧩", u:"https://gemini.google.com/share/50ea1ff5b38a?hl=zh-TW"},
+  {t:"阿貴校長的影像與檔案批次處理工具", c:"視覺設計", i:"🗂️", u:"https://ezschool.tw/tools/image_tools.html",
+   d:"整合格式轉換、尺寸調整、飽和度調整、影像裁切與批次更名功能，支援拖曳多檔上傳與批次下載"},
+
+  {t:"學生作業追問產生器", c:"課室經營", i:"❓", u:"https://gemini.google.com/gem/1ouyT5M5DnTNSGL8IhFJuAUDSHYLh5-mC?usp=sharing"},
+  {t:"教學互動網頁 Code 製造師（GEN）", c:"課室經營", i:"💻", u:"https://gemini.google.com/gem/150qTKrDe6ManAqlCI3iu1o2vf0d2HVb5?usp=sharing"},
+  {t:"Sonia 老師的 AI 神隊友指南", c:"課室經營", i:"🤝", u:"https://gemini.google.com/gem/1N6m9pzaWes6AD2VvGHoUOpHHWShpkux5?usp=sharing"},
+  {t:"豐富的數位教學與管理工具", c:"課室經營", i:"⏱️", u:"https://twcampus.org/",
+   d:"倒數計時、線上點名、座位分配、音量檢測與教材加註工具，一鍵開啟協助教師高效課堂管理"},
+
+  {t:"仙姑凱西的教學工具", c:"教學資源網站", i:"🧙‍♀️", u:"https://kathy594520.github.io/new.github.io/AI/AI"},
+  {t:"Puti-AI 教學工具庫", c:"教學資源網站", i:"📚", u:"https://padlet.com/clongwh/puti-ai-teaching-tool-library-tifvrvjcpg51cw7r",
+   d:"屏東後庄國小黃朝榮老師整理的 AI 教學工具庫"},
+  {t:"米克師AI備課高手", c:"教學資源網站", i:"🧑‍🏫", u:"https://spedmix.pages.dev/"},
+];
+
+let categoriesData = [];
+let toolsData = [];
+let editingIndex = null;
+
+function cloneDefault(){
+  return {
+    categories: JSON.parse(JSON.stringify(defaultCategories)),
+    tools: JSON.parse(JSON.stringify(defaultTools))
+  };
+}
+
+function getCatMeta(name){
+  return categoriesData.find(c=>c.name===name) || {name, bg:"#DDD6CC", dot:"#8A8177"};
+}
+
+async function loadData(){
+  try{
+    const res = await window.storage.get('toolbox-tools-v6');
+    if(res && res.value){
+      const parsed = JSON.parse(res.value);
+      categoriesData = parsed.categories || JSON.parse(JSON.stringify(defaultCategories));
+      toolsData = parsed.tools || [];
+      return;
+    }
+  }catch(e){ /* no saved data yet, or storage unavailable */ }
+  const d = cloneDefault();
+  categoriesData = d.categories;
+  toolsData = d.tools;
+}
+
+async function saveData(){
+  try{ await window.storage.set('toolbox-tools-v6', JSON.stringify({categories:categoriesData, tools:toolsData})); }
+  catch(e){ /* storage unavailable, changes stay in-memory for this session */ }
+}
+
+const boardEl = document.getElementById('board');
+const gridEl = document.getElementById('grid');
+const emptyEl = document.getElementById('empty');
+
+function hexToRgb(hex){
+  hex = hex.replace('#','');
+  return { r: parseInt(hex.substring(0,2),16), g: parseInt(hex.substring(2,4),16), b: parseInt(hex.substring(4,6),16) };
+}
+function mixHex(hexA, hexB, weightA){
+  const a = hexToRgb(hexA), b = hexToRgb(hexB);
+  const r = Math.round(a.r*weightA + b.r*(1-weightA));
+  const g = Math.round(a.g*weightA + b.g*(1-weightA));
+  const bl = Math.round(a.b*weightA + b.b*(1-weightA));
+  return '#' + [r,g,bl].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+function isDarkTheme(){ return document.documentElement.getAttribute('data-theme') === 'dark'; }
+function accentColor(dot){ return isDarkTheme() ? mixHex(dot, '#FFFFFF', 0.45) : dot; }
+
+function cardHTML(x, showTag){
+  const col = getCatMeta(x.c);
+  const dark = isDarkTheme();
+  const bg = dark ? mixHex(col.bg, '#2E2822', 0.5) : col.bg;
+  const textColor = dark ? '#F2EAE0' : '#3F362F';
+  return `
+    <a class="card" href="${x.u}" target="_blank" rel="noopener" style="background:${bg}; color:${textColor};">
+      ${showTag ? `<div class="tag" style="color:${accentColor(col.dot)}">${x.c}</div>` : ''}
+      <h3>${x.t}</h3>
+    </a>`;
+}
+
+function renderBoard(){
+  boardEl.innerHTML = categoriesData.map(cat=>{
+    const items = toolsData.filter(x=>x.c===cat.name);
+    const accent = accentColor(cat.dot);
+    return `
+      <div class="column">
+        <div class="col-head">
+          <span class="col-dot" style="background:${accent}"></span>
+          <span class="col-title" style="color:${accent}">${cat.name}</span>
+          <span class="col-count">${items.length}</span>
+        </div>
+        <div class="col-list">
+          ${items.length ? items.map(x=>cardHTML(x,false)).join('') : '<p style="color:#a89e91;font-size:14px;padding:0 4px;">這個主題還沒有工具</p>'}
+        </div>
+      </div>`;
+  }).join('');
+  document.getElementById('totalCount').textContent = toolsData.length;
+}
+
+function renderSearch(term){
+  const filtered = toolsData.filter(x=>{
+    return x.t.toLowerCase().includes(term) || x.c.toLowerCase().includes(term) ||
+      (x.d && x.d.toLowerCase().includes(term)) || (x.k && x.k.toLowerCase().includes(term));
+  });
+  gridEl.innerHTML = filtered.map(x=>cardHTML(x,true)).join('');
+  emptyEl.style.display = filtered.length ? 'none' : 'block';
+}
+
+document.getElementById('searchInput').addEventListener('input', (e)=>{
+  const term = e.target.value.trim().toLowerCase();
+  if(term){
+    boardEl.style.display = 'none';
+    gridEl.classList.add('active');
+    renderSearch(term);
+  } else {
+    boardEl.style.display = '';
+    gridEl.classList.remove('active');
+    emptyEl.style.display = 'none';
+  }
+});
+
+/* ---- manage panel ---- */
+const overlay = document.getElementById('overlay');
+const catSelect = document.getElementById('f-cat');
+
+function renderCatSelect(){
+  catSelect.innerHTML = categoriesData.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+}
+
+function renderCatChips(){
+  const wrap = document.getElementById('catChips');
+  wrap.innerHTML = categoriesData.map((c,i)=>`
+    <span class="cat-chip" style="background:${c.bg};color:${c.dot};">
+      ${c.name}
+      <button data-i="${i}" class="cat-del" title="刪除主題">✕</button>
+    </span>
+  `).join('');
+  wrap.querySelectorAll('.cat-del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const i = parseInt(btn.dataset.i);
+      const cat = categoriesData[i];
+      const inUse = toolsData.filter(x=>x.c===cat.name).length;
+      if(inUse > 0){
+        if(!confirm(`「${cat.name}」還有 ${inUse} 個工具，刪除主題會一併刪除這些工具，確定嗎？`)) return;
+        toolsData = toolsData.filter(x=>x.c!==cat.name);
+      }
+      categoriesData.splice(i,1);
+      await saveData();
+      renderCatChips(); renderCatSelect(); renderBoard(); renderManageList();
+    });
+  });
+}
+
+document.getElementById('addCatBtn').addEventListener('click', async ()=>{
+  const input = document.getElementById('newCatName');
+  const name = input.value.trim();
+  const status = document.getElementById('catStatus');
+  if(!name){ status.textContent = '請輸入主題名稱'; status.style.color = '#B3736A'; return; }
+  if(categoriesData.some(c=>c.name===name)){ status.textContent = '這個主題已經存在'; status.style.color = '#B3736A'; return; }
+  const color = colorPool[categoriesData.length % colorPool.length];
+  categoriesData.push({name, bg:color.bg, dot:color.dot});
+  await saveData();
+  input.value='';
+  status.textContent = `已新增主題「${name}」`;
+  status.style.color = '#7A8A6C';
+  renderCatChips(); renderCatSelect(); renderBoard();
+});
+
+function renderManageList(){
+  const list = document.getElementById('manageList');
+  list.innerHTML = toolsData.map((x,i)=>`
+    <div class="manage-item" data-i="${i}">
+      <div class="mi-body">
+        <div class="mi-name">${x.t}</div>
+        <div class="mi-cat">${x.c}</div>
+      </div>
+      <button class="mi-del" data-i="${i}" title="刪除">✕</button>
+    </div>
+  `).join('');
+  list.querySelectorAll('.mi-body').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const i = parseInt(el.closest('.manage-item').dataset.i);
+      startEdit(i);
+    });
+  });
+  list.querySelectorAll('.mi-del').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const i = parseInt(btn.dataset.i);
+      toolsData.splice(i,1);
+      await saveData();
+      renderBoard();
+      renderManageList();
+      if(editingIndex === i) cancelEdit();
+    });
+  });
+}
+
+function startEdit(i){
+  editingIndex = i;
+  const x = toolsData[i];
+  document.getElementById('f-title').value = x.t;
+  catSelect.value = x.c;
+  document.getElementById('f-url').value = x.u;
+  document.getElementById('f-desc').value = x.d || '';
+  document.getElementById('f-guoyu').value = x.k || '';
+  document.getElementById('formTitle').textContent = `編輯工具：${x.t}`;
+  document.getElementById('saveTool').textContent = '✓ 更新工具';
+  document.getElementById('cancelEdit').style.display = 'inline-block';
+  overlay.scrollTop = 0;
+}
+
+function cancelEdit(){
+  editingIndex = null;
+  document.getElementById('f-title').value='';
+  document.getElementById('f-url').value='';
+  document.getElementById('f-desc').value='';
+  document.getElementById('f-guoyu').value='';
+  document.getElementById('formTitle').textContent = '新增工具';
+  document.getElementById('saveTool').textContent = '＋ 新增工具';
+  document.getElementById('cancelEdit').style.display = 'none';
+}
+document.getElementById('cancelEdit').addEventListener('click', cancelEdit);
+
+document.getElementById('openManage').addEventListener('click', ()=>{
+  overlay.classList.add('active');
+  renderCatChips();
+  renderCatSelect();
+  renderManageList();
+});
+document.getElementById('closeManage').addEventListener('click', ()=>{ overlay.classList.remove('active'); cancelEdit(); });
+overlay.addEventListener('click', (e)=>{ if(e.target === overlay){ overlay.classList.remove('active'); cancelEdit(); } });
+
+document.getElementById('saveTool').addEventListener('click', async ()=>{
+  const t = document.getElementById('f-title').value.trim();
+  const c = catSelect.value;
+  const u = document.getElementById('f-url').value.trim();
+  const d = document.getElementById('f-desc').value.trim();
+  const k = document.getElementById('f-guoyu').value;
+  const status = document.getElementById('addStatus');
+
+  if(!t || !u){
+    status.textContent = '請至少填寫「工具名稱」和「連結網址」';
+    status.style.color = '#B3736A';
+    return;
+  }
+  const toolObj = {t, c, u};
+  if(d) toolObj.d = d;
+  if(k) toolObj.k = k;
+
+  if(editingIndex !== null){
+    toolsData[editingIndex] = toolObj;
+    status.textContent = `已更新「${t}」`;
+  } else {
+    toolsData.push(toolObj);
+    status.textContent = `已新增「${t}」`;
+  }
+  status.style.color = '#7A8A6C';
+  await saveData();
+  renderBoard();
+  renderManageList();
+  cancelEdit();
+});
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify({categories:categoriesData, tools:toolsData}, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `教具箱備份_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  document.getElementById('ioStatus').textContent = '備份已下載';
+  document.getElementById('ioStatus').style.color = '#7A8A6C';
+});
+
+document.getElementById('importFile').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  const status = document.getElementById('ioStatus');
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    if(!parsed.tools || !Array.isArray(parsed.tools)) throw new Error('格式錯誤');
+    toolsData = parsed.tools;
+    categoriesData = parsed.categories || categoriesData;
+    await saveData();
+    renderBoard(); renderCatChips(); renderCatSelect(); renderManageList();
+    status.textContent = '已還原備份資料';
+    status.style.color = '#7A8A6C';
+  }catch(err){
+    status.textContent = '備份檔案格式不正確，還原失敗';
+    status.style.color = '#B3736A';
+  }
+  e.target.value = '';
+});
+
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!confirm('確定要重置為預設清單嗎？這會清除你自行新增、編輯或刪除的內容。')) return;
+  const d = cloneDefault();
+  categoriesData = d.categories;
+  toolsData = d.tools;
+  await saveData();
+  renderBoard(); renderCatChips(); renderCatSelect(); renderManageList();
+  document.getElementById('ioStatus').textContent = '已重置為預設清單';
+  document.getElementById('ioStatus').style.color = '#7A8A6C';
+});
+
+(async function init(){
+  await loadData();
+  renderBoard();
+  await loadPrefs();
+})();
+
+/* ---- font & theme preferences ---- */
+const fontFamilies = {
+  sans:   "'Noto Sans TC', sans-serif",
+  serif:  "'Noto Serif TC', serif",
+  rounded:"'Huninn', 'Noto Sans TC', sans-serif",
+  kai:    "'LXGW WenKai TC', 'Noto Serif TC', serif"
+};
+let prefs = { font:'sans', theme:'light' };
+
+async function loadPrefs(){
+  try{
+    const res = await window.storage.get('toolbox-prefs-v1');
+    if(res && res.value){ prefs = JSON.parse(res.value); }
+  }catch(e){ /* use defaults */ }
+  applyPrefs();
+}
+
+async function savePrefs(){
+  try{ await window.storage.set('toolbox-prefs-v1', JSON.stringify(prefs)); }
+  catch(e){ /* in-memory only for this session */ }
+}
+
+function applyPrefs(){
+  document.body.style.fontFamily = fontFamilies[prefs.font] || fontFamilies.sans;
+  document.getElementById('fontSelect').value = prefs.font;
+  document.documentElement.setAttribute('data-theme', prefs.theme);
+  document.getElementById('themeToggle').textContent = prefs.theme === 'dark' ? '☀️ 淺色模式' : '🌙 深色模式';
+  const term = document.getElementById('searchInput').value.trim().toLowerCase();
+  if(term){ renderSearch(term); } else { renderBoard(); }
+}
+
+document.getElementById('fontSelect').addEventListener('change', async (e)=>{
+  prefs.font = e.target.value;
+  applyPrefs();
+  await savePrefs();
+});
+
+document.getElementById('themeToggle').addEventListener('click', async ()=>{
+  prefs.theme = prefs.theme === 'dark' ? 'light' : 'dark';
+  applyPrefs();
+  await savePrefs();
+});
+</script>
+</body>
+</html>
