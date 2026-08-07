@@ -108,8 +108,7 @@
   }
   .mastered-badge{background:var(--mint); color:#fff;}
   .card-grid{
-    display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:16px;
-    align-content:start;
+    display:flex; flex-direction:column; gap:14px;
   }
   .flash-card{
     background:#fff; border-radius:16px; box-shadow:var(--shadow-sm); padding:12px;
@@ -134,7 +133,7 @@
   /* 圖卡模式：正面圖片，點擊翻面看答案 */
   .flip-card{cursor:pointer; -webkit-tap-highlight-color:transparent;}
   .card-photo{
-    width:100%; aspect-ratio:1/1; border-radius:12px; background:var(--paper-deep);
+    width:100%; max-width:260px; margin:0 auto; aspect-ratio:1/1; border-radius:12px; background:var(--paper-deep);
     display:flex; align-items:center; justify-content:center; overflow:hidden; font-size:34px;
     color:var(--ink-soft); position:relative; touch-action:none;
   }
@@ -215,7 +214,10 @@
     border:none; background:var(--sky); color:#fff; border-radius:7px; width:22px; height:22px;
     font-size:10px; margin-right:4px; flex-shrink:0; vertical-align:middle;
   }
-  .click-word{cursor:pointer; border-bottom:1.5px dotted var(--sky-deep);}
+  .click-word{
+    cursor:pointer; border-bottom:1.5px dotted var(--sky-deep);
+    -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;
+  }
   .click-word:active{background:var(--paper-deep);}
   .word-tip{
     display:inline-block; background:var(--sky); color:#fff; font-size:11px; font-style:normal;
@@ -586,7 +588,6 @@ function cardFaceHTML(card, showAnswer){
         <div class="card-word-big">${escapeHtml(card.word)}</div>
         ${card.phonetic ? `<div class="card-phonetic mono">${escapeHtml(card.phonetic)}</div>` : ''}
         ${card.zh ? `<div class="card-zh">${escapeHtml(card.zh)}</div>` : ''}
-        ${card.definition ? `<div class="card-def">${escapeHtml(card.definition)}</div>` : ''}
         ${viewMode==='picture' ? `<div class="flip-back-hint">👆 點一下看圖片</div>` : ''}
       </div>
     `;
@@ -616,6 +617,7 @@ function renderCardsInto(gridId, list){
     const showAnswer = flippedCards.has(card.id);
     const el = document.createElement('div');
     el.className = 'flash-card' + (card.mastered ? ' mastered' : '');
+    el.dataset.id = card.id;
     el.innerHTML = `
       <div class="card-top-row">
         <label class="card-master-check">
@@ -630,18 +632,8 @@ function renderCardsInto(gridId, list){
       ${cardFaceHTML(card, showAnswer)}
     `;
     grid.appendChild(el);
-
     if(viewMode === 'picture'){
       const photoEl = el.querySelector('.card-photo');
-      const answerEl = el.querySelector('.card-answer');
-      const flipTarget = photoEl || answerEl;
-      flipTarget.addEventListener('click', ()=>{
-        if(photoEl && photoEl.dataset.dragged==='1'){ photoEl.dataset.dragged='0'; return; }
-        playClick();
-        if(flippedCards.has(card.id)){ flippedCards.delete(card.id); }
-        else { flippedCards.add(card.id); speak(card.word,'en-US'); }
-        renderCardGrid();
-      });
       if(photoEl) enableDrag(photoEl, flashcards);
     }
   });
@@ -1403,6 +1395,7 @@ function renderZhDictResult(data, word){
       ${data.stroke_count ? `<span class="zh-meta-chip">筆畫：${data.stroke_count}</span>` : ''}
       ${(data.non_radical_stroke_count!=null) ? `<span class="zh-meta-chip">部首外筆畫：${data.non_radical_stroke_count}</span>` : ''}
     </div>
+    <div class="dict-image-slot" id="zhImageSlot"></div>
   `;
   (data.heteronyms||[]).forEach(h=>{
     html += `<div class="zh-bopomofo-row">
@@ -1431,6 +1424,16 @@ function renderZhDictResult(data, word){
   document.getElementById('zhSpeakBtn').addEventListener('click', ()=> speak(title, 'zh-TW'));
   document.getElementById('zhEvolutionBtn').addEventListener('click', ()=>{
     window.open(`https://www.chinese-linguipedia.org/search_source.html`, '_blank');
+  });
+
+  // 背景載入一張相關圖片，找不到就不顯示（跟英文查詢共用同一個開放圖庫）
+  fetchWordImage(title).then(img=>{
+    const slot = document.getElementById('zhImageSlot');
+    if(!slot || !img) return;
+    slot.innerHTML = `
+      <img src="${img.thumb}" alt="${escapeHtml(title)}" loading="lazy">
+      <div class="dict-image-credit">圖片來源：${escapeHtml(img.source||'Openverse')}（開放版權圖庫）</div>
+    `;
   });
 }
 
@@ -1545,6 +1548,28 @@ function renderPracticeSummary(){
 }
 
 /* 初始渲染 */
+/* 翻卡片：事件委派綁在容器上（容器本身不會被替換），比每次重繪都重新綁定更穩定 */
+function setupFlipDelegation(gridId){
+  const grid = document.getElementById(gridId);
+  grid.addEventListener('click', (e)=>{
+    if(viewMode !== 'picture') return;
+    const face = e.target.closest('.card-photo, .card-answer');
+    if(!face) return;
+    if(face.dataset.dragged === '1'){ face.dataset.dragged = '0'; return; }
+    const cardEl = face.closest('.flash-card');
+    const id = cardEl?.dataset.id;
+    if(!id) return;
+    const card = flashcards.find(c=>c.id===id);
+    if(!card) return;
+    playClick();
+    if(flippedCards.has(id)){ flippedCards.delete(id); }
+    else { flippedCards.add(id); speak(card.word,'en-US'); }
+    renderCardGrid();
+  });
+}
+setupFlipDelegation('cardGridLearning');
+setupFlipDelegation('cardGridMastered');
+
 renderCardGrid();
 
 })();
