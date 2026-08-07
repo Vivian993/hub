@@ -209,6 +209,7 @@
   .dict-pos-en{font-weight:500; opacity:0.75;}
   .dict-defs{margin:0 0 4px; padding-left:20px;}
   .dict-defs li{margin-bottom:10px; font-size:14px; line-height:1.5;}
+  .dict-def-block{font-size:14px; line-height:1.6; margin-bottom:6px;}
   .dict-example{color:var(--ink-soft); font-style:italic; font-size:13px; margin-top:2px;}
   .sentence-speak-btn{
     border:none; background:var(--sky); color:#fff; border-radius:7px; width:22px; height:22px;
@@ -1037,15 +1038,17 @@ function renderDictResult(data, knownZh){
     <div class="dict-image-slot" id="dictImageSlot"></div>
   `;
   meanings.forEach((m, mi)=>{
-    html += `<div class="dict-pos">${escapeHtml(posZh(m.partOfSpeech))}${m.partOfSpeech ? ` <span class="dict-pos-en">(${escapeHtml(m.partOfSpeech)})</span>` : ''}</div><ol class="dict-defs">`;
-    (m.definitions||[]).slice(0,2).forEach((d, di)=>{
-      html += `<li>
-        <div>${escapeHtml(d.definition)}</div>
-        <div class="dict-def-zh" id="defZh_${mi}_${di}">中文翻譯中...</div>
-        ${d.example ? `<div class="dict-example"><button class="sentence-speak-btn" data-sentence="${escapeHtml(d.example)}" title="唸整句">🔊</button> e.g. ${makeClickableSentence(d.example)}<div class="dict-def-zh" id="exZh_${mi}_${di}">例句翻譯中...</div></div>` : ''}
-      </li>`;
-    });
-    html += `</ol>`;
+    const defs = m.definitions||[];
+    // 優先選有例句的那一則定義，這樣孩子可以直接看到怎麼使用；都沒有例句就用第一則
+    const chosen = defs.find(d=>d.example) || defs[0] || {};
+    html += `
+      <div class="dict-pos">${escapeHtml(posZh(m.partOfSpeech))}${m.partOfSpeech ? ` <span class="dict-pos-en">(${escapeHtml(m.partOfSpeech)})</span>` : ''}</div>
+      <div class="dict-def-block">
+        <div>${escapeHtml(chosen.definition||'')}</div>
+        <div class="dict-def-zh" id="defZh_${mi}_0">中文翻譯中...</div>
+        ${chosen.example ? `<div class="dict-example"><button class="sentence-speak-btn" data-sentence="${escapeHtml(chosen.example)}" title="唸整句">🔊</button> e.g. ${makeClickableSentence(chosen.example)}<div class="dict-def-zh" id="exZh_${mi}_0">例句翻譯中...</div></div>` : ''}
+      </div>
+    `;
   });
 
   const resultEl = document.getElementById('dictResult');
@@ -1081,20 +1084,22 @@ function renderDictResult(data, knownZh){
       if(el) el.textContent = zh ? `🈶 中文意思：${zh}` : '（找不到中文翻譯）';
     });
   }
-  // 背景翻譯：每一則定義與例句
+  // 背景翻譯：每個詞性選出的那一則定義與例句
   meanings.forEach((m, mi)=>{
-    (m.definitions||[]).slice(0,2).forEach((d, di)=>{
-      translateText(d.definition, 'en|zh-TW').then(zh=>{
-        const el = document.getElementById(`defZh_${mi}_${di}`);
+    const defs = m.definitions||[];
+    const chosen = defs.find(d=>d.example) || defs[0] || {};
+    if(chosen.definition){
+      translateText(chosen.definition, 'en|zh-TW').then(zh=>{
+        const el = document.getElementById(`defZh_${mi}_0`);
         if(el) el.textContent = zh ? `→ ${zh}` : '';
       });
-      if(d.example){
-        translateText(d.example, 'en|zh-TW').then(zh=>{
-          const el = document.getElementById(`exZh_${mi}_${di}`);
-          if(el) el.textContent = zh ? `→ ${zh}` : '';
-        });
-      }
-    });
+    }
+    if(chosen.example){
+      translateText(chosen.example, 'en|zh-TW').then(zh=>{
+        const el = document.getElementById(`exZh_${mi}_0`);
+        if(el) el.textContent = zh ? `→ ${zh}` : '';
+      });
+    }
   });
 }
 
