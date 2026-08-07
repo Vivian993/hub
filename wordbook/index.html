@@ -744,6 +744,12 @@ function _pickZhVoice(){
       || _cachedVoices.find(v=>/^zh/i.test(v.lang))
       || null;
 }
+function formatGradeLesson(grade, lesson, sep){
+  sep = sep || ' / ';
+  if(grade === '補充') return grade;
+  return `${grade}${sep}${lesson}`;
+}
+
 function speak(text){
   if(!text) return;
   if(!('speechSynthesis' in window)){
@@ -804,18 +810,36 @@ function pickIdiomFields(data){
   };
 }
 
-async function getCharBreakdown(chars){
+async function getCharBreakdown(chars, idiomZhuyin){
+  // 把成語整體的注音拆成一個字一個音，優先拿來對齊每個字的正確讀音（避免多音字選錯）
+  const idiomSyllables = (idiomZhuyin || '').trim().split(/\s+/).filter(Boolean);
+  const useIdiomSyllables = idiomSyllables.length === chars.length;
+
   const uniqueChars = [...new Set(chars.split(''))];
   const results = await Promise.all(uniqueChars.map(async c=>{
     try{
       const data = await fetchMoedict(c);
-      const h = (data.heteronyms||[])[0] || {};
-      const def = (h.definitions||[]).find(d=>d.def);
-      return {char:c, zhuyin:h.bopomofo||'', meaning: def ? def.def.slice(0,10) : ''};
-    }catch(e){ return {char:c, zhuyin:'', meaning:''}; }
+      return {char:c, heteronyms: data.heteronyms || []};
+    }catch(e){ return {char:c, heteronyms: []}; }
   }));
   const map = {}; results.forEach(r=>map[r.char]=r);
-  return chars.split('').map(c=>map[c]);
+
+  return chars.split('').map((c, idx)=>{
+    const entry = map[c] || {heteronyms:[]};
+    const heteronyms = entry.heteronyms || [];
+    const idiomSyllable = useIdiomSyllables ? idiomSyllables[idx] : null;
+
+    // 多音字：優先挑跟這個成語念法相同的那個讀音／解釋，避免注音跟意思對不上
+    let chosen = idiomSyllable ? heteronyms.find(h => h.bopomofo === idiomSyllable) : null;
+    if(!chosen) chosen = heteronyms[0] || {};
+
+    const def = (chosen.definitions || []).find(dd => dd.def);
+    return {
+      char: c,
+      zhuyin: idiomSyllable || chosen.bopomofo || '',
+      meaning: def ? def.def.slice(0, 10) : ''
+    };
+  });
 }
 
 async function generateIdiomContent(forceIdiom = null){
@@ -833,17 +857,17 @@ async function generateIdiomContent(forceIdiom = null){
     let d;
     if(userLibrary[idiom]){
       d = {idiom, breakdown:[], ...JSON.parse(JSON.stringify(userLibrary[idiom]))};
-      if(!d.breakdown || d.breakdown.length === 0) d.breakdown = await getCharBreakdown(idiom);
+      if(!d.breakdown || d.breakdown.length === 0) d.breakdown = await getCharBreakdown(idiom, d.zhuyin);
     } else {
       const moe = await fetchMoedict(idiom);
       d = pickIdiomFields(moe);
-      d.breakdown = await getCharBreakdown(idiom);
+      d.breakdown = await getCharBreakdown(idiom, d.zhuyin);
     }
     
     d.grade=grade; d.lesson=lesson; d.type='idiom';
     currentIdiomData = d;
 
-    document.getElementById('cardMeta').innerText = `${grade} / ${lesson}`;
+    document.getElementById('cardMeta').innerText = formatGradeLesson(grade, lesson);
     document.getElementById('cardTitle').innerText = d.idiom;
     document.getElementById('cardZhuyin').innerText = d.zhuyin;
     document.getElementById('cardMeaning').innerText = d.meaningSimple || d.meaning || '（無解釋）';
@@ -1020,7 +1044,7 @@ function showVocabCard(index) {
     const d = batchVocabList[index];
     currentVocabData = d;
     document.getElementById('vChar').innerText = d.char;
-    document.getElementById('vMeta').innerText = `${d.grade} / ${d.lesson}`;
+    document.getElementById('vMeta').innerText = formatGradeLesson(d.grade, d.lesson);
     document.getElementById('vZhuyin').innerText = d.zhuyin;
     document.getElementById('vRadical').innerText = d.radical;
     
@@ -1209,7 +1233,7 @@ function renderLibrary(){
       mainRow.innerHTML = `<div class="flex gap-3 items-center flex-1" onclick="toggleLibraryDetail(${idx})">
         ${imgToUse ? `<img src="${imgToUse}" class="w-16 h-16 object-cover rounded-xl border border-[color:var(--ink)]/20 shrink-0">` : '<div class="w-16 h-16 bg-[color:var(--cream)] rounded-xl flex items-center justify-center text-2xl shrink-0 border border-[color:var(--ink)]/20">📖</div>'}
         <div>
-          <span class="bg-[color:var(--coral)]/20 text-xs px-2 py-0.5 rounded font-bold">${item.grade} | ${item.lesson}</span>
+          <span class="bg-[color:var(--coral)]/20 text-xs px-2 py-0.5 rounded font-bold">${formatGradeLesson(item.grade, item.lesson, " | ")}</span>
           <h4 class="display text-xl mt-1 text-[color:var(--coral)]">${item.idiom} <span class="text-xs text-[color:var(--ink)]/50 font-normal">▼ 點擊展開解析</span></h4>
         </div>
       </div>
@@ -1218,7 +1242,7 @@ function renderLibrary(){
       mainRow.innerHTML = `<div class="flex gap-3 items-center flex-1" onclick="toggleLibraryDetail(${idx})">
         <div class="w-16 h-16 bg-[color:var(--purple)] text-white rounded-xl flex items-center justify-center text-3xl display shrink-0 shadow-inner">${item.char}</div>
         <div>
-          <span class="bg-[color:var(--green)]/20 text-xs px-2 py-0.5 rounded font-bold">${item.grade} | ${item.lesson}</span>
+          <span class="bg-[color:var(--green)]/20 text-xs px-2 py-0.5 rounded font-bold">${formatGradeLesson(item.grade, item.lesson, " | ")}</span>
           <h4 class="display text-xl mt-1 text-[color:var(--purple)]">${item.char} <span class="text-sm ml-1">${item.zhuyin||''}</span> <span class="text-xs text-[color:var(--ink)]/50 font-normal">▼ 點擊展開解析</span></h4>
         </div>
       </div>
