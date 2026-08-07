@@ -895,6 +895,34 @@ function makeClickableSentence(sentence){
   }).join('');
 }
 
+/* 免費字典 API 常常查不到一些較新的流行語／複合新詞，這裡補充幾個常見的，格式跟 API 一樣方便共用同一套顯示邏輯 */
+const CURATED_WORDS = {
+  'phubber': [{
+    word: 'phubber',
+    phonetic: '/ˈfʌb.ɚ/',
+    phonetics: [],
+    meanings: [{
+      partOfSpeech: 'noun',
+      definitions: [{
+        definition: "A person who is looking at their phone instead of paying attention to the people around them. The word is a blend of 'phone' and 'snub'.",
+        example: "Everyone at the table was on their phones — total phubbers, all of them."
+      }]
+    }]
+  }],
+  'phubbing': [{
+    word: 'phubbing',
+    phonetic: '/ˈfʌb.ɪŋ/',
+    phonetics: [],
+    meanings: [{
+      partOfSpeech: 'noun',
+      definitions: [{
+        definition: "The habit of looking at your phone during a conversation instead of paying attention to the person you're with.",
+        example: "Phubbing can make the people you're with feel unimportant."
+      }]
+    }]
+  }],
+};
+
 async function fetchDictionary(word){
   word = word.trim().toLowerCase();
   if(!word) return null;
@@ -1006,7 +1034,13 @@ async function lookupWord(word, knownZh){
     addHistory(word.toLowerCase(), 'en-zh');
   }catch(e){
     if(e.message === 'NOT_FOUND'){
-      renderDictNotFound(word, false);
+      const curated = CURATED_WORDS[word.trim().toLowerCase()];
+      if(curated){
+        renderDictResult(curated, knownZh);
+        addHistory(word.toLowerCase(), 'en-zh');
+      } else {
+        renderDictNotFound(word, false);
+      }
     } else {
       renderDictNotFound(word, true);
     }
