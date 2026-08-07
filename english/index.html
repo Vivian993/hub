@@ -130,6 +130,7 @@
     width:24px; height:24px; border-radius:50%; flex-shrink:0;
     border:none; background:rgba(255,255,255,0.9); font-size:12px; box-shadow:var(--shadow-sm);
   }
+  .icon-divider{width:1px; height:18px; background:var(--line); flex-shrink:0;}
   /* 圖卡模式：正面圖片，點擊翻面看答案 */
   .flip-card{cursor:pointer; -webkit-tap-highlight-color:transparent;}
   .card-photo{
@@ -623,9 +624,10 @@ function renderCardsInto(gridId, list){
         <label class="card-master-check">
           <input type="checkbox" data-id="${card.id}" ${card.mastered?'checked':''}> 已背熟
         </label>
-        <div style="display:flex; gap:4px;">
+        <div style="display:flex; gap:12px; align-items:center;">
           <button class="card-edit" data-id="${card.id}">✏️</button>
           <button class="card-speak" data-id="${card.id}">🔊</button>
+          <span class="icon-divider"></span>
           <button class="card-remove" data-id="${card.id}">✕</button>
         </div>
       </div>
@@ -688,14 +690,18 @@ function enableDrag(circle, dataList){
     const pt = ev.touches? ev.touches[0] : ev;
     startX=pt.clientX; startY=pt.clientY;
     startPosX = item.posX||50; startPosY = item.posY||50;
-    ev.preventDefault();
+    // 這裡故意不 preventDefault：如果一開始就擋掉，手機上單純「點一下」(沒有拖曳移動) 的 click 事件
+    // 會被吃掉，導致翻卡功能失效。要等確定使用者真的在拖曳移動時才擋掉（見 onMove）。
   };
   const onMove = (ev)=>{
     if(!dragging) return;
     const item = findItem(); if(!item) return;
     const pt = ev.touches? ev.touches[0] : ev;
     const dx = pt.clientX-startX, dy = pt.clientY-startY;
-    if(Math.abs(dx)>3||Math.abs(dy)>3) circle.dataset.dragged='1';
+    if(Math.abs(dx)>3||Math.abs(dy)>3){
+      circle.dataset.dragged='1';
+      if(ev.cancelable) ev.preventDefault(); // 確定是拖曳才擋掉預設行為（避免頁面跟著滾動）
+    }
     const rect = circle.getBoundingClientRect();
     const newX = Math.min(100, Math.max(0, startPosX-(dx/rect.width)*100));
     const newY = Math.min(100, Math.max(0, startPosY-(dy/rect.height)*100));
@@ -704,7 +710,7 @@ function enableDrag(circle, dataList){
   };
   const onUp = ()=>{ dragging=false; };
   circle.addEventListener('mousedown', onDown);
-  circle.addEventListener('touchstart', onDown, {passive:false});
+  circle.addEventListener('touchstart', onDown, {passive:true});
   window.addEventListener('mousemove', onMove);
   window.addEventListener('touchmove', onMove, {passive:false});
   window.addEventListener('mouseup', onUp);
@@ -1081,10 +1087,9 @@ function renderDictResult(data, knownZh){
   resultEl.innerHTML = html;
   document.getElementById('dictSpeakBtn').addEventListener('click', ()=> speakWithAudio(entry.word, audioUrl));
   document.getElementById('dictAddCardBtn').addEventListener('click', ()=>{
-    const imgTag = document.getElementById('dictImageSlot')?.querySelector('img');
     const zhLine = document.getElementById('dictZhLine')?.textContent.replace('🈶 中文意思：','').replace('🈶 中文意思查詢中...','').trim();
     const card = {
-      id:'c'+(idCounter++), word:entry.word, zh: zhLine || knownZh || '', image: imgTag ? imgTag.src : null, posX:50, posY:50,
+      id:'c'+(idCounter++), word:entry.word, zh: zhLine || knownZh || '', image: null, posX:50, posY:50,
       phonetic:phoneticText, audioUrl, mastered:false,
       definition: entry.meanings?.[0]?.definitions?.[0]?.definition || ''
     };
