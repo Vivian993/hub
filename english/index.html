@@ -216,13 +216,13 @@
   .dict-zh-box{
     display:flex; align-items:center; gap:8px; background:var(--paper-deep);
     border-radius:12px; padding:10px 14px; margin-bottom:6px; border:2px solid var(--mint);
+    min-width:0;
   }
   .dict-zh-flag{font-size:18px; flex-shrink:0;}
   .dict-zh-label{font-size:15px; font-weight:800; color:var(--mint-deep); flex-shrink:0;}
   .dict-zh-edit{
-    flex:1; font-size:19px; font-weight:800; color:var(--mint-deep); background:transparent;
+    flex:1; width:100%; min-width:0; font-size:19px; font-weight:800; color:var(--mint-deep); background:transparent;
     border:none; border-bottom:2px dashed var(--mint); padding:2px 4px; font-family:inherit;
-    min-width:0;
   }
   .dict-zh-edit:focus{outline:none; border-bottom-color:var(--coral);}
   .dict-zh-hint{font-size:12px; color:var(--ink-soft); opacity:0.75; margin-bottom:12px;}
@@ -1043,6 +1043,24 @@ function makeClickableSentence(sentence){
   }).join('');
 }
 
+/* 有些單字有好幾個意思，機器翻譯常常選錯（例如 leave 翻成「歷史」），
+   這裡人工校正幾個孩子最常查、最容易翻錯的字，讓「中文：」框框一開始就填對答案。
+   之後若發現其他常翻錯的字，只要照格式加一行進來就好。 */
+const COMMON_ZH_FIX = {
+  'leave': '離開',
+  'move': '移動',
+  'like': '喜歡',
+  'left': '離開；左邊',
+  'right': '對的；右邊',
+  'bear': '忍受；熊',
+  'fine': '好的；罰款',
+  'well': '好；井',
+  'bank': '銀行；河岸',
+  'book': '書；預訂',
+  'watch': '手錶；觀看',
+  'play': '玩；表演'
+};
+
 /* 免費字典 API 常常查不到一些較新的流行語／複合新詞，這裡補充幾個常見的，格式跟 API 一樣方便共用同一套顯示邏輯 */
 const CURATED_WORDS = {
   'phubber': [{
@@ -1243,19 +1261,24 @@ function renderDictResult(data, knownZh){
     switchTab('flashcards');
   });
 
-  // 背景翻譯：中文意思用「字典定義」翻譯，直接填進輸入框裡（使用者可以隨時點擊修改）
-  // 如果使用者已經動手改過了，就不要再用自動翻譯覆蓋掉
+  // 背景翻譯：中文意思優先查「常見易錯字小字典」，查不到才用「單字本身」直接翻譯
+  // （單字本身翻譯對大部分單字都又快又準，例如 apple → 蘋果；
+  //  但少數多義字機器翻譯容易選錯意思，所以用下面的 COMMON_ZH_FIX 人工校正）
   if(!knownZh){
-    const primaryDef = meanings[0]?.definitions?.[0];
-    const textForHeadline = primaryDef?.definition || entry.word;
     const zhInput = document.getElementById('dictZhInput');
     let userEdited = false;
     zhInput?.addEventListener('input', ()=>{ userEdited = true; });
-    translateText(textForHeadline, 'en|zh-TW').then(zh=>{
-      if(!zh || userEdited) return;
-      zhInput.value = zh;
-      updateHistoryZh(entry.word.toLowerCase(), 'en-zh', zh);
-    });
+    const fixed = COMMON_ZH_FIX[entry.word.toLowerCase()];
+    if(fixed){
+      zhInput.value = fixed;
+      updateHistoryZh(entry.word.toLowerCase(), 'en-zh', fixed);
+    } else {
+      translateText(entry.word, 'en|zh-TW').then(zh=>{
+        if(!zh || userEdited) return;
+        zhInput.value = zh;
+        updateHistoryZh(entry.word.toLowerCase(), 'en-zh', zh);
+      });
+    }
   }
   // 背景翻譯：每個詞性選出的那一則定義與例句
   meanings.forEach((m, mi)=>{
