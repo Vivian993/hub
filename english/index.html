@@ -266,7 +266,9 @@
     background:var(--paper-deep); border-radius:14px; padding:14px; margin-bottom:12px;
     display:flex; flex-direction:column; align-items:center; gap:8px;
   }
-  .stroke-order-char{font-size:14px; font-weight:700; color:var(--ink-soft);}
+  .stroke-order-char{font-size:15px; font-weight:700; color:var(--mint-deep); cursor:pointer; border-bottom:1.5px dotted var(--mint-deep); padding-bottom:1px;}
+  .stroke-order-char:active{opacity:0.6;}
+  .stroke-order-meta{font-size:12px; color:var(--ink-soft); min-height:14px; display:flex; align-items:center; gap:2px;}
   .stroke-order-canvas{width:180px; height:180px; background:#fff; border-radius:12px; box-shadow:var(--shadow-sm);}
   .stroke-order-buttons{display:flex; gap:8px;}
   .stroke-order-hint{font-size:12px; color:var(--ink-soft); opacity:0.75;}
@@ -1630,21 +1632,10 @@ function renderZhDictResult(data, word){
     });
     html += `</ol>`;
   });
-  html += `
-    <div class="zh-evolution-box">
-      <div class="zh-evolution-title">🏛 漢字演變小知識</div>
-      <div class="zh-evolution-text">漢字的書寫大約經歷了「甲骨文 → 金文 → 篆書 → 隸書 → 楷書」五個階段，字形從象形圖畫逐漸演變成現在方正的樣子。</div>
-      <button class="secondary-btn small" id="zhEvolutionBtn">🔗 前往查看「${escapeHtml(title)}」的古文字寫法</button>
-      <div class="zh-evolution-hint">會開啟「中華語文知識庫．漢字源流」（中華文化總會製作，專為國中小學生設計）。網站打開後，把「${escapeHtml(title)}」貼到它的搜尋欄位查詢，就能看到甲骨文、金文、篆書等六種字體對照。</div>
-    </div>
-  `;
 
   const resultEl = document.getElementById('zhResult');
   resultEl.innerHTML = html;
   document.getElementById('zhSpeakBtn').addEventListener('click', ()=> speak(title, 'zh-TW'));
-  document.getElementById('zhEvolutionBtn').addEventListener('click', ()=>{
-    window.open(`https://www.chinese-linguipedia.org/search_source.html`, '_blank');
-  });
 
   // 幫查詢的詞裡「每一個」中文字都建立一個筆順練習區塊（例如查兩個字的詞，就會有兩個字各自的筆順）
   renderStrokeOrder(title);
@@ -1661,7 +1652,8 @@ function renderStrokeOrder(word){
     const wrap = document.createElement('div');
     wrap.className = 'stroke-order-card';
     wrap.innerHTML = `
-      <div class="stroke-order-char">${escapeHtml(ch)}</div>
+      <div class="stroke-order-char" title="點擊查詢「${escapeHtml(ch)}」的字義">${escapeHtml(ch)}</div>
+      <div class="stroke-order-meta"></div>
       <div class="stroke-order-canvas" id="${boxId}"></div>
       <div class="stroke-order-buttons">
         <button class="secondary-btn small" data-action="play">▶️ 播放筆順</button>
@@ -1670,6 +1662,22 @@ function renderStrokeOrder(word){
       <div class="stroke-order-hint" style="display:none;">找不到這個字的筆順資料</div>
     `;
     section.appendChild(wrap);
+
+    // 點擊字本身，直接跳去查這個字的字義（部首、注音、解釋都會一起顯示出來）
+    wrap.querySelector('.stroke-order-char').addEventListener('click', ()=>{
+      document.getElementById('zhInput').value = ch;
+      handleZhSearch();
+    });
+
+    // 抓這個字自己的部首和注音，顯示在字的下方，不用點進去也能一眼看到
+    fetchChineseDict(ch).then(charData=>{
+      const metaEl = wrap.querySelector('.stroke-order-meta');
+      if(!metaEl) return;
+      const bpmf = charData?.heteronyms?.[0]?.bopomofo || '';
+      const radical = charData?.radical || '';
+      if(!bpmf && !radical) return;
+      metaEl.innerHTML = `${radical ? `部首 ${escapeHtml(radical)}` : ''}${radical && bpmf ? '　' : ''}${bpmf ? `<span class="mono">${escapeHtml(bpmf)}</span>` : ''}`;
+    }).catch(()=>{});
 
     let writer;
     try{
