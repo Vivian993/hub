@@ -1568,11 +1568,19 @@ renderRoots();
 const zhDictCache = {};
 let zhDictHistory = [];
 
+/* 有些少用的異體字，萌典資料庫裡沒有收錄，但它們有對應的正式標準字，資料是查得到的。
+   例如「卄」查不到，但它其實就是「廿」的異體寫法，查「廿」就有完整的部首、注音、筆畫資料。
+   以後如果又發現查不到的異體字，只要照格式加一行進來就好。 */
+const CHAR_VARIANT_MAP = {
+  '卄': '廿'
+};
+
 async function fetchChineseDict(word){
   word = word.trim();
   if(!word) return null;
   if(zhDictCache[word]) return zhDictCache[word];
-  const res = await fetchWithTimeout(`https://www.moedict.tw/uni/${encodeURIComponent(word)}`);
+  const lookupWord = (word.length===1 && CHAR_VARIANT_MAP[word]) ? CHAR_VARIANT_MAP[word] : word;
+  const res = await fetchWithTimeout(`https://www.moedict.tw/uni/${encodeURIComponent(lookupWord)}`);
   if(!res.ok) throw new Error('NETWORK');
   const data = await res.json();
   if(!data || !data.heteronyms){ throw new Error('NOT_FOUND'); }
@@ -1670,14 +1678,19 @@ function renderStrokeOrder(word){
     });
 
     // 抓這個字自己的部首和注音，顯示在字的下方，不用點進去也能一眼看到
+    const metaEl = wrap.querySelector('.stroke-order-meta');
     fetchChineseDict(ch).then(charData=>{
-      const metaEl = wrap.querySelector('.stroke-order-meta');
-      if(!metaEl) return;
       const bpmf = charData?.heteronyms?.[0]?.bopomofo || '';
       const radical = charData?.radical || '';
-      if(!bpmf && !radical) return;
+      if(!bpmf && !radical){
+        metaEl.innerHTML = `<span style="opacity:0.6;">查無部首／注音資料</span>`;
+        return;
+      }
       metaEl.innerHTML = `${radical ? `部首 ${escapeHtml(radical)}` : ''}${radical && bpmf ? '　' : ''}${bpmf ? `<span class="mono">${escapeHtml(bpmf)}</span>` : ''}`;
-    }).catch(()=>{});
+    }).catch(()=>{
+      // 比較罕見冷僻的字，免費辭典資料庫裡查不到，屬於正常情況
+      metaEl.innerHTML = `<span style="opacity:0.6;">查無部首／注音資料</span>`;
+    });
 
     let writer;
     try{
