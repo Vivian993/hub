@@ -50,7 +50,7 @@
   header{
     background:linear-gradient(135deg, var(--header-bg1), var(--header-bg2));
     color:var(--ink);
-    padding:18px 20px 16px;
+    padding:14px 18px 12px;
   }
   .header-top{
     display:flex; align-items:center; gap:12px;
@@ -67,42 +67,45 @@
   }
   h1{
     font-family:'ZCOOL KuaiLe', 'Noto Sans TC', sans-serif;
-    font-size:clamp(24px,4.2vw,36px);
-    margin:0 0 4px;
-    line-height:1.25;
+    font-size:clamp(20px,3.6vw,28px);
+    margin:0 0 2px;
+    line-height:1.2;
     color:var(--title-color);
   }
   header p.sub{
     margin:0;
     color:var(--ink-soft);
-    font-size:14.5px;
+    font-size:13px;
     max-width:640px;
-    line-height:1.5;
+    line-height:1.4;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
   .header-actions{
-    max-width:1200px; margin:12px auto 0;
-    display:flex; gap:10px; flex-wrap:wrap;
+    max-width:1200px; margin:8px auto 0;
+    display:flex; gap:8px; flex-wrap:wrap;
   }
   .btn-manage{
     background:var(--panel);
     color:var(--ink);
     border:none;
-    border-radius:10px;
-    padding:9px 15px;
+    border-radius:9px;
+    padding:7px 13px;
     font-family:'Noto Sans TC', sans-serif;
-    font-size:14.5px;
+    font-size:13.5px;
     font-weight:700;
     cursor:pointer;
     box-shadow:0 3px 10px rgba(0,0,0,0.1);
   }
   .btn-manage:hover{ background:var(--hover-bg); }
 
-  .search-wrap{ max-width:1200px; margin:12px auto 0; }
+  .search-wrap{ max-width:1200px; margin:10px auto 0; }
   .search-box{
     display:flex; align-items:center; gap:9px;
     background:var(--panel);
-    border-radius:12px;
-    padding:11px 16px;
+    border-radius:11px;
+    padding:9px 14px;
     box-shadow:0 4px 14px rgba(0,0,0,0.1);
   }
   .search-box svg{flex:none; opacity:.5;}
@@ -113,7 +116,7 @@
   }
   .search-box input::placeholder{color:#b3a99c;}
 
-  main{ padding:26px 0 60px; background:var(--bg); }
+  main{ padding:16px 0 60px; background:var(--bg); }
 
   /* ---- horizontal swipe of category columns ---- */
   .board{
@@ -276,7 +279,7 @@
 <header>
   <div class="header-top">
     <div class="logo">
-      <svg width="42" height="42" viewBox="0 0 64 64" fill="none">
+      <svg width="34" height="34" viewBox="0 0 64 64" fill="none">
         <rect x="2" y="2" width="60" height="60" rx="18" fill="#F4E9E4" stroke="#C9AFA5" stroke-width="2"/>
         <path d="M17 24c5-5 25-5 30 0v18c-5-4-25-4-30 0V24z" fill="#B3766C" opacity="0.85"/>
         <path d="M32 24v18" stroke="#F4E9E4" stroke-width="1.6"/>
@@ -285,9 +288,8 @@
       </svg>
     </div>
     <div class="header-text">
-      <div class="eyebrow">教學 GEM 收藏庫</div>
       <h1>老師們的 AI 教具箱</h1>
-      <p class="sub">集合大家共同發想、貢獻的教學工具連結，依主題分類、左右滑動切換。點卡片直接開啟工具。</p>
+      <p class="sub">依主題分類、左右滑動切換，點卡片直接開啟</p>
     </div>
   </div>
   <div class="search-wrap">
