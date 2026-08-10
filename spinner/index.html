@@ -3,100 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>陀螺商品照生成器</title>
+<title>商品照生成器</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Space+Grotesk:wght@500;600;700&display=swap');
 
   :root{
-    --ink:#EDEAE2;
-    --ink-dim:#9C978A;
-    --panel:#17151A;
-    --panel-2:#1E1B22;
-    --line:rgba(255,255,255,0.08);
-    --accent:#C99A4B;
-    --accent-soft:rgba(201,154,75,0.15);
-    --danger:#C4674C;
+    --bg:#F4F1EA;
+    --panel:#FFFFFF;
+    --panel-2:#FAF8F4;
+    --line:#E7E2D8;
+    --ink:#2B2823;
+    --ink-dim:#8B8477;
+    --accent:#D96B3A;
+    --accent-soft:#FBE7DB;
+    --accent-ink:#7A3A1E;
+    --danger:#C4453A;
     --radius:14px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:#0B0A0D;
+    background:var(--bg);
     color:var(--ink);
-    font-family:'Zen Kaku Gothic New','Noto Sans TC',sans-serif;
+    font-family:'Noto Sans TC',sans-serif;
     min-height:100vh;
     -webkit-font-smoothing:antialiased;
   }
 
   .topbar{
-    padding:22px 28px 18px;
+    padding:20px 28px;
     border-bottom:1px solid var(--line);
     display:flex;
-    align-items:baseline;
+    align-items:center;
     gap:14px;
     flex-wrap:wrap;
+    background:var(--panel);
   }
   .topbar .mark{
     font-family:'Space Grotesk',monospace;
     font-weight:700;
-    font-size:13px;
-    letter-spacing:0.18em;
-    color:var(--accent);
-    border:1px solid var(--accent-soft);
-    padding:4px 9px;
+    font-size:12px;
+    letter-spacing:0.16em;
+    color:#fff;
+    background:var(--accent);
+    padding:5px 10px;
     border-radius:999px;
   }
   .topbar h1{
-    font-size:19px;
+    font-size:18px;
     font-weight:700;
     margin:0;
-    letter-spacing:0.02em;
   }
   .topbar .sub{
     color:var(--ink-dim);
-    font-size:13px;
+    font-size:12.5px;
     margin-left:auto;
+    text-align:right;
+    line-height:1.5;
   }
 
   .layout{
     display:grid;
-    grid-template-columns:340px 1fr;
-    gap:0;
-    min-height:calc(100vh - 66px);
+    grid-template-columns:350px 1fr;
+    min-height:calc(100vh - 68px);
   }
-  @media (max-width:880px){
+  @media (max-width:900px){
     .layout{grid-template-columns:1fr;}
   }
 
   .panel{
     background:var(--panel);
     border-right:1px solid var(--line);
-    padding:24px;
+    padding:22px;
     overflow-y:auto;
   }
-  .section{margin-bottom:26px;}
+  .section{margin-bottom:24px;}
   .section-title{
-    font-family:'Space Grotesk',monospace;
-    font-size:11px;
-    letter-spacing:0.14em;
-    color:var(--ink-dim);
-    text-transform:uppercase;
-    margin-bottom:12px;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.04em;
+    color:var(--ink);
+    margin-bottom:10px;
     display:flex;
     align-items:center;
     gap:8px;
   }
-  .section-title::after{
-    content:"";
-    flex:1;
-    height:1px;
-    background:var(--line);
+  .section-title .num{
+    width:18px;height:18px;
+    border-radius:50%;
+    background:var(--accent);
+    color:#fff;
+    font-size:10.5px;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
   }
 
   .upload-box{
-    border:1.5px dashed var(--line);
+    border:1.5px dashed #D9CFBE;
     border-radius:var(--radius);
-    padding:22px 16px;
+    padding:20px 16px;
     text-align:center;
     cursor:pointer;
     transition:border-color .15s, background .15s;
@@ -106,398 +111,218 @@
     border-color:var(--accent);
     background:var(--accent-soft);
   }
-  .upload-box svg{opacity:.55;margin-bottom:8px;}
-  .upload-box p{margin:0;font-size:13px;color:var(--ink-dim);}
-  .upload-box .hint{font-size:11px;margin-top:4px;color:#6b675f;}
+  .upload-box svg{opacity:.5;margin-bottom:6px;color:var(--accent-ink);}
+  .upload-box p{margin:0;font-size:13px;color:var(--ink);}
+  .upload-box .hint{font-size:11px;margin-top:4px;color:var(--ink-dim);}
   #fileInput{display:none;}
-
-  .bg-grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:8px;
-    margin-bottom:20px;
-  }
-  .bg-swatch{
-    aspect-ratio:1;
-    border-radius:10px;
-    cursor:pointer;
-    border:2px solid transparent;
-    position:relative;
-    transition:transform .12s;
-  }
-  .bg-swatch:hover{transform:scale(1.05);}
-  .bg-swatch.active{border-color:var(--accent);}
-  .bg-swatch .name{
-    position:absolute;
-    bottom:-18px;
-    left:0;right:0;
-    text-align:center;
-    font-size:9.5px;
-    color:var(--ink-dim);
-    white-space:nowrap;
-  }
-
-  label.field-label{
-    display:block;
-    font-size:12px;
-    color:var(--ink-dim);
-    margin-bottom:6px;
-  }
-  .row{display:flex;gap:10px;}
-  .row > *{flex:1;}
-
-  input[type="text"], select{
-    width:100%;
-    background:var(--panel-2);
-    border:1px solid var(--line);
-    color:var(--ink);
-    padding:9px 11px;
-    border-radius:8px;
-    font-size:14px;
-    font-family:inherit;
-  }
-  input[type="text"]:focus, select:focus{outline:none;border-color:var(--accent);}
-
-  input[type="range"]{
-    width:100%;
-    accent-color:var(--accent);
-  }
-  .range-row{
-    display:flex;
-    justify-content:space-between;
-    font-size:11px;
-    color:var(--ink-dim);
-    margin-bottom:4px;
-  }
-
-  .color-row{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    margin-top:8px;
-  }
-  .color-dot{
-    width:22px;height:22px;
-    border-radius:50%;
-    cursor:pointer;
-    border:2px solid transparent;
-  }
-  .color-dot.active{border-color:#fff;}
 
   .btn{
     width:100%;
-    padding:12px;
+    padding:11px;
     border-radius:10px;
     border:none;
     font-family:inherit;
-    font-size:14px;
+    font-size:13.5px;
     font-weight:700;
     cursor:pointer;
-    letter-spacing:0.02em;
   }
-  .btn-primary{
-    background:var(--accent);
-    color:#141014;
-  }
-  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{filter:brightness(1.06);}
   .btn-ghost{
-    background:transparent;
+    background:#fff;
     border:1px solid var(--line);
     color:var(--ink);
     margin-top:8px;
   }
-  .btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent-ink);}
   .btn-small{
     padding:8px;
     font-size:12px;
     border-radius:8px;
     border:1px solid var(--line);
-    background:var(--panel-2);
+    background:#fff;
     color:var(--ink-dim);
     cursor:pointer;
     font-family:inherit;
   }
-  .btn-small:hover{color:var(--danger);border-color:var(--danger);}
+  .btn-small:hover{color:var(--accent-ink);border-color:var(--accent);}
+  .btn-small.warn:hover{color:var(--danger);border-color:var(--danger);}
 
   .layer-strip{
     display:flex;
     gap:8px;
     flex-wrap:wrap;
-    margin-bottom:14px;
+    margin:12px 0;
   }
   .layer-thumb{
-    width:52px;height:52px;
+    width:48px;height:48px;
     border-radius:8px;
     border:2px solid var(--line);
     background:var(--panel-2) center/cover no-repeat;
     cursor:pointer;
     position:relative;
     flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;color:var(--ink-dim);font-size:16px;
   }
   .layer-thumb.selected{border-color:var(--accent);}
   .layer-thumb .del{
-    position:absolute;
-    top:-6px;right:-6px;
-    width:16px;height:16px;
-    border-radius:50%;
-    background:var(--danger);
-    color:#fff;
-    font-size:10px;
-    line-height:16px;
-    text-align:center;
-    cursor:pointer;
+    position:absolute;top:-6px;right:-6px;
+    width:16px;height:16px;border-radius:50%;
+    background:var(--danger);color:#fff;font-size:10px;line-height:16px;
+    text-align:center;cursor:pointer;
   }
-  .layer-empty{
-    font-size:12px;
-    color:var(--ink-dim);
-    padding:10px 0;
-  }
+  .layer-empty{font-size:12px;color:var(--ink-dim);padding:6px 0;}
 
-  .selected-controls{
+  .card{
     background:var(--panel-2);
     border:1px solid var(--line);
     border-radius:10px;
     padding:14px;
-    margin-top:4px;
   }
-  .selected-controls .sc-title{
-    font-size:12px;
-    color:var(--accent);
-    margin-bottom:10px;
-    font-weight:700;
+  .card-title{font-size:12px;color:var(--accent-ink);font-weight:700;margin-bottom:10px;}
+
+  label.field-label{display:block;font-size:12px;color:var(--ink-dim);margin-bottom:6px;}
+  .row{display:flex;gap:10px;}
+  .row > *{flex:1;}
+
+  input[type="text"], textarea, select{
+    width:100%;
+    background:#fff;
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:9px 11px;
+    border-radius:8px;
+    font-size:13.5px;
+    font-family:inherit;
+  }
+  textarea{resize:vertical;}
+  input:focus, textarea:focus, select:focus{outline:none;border-color:var(--accent);}
+
+  input[type="range"]{width:100%;accent-color:var(--accent);}
+  .range-row{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-dim);margin-bottom:4px;}
+
+  .color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .color-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;box-shadow:0 0 0 1px var(--line);}
+  .color-dot.active{border-color:var(--accent);}
+
+  .quick-chip-row{display:flex;flex-wrap:wrap;gap:5px;}
+  .chip{
+    min-width:24px;height:24px;padding:0 7px;border-radius:6px;
+    background:#fff;border:1px solid var(--line);color:var(--ink-dim);
+    font-family:'Space Grotesk',monospace;font-size:11.5px;font-weight:600;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .chip:hover{border-color:var(--accent);color:var(--accent-ink);}
+  .chip.tag{font-family:'Noto Sans TC',sans-serif;padding:0 9px;}
+
+  .bg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .bg-swatch{
+    aspect-ratio:1;border-radius:9px;cursor:pointer;border:2px solid transparent;
+    position:relative;transition:transform .12s;
+  }
+  .bg-swatch:hover{transform:scale(1.05);}
+  .bg-swatch.active{border-color:var(--accent);}
+  .bg-swatch .name{
+    position:absolute;bottom:-17px;left:0;right:0;text-align:center;
+    font-size:9px;color:var(--ink-dim);white-space:nowrap;
   }
 
   .stage-wrap{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    padding:32px;
-    position:relative;
-    gap:22px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:32px;gap:20px;
   }
   .stage-frame{
     position:relative;
-    box-shadow:0 30px 80px -20px rgba(0,0,0,0.7);
-    border-radius:4px;
-    overflow:hidden;
+    box-shadow:0 24px 60px -22px rgba(60,45,25,0.35);
+    border-radius:6px;overflow:hidden;
+    border:1px solid var(--line);
   }
   canvas{
-    display:block;
-    max-width:min(74vh,520px);
-    width:min(74vh,520px);
-    height:auto;
-    cursor:grab;
-    touch-action:none;
+    display:block;max-width:min(70vh,500px);width:min(70vh,500px);height:auto;
+    cursor:grab;touch-action:none;
   }
   canvas:active{cursor:grabbing;}
 
   .empty-hint{
-    position:absolute;
-    top:50%;left:50%;
-    transform:translate(-50%,-50%);
-    text-align:center;
-    color:var(--ink-dim);
-    font-size:13px;
-    pointer-events:none;
-    width:200px;
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    text-align:center;color:var(--ink-dim);font-size:13px;pointer-events:none;width:210px;
   }
-  .empty-hint svg{opacity:.35;margin-bottom:10px;}
+  .empty-hint svg{opacity:.4;margin-bottom:8px;}
 
   .stage-tip{
-    position:absolute;
-    bottom:14px; left:50%;
-    transform:translateX(-50%);
-    font-size:11.5px;
-    color:var(--ink-dim);
-    background:rgba(0,0,0,0.4);
-    padding:6px 12px;
-    border-radius:999px;
-    pointer-events:none;
-  }
-
-  .quick-chip-row{
-    display:flex;
-    flex-wrap:wrap;
-    gap:5px;
-  }
-  .chip{
-    min-width:26px;
-    height:26px;
-    padding:0 7px;
-    border-radius:6px;
-    background:var(--panel-2);
-    border:1px solid var(--line);
-    color:var(--ink-dim);
-    font-family:'Space Grotesk',monospace;
-    font-size:12px;
-    font-weight:600;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .chip:hover{border-color:var(--accent);color:var(--accent);}
-  .chip.tag{
-    font-family:'Zen Kaku Gothic New',sans-serif;
-    padding:0 10px;
+    position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+    font-size:11px;color:#fff;background:rgba(43,40,35,0.55);
+    padding:5px 12px;border-radius:999px;pointer-events:none;
   }
 
   .mini-preview-block{
-    display:flex;
-    align-items:center;
-    gap:16px;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:14px 20px;
+    display:flex;align-items:center;gap:16px;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px 18px;
   }
-  .mini-preview-block .mp-label{
-    font-size:11.5px;
-    color:var(--ink-dim);
-    line-height:1.5;
-    max-width:170px;
-  }
-  .mini-preview-block .mp-label b{color:var(--accent);}
-  #miniPreview{
-    width:78px;
-    height:78px;
-    border-radius:6px;
-    object-fit:cover;
-    border:1px solid var(--line);
-    background:#000;
-  }
+  .mini-preview-block .mp-label{font-size:11.5px;color:var(--ink-dim);line-height:1.5;max-width:200px;}
+  .mini-preview-block .mp-label b{color:var(--accent-ink);}
+  #miniPreview{width:70px;height:70px;border-radius:6px;object-fit:cover;border:1px solid var(--line);}
 
-  /* --- 儲存圖片彈窗（給獨立模式/受限瀏覽器用的備援方式） --- */
-  .save-overlay{
-    position:fixed; inset:0;
-    background:rgba(0,0,0,0.75);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    z-index:100;
-    padding:24px;
-  }
-  .save-overlay.open{ display:flex; }
-  .save-sheet{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:16px;
-    padding:20px;
-    max-width:420px;
-    width:100%;
-    text-align:center;
-  }
-  .save-sheet h3{
-    margin:0 0 6px;
-    font-size:16px;
-    color:var(--accent);
-  }
-  .save-sheet p{
-    margin:0 0 16px;
-    font-size:13px;
-    color:var(--ink-dim);
-    line-height:1.6;
-  }
-  .save-sheet img{
-    width:100%;
-    border-radius:8px;
-    margin-bottom:16px;
-    -webkit-touch-callout:default;
-  }
-  .save-sheet .btn-close{
-    background:transparent;
-    border:1px solid var(--line);
-    color:var(--ink);
-    padding:10px 18px;
-    border-radius:8px;
-    font-family:inherit;
-    font-size:13px;
-    cursor:pointer;
+  .platform-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .platform-pill{
+    font-size:10.5px;color:var(--ink-dim);background:#fff;border:1px solid var(--line);
+    padding:4px 9px;border-radius:999px;
   }
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <span class="mark">SPIN·SHOT</span>
-  <h1>陀螺商品照生成器</h1>
-  <span class="sub">可放多顆陀螺與零件 · 選背景 · 加文字 · 下載成品圖</span>
+  <span class="mark">PRODUCT SHOT</span>
+  <h1>商品照生成器</h1>
+  <span class="sub">上傳照片 → 去背合成 → 排版加字 → 下載成品圖<br>適用蝦皮、賣貨便等各賣場上架</span>
 </div>
 
 <div class="layout">
   <div class="panel">
 
     <div class="section">
-      <div class="section-title">照片（可一次選多張）</div>
+      <div class="section-title"><span class="num">1</span>上傳商品照片</div>
       <div class="upload-box" id="uploadBox">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
-        <p>點擊或拖曳照片到這裡</p>
-        <p class="hint">陀螺本體、輔助戰刃、紋章等零件都可以分開上傳</p>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        <p>點擊或拖曳照片到這裡（可一次選多張）</p>
+        <p class="hint">主商品、配件、零件都可以分開上傳，各自獨立調整</p>
       </div>
       <input type="file" id="fileInput" accept="image/*" multiple>
-
-      <div class="layer-strip" id="layerStrip" style="margin-top:14px;"></div>
+      <div class="layer-strip" id="layerStrip"></div>
+      <button class="btn-small" id="arrangeGridBtn" style="width:100%;">整齊排列（自動置中、統一大小）</button>
     </div>
 
     <div class="section">
-      <div class="section-title">已選取項目</div>
-      <div class="selected-controls" id="selectedControls">
-        <div class="layer-empty">點選上方縮圖來調整大小 / 旋轉 / 圖層順序</div>
+      <div class="section-title"><span class="num">2</span>已選取項目</div>
+      <div class="card" id="selectedControls">
+        <div class="layer-empty">點選上方縮圖，或直接點畫面上的物件來調整</div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title">背景質感</div>
-      <div class="bg-grid" id="bgGrid"></div>
+      <div class="section-title"><span class="num">3</span>情境背景</div>
+      <div class="bg-grid" id="bgGrid" style="margin-bottom:18px;"></div>
     </div>
 
     <div class="section">
-      <div class="section-title">文字標籤</div>
-      <label class="field-label">內容（例如編號 / 型號 / ABC）</label>
-      <input type="text" id="labelText" placeholder="例如：CX-06 極狐九尾 全配一組" value="">
-
-      <div style="margin-top:10px;">
-        <label class="field-label">快速插入</label>
-        <div class="quick-chip-row" id="quickNumbers"></div>
-        <div class="quick-chip-row" id="quickLetters" style="margin-top:6px;"></div>
-        <div class="quick-chip-row" id="quickTags" style="margin-top:6px;"></div>
-      </div>
-
-      <div class="row" style="margin-top:12px;">
-        <div>
-          <label class="field-label">字體</label>
-          <select id="fontSelect">
-            <option value="'Space Grotesk', monospace">工業感 · Grotesk</option>
-            <option value="'Zen Kaku Gothic New', sans-serif">日系黑體</option>
-            <option value="Georgia, serif">襯線 · 精品感</option>
-          </select>
-        </div>
-        <div>
-          <label class="field-label">快速定位</label>
-          <select id="posSelect">
-            <option value="bottom-left">左下</option>
-            <option value="bottom-right">右下</option>
-            <option value="top-left">左上</option>
-            <option value="top-right">右上</option>
-            <option value="center-bottom">置中下方</option>
-          </select>
-        </div>
-      </div>
-      <div style="font-size:10.5px;color:#6b675f;margin-top:6px;">也可以直接在右邊畫面上用手指拖曳文字到想要的位置</div>
-
-      <div class="range-row" style="margin-top:12px;"><span>字級</span><span id="fontSizeVal">36px</span></div>
-      <input type="range" id="fontSizeSlider" min="14" max="90" value="36">
-
-      <button class="btn-small" id="resetTextPos" style="width:100%;margin-top:10px;">重設文字位置</button>
-
-      <label class="field-label" style="margin-top:12px;">文字顏色</label>
-      <div class="color-row" id="textColorRow"></div>
+      <div class="section-title"><span class="num">4</span>文字標籤</div>
+      <button class="btn btn-ghost" id="addTextBtn" style="margin-top:0;">＋ 新增一個文字標籤</button>
+      <p style="font-size:11px;color:var(--ink-dim);margin:8px 0 0;">每次新增都是獨立的文字物件，可以分開拖曳、旋轉、換色，想加第二排、第三排文字就再按一次新增。</p>
     </div>
 
     <div class="section">
       <button class="btn btn-primary" id="downloadBtn">下載成品圖 (PNG)</button>
       <button class="btn btn-ghost" id="resetBtn">全部清空</button>
+      <div class="platform-row">
+        <span class="platform-pill">蝦皮賣場</span>
+        <span class="platform-pill">賣貨便</span>
+        <span class="platform-pill">露天</span>
+        <span class="platform-pill">FB社團</span>
+        <span class="platform-pill">Instagram</span>
+      </div>
     </div>
 
   </div>
@@ -506,25 +331,16 @@
     <div class="stage-frame">
       <canvas id="stage" width="1000" height="1000"></canvas>
       <div class="empty-hint" id="emptyHint">
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
-        <div>先上傳陀螺 / 零件照片<br>可以一次選多張</div>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.4"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+        <div>先上傳商品照片<br>可以一次選多張</div>
       </div>
-      <div class="stage-tip" id="stageTip" style="display:none;">拖曳畫面上的項目可移動位置</div>
+      <div class="stage-tip" id="stageTip" style="display:none;">直接拖曳畫面上的物件可移動位置</div>
     </div>
 
     <div class="mini-preview-block">
       <img id="miniPreview" alt="小視窗預覽">
-      <div class="mp-label"><b>賣貨便小視窗預覽</b><br>這是商品縮圖在小視窗下大概的樣子，確認文字跟主體看得清楚再下載。</div>
+      <div class="mp-label"><b>賣場小視窗預覽</b><br>模擬在蝦皮 / 賣貨便縮圖大小下的樣子，確認文字看得清楚再下載，圖片為 1:1 正方形，各平台都能直接用。</div>
     </div>
-  </div>
-</div>
-
-<div class="save-overlay" id="saveOverlay">
-  <div class="save-sheet">
-    <h3>長按下方圖片存到相簿</h3>
-    <p>如果剛才沒有自動跳出下載，就用這個方式：長按圖片 → 選「加入照片」或「儲存影像」</p>
-    <img id="saveImg" alt="成品圖">
-    <button class="btn-close" id="closeSaveOverlay">關閉</button>
   </div>
 </div>
 
@@ -534,176 +350,152 @@ const ctx = canvas.getContext('2d');
 const SIZE = 1000;
 const miniPreview = document.getElementById('miniPreview');
 
+// ---------- studio backdrop presets (wall + floor + horizon, not flat gradients) ----------
 const backgrounds = [
-  { name:'曜石黑', type:'radial', colors:['#2a2830','#0a0a0d'] },
-  { name:'霧灰調', type:'linear', colors:['#3a3a42','#1b1b20'], angle:135 },
-  { name:'香檳金', type:'radial', colors:['#3d3324','#171310'] },
-  { name:'冷藍漸層', type:'linear', colors:['#232b3d','#0c0e14'], angle:160 },
-  { name:'米杏白', type:'linear', colors:['#efe8da','#cfc4ad'], angle:135, dark:false },
-  { name:'珍珠灰', type:'radial', colors:['#d8d8dc','#a8a8ae'], dark:false },
-  { name:'深綠絨', type:'radial', colors:['#1e2b23','#0a120d'] },
-  { name:'酒紅絨', type:'radial', colors:['#2c1620','#12080c'] },
+  { name:'純白影棚',   wall:['#ffffff','#f1efe9'], floor:'#e2ded3', dark:false },
+  { name:'米杏棚燈',   wall:['#faf3e6','#ecdfc4'], floor:'#d9c69c', dark:false },
+  { name:'淺灰質感',   wall:['#f0f1f2','#dcdedf'], floor:'#c7cacd', dark:false },
+  { name:'霧粉背景',   wall:['#faeeea','#eed2c9'], floor:'#dcb3a7', dark:false },
+  { name:'霧藍背景',   wall:['#eaf1f4','#d1e0e6'], floor:'#aec4cd', dark:false },
+  { name:'木質棚色',   wall:['#e9d6b4','#c9a373'], floor:'#a67f4d', dark:false },
+  { name:'曜石黑棚',   wall:['#2c2a31','#0b0a0d'], floor:'#131217', dark:true },
+  { name:'酒紅絨棚',   wall:['#3c1c27','#150a0d'], floor:'#1f0e13', dark:true },
 ];
 
-const textColors = ['#F4EFE4','#C99A4B','#1a1a1a','#E8664E','#8FB3A9'];
+const textColors = ['#2B2823','#D96B3A','#FFFFFF','#7A3A1E','#3F6B57'];
 
+// ---------- unified layer model ----------
+// image layer: {id,type:'image',img,originalImg,x,y,scale,rotation,brightness,contrast,saturate,bgRemove,bgTolerance}
+// text layer:  {id,type:'text',content,x,y,rotation,fontSize,font,color}
 let state = {
   bgIndex: 0,
-  layers: [],          // {id, img, x, y, scale, rotation}
+  layers: [],
   selectedId: null,
-  label: '',
-  font: "'Space Grotesk', monospace",
-  fontSize: 36,
-  position: 'bottom-left',
-  textColor: '#F4EFE4',
-  textOffsetX: 0,
-  textOffsetY: 0,
 };
 let layerCounter = 0;
 let isDragging = false;
-let isDraggingText = false;
-let lastTextBox = null; // {x,y,w,h,align} in canvas coords, updated每次 render
+let dragOffX = 0, dragOffY = 0;
 
-function buildBg(g, cfg){
-  let grad;
-  if(cfg.type === 'radial'){
-    grad = g.createRadialGradient(SIZE*0.5, SIZE*0.42, SIZE*0.05, SIZE*0.5, SIZE*0.5, SIZE*0.75);
-  } else {
-    const rad = (cfg.angle||135) * Math.PI/180;
-    const x1 = SIZE/2 - Math.cos(rad)*SIZE/2, y1 = SIZE/2 - Math.sin(rad)*SIZE/2;
-    const x2 = SIZE/2 + Math.cos(rad)*SIZE/2, y2 = SIZE/2 + Math.sin(rad)*SIZE/2;
-    grad = g.createLinearGradient(x1,y1,x2,y2);
-  }
-  grad.addColorStop(0, cfg.colors[0]);
-  grad.addColorStop(1, cfg.colors[1]);
-  return grad;
+// ================= rendering =================
+function drawBackdrop(g, cfg){
+  const wallGrad = g.createLinearGradient(0,0,0,SIZE*0.66);
+  wallGrad.addColorStop(0, cfg.wall[0]);
+  wallGrad.addColorStop(1, cfg.wall[1]);
+  g.fillStyle = wallGrad;
+  g.fillRect(0,0,SIZE,SIZE*0.66);
+
+  const floorGrad = g.createLinearGradient(0,SIZE*0.56,0,SIZE);
+  floorGrad.addColorStop(0, cfg.wall[1]);
+  floorGrad.addColorStop(1, cfg.floor);
+  g.fillStyle = floorGrad;
+  g.fillRect(0,SIZE*0.56,SIZE,SIZE*0.44);
+
+  g.save();
+  g.globalAlpha = 0.22;
+  g.fillStyle = cfg.dark ? '#000' : '#fff';
+  g.filter = 'blur(28px)';
+  g.fillRect(0, SIZE*0.55, SIZE, SIZE*0.05);
+  g.restore();
 }
-
 function drawVignette(g, dark){
-  const grad = g.createRadialGradient(SIZE/2,SIZE/2,SIZE*0.35,SIZE/2,SIZE/2,SIZE*0.72);
+  const grad = g.createRadialGradient(SIZE/2,SIZE*0.55,SIZE*0.32,SIZE/2,SIZE*0.55,SIZE*0.75);
   grad.addColorStop(0,'rgba(0,0,0,0)');
-  grad.addColorStop(1, dark ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.18)');
+  grad.addColorStop(1, dark ? 'rgba(0,0,0,0.42)' : 'rgba(0,0,0,0.14)');
   g.fillStyle = grad;
   g.fillRect(0,0,SIZE,SIZE);
 }
 
-function layerDrawSize(layer){
+function imageLayerSize(layer){
   const iw = layer.img.width, ih = layer.img.height;
   const baseSize = SIZE * 0.34;
   const ratio = iw > ih ? baseSize/iw : baseSize/ih;
   return { w: iw*ratio*layer.scale, h: ih*ratio*layer.scale };
 }
+function textLayerSize(layer){
+  ctx.font = `700 ${layer.fontSize*1.6}px 'Noto Sans TC', sans-serif`;
+  const lines = (layer.content || '文字').split('\n');
+  let maxW = 0;
+  lines.forEach(l => { maxW = Math.max(maxW, ctx.measureText(l || ' ').width); });
+  const lineHeight = layer.fontSize*1.85;
+  return { w: maxW, h: lineHeight*lines.length, lines, lineHeight };
+}
+function layerSize(layer){
+  return layer.type === 'image' ? imageLayerSize(layer) : textLayerSize(layer);
+}
 
 function render(){
   const cfg = backgrounds[state.bgIndex];
   ctx.clearRect(0,0,SIZE,SIZE);
-  ctx.fillStyle = buildBg(ctx, cfg);
-  ctx.fillRect(0,0,SIZE,SIZE);
-
-  ctx.save();
-  ctx.globalAlpha = 0.04;
-  ctx.strokeStyle = cfg.dark===false ? '#000' : '#fff';
-  for(let i=0;i<40;i++){
-    ctx.beginPath();
-    ctx.moveTo(Math.random()*SIZE, 0);
-    ctx.lineTo(Math.random()*SIZE, SIZE);
-    ctx.lineWidth = Math.random()*1;
-    ctx.stroke();
-  }
-  ctx.restore();
+  drawBackdrop(ctx, cfg);
 
   state.layers.forEach(layer => {
-    const {w,h} = layerDrawSize(layer);
+    if(layer.type === 'image'){
+      const {w,h} = imageLayerSize(layer);
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(layer.x, layer.y + h*0.42, w*0.34, h*0.09, 0, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      ctx.filter = 'blur(12px)';
+      ctx.fill();
+      ctx.restore();
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.ellipse(layer.x, layer.y + h*0.42, w*0.34, h*0.09, 0, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(0,0,0,0.4)';
-    ctx.filter = 'blur(12px)';
-    ctx.fill();
-    ctx.restore();
-
-    ctx.save();
-    ctx.translate(layer.x, layer.y);
-    ctx.rotate(layer.rotation * Math.PI/180);
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 30;
-    ctx.shadowOffsetY = 14;
-    ctx.filter = `brightness(${layer.brightness}%) contrast(${layer.contrast}%) saturate(${layer.saturate}%)`;
-    ctx.drawImage(layer.img, -w/2, -h/2, w, h);
-    ctx.filter = 'none';
-    ctx.restore();
-
-    if(layer.id === state.selectedId){
       ctx.save();
       ctx.translate(layer.x, layer.y);
       ctx.rotate(layer.rotation * Math.PI/180);
-      ctx.strokeStyle = 'rgba(201,154,75,0.9)';
-      ctx.lineWidth = 2.5;
-      ctx.setLineDash([8,6]);
-      ctx.strokeRect(-w/2-8, -h/2-8, w+16, h+16);
+      ctx.shadowColor = 'rgba(0,0,0,0.35)';
+      ctx.shadowBlur = 26;
+      ctx.shadowOffsetY = 12;
+      ctx.filter = `brightness(${layer.brightness}%) contrast(${layer.contrast}%) saturate(${layer.saturate}%)`;
+      ctx.drawImage(layer.img, -w/2, -h/2, w, h);
+      ctx.filter = 'none';
       ctx.restore();
+
+      if(layer.id === state.selectedId) drawSelectionBox(layer, w, h);
+    } else {
+      const {w,h,lines,lineHeight} = textLayerSize(layer);
+      ctx.save();
+      ctx.translate(layer.x, layer.y);
+      ctx.rotate(layer.rotation * Math.PI/180);
+      ctx.font = `700 ${layer.fontSize*1.6}px 'Noto Sans TC', sans-serif`;
+      ctx.fillStyle = layer.color;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = 'rgba(0,0,0,0.35)';
+      ctx.shadowBlur = 8;
+      lines.forEach((line,i) => {
+        const ly = (i - (lines.length-1)/2) * lineHeight;
+        ctx.fillText(line || ' ', 0, ly);
+      });
+      ctx.restore();
+
+      if(layer.id === state.selectedId) drawSelectionBox(layer, w, h);
     }
   });
 
-  drawVignette(ctx, cfg.dark!==false);
+  drawVignette(ctx, cfg.dark);
 
-  lastTextBox = null;
-  if(state.label.trim()){
-    ctx.save();
-    ctx.font = `700 ${state.fontSize*1.6}px ${state.font}`;
-    ctx.fillStyle = state.textColor;
-    ctx.textBaseline = 'alphabetic';
-    const pad = 56;
-    let x, y, align='left';
-    switch(state.position){
-      case 'bottom-left': x=pad; y=SIZE-pad; align='left'; break;
-      case 'bottom-right': x=SIZE-pad; y=SIZE-pad; align='right'; break;
-      case 'top-left': x=pad; y=pad+state.fontSize*1.6; align='left'; break;
-      case 'top-right': x=SIZE-pad; y=pad+state.fontSize*1.6; align='right'; break;
-      case 'center-bottom': x=SIZE/2; y=SIZE-pad; align='center'; break;
-    }
-    x += state.textOffsetX;
-    y += state.textOffsetY;
-    ctx.textAlign = align;
-    ctx.shadowColor = 'rgba(0,0,0,0.6)';
-    ctx.shadowBlur = 12;
-    ctx.fillText(state.label, x, y);
-
-    // 記錄文字邊界框（給拖曳判斷 & 選取框用）
-    const textW = ctx.measureText(state.label).width;
-    const textH = state.fontSize*1.6;
-    let boxX;
-    if(align==='left') boxX = x;
-    else if(align==='right') boxX = x - textW;
-    else boxX = x - textW/2;
-    lastTextBox = { x:boxX, y:y-textH*0.78, w:textW, h:textH, align };
-
-    if(isDraggingText){
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.strokeStyle = 'rgba(201,154,75,0.9)';
-      ctx.lineWidth = 2.5;
-      ctx.setLineDash([8,6]);
-      ctx.strokeRect(lastTextBox.x-10, lastTextBox.y-10, lastTextBox.w+20, lastTextBox.h+20);
-    }
-    ctx.restore();
-  }
-
-  if(!isDragging && !isDraggingText){
+  if(!isDragging){
     miniPreview.src = canvas.toDataURL('image/png');
   }
 }
 
-// ---- background swatches ----
+function drawSelectionBox(layer, w, h){
+  ctx.save();
+  ctx.translate(layer.x, layer.y);
+  ctx.rotate(layer.rotation * Math.PI/180);
+  ctx.strokeStyle = 'rgba(217,107,58,0.9)';
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([8,6]);
+  ctx.strokeRect(-w/2-8, -h/2-8, w+16, h+16);
+  ctx.restore();
+}
+
+// ================= background swatches =================
 const bgGrid = document.getElementById('bgGrid');
 backgrounds.forEach((cfg, i) => {
   const el = document.createElement('div');
   el.className = 'bg-swatch' + (i===0?' active':'');
-  const c1 = cfg.colors[0], c2 = cfg.colors[1];
-  el.style.background = cfg.type==='radial'
-    ? `radial-gradient(circle at 45% 40%, ${c1}, ${c2})`
-    : `linear-gradient(135deg, ${c1}, ${c2})`;
+  el.style.background = `linear-gradient(180deg, ${cfg.wall[0]} 0%, ${cfg.wall[1]} 62%, ${cfg.floor} 100%)`;
   const label = document.createElement('div');
   label.className = 'name';
   label.textContent = cfg.name;
@@ -717,22 +509,7 @@ backgrounds.forEach((cfg, i) => {
   bgGrid.appendChild(el);
 });
 
-// ---- text color dots ----
-const colorRow = document.getElementById('textColorRow');
-textColors.forEach((c,i)=>{
-  const dot = document.createElement('div');
-  dot.className = 'color-dot' + (i===0?' active':'');
-  dot.style.background = c;
-  dot.addEventListener('click', ()=>{
-    document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
-    dot.classList.add('active');
-    state.textColor = c;
-    render();
-  });
-  colorRow.appendChild(dot);
-});
-
-// ---- upload handling (multi) ----
+// ================= upload (image layers) =================
 const fileInput = document.getElementById('fileInput');
 const uploadBox = document.getElementById('uploadBox');
 const emptyHint = document.getElementById('emptyHint');
@@ -754,33 +531,27 @@ fileInput.addEventListener('change', e=>{
 function loadImages(fileList){
   const files = Array.from(fileList).filter(f=>f.type.startsWith('image/'));
   if(!files.length) return;
-  let offsetIndex = state.layers.length;
-  files.forEach((file, idx) => {
+  let loadedCount = 0;
+  files.forEach((file) => {
     const reader = new FileReader();
     reader.onload = (e)=>{
       const img = new Image();
       img.onload = ()=>{
         layerCounter++;
-        const n = offsetIndex + idx;
-        const cols = 3;
-        const cx = SIZE/2 + ((n % cols) - 1) * SIZE*0.20;
-        const cy = SIZE/2 + (Math.floor(n / cols) % 3 - 1) * SIZE*0.18;
         state.layers.push({
           id: 'L'+layerCounter,
-          img,
-          originalImg: img,
-          x: cx, y: cy,
-          scale: 1.0,
-          rotation: 0,
-          brightness: 100,
-          contrast: 100,
-          saturate: 100,
-          bgRemove: false,
-          bgTolerance: 40,
+          type: 'image',
+          img, originalImg: img,
+          x: SIZE/2, y: SIZE/2,
+          scale: 1.0, rotation: 0,
+          brightness: 100, contrast: 100, saturate: 100,
+          bgRemove: false, bgTolerance: 40,
         });
         state.selectedId = state.layers[state.layers.length-1].id;
         emptyHint.style.display = 'none';
         stageTip.style.display = 'block';
+        loadedCount++;
+        if(loadedCount === files.length) arrangeGrid();
         rebuildLayerStrip();
         renderSelectedControls();
         render();
@@ -791,7 +562,33 @@ function loadImages(fileList){
   });
 }
 
-// ---- simple background removal (color-distance keying, good for plain backgrounds) ----
+function arrangeGrid(){
+  const imgLayers = state.layers.filter(l=>l.type==='image');
+  const n = imgLayers.length;
+  if(!n) return;
+  const cols = Math.ceil(Math.sqrt(n));
+  const rows = Math.ceil(n/cols);
+  const marginX = SIZE*0.08, marginY = SIZE*0.08;
+  const usableW = SIZE - marginX*2, usableH = SIZE*0.9 - marginY*2;
+  const cellW = usableW/cols, cellH = usableH/rows;
+  const naturalMax = SIZE*0.34;
+  const targetMax = Math.min(cellW, cellH) * 0.78;
+  const uniformScale = targetMax / naturalMax;
+
+  imgLayers.forEach((layer, i) => {
+    const col = i % cols, row = Math.floor(i/cols);
+    const itemsInThisRow = (row === rows-1) ? (n - cols*(rows-1)) : cols;
+    const rowOffset = (cols - itemsInThisRow) * cellW / 2;
+    layer.x = marginX + rowOffset + cellW*(col+0.5);
+    layer.y = marginY + cellH*(row+0.5);
+    layer.rotation = 0;
+    layer.scale = uniformScale;
+  });
+  render();
+}
+document.getElementById('arrangeGridBtn').addEventListener('click', arrangeGrid);
+
+// ================= background removal =================
 function removeBackgroundFromLayer(layer, tolerance, callback){
   const src = layer.originalImg;
   const off = document.createElement('canvas');
@@ -813,9 +610,8 @@ function removeBackgroundFromLayer(layer, tolerance, callback){
   for(let i=0;i<d.length;i+=4){
     const dr=d[i]-r, dg=d[i+1]-g, db=d[i+2]-b;
     const dist = Math.sqrt(dr*dr+dg*dg+db*db);
-    if(dist < tolerance){
-      d[i+3] = 0;
-    } else if(dist < tolerance+soft){
+    if(dist < tolerance){ d[i+3] = 0; }
+    else if(dist < tolerance+soft){
       const t = (dist-tolerance)/soft;
       d[i+3] = Math.round(d[i+3]*t);
     }
@@ -826,15 +622,40 @@ function removeBackgroundFromLayer(layer, tolerance, callback){
   out.src = off.toDataURL('image/png');
 }
 
-// ---- layer strip UI ----
+// ================= text layers =================
+document.getElementById('addTextBtn').addEventListener('click', ()=>{
+  layerCounter++;
+  const jitter = (state.layers.filter(l=>l.type==='text').length % 5) * 26;
+  state.layers.push({
+    id: 'L'+layerCounter,
+    type: 'text',
+    content: '文字',
+    x: SIZE/2, y: SIZE*0.82 + jitter,
+    rotation: 0,
+    fontSize: 34,
+    font: "'Noto Sans TC', sans-serif",
+    color: '#2B2823',
+  });
+  state.selectedId = state.layers[state.layers.length-1].id;
+  emptyHint.style.display = 'none';
+  stageTip.style.display = 'block';
+  rebuildLayerStrip();
+  renderSelectedControls();
+  render();
+});
+
+// ================= layer strip =================
 const layerStrip = document.getElementById('layerStrip');
 function rebuildLayerStrip(){
   layerStrip.innerHTML = '';
-  if(!state.layers.length) return;
   state.layers.forEach(layer=>{
     const thumb = document.createElement('div');
     thumb.className = 'layer-thumb' + (layer.id===state.selectedId ? ' selected':'');
-    thumb.style.backgroundImage = `url(${layer.img.src})`;
+    if(layer.type === 'image'){
+      thumb.style.backgroundImage = `url(${layer.img.src})`;
+    } else {
+      thumb.textContent = 'T';
+    }
     thumb.addEventListener('click', ()=>{
       state.selectedId = layer.id;
       rebuildLayerStrip();
@@ -863,46 +684,86 @@ function rebuildLayerStrip(){
   });
 }
 
-// ---- selected layer controls ----
+// ================= selected item controls =================
 const selectedControls = document.getElementById('selectedControls');
 function renderSelectedControls(){
   const layer = state.layers.find(l=>l.id===state.selectedId);
   if(!layer){
-    selectedControls.innerHTML = '<div class="layer-empty">點選上方縮圖來調整大小 / 旋轉 / 圖層順序</div>';
+    selectedControls.innerHTML = '<div class="layer-empty">點選上方縮圖，或直接點畫面上的物件來調整</div>';
     return;
   }
-  selectedControls.innerHTML = `
-    <div class="sc-title">已選取項目設定</div>
-    <div class="range-row"><span>大小</span><span id="scValScale">${Math.round(layer.scale*100)}%</span></div>
-    <input type="range" id="scScale" min="15" max="200" value="${Math.round(layer.scale*100)}">
-    <div class="range-row" style="margin-top:10px;"><span>旋轉</span><span id="scValRot">${layer.rotation}°</span></div>
-    <input type="range" id="scRot" min="-180" max="180" value="${layer.rotation}">
+  if(layer.type === 'image'){
+    selectedControls.innerHTML = `
+      <div class="card-title">商品照片設定</div>
+      <div class="range-row"><span>大小</span><span id="scValScale">${Math.round(layer.scale*100)}%</span></div>
+      <input type="range" id="scScale" min="15" max="200" value="${Math.round(layer.scale*100)}">
+      <div class="range-row" style="margin-top:10px;"><span>旋轉</span><span id="scValRot">${layer.rotation}°</span></div>
+      <input type="range" id="scRot" min="-180" max="180" value="${layer.rotation}">
 
-    <div class="sc-title" style="margin-top:16px;">去背（適合白色/淺色背景）</div>
-    <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-dim);cursor:pointer;">
-      <input type="checkbox" id="scBgToggle" ${layer.bgRemove ? 'checked' : ''} style="width:15px;height:15px;accent-color:var(--accent);">
-      啟用自動去背
-    </label>
-    <div id="scBgToleranceWrap" style="margin-top:8px;${layer.bgRemove ? '' : 'display:none;'}">
-      <div class="range-row"><span>去背強度</span><span id="scValTol">${layer.bgTolerance}</span></div>
-      <input type="range" id="scTol" min="10" max="120" value="${layer.bgTolerance}">
-      <div style="font-size:10.5px;color:#6b675f;margin-top:4px;">拍照背景越單一（白桌/淺色墊）效果越乾淨；邊緣有雜色可拉高強度</div>
-    </div>
+      <div class="card-title" style="margin-top:16px;">去背（適合白色/淺色背景拍攝）</div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-dim);cursor:pointer;">
+        <input type="checkbox" id="scBgToggle" ${layer.bgRemove ? 'checked' : ''} style="width:15px;height:15px;accent-color:var(--accent);">
+        啟用自動去背，與情境背景合成
+      </label>
+      <div id="scBgToleranceWrap" style="margin-top:8px;${layer.bgRemove ? '' : 'display:none;'}">
+        <div class="range-row"><span>去背強度</span><span id="scValTol">${layer.bgTolerance}</span></div>
+        <input type="range" id="scTol" min="10" max="120" value="${layer.bgTolerance}">
+      </div>
 
-    <div class="sc-title" style="margin-top:16px;">濾鏡（補光用）</div>
-    <div class="range-row"><span>亮度</span><span id="scValBright">${layer.brightness}%</span></div>
-    <input type="range" id="scBright" min="50" max="180" value="${layer.brightness}">
-    <div class="range-row" style="margin-top:10px;"><span>對比</span><span id="scValContrast">${layer.contrast}%</span></div>
-    <input type="range" id="scContrast" min="50" max="180" value="${layer.contrast}">
-    <div class="range-row" style="margin-top:10px;"><span>飽和度</span><span id="scValSat">${layer.saturate}%</span></div>
-    <input type="range" id="scSat" min="0" max="200" value="${layer.saturate}">
-    <button class="btn-small" id="scFilterReset" style="width:100%;margin-top:10px;">重設濾鏡</button>
+      <div class="card-title" style="margin-top:16px;">濾鏡（補光用）</div>
+      <div class="range-row"><span>亮度</span><span id="scValBright">${layer.brightness}%</span></div>
+      <input type="range" id="scBright" min="50" max="180" value="${layer.brightness}">
+      <div class="range-row" style="margin-top:10px;"><span>對比</span><span id="scValContrast">${layer.contrast}%</span></div>
+      <input type="range" id="scContrast" min="50" max="180" value="${layer.contrast}">
+      <div class="range-row" style="margin-top:10px;"><span>飽和度</span><span id="scValSat">${layer.saturate}%</span></div>
+      <input type="range" id="scSat" min="0" max="200" value="${layer.saturate}">
+      <button class="btn-small" id="scFilterReset" style="width:100%;margin-top:10px;">重設濾鏡</button>
 
-    <div class="row" style="margin-top:14px;">
-      <button class="btn-small" id="scFront">移到最上層</button>
-      <button class="btn-small" id="scBack">移到最下層</button>
-    </div>
-  `;
+      <div class="row" style="margin-top:14px;">
+        <button class="btn-small" id="scFront">移到最上層</button>
+        <button class="btn-small" id="scBack">移到最下層</button>
+      </div>
+      <button class="btn-small warn" id="scDelete" style="width:100%;margin-top:8px;">刪除這個項目</button>
+    `;
+    wireImageControls(layer);
+  } else {
+    selectedControls.innerHTML = `
+      <div class="card-title">文字標籤設定</div>
+      <label class="field-label">內容（可按 Enter 換行）</label>
+      <textarea id="scTextContent" rows="2">${layer.content}</textarea>
+
+      <div style="margin-top:10px;">
+        <label class="field-label">快速插入</label>
+        <div class="quick-chip-row" id="quickNumbers"></div>
+        <div class="quick-chip-row" id="quickLetters" style="margin-top:6px;"></div>
+        <div class="quick-chip-row" id="quickTags" style="margin-top:6px;"></div>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <div>
+          <label class="field-label">字級</label>
+          <input type="range" id="scFontSize" min="14" max="70" value="${layer.fontSize}">
+        </div>
+        <div>
+          <label class="field-label">旋轉</label>
+          <input type="range" id="scTextRot" min="-180" max="180" value="${layer.rotation}">
+        </div>
+      </div>
+
+      <label class="field-label" style="margin-top:10px;">文字顏色</label>
+      <div class="color-row" id="textColorRow"></div>
+
+      <div class="row" style="margin-top:14px;">
+        <button class="btn-small" id="scFront">移到最上層</button>
+        <button class="btn-small" id="scBack">移到最下層</button>
+      </div>
+      <button class="btn-small warn" id="scDelete" style="width:100%;margin-top:8px;">刪除這個項目</button>
+    `;
+    wireTextControls(layer);
+  }
+}
+
+function wireImageControls(layer){
   document.getElementById('scScale').addEventListener('input', e=>{
     layer.scale = e.target.value/100;
     document.getElementById('scValScale').textContent = e.target.value+'%';
@@ -918,30 +779,24 @@ function renderSelectedControls(){
     document.getElementById('scBgToleranceWrap').style.display = layer.bgRemove ? '' : 'none';
     if(layer.bgRemove){
       removeBackgroundFromLayer(layer, layer.bgTolerance, (newImg)=>{
-        layer.img = newImg;
-        rebuildLayerStrip();
-        render();
+        layer.img = newImg; rebuildLayerStrip(); render();
       });
     } else {
-      layer.img = layer.originalImg;
-      rebuildLayerStrip();
-      render();
+      layer.img = layer.originalImg; rebuildLayerStrip(); render();
     }
   });
-  document.getElementById('scTol').addEventListener('change', e=>{
-    layer.bgTolerance = parseInt(e.target.value);
-    document.getElementById('scValTol').textContent = e.target.value;
-    if(layer.bgRemove){
-      removeBackgroundFromLayer(layer, layer.bgTolerance, (newImg)=>{
-        layer.img = newImg;
-        rebuildLayerStrip();
-        render();
-      });
-    }
-  });
-  document.getElementById('scTol').addEventListener('input', e=>{
-    document.getElementById('scValTol').textContent = e.target.value;
-  });
+  const tol = document.getElementById('scTol');
+  if(tol){
+    tol.addEventListener('input', e=>{ document.getElementById('scValTol').textContent = e.target.value; });
+    tol.addEventListener('change', e=>{
+      layer.bgTolerance = parseInt(e.target.value);
+      if(layer.bgRemove){
+        removeBackgroundFromLayer(layer, layer.bgTolerance, (newImg)=>{
+          layer.img = newImg; rebuildLayerStrip(); render();
+        });
+      }
+    });
+  }
   document.getElementById('scBright').addEventListener('input', e=>{
     layer.brightness = parseInt(e.target.value);
     document.getElementById('scValBright').textContent = e.target.value+'%';
@@ -959,9 +814,69 @@ function renderSelectedControls(){
   });
   document.getElementById('scFilterReset').addEventListener('click', ()=>{
     layer.brightness = 100; layer.contrast = 100; layer.saturate = 100;
-    renderSelectedControls();
-    render();
+    renderSelectedControls(); render();
   });
+  bindOrderAndDelete(layer);
+}
+
+function wireTextControls(layer){
+  const contentBox = document.getElementById('scTextContent');
+  contentBox.addEventListener('input', e=>{ layer.content = e.target.value; render(); });
+
+  function insertIntoContent(str){
+    const start = contentBox.selectionStart ?? contentBox.value.length;
+    const end = contentBox.selectionEnd ?? contentBox.value.length;
+    contentBox.value = contentBox.value.slice(0,start) + str + contentBox.value.slice(end);
+    contentBox.focus();
+    const pos = start + str.length;
+    contentBox.setSelectionRange(pos,pos);
+    layer.content = contentBox.value;
+    render();
+  }
+  const qn = document.getElementById('quickNumbers');
+  '0123456789'.split('').forEach(ch=>{
+    const b = document.createElement('div'); b.className='chip'; b.textContent=ch;
+    b.addEventListener('click', ()=>insertIntoContent(ch));
+    qn.appendChild(b);
+  });
+  const ql = document.getElementById('quickLetters');
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(ch=>{
+    const b = document.createElement('div'); b.className='chip'; b.textContent=ch;
+    b.addEventListener('click', ()=>insertIntoContent(ch));
+    ql.appendChild(b);
+  });
+  const qt = document.getElementById('quickTags');
+  ['NEW','現貨','已售出','特價','組','入','#'].forEach(tag=>{
+    const b = document.createElement('div'); b.className='chip tag'; b.textContent=tag;
+    b.addEventListener('click', ()=>insertIntoContent((contentBox.value ? ' ' : '') + tag));
+    qt.appendChild(b);
+  });
+
+  document.getElementById('scFontSize').addEventListener('input', e=>{
+    layer.fontSize = parseInt(e.target.value); render();
+  });
+  document.getElementById('scTextRot').addEventListener('input', e=>{
+    layer.rotation = parseInt(e.target.value); render();
+  });
+
+  const colorRow = document.getElementById('textColorRow');
+  textColors.forEach(c=>{
+    const dot = document.createElement('div');
+    dot.className = 'color-dot' + (layer.color===c ? ' active':'');
+    dot.style.background = c;
+    dot.addEventListener('click', ()=>{
+      layer.color = c;
+      colorRow.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));
+      dot.classList.add('active');
+      render();
+    });
+    colorRow.appendChild(dot);
+  });
+
+  bindOrderAndDelete(layer);
+}
+
+function bindOrderAndDelete(layer){
   document.getElementById('scFront').addEventListener('click', ()=>{
     state.layers = state.layers.filter(l=>l.id!==layer.id).concat([layer]);
     render();
@@ -970,90 +885,30 @@ function renderSelectedControls(){
     state.layers = [layer].concat(state.layers.filter(l=>l.id!==layer.id));
     render();
   });
+  document.getElementById('scDelete').addEventListener('click', ()=>{
+    state.layers = state.layers.filter(l=>l.id!==layer.id);
+    state.selectedId = state.layers.length ? state.layers[state.layers.length-1].id : null;
+    if(!state.layers.length){
+      emptyHint.style.display = 'block';
+      stageTip.style.display = 'none';
+    }
+    rebuildLayerStrip();
+    renderSelectedControls();
+    render();
+  });
 }
 
-// ---- quick-insert chips for label text ----
-const quickNumbers = document.getElementById('quickNumbers');
-const quickLetters = document.getElementById('quickLetters');
-const quickTags = document.getElementById('quickTags');
-
-function insertIntoLabel(str){
-  const input = document.getElementById('labelText');
-  const start = input.selectionStart ?? input.value.length;
-  const end = input.selectionEnd ?? input.value.length;
-  input.value = input.value.slice(0,start) + str + input.value.slice(end);
-  input.focus();
-  const pos = start + str.length;
-  input.setSelectionRange(pos,pos);
-  state.label = input.value;
-  render();
-}
-
-'0123456789'.split('').forEach(ch=>{
-  const b = document.createElement('div');
-  b.className = 'chip';
-  b.textContent = ch;
-  b.addEventListener('click', ()=>insertIntoLabel(ch));
-  quickNumbers.appendChild(b);
-});
-
-'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(ch=>{
-  const b = document.createElement('div');
-  b.className = 'chip';
-  b.textContent = ch;
-  b.addEventListener('click', ()=>insertIntoLabel(ch));
-  quickLetters.appendChild(b);
-});
-
-['NEW','現貨','已售出','特價','組','入','#'].forEach(tag=>{
-  const b = document.createElement('div');
-  b.className = 'chip tag';
-  b.textContent = tag;
-  b.addEventListener('click', ()=>insertIntoLabel((document.getElementById('labelText').value ? ' ' : '') + tag));
-  quickTags.appendChild(b);
-});
-
-// ---- text controls ----
-const labelText = document.getElementById('labelText');
-labelText.addEventListener('input', ()=>{ state.label = labelText.value; render(); });
-document.getElementById('fontSelect').addEventListener('change', e=>{ state.font = e.target.value; render(); });
-document.getElementById('posSelect').addEventListener('change', e=>{
-  state.position = e.target.value;
-  state.textOffsetX = 0;
-  state.textOffsetY = 0;
-  render();
-});
-const fontSizeSlider = document.getElementById('fontSizeSlider');
-fontSizeSlider.addEventListener('input', ()=>{
-  state.fontSize = parseInt(fontSizeSlider.value);
-  document.getElementById('fontSizeVal').textContent = state.fontSize+'px';
-  render();
-});
-document.getElementById('resetTextPos').addEventListener('click', ()=>{
-  state.textOffsetX = 0;
-  state.textOffsetY = 0;
-  render();
-});
-
-// ---- drag on canvas (text on top, then layers) ----
-let dragOffX=0, dragOffY=0;
-let textDragStartX=0, textDragStartY=0;
+// ================= drag on canvas (works for image + text layers) =================
 function getCanvasPos(e){
   const rect = canvas.getBoundingClientRect();
   const cx = (e.touches? e.touches[0].clientX : e.clientX) - rect.left;
   const cy = (e.touches? e.touches[0].clientY : e.clientY) - rect.top;
   return { x: cx * (SIZE/rect.width), y: cy * (SIZE/rect.height) };
 }
-function hitTestText(p){
-  if(!lastTextBox) return false;
-  const pad = 14; // 稍微放寬一點好點選
-  return p.x > lastTextBox.x-pad && p.x < lastTextBox.x+lastTextBox.w+pad &&
-         p.y > lastTextBox.y-pad && p.y < lastTextBox.y+lastTextBox.h+pad;
-}
 function hitTest(p){
   for(let i=state.layers.length-1; i>=0; i--){
     const layer = state.layers[i];
-    const {w,h} = layerDrawSize(layer);
+    const {w,h} = layerSize(layer);
     if(p.x > layer.x-w/2 && p.x < layer.x+w/2 && p.y > layer.y-h/2 && p.y < layer.y+h/2){
       return layer;
     }
@@ -1061,18 +916,8 @@ function hitTest(p){
   return null;
 }
 function startDrag(e){
-  const p = getCanvasPos(e);
-
-  // 文字畫在最上面，優先判斷
-  if(hitTestText(p)){
-    isDraggingText = true;
-    textDragStartX = p.x - state.textOffsetX;
-    textDragStartY = p.y - state.textOffsetY;
-    render();
-    return;
-  }
-
   if(!state.layers.length) return;
+  const p = getCanvasPos(e);
   const hit = hitTest(p);
   if(hit){
     state.selectedId = hit.id;
@@ -1085,13 +930,6 @@ function startDrag(e){
   }
 }
 function moveDrag(e){
-  if(isDraggingText){
-    const p = getCanvasPos(e);
-    state.textOffsetX = p.x - textDragStartX;
-    state.textOffsetY = p.y - textDragStartY;
-    render();
-    return;
-  }
   if(!isDragging) return;
   const layer = state.layers.find(l=>l.id===state.selectedId);
   if(!layer) return;
@@ -1101,14 +939,7 @@ function moveDrag(e){
   render();
 }
 function endDrag(){
-  if(isDraggingText){
-    isDraggingText = false;
-    render();
-  }
-  if(isDragging){
-    isDragging = false;
-    render(); // refresh mini preview after drag ends
-  }
+  if(isDragging){ isDragging = false; render(); }
 }
 canvas.addEventListener('mousedown', startDrag);
 window.addEventListener('mousemove', moveDrag);
@@ -1117,54 +948,23 @@ canvas.addEventListener('touchstart', startDrag, {passive:true});
 canvas.addEventListener('touchmove', moveDrag, {passive:true});
 window.addEventListener('touchend', endDrag);
 
-// ---- download (with fallback save-sheet for standalone / restricted browsers) ----
-const saveOverlay = document.getElementById('saveOverlay');
-const saveImg = document.getElementById('saveImg');
-
+// ================= download / reset =================
 document.getElementById('downloadBtn').addEventListener('click', ()=>{
-  if(!state.layers.length){
-    alert('請先上傳至少一張照片');
-    return;
-  }
+  if(!state.layers.length){ alert('請先上傳至少一張照片，或新增文字'); return; }
   const wasSelected = state.selectedId;
   state.selectedId = null;
   render();
-  const dataUrl = canvas.toDataURL('image/png');
-
-  // 嘗試一般下載
-  try{
-    const link = document.createElement('a');
-    link.download = (state.label.trim() || '陀螺商品照') + '.png';
-    link.href = dataUrl;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }catch(e){
-    // 忽略，交給下面的備援畫面
-  }
-
-  // 同時顯示備援畫面：長按圖片存檔，確保在「加入主畫面」獨立模式下也能存
-  saveImg.src = dataUrl;
-  saveOverlay.classList.add('open');
-
+  const link = document.createElement('a');
+  link.download = '商品照.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
   state.selectedId = wasSelected;
   render();
-});
-
-document.getElementById('closeSaveOverlay').addEventListener('click', ()=>{
-  saveOverlay.classList.remove('open');
-});
-saveOverlay.addEventListener('click', (e)=>{
-  if(e.target === saveOverlay) saveOverlay.classList.remove('open');
 });
 
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   state.layers = [];
   state.selectedId = null;
-  state.label = '';
-  state.textOffsetX = 0;
-  state.textOffsetY = 0;
-  labelText.value = '';
   emptyHint.style.display = 'block';
   stageTip.style.display = 'none';
   rebuildLayerStrip();
