@@ -12,99 +12,115 @@
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800;900&display=swap');
 
     :root {
-      --bg-color: #FFF5F7;
+      --bg-color: #F5F0E4;
       --card-bg: #FFFFFF;
-      --m-pink: #FFB7B2;
-      --m-blue: #B5EAD7;
-      --m-green: #E2F0CB;
-      --m-yellow: #FFDAC1;
-      --m-purple: #CBAACB;
-      --text-main: #5D5D5D;
-      --border-color: #F8D8E8;
+      --m-pink: #C9764F;
+      --m-blue: #7FA695;
+      --m-green: #D9E1C3;
+      --m-yellow: #E3B15E;
+      --m-purple: #8C7B6B;
+      --text-main: #5A4F42;
+      --border-color: #E6DCC6;
+      --accent-deep: #A15C3E;
+      --shadow-soft: 0 6px 18px rgba(90, 79, 66, 0.08);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+    body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; letter-spacing: 0.2px; }
 
-    header { background: linear-gradient(135deg, #fff 0%, var(--border-color) 100%); padding: 1.2rem 1rem; border-bottom: 3px dashed var(--m-pink); text-align: center; }
-    .subtitle { font-size: 0.9rem; font-weight: 800; color: #D48C9E; margin-bottom: 0.5rem; display: inline-block; padding: 4px 12px; border-radius: 20px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+    header {
+      background: linear-gradient(160deg, #FBF8EF 0%, #F0E6D2 100%);
+      padding: 1.3rem 1rem 1.1rem; border-bottom: 1px solid var(--border-color); text-align: center;
+      position: relative;
+    }
+    header::after {
+      content: ''; position: absolute; left: 50%; bottom: -1px; transform: translateX(-50%);
+      width: 56px; height: 3px; border-radius: 3px; background: var(--m-blue); opacity: 0.55;
+    }
+    .subtitle { font-size: 0.85rem; font-weight: 700; color: var(--accent-deep); margin-bottom: 0.6rem; display: inline-block; padding: 4px 14px; border-radius: 10px; background: #fff; border: 1px solid var(--border-color); }
 
-    .header-title-group { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; font-size: 1.4rem; font-weight: 900; color: var(--m-purple); }
-    .header-title-group select { appearance: none; background: transparent; border: none; font-size: 1.4rem; font-weight: 900; color: var(--m-purple); cursor: pointer; outline: none; padding: 0 4px; text-align: center; border-bottom: 2px solid rgba(203, 170, 203, 0.4); }
+    .header-title-group { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; font-size: 1.35rem; font-weight: 800; color: var(--m-purple); }
+    .header-title-group select { appearance: none; background: transparent; border: none; font-size: 1.35rem; font-weight: 800; color: var(--m-purple); cursor: pointer; outline: none; padding: 0 4px; text-align: center; border-bottom: 2px solid rgba(140, 123, 107, 0.35); }
     .header-title-group select:hover { border-bottom-color: var(--m-pink); color: var(--m-pink); }
     .header-title-group select option { font-size: 1rem; color: #333; background: #fff; }
 
-    .header-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
-    .speed-select { appearance: none; background: #fff; border: 2px solid var(--m-green); border-radius: 20px; padding: 4px 12px; font-size: 0.85rem; font-weight: 700; color: #555; outline: none; cursor: pointer; }
-    .sound-toggle-btn { appearance: none; background: #fff; border: 2px solid var(--m-yellow); border-radius: 20px; padding: 4px 14px; font-size: 0.85rem; font-weight: 700; color: #555; outline: none; cursor: pointer; }
+    .header-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .speed-select { appearance: none; background: #fff; border: 1.5px solid var(--m-blue); border-radius: 10px; padding: 4px 12px; font-size: 0.85rem; font-weight: 700; color: #555; outline: none; cursor: pointer; }
+    .sound-toggle-btn { appearance: none; background: #fff; border: 1.5px solid var(--m-yellow); border-radius: 10px; padding: 4px 14px; font-size: 0.85rem; font-weight: 700; color: #555; outline: none; cursor: pointer; }
 
-    nav { background-color: white; border-bottom: 2px solid var(--border-color); position: sticky; top: 0; z-index: 999; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-    .nav-container { display: flex; overflow-x: auto; white-space: nowrap; scrollbar-width: none; max-width: 1000px; margin: 0 auto; }
+    nav { background-color: #FFFDF8; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 999; box-shadow: 0 2px 10px rgba(90, 79, 66, 0.05); }
+    .nav-container { display: flex; overflow-x: auto; white-space: nowrap; scrollbar-width: none; max-width: 1000px; margin: 0 auto; padding: 6px 6px; gap: 4px; }
     .nav-container::-webkit-scrollbar { display: none; }
-    .nav-btn { flex: 1; padding: 0.8rem 1rem; font-size: 0.95rem; font-weight: 800; background: none; border: none; border-bottom: 4px solid transparent; color: #A4A4A4; cursor: pointer; transition: 0.3s; }
-    .nav-btn.active { color: #D48C9E; border-bottom-color: var(--m-pink); }
+    .nav-btn {
+      flex: 1; padding: 0.65rem 0.9rem; font-size: 0.92rem; font-weight: 700; background: none; border: none;
+      border-radius: 12px; color: #A79C8C; cursor: pointer; transition: 0.25s;
+    }
+    .nav-btn.active { color: #fff; background: var(--m-purple); }
 
     main { max-width: 1000px; margin: 0 auto; padding: 1rem; flex-grow: 1; width: 100%; }
 
-    .btn { padding: 0.5rem 1rem; font-size: 0.9rem; font-weight: 700; border-radius: 20px; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
-    .btn:active { transform: scale(0.95); }
+    .btn {
+      padding: 0.55rem 1.05rem; font-size: 0.9rem; font-weight: 700; border-radius: 12px; border: none;
+      cursor: pointer; transition: 0.2s; box-shadow: var(--shadow-soft); display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .btn:active { transform: scale(0.96); }
     .btn-pink { background-color: var(--m-pink); color: #fff; }
-    .btn-blue { background-color: var(--m-blue); color: #5D5D5D; }
-    .btn-green { background-color: var(--m-green); color: #5D5D5D; }
-    .btn-yellow { background-color: var(--m-yellow); color: #5D5D5D; }
+    .btn-blue { background-color: var(--m-blue); color: #fff; }
+    .btn-green { background-color: var(--m-green); color: #4B5237; }
+    .btn-yellow { background-color: var(--m-yellow); color: #4a3410; }
     .btn-purple { background-color: var(--m-purple); color: #fff; }
 
-    .input-box, .textarea-box { width: 100%; border: 2px solid var(--border-color); border-radius: 12px; padding: 0.6rem; font-size: 1rem; outline: none; background: #fff; font-family: inherit; }
+    .input-box, .textarea-box { width: 100%; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 0.6rem; font-size: 1rem; outline: none; background: #fff; font-family: inherit; }
     .input-box:focus, .textarea-box:focus { border-color: var(--m-pink); }
     .hidden { display: none !important; }
 
     /* 課文生字區 */
-    .lesson-selector-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; background: #fff; padding: 10px 15px; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .lesson-selector-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; background: #fff; padding: 10px 15px; border-radius: 14px; box-shadow: var(--shadow-soft); }
 
-    .lesson-title-display { font-size: 1.3rem; font-weight: 900; padding: 0.6rem 1rem; border-radius: 12px; text-align: center; margin-bottom: 0.5rem; outline: none; cursor: text; }
-    .lesson-title-display:hover { background-color: rgba(0,0,0,0.03); border: 1px dashed var(--m-pink); }
+    .lesson-title-display { font-size: 1.25rem; font-weight: 800; padding: 0.6rem 1rem; border-radius: 12px; text-align: center; margin-bottom: 0.5rem; outline: none; cursor: text; }
+    .lesson-title-display:hover { background-color: rgba(90, 79, 66, 0.04); border: 1px solid var(--m-pink); }
 
-    .color-1 { background: var(--m-pink); color: #5D5D5D; }
-    .color-2 { background: var(--m-blue); color: #5D5D5D; }
-    .color-3 { background: var(--m-green); color: #5D5D5D; }
-    .color-4 { background: var(--m-yellow); color: #5D5D5D; }
+    .color-1 { background: var(--m-pink); color: #fff; }
+    .color-2 { background: var(--m-blue); color: #fff; }
+    .color-3 { background: var(--m-green); color: #4B5237; }
+    .color-4 { background: var(--m-yellow); color: #4a3410; }
     .color-5 { background: var(--m-purple); color: #fff; }
 
-    details.batch-details { background: #fff; border: 2px dashed var(--m-blue); border-radius: 15px; padding: 0.5rem 1rem; margin-bottom: 1rem; }
-    details.batch-details summary { font-weight: 800; color: var(--text-main); cursor: pointer; outline: none; padding: 0.5rem 0; }
+    details.batch-details { background: #fff; border: 1.5px solid var(--m-blue); border-radius: 14px; padding: 0.5rem 1rem; margin-bottom: 1rem; }
+    details.batch-details summary { font-weight: 700; color: var(--text-main); cursor: pointer; outline: none; padding: 0.5rem 0; }
 
     .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; }
-    .swipe-container { position: relative; overflow: hidden; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); background: #FF9AA2; }
-    .delete-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; display: flex; align-items: center; justify-content: center; background: #FF9AA2; color: white; font-size: 1.8rem; font-weight: bold; border-radius: 0 20px 20px 0; cursor: pointer; }
-    .char-card { position: relative; background: #fff; padding: 1.2rem; border-radius: 20px; z-index: 2; transition: transform 0.3s ease; border: 2px solid #fff; }
+    .swipe-container { position: relative; overflow: hidden; border-radius: 16px; box-shadow: var(--shadow-soft); background: #B9694A; }
+    .delete-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; display: flex; align-items: center; justify-content: center; background: #B9694A; color: white; font-size: 1.8rem; font-weight: bold; border-radius: 0 16px 16px 0; cursor: pointer; }
+    .char-card { position: relative; background: #fff; padding: 1.2rem; border-radius: 16px; z-index: 2; transition: transform 0.3s ease; border: 1px solid var(--border-color); }
     .char-card.swiped { transform: translateX(-80px); }
 
-    .char-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.8rem; border-bottom: 2px dashed var(--border-color); padding-bottom: 0.8rem; }
-    .char-big { font-size: 2.2rem; font-weight: 900; color: #D48C9E; background: #FFF0F5; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-family: 'DFKai-SB', 'BiauKai', serif; cursor: pointer; transition: 0.15s; }
-    .char-big:active { transform: scale(0.92); background: #FFE0EC; }
+    .char-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; }
+    .char-big { font-size: 2.1rem; font-weight: 700; color: var(--accent-deep); background: #F5E9DC; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1.5px solid #EAD9C4; font-family: 'DFKai-SB', 'BiauKai', serif; cursor: pointer; transition: 0.15s; }
+    .char-big:active { transform: scale(0.92); background: #EDDCC8; }
 
-    .terms-chips { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 5px; }
-    .term-chip { display: inline-block; background: #FFF0F5; color: #D48C9E; font-weight: 700; padding: 4px 10px; border-radius: 14px; font-size: 0.85rem; cursor: pointer; border: 1px solid #FFD6E5; }
-    .term-chip:active { transform: scale(0.93); background: #FFE0EC; }
+    .terms-chips { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .term-chip { display: inline-block; background: #fff; color: var(--accent-deep); font-weight: 700; padding: 4px 10px; border-radius: 10px; font-size: 0.85rem; cursor: pointer; border: 1.3px solid #E3C9AE; }
+    .term-chip:active { transform: scale(0.93); background: #FBF1E6; }
 
-    .def-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+    .def-popup-overlay { position: fixed; inset: 0; background: rgba(58, 49, 38, 0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
     .def-popup-overlay.hidden { display: none !important; }
-    .def-popup-card { background: #fff; border-radius: 20px; max-width: 420px; width: 100%; max-height: 75vh; overflow-y: auto; padding: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
-    .def-popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed var(--border-color); padding-bottom: 0.6rem; margin-bottom: 0.6rem; }
-    #def-popup-title { font-size: 1.5rem; font-weight: 900; color: #D48C9E; font-family: 'DFKai-SB', 'BiauKai', serif; }
+    .def-popup-card { background: #fff; border-radius: 16px; max-width: 420px; width: 100%; max-height: 75vh; overflow-y: auto; padding: 1.2rem; box-shadow: 0 12px 32px rgba(58, 49, 38, 0.22); border-top: 4px solid var(--m-blue); }
+    .def-popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.6rem; margin-bottom: 0.6rem; }
+    #def-popup-title { font-size: 1.4rem; font-weight: 800; color: var(--accent-deep); font-family: 'DFKai-SB', 'BiauKai', serif; }
     .def-popup-close { background: var(--m-pink); color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; cursor: pointer; flex-shrink: 0; }
     .def-popup-body { font-size: 1.05rem; line-height: 1.7; font-family: 'DFKai-SB', 'BiauKai', serif; color: #333; }
     .def-popup-body ul { padding-left: 1.3rem; margin: 4px 0 10px; }
     .char-info { flex-grow: 1; }
-    .char-pinyin { font-size: 1.1rem; font-weight: 800; }
+    .char-pinyin { font-size: 1.1rem; font-weight: 700; }
     .char-radical { font-size: 0.8rem; color: #fff; background: var(--m-blue); padding: 2px 6px; border-radius: 8px; margin-left: 5px; }
 
     /* === 直式聽寫田字格（由右至左、點狀格線，仿傳統生字練習單） === */
-    .test-panel { background: #fff; padding: 1.5rem; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 1rem; }
+    .test-panel { background: #fff; padding: 1.5rem; border-radius: 16px; box-shadow: var(--shadow-soft); margin-bottom: 1rem; }
 
     .tian-page-wrapper {
       --tian-cell: 76px;
-      background: #fff; padding: 15px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      background: #fff; padding: 15px; border-radius: 16px; box-shadow: var(--shadow-soft);
       display: flex; flex-direction: row-reverse; justify-content: flex-start; align-items: flex-start; gap: 0;
       overflow-x: auto;
     }
@@ -113,7 +129,7 @@
       writing-mode: vertical-rl; text-orientation: upright; white-space: nowrap;
       padding: 4px 8px 4px 4px; margin-left: 8px; flex-shrink: 0;
     }
-    .tian-sidebar div { color: #2b5faa; font-weight: 900; line-height: 1.5; }
+    .tian-sidebar div { color: var(--accent-deep); font-weight: 800; line-height: 1.5; }
     .tian-sidebar div.sb-small { font-size: 0.7rem; font-weight: 700; }
     .tian-sidebar div.sb-big { font-size: 1.05rem; }
     .tian-sidebar div::before { content: '・'; }
@@ -121,24 +137,24 @@
     /* 使用 CSS Grid 明確指定每格的欄/列位置，格子大小固定，內容絕不會影響格線位置 */
     .tian-grid {
       display: grid; flex-shrink: 0;
-      border-top: 1.2px dotted #555; border-left: 1.2px dotted #555;
+      border-top: 1.2px dotted #8a7f6f; border-left: 1.2px dotted #8a7f6f;
     }
 
     .tian-cell-wrap {
       box-sizing: border-box; width: var(--tian-cell); height: var(--tian-cell);
       display: flex; flex-direction: row; align-items: stretch;
-      border-right: 1.2px dotted #555; border-bottom: 1.2px dotted #555;
+      border-right: 1.2px dotted #8a7f6f; border-bottom: 1.2px dotted #8a7f6f;
       cursor: default; user-select: none; background: #fff; overflow: hidden;
     }
     .tian-cell-wrap.tian-sep { justify-content: center; align-items: center; }
-    .tian-sep-dot { color: #bbb; font-size: 0.7rem; }
+    .tian-sep-dot { color: #c2b8a5; font-size: 0.7rem; }
 
     .tian-char-box {
-      width: 68%; height: 100%; position: relative; border-right: 1px dotted #999;
+      width: 68%; height: 100%; position: relative; border-right: 1px dotted #b5aa96;
       display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
     }
-    .tian-char-box::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dotted #bbb; z-index: 1; }
-    .tian-char-box::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px dotted #bbb; z-index: 1; }
+    .tian-char-box::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dotted #cfc5b3; z-index: 1; }
+    .tian-char-box::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px dotted #cfc5b3; z-index: 1; }
     .tian-char-text {
       position: relative; z-index: 2; font-size: calc(var(--tian-cell) * 0.42); font-weight: normal; color: #000;
       font-family: 'DFKai-SB', 'BiauKai', serif; transition: 0.2s;
@@ -148,7 +164,7 @@
     .tian-zy-box {
       flex: 1; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; min-width: 0;
     }
-    .tian-page-wrapper.correct-mode .tian-zy-box { background: #FFF3CD; }
+    .tian-page-wrapper.correct-mode .tian-zy-box { background: #F2E3B8; }
     .tian-page-wrapper.correct-mode .tian-zy-box::after { content: '✏️'; position: absolute; top: 1px; right: 1px; font-size: 0.5rem; opacity: 0.6; }
     .tian-zy-text {
       position: relative; z-index: 2; color: #000; font-family: 'DFKai-SB', 'BiauKai', serif;
@@ -161,21 +177,21 @@
     .text-hidden { color: transparent !important; }
 
     /* 字典區 */
-    .dict-result { background: #fff; padding: 1.5rem; border-radius: 20px; border: 2px solid var(--m-blue); margin-top: 1rem; min-height: 150px; }
+    .dict-result { background: #fff; padding: 1.5rem; border-radius: 16px; border: 1.5px solid var(--m-blue); margin-top: 1rem; min-height: 150px; }
     .dict-result-text { font-size: 1.2rem; line-height: 1.8; color: #333; margin-top: 1rem; font-family: 'DFKai-SB', 'BiauKai', serif; }
     .dict-result-text ul { padding-left: 1.4rem; margin: 4px 0 10px; }
     .dict-result-text h4 { color: var(--m-purple); margin-bottom: 5px; }
 
-    .mistake-card { background: #FFF9E6; border-left: 5px solid var(--m-yellow); padding: 1rem; border-radius: 10px; margin-bottom: 10px; }
-    .mistake-char { font-size: 1.8rem; font-weight: 900; color: #D48C9E; font-family: 'DFKai-SB', 'BiauKai', serif; }
+    .mistake-card { background: #FBF3DE; border-left: 4px solid var(--m-yellow); padding: 1rem; border-radius: 10px; margin-bottom: 10px; }
+    .mistake-char { font-size: 1.8rem; font-weight: 800; color: var(--accent-deep); font-family: 'DFKai-SB', 'BiauKai', serif; }
 
 
     /* 資源連結區 */
-    .link-card { background: #fff; padding: 1.2rem; border-radius: 20px; border: 2px solid var(--border-color); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;}
-    .link-desc { font-size: 0.95rem; color: #5D5D5D; margin-top: 8px; padding: 10px; border-radius: 12px; font-weight: 700; line-height: 1.4; }
-    .desc-color-0 { background: #E2F0CB; }
-    .desc-color-1 { background: #FFDAC1; }
-    .desc-color-2 { background: #B5EAD7; }
+    .link-card { background: #fff; padding: 1.2rem; border-radius: 16px; border: 1.5px solid var(--border-color); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;}
+    .link-desc { font-size: 0.95rem; color: var(--text-main); margin-top: 8px; padding: 10px; border-radius: 10px; font-weight: 700; line-height: 1.4; }
+    .desc-color-0 { background: #D9E1C3; }
+    .desc-color-1 { background: #F0D9A8; }
+    .desc-color-2 { background: #C7DED2; }
 
     /* 列印設定：直式文字、橫向紙張，欄數才能排得多 */
     @media print {
@@ -211,20 +227,21 @@
     <div class="subtitle">國語線上字典學習系統：詳細生字.成語圈詞.真人朗讀</div>
     <div>
       <div class="header-title-group">
-        <select id="sel-grade" onchange="saveData()">
+        <select id="sel-grade" onchange="onProfileSelectorChange()">
           <option value="一">一年級</option><option value="二">二年級</option><option value="三">三年級</option>
           <option value="四">四年級</option><option value="五" selected>五年級</option><option value="六">六年級</option>
         </select>
         <span>(</span>
-        <select id="sel-semester" onchange="saveData()">
+        <select id="sel-semester" onchange="onProfileSelectorChange()">
           <option value="上">上</option><option value="下">下</option>
         </select>
         <span>)</span>
-        <select id="sel-publisher" onchange="saveData()">
+        <select id="sel-publisher" onchange="onProfileSelectorChange()">
           <option value="康軒">康軒版</option><option value="翰林">翰林版</option><option value="南一">南一版</option>
         </select>
         <span>國語生字</span>
       </div>
+      <div style="font-size: 0.72rem; color: #A79C8C; margin-top: 2px;">💡 切換上方年級／學期／版本，會自動切換到那一組專屬的生字資料，彼此不會互相覆蓋</div>
     </div>
     <div class="header-controls">
       <select id="speech-speed" class="speed-select" onchange="saveData()">
@@ -391,19 +408,40 @@
       "第九課：探索植物的秘密", "第十課：古詩選", "第十一課：被遺忘的奇蹟", "第十二課：魯賓遜漂流記"
     ];
 
-    const defaultData = {
-      grade: "五", semester: "上", publisher: "康軒", speed: "0.75", soundEnabled: true, zhuyinCache: {}, definitionCache: {}, zhuyinOverride: {},
-      lessons: Array.from({length: 12}, (_, i) => ({
+    // 每個「年級＋學期＋版本」都是獨立的一份生字資料，彼此不會互相覆蓋
+    function profileKey(grade, semester, publisher) {
+      return `${grade}_${semester}_${publisher}`;
+    }
+
+    function createEmptyLessons() {
+      return Array.from({ length: 12 }, (_, i) => ({
         id: i + 1,
         title: lessonNames[i],
-        summary: i === 0 ? "這是一篇關於非洲瘧疾與蚊帳的故事，提醒我們要懂得感恩與助人。" : "",
-        batchText: i === 0 ? "蚊,ㄨㄣˊ,虫部,蚊子，蚊帳\n帳,ㄓㄤˋ,巾部,蚊帳，帳篷\n洲,ㄓㄡ,水部,非洲，亞洲\n瘧,ㄋㄩㄝˋ,疒部,瘧疾，瘧蚊\n疾,ㄐㄧˊ,疒部,疾病，疾走\n死,ㄙˇ,歹部,死亡，死板\n叮,ㄉㄧㄥ,口部,叮咬，叮嚀\n鼓,ㄍㄨˇ,鼓部,鼓起，鼓勵\n募,ㄇㄨˋ,力部,募集，募款\n集,ㄐㄧˊ,隹部,聚集，集中\n寄,ㄐㄧˋ,宀部,寄信，寄託\n贈,ㄗㄥˋ,貝部,贈送，捐贈\n賣,ㄇㄞˋ,貝部,買賣，拍賣\n獎,ㄐㄧㄤˇ,大部,獎狀，獎金\n狀,ㄓㄨㄤˋ,犬部,狀態，獎狀\n誌,ㄓˋ,言部,雜誌，日誌\n基,ㄐㄧ,土部,基金會，基礎\n潛,ㄑㄧㄢˊ,水部,潛力，潛水" : "",
+        summary: "",
+        batchText: "",
         extraTerms: "",
-        chars: i === 0 ? [
-          { char: "蚊", zhuyin: "ㄨㄣˊ", rad: "虫部", terms: "蚊子，蚊帳", note: "右邊是文，不要多一撇" },
-          { char: "帳", zhuyin: "ㄓㄤˋ", rad: "巾部", terms: "蚊帳，帳篷", note: "" }
-        ] : []
-      })),
+        chars: []
+      }));
+    }
+
+    function createDemoLessons() {
+      const lessons = createEmptyLessons();
+      lessons[0].summary = "這是一篇關於非洲瘧疾與蚊帳的故事，提醒我們要懂得感恩與助人。";
+      lessons[0].batchText = "蚊,ㄨㄣˊ,虫部,蚊子，蚊帳\n帳,ㄓㄤˋ,巾部,蚊帳，帳篷\n洲,ㄓㄡ,水部,非洲，亞洲\n瘧,ㄋㄩㄝˋ,疒部,瘧疾，瘧蚊\n疾,ㄐㄧˊ,疒部,疾病，疾走\n死,ㄙˇ,歹部,死亡，死板\n叮,ㄉㄧㄥ,口部,叮咬，叮嚀\n鼓,ㄍㄨˇ,鼓部,鼓起，鼓勵\n募,ㄇㄨˋ,力部,募集，募款\n集,ㄐㄧˊ,隹部,聚集，集中\n寄,ㄐㄧˋ,宀部,寄信，寄託\n贈,ㄗㄥˋ,貝部,贈送，捐贈\n賣,ㄇㄞˋ,貝部,買賣，拍賣\n獎,ㄐㄧㄤˇ,大部,獎狀，獎金\n狀,ㄓㄨㄤˋ,犬部,狀態，獎狀\n誌,ㄓˋ,言部,雜誌，日誌\n基,ㄐㄧ,土部,基金會，基礎\n潛,ㄑㄧㄢˊ,水部,潛力，潛水";
+      lessons[0].chars = [
+        { char: "蚊", zhuyin: "ㄨㄣˊ", rad: "虫部", terms: "蚊子，蚊帳", note: "右邊是文，不要多一撇" },
+        { char: "帳", zhuyin: "ㄓㄤˋ", rad: "巾部", terms: "蚊帳，帳篷", note: "" }
+      ];
+      return lessons;
+    }
+
+    const DEFAULT_PROFILE_KEY = "五_上_康軒";
+
+    const defaultData = {
+      grade: "五", semester: "上", publisher: "康軒", speed: "0.75", soundEnabled: true, zhuyinCache: {}, definitionCache: {}, zhuyinOverride: {},
+      profiles: {
+        [DEFAULT_PROFILE_KEY]: { lessons: createDemoLessons() }
+      },
       links: [
         { id: 1, subj: "國語", title: "波波注音", desc: "參考田字格樣式，提供多種直式列印功能，幫助孩子把字寫端正。", url: "https://bopodoc.com/worksheets/" },
         { id: 2, subj: "社會", title: "康軒學習網", desc: "提供各科目的線上影音教學與補充資料，適合課後複習。", url: "https://www.kanghsuan.com.tw/" }
@@ -412,6 +450,35 @@
 
     let appData = null;
     let currentLessonId = 1;
+
+    // 取得（必要時建立）目前年級/學期/版本對應的那一份生字資料
+    function ensureProfile(key) {
+      if (!appData.profiles) appData.profiles = {};
+      if (!appData.profiles[key]) {
+        appData.profiles[key] = { lessons: createEmptyLessons() };
+      }
+      return appData.profiles[key];
+    }
+
+    function currentProfile() {
+      return ensureProfile(profileKey(appData.grade, appData.semester, appData.publisher));
+    }
+
+    // 取代舊版 appData.lessons：永遠回傳「目前這組年級/學期/版本」對應的生字陣列
+    function lessons() {
+      return currentProfile().lessons;
+    }
+
+    // 切換年級／學期／版本時：存檔、切回第一課、重新渲染所有畫面
+    function onProfileSelectorChange() {
+      saveData();
+      currentLessonId = 1;
+      initSelectors();
+      renderLessonView();
+      renderMistakes();
+      loadTestTerms();
+      playClickSound();
+    }
 
     // === 核心初始化 ===
     window.onload = () => {
@@ -426,10 +493,19 @@
       if (!appData.zhuyinCache) appData.zhuyinCache = {};
       if (!appData.zhuyinOverride) appData.zhuyinOverride = {};
       if (!appData.definitionCache) appData.definitionCache = {};
-      appData.lessons.forEach(l => { if (typeof l.extraTerms === 'undefined') l.extraTerms = ""; });
 
-      if(appData.lessons[0].chars.length <= 2 && appData.lessons[0].batchText.length > 50) {
-          parseBatchText(1, appData.lessons[0].batchText);
+      // 舊版資料只有單一 appData.lessons，遷移成「目前年級/學期/版本」專屬的一份資料，不會遺失原本內容
+      if (appData.lessons && !appData.profiles) {
+        const key = profileKey(appData.grade, appData.semester, appData.publisher);
+        appData.profiles = { [key]: { lessons: appData.lessons } };
+        delete appData.lessons;
+      }
+      if (!appData.profiles) appData.profiles = {};
+
+      lessons().forEach(l => { if (typeof l.extraTerms === 'undefined') l.extraTerms = ""; });
+
+      if (lessons()[0].chars.length <= 2 && lessons()[0].batchText.length > 50) {
+          parseBatchText(1, lessons()[0].batchText);
       }
 
       initHeader();
@@ -465,7 +541,7 @@
       const selTest = document.getElementById('test-lesson-select');
       selLesson.innerHTML = ''; selTest.innerHTML = '';
 
-      appData.lessons.forEach(l => {
+      lessons().forEach(l => {
         let opt = `<option value="${l.id}">${l.title}</option>`;
         selLesson.innerHTML += opt;
         selTest.innerHTML += opt;
@@ -487,7 +563,7 @@
     // === 📖 課文生字渲染 (標題可直接修改) ===
     function renderLessonView() {
       currentLessonId = parseInt(document.getElementById('lesson-select').value);
-      const lesson = appData.lessons.find(l => l.id === currentLessonId);
+      const lesson = lessons().find(l => l.id === currentLessonId);
       const container = document.getElementById('lesson-content-area');
 
       const colorClass = `color-${((lesson.id - 1) % 5) + 1}`;
@@ -518,7 +594,7 @@
                 <div style="font-size:0.85rem; color:var(--m-purple); font-weight:800; margin-bottom:5px;">圈詞聽寫 (可修改，點下方詞語可發音＋看語詞意思)：</div>
                 <input type="text" class="input-box" style="padding:0.4rem; font-size:0.95rem; font-weight:bold;" value="${c.terms}" onblur="saveCharData(${lesson.id}, ${i}, 'terms', this.value); updateTermsChips(${lesson.id}, ${i}, this.value)">
                 <div class="terms-chips" id="chips-${lesson.id}-${i}">${buildTermsChipsHtml(c.terms)}</div>
-                <input type="text" class="input-box" style="padding:0.4rem; font-size:0.9rem; margin-top:5px; background:#FFF9E6; border-color:#FFDAC1;" placeholder="⚠️ 易錯提醒或造句備註..." value="${c.note}" onblur="saveCharData(${lesson.id}, ${i}, 'note', this.value)">
+                <input type="text" class="input-box" style="padding:0.4rem; font-size:0.9rem; margin-top:5px; background:#FBF3DE; border-color:#E3B15E;" placeholder="⚠️ 易錯提醒或造句備註..." value="${c.note}" onblur="saveCharData(${lesson.id}, ${i}, 'note', this.value)">
               </div>
             </div>
           `).join('')}
@@ -539,7 +615,7 @@
     }
 
     function updateLessonTitle(lId, newTitle) {
-      const l = appData.lessons.find(x => x.id === lId);
+      const l = lessons().find(x => x.id === lId);
       if(l) {
         l.title = newTitle.trim();
         saveData();
@@ -548,12 +624,12 @@
     }
 
     function saveLessonData(lId, key, val) {
-      const l = appData.lessons.find(x => x.id === lId);
+      const l = lessons().find(x => x.id === lId);
       if(l) { l[key] = val; saveData(); }
     }
 
     function saveCharData(lId, cIdx, key, val) {
-      const l = appData.lessons.find(x => x.id === lId);
+      const l = lessons().find(x => x.id === lId);
       if(l && l.chars[cIdx]) {
         l.chars[cIdx][key] = val;
         saveData();
@@ -562,7 +638,7 @@
 
     function deleteChar(lId, cIdx) {
       if(confirm("刪除此字？")) {
-        const l = appData.lessons.find(x => x.id === lId);
+        const l = lessons().find(x => x.id === lId);
         if(l) { l.chars.splice(cIdx, 1); saveData(); renderLessonView(); }
       }
     }
@@ -583,7 +659,7 @@
     }
 
     function parseBatchText(lId, text) {
-      const l = appData.lessons.find(x => x.id === lId);
+      const l = lessons().find(x => x.id === lId);
       if(!l) return;
       l.batchText = text;
       l.chars = [];
@@ -606,7 +682,7 @@
     function renderMistakes() {
       const container = document.getElementById('mistakes-container');
       container.innerHTML = '';
-      appData.lessons.forEach(l => {
+      lessons().forEach(l => {
         l.chars.forEach(c => {
           if(c.note && c.note.trim() !== '') {
             container.innerHTML += `
@@ -629,7 +705,7 @@
     // === ✍️ 聽寫與橫式田字格 ===
     function loadTestTerms() {
       const tId = parseInt(document.getElementById('test-lesson-select').value);
-      const l = appData.lessons.find(x => x.id === tId);
+      const l = lessons().find(x => x.id === tId);
       let termsArray = [];
       if(l) {
         l.chars.forEach(c => {
@@ -643,7 +719,7 @@
 
     function saveExtraTerms() {
       const tId = parseInt(document.getElementById('test-lesson-select').value);
-      const l = appData.lessons.find(x => x.id === tId);
+      const l = lessons().find(x => x.id === tId);
       if(l) {
         l.extraTerms = document.getElementById('test-extra-input').value;
         saveData();
@@ -663,13 +739,13 @@
     function findZhuyin(ch, preferredLessonId) {
       if (appData.zhuyinOverride && appData.zhuyinOverride[ch]) return appData.zhuyinOverride[ch];
       if (preferredLessonId) {
-        const pl = appData.lessons.find(x => x.id === preferredLessonId);
+        const pl = lessons().find(x => x.id === preferredLessonId);
         if (pl) {
           const found = pl.chars.find(c => c.char === ch);
           if (found && found.zhuyin) return found.zhuyin;
         }
       }
-      for (const l of appData.lessons) {
+      for (const l of lessons()) {
         const found = l.chars.find(c => c.char === ch);
         if (found && found.zhuyin) return found.zhuyin;
       }
@@ -738,7 +814,7 @@
 
     function buildSidebar() {
       const tId = parseInt(document.getElementById('test-lesson-select').value);
-      const l = appData.lessons.find(x => x.id === tId);
+      const l = lessons().find(x => x.id === tId);
       if (!l) return '';
       const parts = l.title.split('：');
       const lessonNo = parts[0] || l.title;
@@ -1048,7 +1124,7 @@
 
     function fallbackHtml(q) {
       return `
-        <span style="color:#d9534f; font-weight:bold;">⚠️ 查無完整線上資料，請直接前往教育部官方辭典查詢。</span><br><br>
+        <span style="color:#B5533E; font-weight:bold;">⚠️ 查無完整線上資料，請直接前往教育部官方辭典查詢。</span><br><br>
         請點擊下方按鈕直接查詢「${q}」：<br><br>
         <a href="https://dict.revised.moe.edu.tw/search.jsp?md=1&word=${encodeURIComponent(q)}" target="_blank" class="btn btn-pink" style="text-decoration:none; font-size:1.1rem; padding: 0.8rem 1.5rem;">🔗 前往教育部國語辭典查「${q}」</a>
       `;
@@ -1100,7 +1176,7 @@
           <div class="link-card">
             <div style="flex-grow:1; margin-right:10px;">
               <span style="font-size:0.8rem; background:var(--m-purple); color:#fff; padding:4px 10px; border-radius:12px; font-weight:800;">${l.subj}</span>
-              <h3 style="color:#D48C9E; margin:8px 0; font-size:1.2rem;">${l.title}</h3>
+              <h3 style="color:#A15C3E; margin:8px 0; font-size:1.2rem;">${l.title}</h3>
               <div class="link-desc ${colorClass}">${l.desc}</div>
             </div>
             <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;" class="no-print">
