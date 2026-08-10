@@ -1006,27 +1006,33 @@ async function fetchBatchVocab(wordOverride = null){
 }
 
 function parseVocabMoeData(moe, char, grade, lesson) {
-    const h = (moe.heteronyms||[])[0] || {};
-    const defs = h.definitions || [];
-    
-    let allDefs = defs.map((d, idx) => `${idx+1}. ${d.type ? `[${d.type}] ` : ''}${d.def}`).filter(Boolean);
-    
-    let allSentences = [];
-    defs.forEach(d => {
-        if(d.example) {
-            d.example.forEach(ex => allSentences.push(`例：${ex}`));
-        }
-        if(d.quote) {
-            d.quote.forEach(q => allSentences.push(`引：${q}`));
-        }
-    });
+    const heteronyms = moe.heteronyms || [];
+
+    const readings = heteronyms.map(h=>{
+        const defs = h.definitions || [];
+        const defList = defs.map((d, idx) => `${idx+1}. ${d.type ? `[${d.type}] ` : ''}${d.def}`).filter(Boolean);
+        const sentList = [];
+        defs.forEach(d => {
+            if(d.example) d.example.forEach(ex => sentList.push(`例：${ex}`));
+            if(d.quote) d.quote.forEach(q => sentList.push(`引：${q}`));
+        });
+        return {
+            zhuyin: h.bopomofo || h.pinyin || '',
+            definitions: defList,
+            sentences: sentList
+        };
+    }).filter(r => r.zhuyin || r.definitions.length);
+
+    // 舊版扁平欄位（相容用），內容統一取第一個讀音，避免舊功能（例如測驗卷）讀取不到資料
+    const first = readings[0] || {definitions:[], sentences:[], zhuyin:''};
 
     return {
       char: moe.title || char,
-      zhuyin: h.bopomofo || h.pinyin || '',
+      zhuyin: readings.map(r=>r.zhuyin).filter(Boolean).join('、') || first.zhuyin,
+      readings,
+      definitions: first.definitions,
+      sentences: first.sentences,
       radical: (moe.radical ? `部首：${moe.radical}` : '') + (moe.stroke_count ? ` (${moe.stroke_count}劃)` : ''),
-      definitions: allDefs,
-      sentences: allSentences,
       grade, lesson, type: 'vocab'
     };
 }
@@ -1047,17 +1053,34 @@ function showVocabCard(index) {
     document.getElementById('vMeta').innerText = formatGradeLesson(d.grade, d.lesson);
     document.getElementById('vZhuyin').innerText = d.zhuyin;
     document.getElementById('vRadical').innerText = d.radical;
-    
+
     const defContainer = document.getElementById('vDefinitions');
-    if(d.definitions && d.definitions.length > 0) {
-        defContainer.innerHTML = d.definitions.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg text-[color:var(--ink)]">${item}</p>`).join('');
+    const sentContainer = document.getElementById('vSentences');
+
+    const readings = (d.readings && d.readings.length) ? d.readings : [{zhuyin: d.zhuyin, definitions: d.definitions||[], sentences: d.sentences||[]}];
+    const multiReading = readings.length > 1;
+
+    if(readings.some(r => r.definitions && r.definitions.length)){
+        defContainer.innerHTML = readings.map(r => {
+            const body = (r.definitions && r.definitions.length)
+                ? r.definitions.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg text-[color:var(--ink)]">${item}</p>`).join('')
+                : '<p class="text-xs text-[color:var(--ink)]/50">（此讀音無詳細字義）</p>';
+            return multiReading
+                ? `<div class="mb-3"><div class="text-xs font-bold text-[color:var(--purple)] mb-1">🔊 讀音：${r.zhuyin || '（無）'}</div>${body}</div>`
+                : body;
+        }).join('');
     } else {
         defContainer.innerHTML = '<p class="text-sm text-[color:var(--ink)]/60">（無詳細字義紀錄）</p>';
     }
 
-    const sentContainer = document.getElementById('vSentences');
-    if(d.sentences && d.sentences.length > 0) {
-        sentContainer.innerHTML = d.sentences.map(item => `<p class="p-2 bg-[color:var(--blue)]/10 rounded-lg text-[color:var(--ink)]">${item}</p>`).join('');
+    if(readings.some(r => r.sentences && r.sentences.length)){
+        sentContainer.innerHTML = readings.map(r => {
+            if(!r.sentences || !r.sentences.length) return '';
+            const body = r.sentences.map(item => `<p class="p-2 bg-[color:var(--blue)]/10 rounded-lg text-[color:var(--ink)]">${item}</p>`).join('');
+            return multiReading
+                ? `<div class="mb-3"><div class="text-xs font-bold text-[color:var(--purple)] mb-1">🔊 讀音：${r.zhuyin || '（無）'}</div>${body}</div>`
+                : body;
+        }).join('');
     } else {
         sentContainer.innerHTML = '<p class="text-sm text-[color:var(--ink)]/60">（無造句範例）</p>';
     }
@@ -1276,12 +1299,17 @@ function renderLibrary(){
             </div>
         `;
     } else {
-        const defs = (item.definitions || []).join('<br>') || '（無詳細字義）';
-        const sents = (item.sentences || []).join('<br>') || '（無造句範例）';
+        const readings = (item.readings && item.readings.length) ? item.readings : [{zhuyin:item.zhuyin, definitions:item.definitions||[], sentences:item.sentences||[]}];
+        const multiReading = readings.length > 1;
+        const readingsHtml = readings.map(r=>{
+            const defs = (r.definitions || []).join('<br>') || '（無詳細字義）';
+            const sents = (r.sentences || []).join('<br>') || '（無造句範例）';
+            const label = multiReading ? `<p class="text-xs font-bold text-[color:var(--purple)] mt-2">🔊 讀音：${r.zhuyin||'（無）'}</p>` : '';
+            return `${label}<p><strong>詳細字義：</strong><br>${defs}</p><p><strong>造句範例：</strong><br>${sents}</p>`;
+        }).join('');
         detailBox.innerHTML = `
             <p><strong>部首/筆畫：</strong>${item.radical || '（無）'}</p>
-            <p><strong>詳細字義：</strong><br>${defs}</p>
-            <p><strong>造句範例：</strong><br>${sents}</p>
+            ${readingsHtml}
         `;
     }
 
