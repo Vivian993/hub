@@ -95,15 +95,15 @@
   }
   .panel + .panel{margin-top:16px;}
   .panel h3{
-    font-size:13px;
+    font-size:14.5px;
     margin:0 0 3px;
     font-weight:700;
   }
   .panel .sub{
-    font-size:12px;
+    font-size:13px;
     color:var(--ink-soft);
     margin:0 0 12px;
-    line-height:1.5;
+    line-height:1.55;
   }
 
   /* upload zone */
@@ -126,8 +126,8 @@
 
   .quickbtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}
   .qbtn{
-    font-size:12px;
-    padding:6px 10px;
+    font-size:13px;
+    padding:7px 11px;
     border-radius:8px;
     border:1px solid var(--line);
     background:var(--paper);
@@ -154,14 +154,15 @@
     font-weight:700;
     margin-bottom:3px;
   }
-  .labelrow{display:flex;gap:8px;align-items:center;}
+  .labelrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   .labelrow select{
     flex:1;
-    padding:8px 9px;
+    min-width:140px;
+    padding:9px 10px;
     border-radius:8px;
     border:1px solid var(--line);
     font-family:inherit;
-    font-size:12.5px;
+    font-size:13.5px;
     background:#fff;
   }
   .labelrow .qbtn{white-space:nowrap;}
@@ -251,8 +252,8 @@
     margin-bottom:2px;
   }
   .chipbtn{
-    font-size:12px;
-    padding:6px 10px;
+    font-size:13px;
+    padding:7px 11px;
     border-radius:8px;
     border:1px solid var(--line);
     background:var(--paper);
@@ -324,6 +325,20 @@
     cursor:grab;
     box-shadow:0 1px 2px rgba(0,0,0,.05);
   }
+  #inlineTextEdit{
+    position:fixed;
+    display:none;
+    z-index:200;
+    border:2px solid var(--amber-deep);
+    border-radius:6px;
+    padding:2px 6px;
+    font-family:'Noto Sans TC', sans-serif;
+    font-weight:700;
+    background:rgba(255,255,255,0.96);
+    text-align:center;
+    box-shadow:0 4px 14px rgba(38,34,32,.2);
+    outline:none;
+  }
   .ratio-badge{
     position:absolute;
     top:6px; left:50%; transform:translateX(-50%);
@@ -341,12 +356,13 @@
   }
 
   /* property panel */
-  .propgrid{display:flex;flex-direction:column;gap:12px;}
+  .propgrid{display:flex;flex-direction:column;gap:14px;}
   .field label{
     display:block;
-    font-size:11.5px;
+    font-size:13px;
+    font-weight:600;
     color:var(--ink-soft);
-    margin-bottom:5px;
+    margin-bottom:6px;
   }
   .field textarea{
     width:100%;
@@ -354,38 +370,38 @@
     min-height:52px;
     border-radius:8px;
     border:1px solid var(--line);
-    padding:8px 10px;
+    padding:9px 11px;
     font-family:'Noto Sans TC',sans-serif;
-    font-size:14px;
+    font-size:15px;
   }
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .field select{
     width:100%;
-    padding:7px 8px;
+    padding:8px 9px;
     border-radius:8px;
     border:1px solid var(--line);
     font-family:inherit;
-    font-size:13px;
+    font-size:14px;
     background:#fff;
   }
   .field input[type="range"]{width:100%;accent-color:var(--amber-deep);}
   .valtag{
     float:right;
     font-family:'IBM Plex Mono',monospace;
-    font-size:10.5px;
+    font-size:11.5px;
     color:var(--ink-faint);
   }
   .colorrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   .swatch{
-    width:26px;height:26px;
+    width:28px;height:28px;
     border-radius:50%;
     border:1px solid var(--line);
     cursor:pointer;
     padding:0;
   }
   .togglebtn{
-    font-size:12px;
-    padding:6px 11px;
+    font-size:13px;
+    padding:7px 12px;
     border-radius:8px;
     border:1px solid var(--line);
     background:#fff;
@@ -431,7 +447,7 @@
   }
   .tipstitle{font-size:12.5px;font-weight:700;margin-bottom:6px;}
   .tipsbox ul{margin:0;padding-left:18px;}
-  .tipsbox li{font-size:12px;color:var(--ink-soft);line-height:1.6;}
+  .tipsbox li{font-size:13px;color:var(--ink-soft);line-height:1.6;}
   .tipsbox li b{color:var(--ink);}
 
   .platform-list{display:flex;flex-direction:column;gap:14px;margin-top:12px;}
@@ -611,6 +627,7 @@
         <div class="corner br"></div>
         <span class="ratio-badge">1:1・1000×1000px</span>
         <canvas id="stageCanvas" width="1000" height="1000"></canvas>
+        <input type="text" id="inlineTextEdit" autocomplete="off">
       </div>
       <div class="emptyhint" id="stageEmptyHint">畫布是 1:1 正方形，各平台都能直接使用。點畫布中間的相機圖示，加入第一張商品照片吧！</div>
     </div>
@@ -660,13 +677,18 @@
 
           <div class="labelbox">
             <label class="labelbox-title">多款商品編號排版</label>
-            <p class="sub" style="margin-bottom:8px;">3～10幾張款式照，一鍵排整齊，下方可加編號或價格（各自可再點選修改）。</p>
+            <p class="sub" style="margin-bottom:8px;">3～10幾張款式照，一鍵排整齊，可加編號或價格（各自可再點選修改）。</p>
             <div class="labelrow">
               <select id="labelStyleSelect">
                 <option value="number">數字 1、2、3…</option>
                 <option value="letter">英文 A、B、C…</option>
                 <option value="price">價格（可各自修改，例如 $299）</option>
                 <option value="none">不加標籤，只排列整齊</option>
+              </select>
+              <select id="labelPositionSelect">
+                <option value="below">位置：下方置中</option>
+                <option value="left">位置：商品左側</option>
+                <option value="right">位置：商品右側</option>
               </select>
               <button class="qbtn accentbtn" id="btnArrangeLabel">排列＋加編號</button>
             </div>
@@ -1376,6 +1398,90 @@
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
 
+  /* ---------- inline text editing directly on the canvas ---------- */
+  const inlineInput = document.getElementById('inlineTextEdit');
+  let inlineEditObjId = null;
+
+  function positionInlineEditor(o){
+    const rect = canvas.getBoundingClientRect();
+    const scale = rect.width / CANVAS_SIZE;
+    const screenCx = rect.left + o.x*scale;
+    const screenCy = rect.top + o.y*scale;
+    const w = Math.max(50, o.width*scale + 16);
+    const h = Math.max(28, o.height*scale + 6);
+    inlineInput.style.left = (screenCx - w/2) + 'px';
+    inlineInput.style.top = (screenCy - h/2) + 'px';
+    inlineInput.style.width = w + 'px';
+    inlineInput.style.height = h + 'px';
+    inlineInput.style.fontSize = Math.max(12, o.fontSize*scale*0.9) + 'px';
+    inlineInput.style.color = o.color;
+  }
+
+  function openInlineEditor(o){
+    if(o.locked) return;
+    inlineEditObjId = o.id;
+    state.selectedId = o.id;
+    updatePropPanel(); updateLayerStrip(); updateToolbarState();
+    inlineInput.value = o.text;
+    positionInlineEditor(o);
+    inlineInput.style.display = 'block';
+    inlineInput.focus();
+    inlineInput.select();
+  }
+  function closeInlineEditor(){
+    inlineInput.style.display = 'none';
+    inlineEditObjId = null;
+    updatePropPanel();
+    updateLayerStrip();
+  }
+  inlineInput.oninput = ()=>{
+    const o = state.objects.find(x=>x.id===inlineEditObjId);
+    if(!o) return;
+    o.text = inlineInput.value;
+    render();
+    updateLayerStrip();
+    positionInlineEditor(o);
+  };
+  inlineInput.onblur = ()=>{ closeInlineEditor(); };
+  inlineInput.onkeydown = (e)=>{
+    if(e.key==='Enter'){ e.preventDefault(); inlineInput.blur(); }
+  };
+  window.addEventListener('scroll', ()=>{
+    if(inlineEditObjId){
+      const o = state.objects.find(x=>x.id===inlineEditObjId);
+      if(o) positionInlineEditor(o);
+    }
+  }, true);
+  window.addEventListener('resize', ()=>{
+    if(inlineEditObjId){
+      const o = state.objects.find(x=>x.id===inlineEditObjId);
+      if(o) positionInlineEditor(o);
+    }
+  });
+
+  canvas.addEventListener('dblclick', e=>{
+    if(cropMode) return;
+    const pt = pointerToCanvas(e);
+    const target = findObjectAt(pt.x, pt.y);
+    if(target && target.type==='text'){
+      openInlineEditor(target);
+    }
+  });
+  // double-tap support for touch devices (dblclick isn't always reliable with touch-action:none)
+  let lastTapTime = 0, lastTapObjId = null;
+  canvas.addEventListener('pointerup', e=>{
+    if(e.pointerType !== 'touch' || cropMode) return;
+    const pt = pointerToCanvas(e);
+    const target = findObjectAt(pt.x, pt.y);
+    const now = Date.now();
+    if(target && target.type==='text' && target.id===lastTapObjId && (now-lastTapTime)<350){
+      openInlineEditor(target);
+      lastTapTime = 0; lastTapObjId = null;
+    } else {
+      lastTapTime = now; lastTapObjId = target ? target.id : null;
+    }
+  });
+
   /* ---------- crop mode interaction ---------- */
   function enterCropMode(id){
     const o = state.objects.find(x=>x.id===id);
@@ -1572,7 +1678,8 @@
     afterChange();
   };
 
-  function arrangeWithLabels(style){
+  function arrangeWithLabels(style, position){
+    position = position || 'below';
     const imgs = state.objects.filter(o=>o.type==='image');
     const n = imgs.length; if(!n) return;
     // remove previously auto-generated labels so re-running doesn't stack duplicates
@@ -1583,44 +1690,68 @@
     const cellW = (CANVAS_SIZE-margin*2)/cols;
     const cellH = (CANVAS_SIZE-margin*2)/rows;
     const showLabel = style !== 'none';
-    const labelZoneH = showLabel ? Math.max(56, cellH*0.16) : 0;
-    const imgAreaH = cellH - labelZoneH;
     const newLabels = [];
-    imgs.forEach((o,i)=>{
-      const col = i%cols, row = Math.floor(i/cols);
-      const cellX = margin+cellW*col;
-      const cellY = margin+cellH*row;
-      const cx = cellX+cellW/2;
-      const cy = cellY + imgAreaH/2;
-      const nat = o.naturalW/o.naturalH;
-      let w = cellW*0.78, h = w/nat;
-      if(h > imgAreaH*0.86){ h = imgAreaH*0.86; w = h*nat; }
-      o.x=cx; o.y=cy; o.width=w; o.height=h; o.rotation=0;
 
-      if(!showLabel) return;
-      let labelText, badgeBg, textColor;
-      if(style==='letter'){ labelText = String.fromCharCode(65+ (i%26)); badgeBg='#E8A33D'; textColor='#262220'; }
-      else if(style==='price'){ labelText = '$299'; badgeBg='#262220'; textColor='#FFFFFF'; }
-      else { labelText = String(i+1); badgeBg='#E8A33D'; textColor='#262220'; }
-      const fontSize = Math.max(24, Math.min(44, labelZoneH*0.52));
-      const labelObj = {
-        id: uid(), type:'text', text: labelText,
-        x: cx, y: cellY + imgAreaH + labelZoneH/2,
-        rotation:0, opacity:1,
-        fontSize, color:textColor, font: FONT_OPTIONS[0].v, bold:true,
-        badge:{enabled:true, bg:badgeBg}, stroke:{enabled:false,color:'#FFFFFF'},
-        width:null, height:null,
-        isAutoLabel:true, linkedImageId:o.id
-      };
-      newLabels.push(labelObj);
-    });
+    if(position==='below' || !showLabel){
+      const labelZoneH = showLabel ? Math.max(56, cellH*0.18) : 0;
+      const imgAreaH = cellH - labelZoneH;
+      imgs.forEach((o,i)=>{
+        const col = i%cols, row = Math.floor(i/cols);
+        const cellX = margin+cellW*col;
+        const cellY = margin+cellH*row;
+        const cx = cellX+cellW/2;
+        const cy = cellY + imgAreaH/2;
+        const nat = o.naturalW/o.naturalH;
+        let w = cellW*0.78, h = w/nat;
+        if(h > imgAreaH*0.86){ h = imgAreaH*0.86; w = h*nat; }
+        o.x=cx; o.y=cy; o.width=w; o.height=h; o.rotation=0;
+        if(!showLabel) return;
+        const fontSize = Math.max(30, Math.min(56, labelZoneH*0.62));
+        newLabels.push(makeLabelObj(style, i, o, cx, cellY+imgAreaH+labelZoneH/2, fontSize));
+      });
+    } else {
+      // left / right: reserve a vertical strip beside the image instead of below it
+      const labelZoneW = Math.max(90, cellW*0.24);
+      const imgAreaW = cellW - labelZoneW;
+      imgs.forEach((o,i)=>{
+        const col = i%cols, row = Math.floor(i/cols);
+        const cellX = margin+cellW*col;
+        const cellY = margin+cellH*row;
+        const imgSideX = position==='left' ? cellX+labelZoneW : cellX;
+        const labelCenterX = position==='left' ? cellX+labelZoneW/2 : cellX+cellW-labelZoneW/2;
+        const cx = imgSideX + imgAreaW/2;
+        const cy = cellY + cellH/2;
+        const nat = o.naturalW/o.naturalH;
+        let w = imgAreaW*0.86, h = w/nat;
+        if(h > cellH*0.86){ h = cellH*0.86; w = h*nat; }
+        o.x=cx; o.y=cy; o.width=w; o.height=h; o.rotation=0;
+        const fontSize = Math.max(30, Math.min(56, labelZoneW*0.4));
+        newLabels.push(makeLabelObj(style, i, o, labelCenterX, cy, fontSize));
+      });
+    }
+
     state.objects.push(...newLabels);
     state.selectedId = null;
     afterChange();
   }
+  function makeLabelObj(style, i, o, x, y, fontSize){
+    let labelText, badgeBg, textColor;
+    if(style==='letter'){ labelText = String.fromCharCode(65+ (i%26)); badgeBg='#E8A33D'; textColor='#262220'; }
+    else if(style==='price'){ labelText = '$299'; badgeBg='#262220'; textColor='#FFFFFF'; }
+    else { labelText = String(i+1); badgeBg='#E8A33D'; textColor='#262220'; }
+    return {
+      id: uid(), type:'text', text: labelText,
+      x, y, rotation:0, opacity:1,
+      fontSize, color:textColor, font: FONT_OPTIONS[0].v, bold:true,
+      badge:{enabled:true, bg:badgeBg}, stroke:{enabled:false,color:'#FFFFFF'},
+      width:null, height:null,
+      isAutoLabel:true, linkedImageId:o.id
+    };
+  }
   document.getElementById('btnArrangeLabel').onclick = ()=>{
     const style = document.getElementById('labelStyleSelect').value;
-    arrangeWithLabels(style);
+    const position = document.getElementById('labelPositionSelect').value;
+    arrangeWithLabels(style, position);
   };
 
   document.getElementById('btnQuickAddText').onclick = ()=> addTextObject('新文字', {});
@@ -1759,7 +1890,7 @@
     } else if(o && o.type==='text'){
       label.textContent = '已選取文字標籤'+lockSuffix;
       title.textContent = '直接在畫布上調整';
-      sub.textContent = o.locked ? '已鎖定，畫布上不會被拖動或誤觸，用上方選單解鎖後才能調整。' : '調整內容、字體與顏色，拖曳可移動與縮放。';
+      sub.textContent = o.locked ? '已鎖定，畫布上不會被拖動或誤觸，用上方選單解鎖後才能調整。' : '在畫布上快速點兩下文字，可以直接在原地打字，不用再滑到下面的欄位。拖曳可移動與縮放。';
       body.appendChild(buildTextProps(o));
       if(isNewSelection) setSheetCollapsed(false);
     } else if(o && o.type==='shape'){
