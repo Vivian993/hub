@@ -207,6 +207,16 @@
   }
   .layerthumb img{width:100%;height:100%;object-fit:contain;}
   .layerthumb.sel{border-color:var(--amber-deep);}
+  .lockbadge{
+    position:absolute;
+    top:2px; right:2px;
+    font-size:11px;
+    background:rgba(38,34,32,.75);
+    border-radius:50%;
+    width:17px;height:17px;
+    display:flex;align-items:center;justify-content:center;
+    line-height:1;
+  }
   .layerthumb .tletter{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;}
 
   /* stage / canvas */
@@ -243,6 +253,19 @@
   }
   .toolbtn.danger{color:var(--shutter);border-color:#EBC9C1;}
   .toolbtn:disabled{opacity:.35;cursor:not-allowed;}
+  .actionselect{
+    flex:1;
+    min-width:220px;
+    font-size:13px;
+    padding:9px 12px;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--ink);
+    font-family:inherit;
+    font-weight:600;
+  }
+  .actionselect:disabled{opacity:.4;}
   .cropHint{
     font-size:12px;
     color:var(--ink-soft);
@@ -588,11 +611,15 @@
   <div class="col-stage">
     <div class="stagewrap">
       <div class="stagetoolbar">
-        <button class="toolbtn primary" id="btnRemoveBg" disabled>✂️ 一鍵去背</button>
-        <button class="toolbtn" id="btnCropStart" disabled>🖼️ 裁切照片</button>
-        <button class="toolbtn" id="btnLayerUp" disabled>圖層上移</button>
-        <button class="toolbtn" id="btnLayerDown" disabled>圖層下移</button>
-        <button class="toolbtn danger" id="btnDeleteObj" disabled>刪除物件</button>
+        <select class="actionselect" id="actionSelect" disabled>
+          <option value="">操作商品／插圖...🔽</option>
+          <option value="removebg">✂️ 一鍵去背</option>
+          <option value="crop">🖼️ 裁切照片</option>
+          <option value="lock">🔒 鎖定／解鎖位置</option>
+          <option value="layerup">⬆️ 圖層上移</option>
+          <option value="layerdown">⬇️ 圖層下移</option>
+          <option value="delete">🗑️ 刪除物件</option>
+        </select>
         <button class="toolbtn primary hidden" id="btnCropApply">✅ 套用裁切</button>
         <button class="toolbtn hidden" id="btnCropCancel">✕ 取消裁切</button>
       </div>
@@ -1067,6 +1094,22 @@
     c.save();
     c.translate(o.x,o.y);
     c.rotate(o.rotation);
+    if(o.locked){
+      c.strokeStyle = '#6B645C';
+      c.lineWidth = 2;
+      c.setLineDash([4,4]);
+      c.strokeRect(-o.width/2, -o.height/2, o.width, o.height);
+      c.setLineDash([]);
+      // lock badge, top-left
+      c.fillStyle = '#262220';
+      c.beginPath(); c.arc(-o.width/2, -o.height/2, 13, 0, Math.PI*2); c.fill();
+      c.strokeStyle='#fff'; c.lineWidth=2;
+      // simple padlock glyph
+      c.strokeRect(-o.width/2-6, -o.height/2-2, 12, 9);
+      c.beginPath(); c.arc(-o.width/2, -o.height/2-4, 5, Math.PI, 0); c.stroke();
+      c.restore();
+      return;
+    }
     c.strokeStyle = '#C97F1E';
     c.lineWidth = 2;
     c.setLineDash([6,5]);
@@ -1196,6 +1239,10 @@
   }
   function hitHandle(o,px,py){
     const p = toLocal(o,px,py);
+    if(o.locked){
+      if(Math.abs(p.x)<=o.width/2 && Math.abs(p.y)<=o.height/2) return 'locked';
+      return null;
+    }
     if(Math.hypot(p.x-(-o.width/2), p.y-(-o.height/2)) < 24) return 'delete';
     if(Math.hypot(p.x-o.width/2, p.y-o.height/2) < 26) return 'resize';
     if(Math.hypot(p.x-0, p.y-(-o.height/2-28)) < 26) return 'rotate';
@@ -1234,7 +1281,7 @@
     if(!mode){
       target = findObjectAt(pt.x, pt.y);
       state.selectedId = target ? target.id : null;
-      mode = target ? 'move' : null;
+      mode = target ? (target.locked ? 'locked' : 'move') : null;
       updatePropPanel(); updateLayerStrip(); updateToolbarState();
     }
     if(target && mode==='delete'){
@@ -1242,6 +1289,11 @@
       state.selectedId = null;
       drag = null;
       afterChange();
+      return;
+    }
+    if(target && mode==='locked'){
+      drag = null;
+      render();
       return;
     }
     if(target && mode){
@@ -1311,9 +1363,7 @@
   }
   function updateCropToolbarVisibility(){
     const inCrop = !!cropMode;
-    ['btnRemoveBg','btnCropStart','btnLayerUp','btnLayerDown','btnDeleteObj'].forEach(id=>{
-      document.getElementById(id).classList.toggle('hidden', inCrop);
-    });
+    document.getElementById('actionSelect').classList.toggle('hidden', inCrop);
     document.getElementById('btnCropApply').classList.toggle('hidden', !inCrop);
     document.getElementById('btnCropCancel').classList.toggle('hidden', !inCrop);
     document.getElementById('cropHint').classList.toggle('hidden', !inCrop);
@@ -1406,10 +1456,6 @@
     draft.top = Math.max(0,draft.top); draft.bottom = Math.max(0,draft.bottom);
     render();
   }
-  document.getElementById('btnCropStart').onclick = ()=>{
-    const o = getSelected();
-    if(o && o.type==='image') enterCropMode(o.id);
-  };
   document.getElementById('btnCropApply').onclick = ()=> exitCropMode(true);
   document.getElementById('btnCropCancel').onclick = ()=> exitCropMode(false);
 
@@ -1436,16 +1482,27 @@
     afterChange();
   }
 
-  document.getElementById('btnDeleteObj').onclick = deleteSelected;
-  document.getElementById('btnLayerUp').onclick = ()=>moveLayer(1);
-  document.getElementById('btnLayerDown').onclick = ()=>moveLayer(-1);
-  document.getElementById('btnRemoveBg').onclick = ()=>{
+  document.getElementById('actionSelect').onchange = (e)=>{
+    const val = e.target.value;
     const o = getSelected();
-    if(!o || o.type!=='image') return;
-    const tol = o._removeTol ?? 48;
-    o.processedCanvas = removeBackgroundFromImage(o.imgEl, tol);
-    o.useProcessed = true;
-    afterChange();
+    if(val==='removebg' && o && o.type==='image'){
+      const tol = o._removeTol ?? 48;
+      o.processedCanvas = removeBackgroundFromImage(o.imgEl, tol);
+      o.useProcessed = true;
+      afterChange();
+    } else if(val==='crop' && o && o.type==='image'){
+      enterCropMode(o.id);
+    } else if(val==='lock' && o){
+      o.locked = !o.locked;
+      afterChange();
+    } else if(val==='layerup'){
+      moveLayer(1);
+    } else if(val==='layerdown'){
+      moveLayer(-1);
+    } else if(val==='delete'){
+      deleteSelected();
+    }
+    e.target.value = '';
   };
 
   document.getElementById('btnArrange').onclick = ()=>{
@@ -1611,6 +1668,12 @@
         el.appendChild(t);
       }
       el.onclick = ()=>{ state.selectedId=o.id; afterChange(); };
+      if(o.locked){
+        const lockBadge = document.createElement('div');
+        lockBadge.className='lockbadge';
+        lockBadge.textContent='🔒';
+        el.appendChild(lockBadge);
+      }
       strip.appendChild(el);
     });
   }
@@ -1618,11 +1681,13 @@
   /* ---------- toolbar enable/disable ---------- */
   function updateToolbarState(){
     const o = getSelected();
-    document.getElementById('btnRemoveBg').disabled = !o || o.type!=='image';
-    document.getElementById('btnCropStart').disabled = !o || o.type!=='image';
-    document.getElementById('btnLayerUp').disabled = !o;
-    document.getElementById('btnLayerDown').disabled = !o;
-    document.getElementById('btnDeleteObj').disabled = !o;
+    const sel = document.getElementById('actionSelect');
+    sel.disabled = !o;
+    const isImage = o && o.type==='image';
+    sel.querySelector('option[value="removebg"]').disabled = !isImage;
+    sel.querySelector('option[value="crop"]').disabled = !isImage;
+    const lockOpt = sel.querySelector('option[value="lock"]');
+    lockOpt.textContent = (o && o.locked) ? '🔓 解鎖位置' : '🔒 鎖定／解鎖位置';
     document.getElementById('stageEmptyHint').style.display = state.objects.length? 'none':'block';
   }
 
@@ -1639,23 +1704,24 @@
     lastAutoExpandId = o ? o.id : null;
 
     const label = document.getElementById('propLabel');
+    const lockSuffix = (o && o.locked) ? '（已鎖定 🔒）' : '';
     if(o && o.type==='image'){
-      label.textContent = '已選取商品圖片';
+      label.textContent = '已選取商品圖片'+lockSuffix;
       title.textContent = '直接在畫布上調整';
-      sub.textContent = '拖曳可移動，右下角圓點縮放，上方圓點旋轉，左上角 ✕ 可直接刪除。';
+      sub.textContent = o.locked ? '已鎖定，畫布上不會被拖動或誤觸，用上方選單解鎖後才能調整。' : '拖曳可移動，右下角圓點縮放，上方圓點旋轉，左上角 ✕ 可直接刪除。';
       body.appendChild(buildImageProps(o));
       if(isNewSelection) setSheetCollapsed(false);
     } else if(o && o.type==='text'){
-      label.textContent = '已選取文字標籤';
+      label.textContent = '已選取文字標籤'+lockSuffix;
       title.textContent = '直接在畫布上調整';
-      sub.textContent = '調整內容、字體與顏色，拖曳可移動與縮放。';
+      sub.textContent = o.locked ? '已鎖定，畫布上不會被拖動或誤觸，用上方選單解鎖後才能調整。' : '調整內容、字體與顏色，拖曳可移動與縮放。';
       body.appendChild(buildTextProps(o));
       if(isNewSelection) setSheetCollapsed(false);
     } else if(o && o.type==='shape'){
       const def = SHAPE_DEFS.find(s=>s.key===o.shapeKey);
-      label.textContent = '已選取裝飾插圖：'+(def?def.label:'');
+      label.textContent = '已選取裝飾插圖：'+(def?def.label:'')+lockSuffix;
       title.textContent = '直接在畫布上調整';
-      sub.textContent = '拖曳可移動，右下角圓點縮放，上方圓點旋轉，左上角 ✕ 可直接刪除。';
+      sub.textContent = o.locked ? '已鎖定，畫布上不會被拖動或誤觸，用上方選單解鎖後才能調整。' : '拖曳可移動，右下角圓點縮放，上方圓點旋轉，左上角 ✕ 可直接刪除。';
       body.appendChild(buildShapeProps(o));
       if(isNewSelection) setSheetCollapsed(false);
     } else {
