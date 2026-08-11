@@ -74,32 +74,6 @@
     margin-top:6px;
     line-height:1.5;
   }
-  .flow-strip{
-    display:flex;
-    gap:8px;
-    margin-top:14px;
-    flex-wrap:wrap;
-  }
-  .flow-chip{
-    display:flex;align-items:center;gap:6px;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:999px;
-    padding:5px 12px 5px 8px;
-    font-size:12px;
-    color:var(--ink-soft);
-  }
-  .flow-chip b{
-    font-family:'Space Grotesk',sans-serif;
-    background:var(--ink);
-    color:var(--paper);
-    width:18px;height:18px;
-    border-radius:50%;
-    display:flex;align-items:center;justify-content:center;
-    font-size:10px;
-  }
-  .flow-chip.active{border-color:var(--amber);color:var(--ink);}
-  .flow-chip.active b{background:var(--amber);color:var(--ink);}
 
   main{
     max-width:1180px;
@@ -559,12 +533,6 @@
     <div class="brand">商品照生成<span class="dot">．</span></div>
   </div>
   <div class="tagline">上傳照片 → 一鍵去背合成 → 排版加字加插圖 → 下載成品圖，蝦皮／賣貨便／露天／FB社團／IG 都能直接上架。現在支援 6 種字體與 8 款促購裝飾插圖。</div>
-  <div class="flow-strip">
-    <div class="flow-chip" id="chip1"><b>1</b>上傳商品照片</div>
-    <div class="flow-chip" id="chip2"><b>2</b>調整與去背</div>
-    <div class="flow-chip" id="chip3"><b>3</b>情境背景</div>
-    <div class="flow-chip" id="chip4"><b>4</b>文字與插圖</div>
-  </div>
 </header>
 
 <main>
@@ -1872,70 +1840,98 @@
     return wrap;
   }
 
+  let defaultsPanelSection = 'bg'; // remembers which section was open across panel rebuilds
   function buildBackgroundAndTextDefaults(){
     const wrap = document.createElement('div');
     wrap.className='propgrid';
 
-    const bgGrid = document.createElement('div'); bgGrid.className='bgpresetgrid';
-    BG_PRESETS.forEach(p=>{
-      const sw = document.createElement('div');
-      sw.className='bgpreset'+(p.key===state.background.key?' sel':'');
-      sw.style.background = p.swatch;
-      const label = document.createElement('span'); label.textContent=p.name;
-      sw.appendChild(label);
-      sw.onclick = ()=>{ state.background.key=p.key; afterChange(); };
-      bgGrid.appendChild(sw);
-    });
-    wrap.appendChild(field('選擇背景', bgGrid));
+    const selWrap = document.createElement('div'); selWrap.className='field';
+    const selLabel = document.createElement('label'); selLabel.textContent='選擇要新增的內容';
+    const sel = document.createElement('select');
+    sel.innerHTML = `
+      <option value="bg">🎨 情境背景</option>
+      <option value="text">🏷️ 文字標籤</option>
+      <option value="shape">✨ 裝飾插圖</option>
+      <option value="tips">💡 行銷小提示</option>
+    `;
+    sel.value = defaultsPanelSection;
+    sel.onchange = ()=>{ defaultsPanelSection = sel.value; renderSection(); };
+    selWrap.appendChild(selLabel); selWrap.appendChild(sel);
+    wrap.appendChild(selWrap);
 
-    const quick = document.createElement('div'); quick.className='quickbtns';
-    const presets = [
-      {t:'熱銷', badge:true, badgeBg:'#C1442E', color:'#fff'},
-      {t:'特價', badge:true, badgeBg:'#E8A33D', color:'#262220'},
-      {t:'免運', badge:true, badgeBg:'#2E7D5B', color:'#fff'},
-      {t:'新品到貨', badge:true, badgeBg:'#262220', color:'#fff'},
-      {t:'限量發售', badge:true, badgeBg:'#C1442E', color:'#fff'},
-      {t:'買一送一', badge:true, badgeBg:'#E8A33D', color:'#262220'},
-      {t:'現貨秒出', badge:true, badgeBg:'#2E7D5B', color:'#fff'},
-      {t:'破盤價', badge:true, badgeBg:'#C1442E', color:'#fff'},
-      {t:'快閃優惠', badge:true, badgeBg:'#94A9BE', color:'#262220'},
-      {t:'⭐⭐⭐⭐⭐ 好評如潮', badge:false, color:'#E8A33D', stroke:true},
-      {t:'職業級手感', badge:true, badgeBg:'#262220', color:'#fff'},
-      {t:'轉速加倍', badge:true, badgeBg:'#C1442E', color:'#fff'},
-      {t:'對戰必備', badge:true, badgeBg:'#E8A33D', color:'#262220'},
-    ];
-    presets.forEach(p=>{
-      const b = document.createElement('button'); b.className='qbtn'; b.textContent='+ '+p.t;
-      b.onclick = ()=> addTextObject(p.t, {badge:p.badge, badgeBg:p.badgeBg, color:p.color, stroke:p.stroke});
-      quick.appendChild(b);
-    });
-    const customBtn = document.createElement('button'); customBtn.className='qbtn'; customBtn.textContent='+ 新增自訂文字';
-    customBtn.onclick = ()=> addTextObject('新文字', {});
-    quick.appendChild(customBtn);
-    wrap.appendChild(field('快速加入文字標籤', quick));
+    const sectionHost = document.createElement('div');
+    wrap.appendChild(sectionHost);
 
-    const shapeQuick = document.createElement('div'); shapeQuick.className='quickbtns';
-    SHAPE_DEFS.forEach(def=>{
-      const b = document.createElement('button'); b.className='qbtn';
-      b.textContent = def.glyph+' '+def.label;
-      b.onclick = ()=> addShapeObject(def.key);
-      shapeQuick.appendChild(b);
-    });
-    wrap.appendChild(field('快速加入裝飾插圖', shapeQuick));
+    function renderSection(){
+      sectionHost.innerHTML = '';
 
-    const tips = document.createElement('div');
-    tips.className='tipsbox';
-    tips.innerHTML = `
-      <div class="tipstitle">💡 行銷小提示</div>
-      <ul>
-        <li>商品主體佔畫面 <b>70% 以上</b>，細節才看得清楚</li>
-        <li>用<b>對比色背景</b>讓商品從縮圖中跳出來</li>
-        <li>一張圖只主打<b>一個賣點</b>，資訊太多反而沒人看</li>
-        <li>價格／優惠文字放在<b>右下或左上</b>，符合視覺閱讀動線</li>
-        <li>「爆炸貼紙＋限量／破盤價」是最容易吸睛的組合</li>
-        <li>善用急迫感字眼提升點擊，但避免誇大不實違反平台規範</li>
-      </ul>`;
-    wrap.appendChild(tips);
+      if(defaultsPanelSection==='bg'){
+        const bgGrid = document.createElement('div'); bgGrid.className='bgpresetgrid';
+        BG_PRESETS.forEach(p=>{
+          const sw = document.createElement('div');
+          sw.className='bgpreset'+(p.key===state.background.key?' sel':'');
+          sw.style.background = p.swatch;
+          const label = document.createElement('span'); label.textContent=p.name;
+          sw.appendChild(label);
+          sw.onclick = ()=>{ state.background.key=p.key; afterChange(); };
+          bgGrid.appendChild(sw);
+        });
+        sectionHost.appendChild(field('選擇背景', bgGrid));
+
+      } else if(defaultsPanelSection==='text'){
+        const quick = document.createElement('div'); quick.className='quickbtns';
+        const presets = [
+          {t:'熱銷', badge:true, badgeBg:'#C1442E', color:'#fff'},
+          {t:'特價', badge:true, badgeBg:'#E8A33D', color:'#262220'},
+          {t:'免運', badge:true, badgeBg:'#2E7D5B', color:'#fff'},
+          {t:'新品到貨', badge:true, badgeBg:'#262220', color:'#fff'},
+          {t:'限量發售', badge:true, badgeBg:'#C1442E', color:'#fff'},
+          {t:'買一送一', badge:true, badgeBg:'#E8A33D', color:'#262220'},
+          {t:'現貨秒出', badge:true, badgeBg:'#2E7D5B', color:'#fff'},
+          {t:'破盤價', badge:true, badgeBg:'#C1442E', color:'#fff'},
+          {t:'快閃優惠', badge:true, badgeBg:'#94A9BE', color:'#262220'},
+          {t:'⭐⭐⭐⭐⭐ 好評如潮', badge:false, color:'#E8A33D', stroke:true},
+          {t:'職業級手感', badge:true, badgeBg:'#262220', color:'#fff'},
+          {t:'轉速加倍', badge:true, badgeBg:'#C1442E', color:'#fff'},
+          {t:'對戰必備', badge:true, badgeBg:'#E8A33D', color:'#262220'},
+        ];
+        presets.forEach(p=>{
+          const b = document.createElement('button'); b.className='qbtn'; b.textContent='+ '+p.t;
+          b.onclick = ()=> addTextObject(p.t, {badge:p.badge, badgeBg:p.badgeBg, color:p.color, stroke:p.stroke});
+          quick.appendChild(b);
+        });
+        const customBtn = document.createElement('button'); customBtn.className='qbtn'; customBtn.textContent='+ 新增自訂文字';
+        customBtn.onclick = ()=> addTextObject('新文字', {});
+        quick.appendChild(customBtn);
+        sectionHost.appendChild(field('快速加入文字標籤', quick));
+
+      } else if(defaultsPanelSection==='shape'){
+        const shapeQuick = document.createElement('div'); shapeQuick.className='quickbtns';
+        SHAPE_DEFS.forEach(def=>{
+          const b = document.createElement('button'); b.className='qbtn';
+          b.textContent = def.glyph+' '+def.label;
+          b.onclick = ()=> addShapeObject(def.key);
+          shapeQuick.appendChild(b);
+        });
+        sectionHost.appendChild(field('快速加入裝飾插圖', shapeQuick));
+
+      } else if(defaultsPanelSection==='tips'){
+        const tips = document.createElement('div');
+        tips.className='tipsbox';
+        tips.innerHTML = `
+          <div class="tipstitle">💡 行銷小提示</div>
+          <ul>
+            <li>商品主體佔畫面 <b>70% 以上</b>，細節才看得清楚</li>
+            <li>用<b>對比色背景</b>讓商品從縮圖中跳出來</li>
+            <li>一張圖只主打<b>一個賣點</b>，資訊太多反而沒人看</li>
+            <li>價格／優惠文字放在<b>右下或左上</b>，符合視覺閱讀動線</li>
+            <li>「爆炸貼紙＋限量／破盤價」是最容易吸睛的組合</li>
+            <li>善用急迫感字眼提升點擊，但避免誇大不實違反平台規範</li>
+          </ul>`;
+        sectionHost.appendChild(tips);
+      }
+    }
+    renderSection();
 
     return wrap;
   }
@@ -1953,24 +1949,10 @@
     pctx.restore();
   }
 
-  /* ---------- flow chips ---------- */
-  function updateFlowChips(){
-    const hasImg = state.objects.some(o=>o.type==='image');
-    const hasProcessed = state.objects.some(o=>o.type==='image' && o.useProcessed);
-    const hasBg = state.background.key !== 'studio-white' || hasImg;
-    const hasText = state.objects.some(o=>o.type==='text');
-    document.getElementById('chip1').classList.toggle('active', hasImg);
-    document.getElementById('chip2').classList.toggle('active', hasProcessed);
-    document.getElementById('chip3').classList.toggle('active', state.background.key!=='studio-white');
-    const hasShape = state.objects.some(o=>o.type==='shape');
-    document.getElementById('chip4').classList.toggle('active', hasText || hasShape);
-  }
-
   function afterChange(){
     updateLayerStrip();
     updateToolbarState();
     updatePropPanel();
-    updateFlowChips();
     render();
   }
 
