@@ -1,207 +1,232 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>我的公車小幫手</title>
-    <!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
-    <link rel="apple-touch-icon" href="custom-icon.png">
-    <link rel="icon" type="image/png" href="custom-icon.png">
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+	<title></title>
+	<meta name="generator" content="LibreOffice 26.2.4.2 (Linux)"/>
+	<meta name="created" content="00:00:00"/>
+	<meta name="changed" content="00:00:00"/>
+	<style type="text/css">
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		p { margin-bottom: 0.1in; line-height: 115%; background: transparent }
+		pre { font-size: 10pt; font-family: "Liberation Mono", monospace; background: transparent }
+	</style>
+</head>
+<body lang="en-US" link="#000080" vlink="#800000" dir="ltr"><pre>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;zh-Hant&quot;&gt;
+&lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot;&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot;&gt;
+    &lt;title&gt;<span lang="zh-CN">我的公車小幫手</span>&lt;/title&gt;
+    &lt;!-- 📌 iPhone <span lang="zh-CN">桌面 </span>App <span lang="zh-CN">圖示：它會去抓您上傳到 </span>GitHub <span lang="zh-CN">的 </span>custom-icon.png <span lang="zh-CN">照片 </span>--&gt;
+    &lt;link rel=&quot;apple-touch-icon&quot; href=&quot;custom-icon.png&quot;&gt;
+    &lt;link rel=&quot;icon&quot; type=&quot;image/png&quot; href=&quot;custom-icon.png&quot;&gt;
+    &lt;!-- Tailwind CSS --&gt;
+    &lt;script src=&quot;https://cdn.tailwindcss.com&quot;&gt;&lt;/script&gt;
+    &lt;!-- FontAwesome Icons --&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css&quot;&gt;
+    &lt;style&gt;
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&amp;display=swap');
         body {
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #f0fdf4;
             -webkit-tap-highlight-color: transparent;
         }
-        /* 隱藏捲軸但可滾動 */
+        /* <span lang="zh-CN">隱藏捲軸但可滾動 </span>*/
         ::-webkit-scrollbar { display: none; }
-    </style>
-</head>
-<body class="bg-emerald-50 text-slate-800 antialiased min-h-screen flex flex-col items-center justify-start pb-24">
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body class=&quot;bg-emerald-50 text-slate-800 antialiased min-h-screen flex flex-col items-center justify-start pb-24&quot;&gt;
 
-    <!-- 頂部標題列 -->
-    <header class="w-full max-w-md bg-emerald-600 text-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center rounded-b-2xl">
-        <div>
-            <h1 class="text-xl font-black flex items-center gap-2">
-                <i class="fa-solid fa-bus text-yellow-300 animate-bounce"></i> 我的公車小幫手
-            </h1>
-            <p id="current-date" class="text-xs text-emerald-100 mt-0.5">今天｜載入中...</p>
-        </div>
-        <button onclick="openSettings()" class="bg-emerald-700 hover:bg-emerald-800 p-2.5 rounded-full text-white transition active:scale-95 shadow">
-            <i class="fa-solid fa-gear text-lg"></i>
-        </button>
-    </header>
+    &lt;!-- <span lang="zh-CN">頂部標題列 </span>--&gt;
+    &lt;header class=&quot;w-full max-w-md bg-emerald-600 text-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center rounded-b-2xl&quot;&gt;
+        &lt;div&gt;
+            &lt;h1 class=&quot;text-xl font-black flex items-center gap-2&quot;&gt;
+                &lt;i class=&quot;fa-solid fa-bus text-yellow-300 animate-bounce&quot;&gt;&lt;/i&gt; <span lang="zh-CN">我的公車小幫手</span>
+            &lt;/h1&gt;
+            &lt;p id=&quot;current-date&quot; class=&quot;text-xs text-emerald-100 mt-0.5&quot;&gt;<span lang="zh-CN">今天｜載入中</span>...&lt;/p&gt;
+        &lt;/div&gt;
+        &lt;button onclick=&quot;openSettings()&quot; class=&quot;bg-emerald-700 hover:bg-emerald-800 p-2.5 rounded-full text-white transition active:scale-95 shadow&quot;&gt;
+            &lt;i class=&quot;fa-solid fa-gear text-lg&quot;&gt;&lt;/i&gt;
+        &lt;/button&gt;
+    &lt;/header&gt;
 
-    <!-- 主要內容區 -->
-    <main class="w-full max-w-md p-4 flex flex-col gap-4 w-full">
+    &lt;!-- <span lang="zh-CN">主要內容區 </span>--&gt;
+    &lt;main class=&quot;w-full max-w-md p-4 flex flex-col gap-4 w-full&quot;&gt;
 
-        <!-- 真實定位狀態區 -->
-        <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-emerald-100 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div id="gps-icon" class="bg-emerald-100 p-2.5 rounded-full text-emerald-600 transition-colors">
-                    <i class="fa-solid fa-location-crosshairs text-lg"></i>
-                </div>
-                <div>
-                    <span class="text-xs text-slate-400 font-medium block">您的位置</span>
-                    <span id="location-text" class="text-sm font-bold text-slate-700">定位中...</span>
-                </div>
-            </div>
-            <button onclick="requestLocation()" class="text-xs bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg font-bold border border-emerald-200 hover:bg-emerald-100 transition active:scale-95">
-                <i class="fa-solid fa-rotate-right mr-1"></i>更新定位
-            </button>
-        </div>
+        &lt;!-- 🔍 <span lang="zh-CN">站牌關鍵字搜尋欄 </span>(<span lang="zh-CN">新增功能</span>) --&gt;
+        &lt;div class=&quot;bg-white p-2 rounded-2xl shadow-sm border border-emerald-200 flex items-center gap-2&quot;&gt;
+            &lt;div class=&quot;text-slate-400 pl-3&quot;&gt;
+                &lt;i class=&quot;fa-solid fa-magnifying-glass text-lg&quot;&gt;&lt;/i&gt;
+            &lt;/div&gt;
+            &lt;input type=&quot;text&quot; id=&quot;search-input&quot; oninput=&quot;handleSearch()&quot; placeholder=&quot;<span lang="zh-CN">搜尋站牌或公車 </span>(<span lang="zh-CN">例如：愛買、農工</span>)&quot; class=&quot;w-full py-2 bg-transparent text-sm font-bold text-slate-700 focus:outline-none placeholder:text-slate-400 placeholder:font-normal&quot;&gt;
+            &lt;button id=&quot;clear-search-btn&quot; onclick=&quot;clearSearch()&quot; class=&quot;hidden text-slate-400 hover:text-slate-600 pr-3&quot;&gt;
+                &lt;i class=&quot;fa-solid fa-circle-xmark&quot;&gt;&lt;/i&gt;
+            &lt;/button&gt;
+        &lt;/div&gt;
 
-        <!-- 一鍵超大按鈕區 -->
-        <div class="grid grid-cols-2 gap-3">
-            <button onclick="startMode('school')" class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-4 rounded-3xl shadow-lg hover:shadow-xl transition transform active:scale-95 flex flex-col items-center text-center gap-1 border-2 border-blue-400">
-                <span class="text-3xl drop-shadow-md">🏫</span>
-                <span class="text-lg font-black">去學校</span>
-                <span class="text-xs text-blue-100">桃園農工</span>
-            </button>
-            <button onclick="startMode('home')" class="bg-gradient-to-br from-amber-500 to-orange-600 text-white p-4 rounded-3xl shadow-lg hover:shadow-xl transition transform active:scale-95 flex flex-col items-center text-center gap-1 border-2 border-amber-400">
-                <span class="text-3xl drop-shadow-md">🏠</span>
-                <span class="text-lg font-black">回家</span>
-                <span class="text-xs text-amber-100">愛買附近</span>
-            </button>
-        </div>
+        &lt;!-- <span lang="zh-CN">真實定位狀態區 </span>--&gt;
+        &lt;div class=&quot;bg-white p-3.5 rounded-2xl shadow-sm border border-emerald-100 flex items-center justify-between&quot;&gt;
+            &lt;div class=&quot;flex items-center gap-3&quot;&gt;
+                &lt;div id=&quot;gps-icon&quot; class=&quot;bg-emerald-100 p-2.5 rounded-full text-emerald-600 transition-colors&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-location-crosshairs text-lg&quot;&gt;&lt;/i&gt;
+                &lt;/div&gt;
+                &lt;div&gt;
+                    &lt;span class=&quot;text-xs text-slate-400 font-medium block&quot;&gt;<span lang="zh-CN">您的位置</span>&lt;/span&gt;
+                    &lt;span id=&quot;location-text&quot; class=&quot;text-sm font-bold text-slate-700&quot;&gt;<span lang="zh-CN">定位中</span>...&lt;/span&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;button onclick=&quot;requestLocation()&quot; class=&quot;text-xs bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg font-bold border border-emerald-200 hover:bg-emerald-100 transition active:scale-95&quot;&gt;
+                &lt;i class=&quot;fa-solid fa-rotate-right mr-1&quot;&gt;&lt;/i&gt;<span lang="zh-CN">重新定位</span>
+            &lt;/button&gt;
+        &lt;/div&gt;
 
-        <!-- ⭐ 推薦班次卡片 (醒目公車號碼 + 到站時間) -->
-        <div class="bg-white rounded-3xl p-5 shadow-md border-2 border-emerald-400 relative overflow-hidden">
-            <div class="absolute top-0 right-0 bg-emerald-500 text-white text-xs px-3 py-1 rounded-bl-xl font-bold shadow-sm">
-                ⭐ 最推薦搭乘班次
-            </div>
+        &lt;!-- <span lang="zh-CN">一鍵超大按鈕區 </span>--&gt;
+        &lt;div class=&quot;grid grid-cols-2 gap-3&quot;&gt;
+            &lt;button onclick=&quot;startMode('school')&quot; class=&quot;bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-4 rounded-3xl shadow-lg hover:shadow-xl transition transform active:scale-95 flex flex-col items-center text-center gap-1 border-2 border-blue-400&quot;&gt;
+                &lt;span class=&quot;text-3xl drop-shadow-md&quot;&gt;🏫&lt;/span&gt;
+                &lt;span class=&quot;text-lg font-black&quot;&gt;<span lang="zh-CN">去學校</span>&lt;/span&gt;
+                &lt;span class=&quot;text-xs text-blue-100&quot;&gt;<span lang="zh-CN">桃園農工</span>&lt;/span&gt;
+            &lt;/button&gt;
+            &lt;button onclick=&quot;startMode('home')&quot; class=&quot;bg-gradient-to-br from-amber-500 to-orange-600 text-white p-4 rounded-3xl shadow-lg hover:shadow-xl transition transform active:scale-95 flex flex-col items-center text-center gap-1 border-2 border-amber-400&quot;&gt;
+                &lt;span class=&quot;text-3xl drop-shadow-md&quot;&gt;🏠&lt;/span&gt;
+                &lt;span class=&quot;text-lg font-black&quot;&gt;<span lang="zh-CN">回家</span>&lt;/span&gt;
+                &lt;span class=&quot;text-xs text-amber-100&quot;&gt;<span lang="zh-CN">愛買附近</span>&lt;/span&gt;
+            &lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;!-- ⭐ <span lang="zh-CN">目前選擇的上車站牌與推薦班次卡片 </span>--&gt;
+        &lt;div class=&quot;bg-white rounded-3xl p-5 shadow-md border-2 border-emerald-400 relative overflow-hidden&quot;&gt;
+            &lt;div class=&quot;absolute top-0 right-0 bg-emerald-500 text-white text-xs px-3 py-1 rounded-bl-xl font-bold shadow-sm&quot;&gt;
+                ⭐ <span lang="zh-CN">目前選取的班次</span>
+            &lt;/div&gt;
             
-            <!-- 公車路線號碼與發車時間 -->
-            <div class="flex items-start justify-between mb-2">
-                <div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-xs bg-amber-400 text-slate-900 font-black px-2 py-0.5 rounded">公車</span>
-                        <span id="recommend-route" class="text-2xl font-black text-blue-600">1路 縱貫線</span>
-                    </div>
-                    <div class="flex items-baseline gap-2 mt-1">
-                        <h2 id="recommend-time" class="text-3xl font-black text-slate-800">計算中...</h2>
-                        <span class="text-xs text-slate-500 font-bold">發車</span>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <span class="inline-block bg-emerald-500 text-white text-xs px-2.5 py-1 rounded-full font-bold animate-pulse shadow-sm">
-                        🟢 正常到站
-                    </span>
-                    <p id="recommend-walk" class="text-xs text-slate-500 mt-1.5 font-bold"><i class="fa-solid fa-person-walking"></i> 步行約 3 分鐘</p>
-                </div>
-            </div>
+            &lt;!-- <span lang="zh-CN">公車路線號碼與發車時間 </span>--&gt;
+            &lt;div class=&quot;flex items-start justify-between mb-2&quot;&gt;
+                &lt;div&gt;
+                    &lt;div class=&quot;flex items-center gap-1.5&quot;&gt;
+                        &lt;span class=&quot;text-xs bg-amber-400 text-slate-900 font-black px-2 py-0.5 rounded&quot;&gt;<span lang="zh-CN">公車</span>&lt;/span&gt;
+                        &lt;span id=&quot;recommend-route&quot; class=&quot;text-2xl font-black text-blue-600&quot;&gt;1<span lang="zh-CN">路 縱貫線</span>&lt;/span&gt;
+                    &lt;/div&gt;
+                    &lt;div class=&quot;flex items-baseline gap-2 mt-1&quot;&gt;
+                        &lt;h2 id=&quot;recommend-time&quot; class=&quot;text-3xl font-black text-slate-800&quot;&gt;<span lang="zh-CN">計算中</span>...&lt;/h2&gt;
+                        &lt;span class=&quot;text-xs text-slate-500 font-bold&quot;&gt;<span lang="zh-CN">發車</span>&lt;/span&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div class=&quot;text-right&quot;&gt;
+                    &lt;span class=&quot;inline-block bg-emerald-500 text-white text-xs px-2.5 py-1 rounded-full font-bold animate-pulse shadow-sm&quot;&gt;
+                        🟢 <span lang="zh-CN">正常到站</span>
+                    &lt;/span&gt;
+                    &lt;p id=&quot;recommend-walk&quot; class=&quot;text-xs text-slate-500 mt-1.5 font-bold&quot;&gt;&lt;i class=&quot;fa-solid fa-person-walking&quot;&gt;&lt;/i&gt; <span lang="zh-CN">步行約 </span>3 <span lang="zh-CN">分鐘</span>&lt;/p&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
 
-            <!-- 詳細路線行程細節 (包含到達時間) -->
-            <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 text-sm space-y-2 mb-4">
-                <div class="flex items-center justify-between text-slate-700">
-                    <p class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-dot text-emerald-600 text-xs"></i> 
-                        上車：<strong id="recommend-board">尋找中...</strong>
-                    </p>
-                    <span id="recommend-board-time" class="text-xs font-bold text-slate-500">--:--</span>
-                </div>
-                <div class="flex items-center justify-between text-slate-700">
-                    <p class="flex items-center gap-2">
-                        <i class="fa-solid fa-location-dot text-rose-500 text-xs"></i> 
-                        下車：<strong id="recommend-alight">愛買站</strong>
-                    </p>
-                    <span id="recommend-arrive-time" class="text-xs font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded">約 --:-- 到達</span>
-                </div>
-                <div class="pt-1.5 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-500">
-                    <span>➡️ 行駛方向：<strong id="recommend-direction" class="text-blue-600">往 中壢/中山路 方向</strong></span>
-                    <span>⏱️ 車程約 18 分鐘</span>
-                </div>
-            </div>
+            &lt;!-- <span lang="zh-CN">詳細路線行程細節 </span>(<span lang="zh-CN">包含點選切換上車站牌</span>) --&gt;
+            &lt;div class=&quot;bg-slate-50 p-3.5 rounded-2xl border border-slate-100 text-sm space-y-2 mb-4&quot;&gt;
+                &lt;div class=&quot;flex items-center justify-between text-slate-700&quot;&gt;
+                    &lt;p class=&quot;flex items-center gap-2&quot;&gt;
+                        &lt;i class=&quot;fa-solid fa-circle-dot text-emerald-600 text-xs&quot;&gt;&lt;/i&gt; 
+                        <span lang="zh-CN">上車點：</span>&lt;strong id=&quot;recommend-board&quot; class=&quot;text-emerald-700 text-base&quot;&gt;<span lang="zh-CN">尋找中</span>...&lt;/strong&gt;
+                    &lt;/p&gt;
+                    &lt;span id=&quot;recommend-board-time&quot; class=&quot;text-xs font-bold text-slate-500&quot;&gt;--:--&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div class=&quot;flex items-center justify-between text-slate-700&quot;&gt;
+                    &lt;p class=&quot;flex items-center gap-2&quot;&gt;
+                        &lt;i class=&quot;fa-solid fa-location-dot text-rose-500 text-xs&quot;&gt;&lt;/i&gt; 
+                        <span lang="zh-CN">下車點：</span>&lt;strong id=&quot;recommend-alight&quot; class=&quot;text-slate-800&quot;&gt;<span lang="zh-CN">愛買站</span>&lt;/strong&gt;
+                    &lt;/p&gt;
+                    &lt;span id=&quot;recommend-arrive-time&quot; class=&quot;text-xs font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded&quot;&gt;<span lang="zh-CN">約 </span>--:-- <span lang="zh-CN">到達</span>&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div class=&quot;pt-1.5 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-500&quot;&gt;
+                    &lt;span&gt;➡️ <span lang="zh-CN">行駛方向：</span>&lt;strong id=&quot;recommend-direction&quot; class=&quot;text-blue-600&quot;&gt;<span lang="zh-CN">往 中壢</span>/<span lang="zh-CN">中山路 方向</span>&lt;/strong&gt;&lt;/span&gt;
+                    &lt;span&gt;⏱️ <span lang="zh-CN">車程約 </span>18 <span lang="zh-CN">分鐘</span>&lt;/span&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
 
-            <button onclick="confirmTrip()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-black shadow transition active:scale-95 flex items-center justify-center gap-2 text-lg">
-                <i class="fa-solid fa-check-circle"></i> 我要搭這班公車
-            </button>
-        </div>
+            &lt;button onclick=&quot;confirmTrip()&quot; class=&quot;w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-black shadow transition active:scale-95 flex items-center justify-center gap-2 text-lg&quot;&gt;
+                &lt;i class=&quot;fa-solid fa-check-circle&quot;&gt;&lt;/i&gt; <span lang="zh-CN">我要搭這班公車</span>
+            &lt;/button&gt;
+        &lt;/div&gt;
 
-        <!-- 根據 GPS 計算的附近站牌與經過路線 -->
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="font-black text-slate-700 text-base flex items-center gap-2">
-                    <i class="fa-solid fa-location-arrow text-blue-500"></i> 您附近的站牌
-                </h3>
-                <span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-md">依距離排序</span>
-            </div>
-            <div id="nearby-stops-list" class="space-y-2">
-                <div class="text-center p-4 text-slate-400 text-sm">
-                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-emerald-500"></i><br>
-                    正在搜尋附近站牌與公車號碼...
-                </div>
-            </div>
-        </div>
+        &lt;!-- <span lang="zh-CN">站牌清單 </span>(<span lang="zh-CN">點選可直接換上車站</span>) --&gt;
+        &lt;div class=&quot;bg-white rounded-2xl p-4 shadow-sm border border-emerald-100&quot;&gt;
+            &lt;div class=&quot;flex justify-between items-center mb-3&quot;&gt;
+                &lt;h3 id=&quot;list-title&quot; class=&quot;font-black text-slate-700 text-base flex items-center gap-2&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-location-arrow text-blue-500&quot;&gt;&lt;/i&gt; <span lang="zh-CN">您附近的站牌 </span>(<span lang="zh-CN">點擊選擇上車</span>)
+                &lt;/h3&gt;
+                &lt;span class=&quot;text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded-md&quot;&gt;<span lang="zh-CN">依距離排序</span>&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div id=&quot;nearby-stops-list&quot; class=&quot;space-y-2&quot;&gt;
+                &lt;div class=&quot;text-center p-4 text-slate-400 text-sm&quot;&gt;
+                    &lt;i class=&quot;fa-solid fa-spinner fa-spin text-2xl mb-2 text-emerald-500&quot;&gt;&lt;/i&gt;&lt;br&gt;
+                    <span lang="zh-CN">正在搜尋附近站牌</span>...
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
 
-    </main>
+    &lt;/main&gt;
 
-    <!-- 底部導覽列 -->
-    <nav class="w-full max-w-md bg-white border-t border-slate-200 fixed bottom-0 left-1/2 transform -translate-x-1/2 py-2 px-6 flex justify-around items-center z-50 rounded-t-2xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <button class="flex flex-col items-center text-emerald-600 font-bold text-xs gap-1 transition">
-            <i class="fa-solid fa-house text-lg"></i>
-            <span>首頁</span>
-        </button>
-        <button onclick="alert('地圖找站牌功能載入中...')" class="flex flex-col items-center text-slate-400 hover:text-emerald-600 font-bold text-xs gap-1 transition">
-            <i class="fa-solid fa-map-location-dot text-lg"></i>
-            <span>地圖</span>
-        </button>
-        <button onclick="alert('今日完整班次表載入中...')" class="flex flex-col items-center text-slate-400 hover:text-emerald-600 font-bold text-xs gap-1 transition">
-            <i class="fa-solid fa-calendar-days text-lg"></i>
-            <span>班次</span>
-        </button>
-        <button onclick="openSettings()" class="flex flex-col items-center text-slate-400 hover:text-emerald-600 font-bold text-xs gap-1 transition">
-            <i class="fa-solid fa-user-gear text-lg"></i>
-            <span>設定</span>
-        </button>
-    </nav>
+    &lt;!-- <span lang="zh-CN">底部導覽列 </span>--&gt;
+    &lt;nav class=&quot;w-full max-w-md bg-white border-t border-slate-200 fixed bottom-0 left-1/2 transform -translate-x-1/2 py-2 px-6 flex justify-around items-center z-50 rounded-t-2xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]&quot;&gt;
+        &lt;button class=&quot;flex flex-col items-center text-emerald-600 font-bold text-xs gap-1 transition&quot;&gt;
+            &lt;i class=&quot;fa-solid fa-house text-lg&quot;&gt;&lt;/i&gt;
+            &lt;span&gt;<span lang="zh-CN">首頁</span>&lt;/span&gt;
+        &lt;/button&gt;
+        &lt;button onclick=&quot;focusSearch()&quot; class=&quot;flex flex-col items-center text-slate-400 hover:text-emerald-600 font-bold text-xs gap-1 transition&quot;&gt;
+            &lt;i class=&quot;fa-solid fa-magnifying-glass text-lg&quot;&gt;&lt;/i&gt;
+            &lt;span&gt;<span lang="zh-CN">搜尋</span>&lt;/span&gt;
+        &lt;/button&gt;
+        &lt;button onclick=&quot;alert('<span lang="zh-CN">今日完整班次表載入中</span>...')&quot; class=&quot;flex flex-col items-center text-slate-400 hover:text-emerald-600 font-bold text-xs gap-1 transition&quot;&gt;
+            &lt;i class=&quot;fa-solid fa-calendar-days text-lg&quot;&gt;&lt;/i&gt;
+            &lt;span&gt;<span lang="zh-CN">班次</span>&lt;/span&gt;
+        &lt;/button&gt;
+        &lt;button onclick=&quot;openSettings()&quot; class=&quot;flex flex-col items-center text-slate-400 hover:text-emerald-600 font-bold text-xs gap-1 transition&quot;&gt;
+            &lt;i class=&quot;fa-solid fa-user-gear text-lg&quot;&gt;&lt;/i&gt;
+            &lt;span&gt;<span lang="zh-CN">設定</span>&lt;/span&gt;
+        &lt;/button&gt;
+    &lt;/nav&gt;
 
-    <!-- 方向確認對話框 -->
-    <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border-4 border-emerald-500 transform transition-all">
-            <div class="text-center mb-4">
-                <span class="text-5xl drop-shadow">🚌</span>
-                <h3 class="text-xl font-black text-slate-800 mt-2">上車前最後確認！</h3>
-            </div>
-            <div id="modal-content" class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 space-y-2 text-sm mb-5 text-slate-700 shadow-inner">
-                <!-- 動態內容 -->
-            </div>
-            <div class="flex gap-3">
-                <button onclick="closeModal()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-3 rounded-xl font-bold transition active:scale-95">
-                    取消
-                </button>
-                <button onclick="confirmBoardingSuccess()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-black shadow transition active:scale-95">
-                    ✅ 沒錯，出發！
-                </button>
-            </div>
-        </div>
-    </div>
+    &lt;!-- <span lang="zh-CN">方向確認對話框 </span>--&gt;
+    &lt;div id=&quot;modal&quot; class=&quot;fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4&quot;&gt;
+        &lt;div class=&quot;bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border-4 border-emerald-500 transform transition-all&quot;&gt;
+            &lt;div class=&quot;text-center mb-4&quot;&gt;
+                &lt;span class=&quot;text-5xl drop-shadow&quot;&gt;🚌&lt;/span&gt;
+                &lt;h3 class=&quot;text-xl font-black text-slate-800 mt-2&quot;&gt;<span lang="zh-CN">上車前最後確認！</span>&lt;/h3&gt;
+            &lt;/div&gt;
+            &lt;div id=&quot;modal-content&quot; class=&quot;bg-emerald-50 p-4 rounded-2xl border border-emerald-200 space-y-2 text-sm mb-5 text-slate-700 shadow-inner&quot;&gt;
+                &lt;!-- <span lang="zh-CN">動態內容 </span>--&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;flex gap-3&quot;&gt;
+                &lt;button onclick=&quot;closeModal()&quot; class=&quot;flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 py-3 rounded-xl font-bold transition active:scale-95&quot;&gt;
+                    <span lang="zh-CN">取消</span>
+                &lt;/button&gt;
+                &lt;button onclick=&quot;confirmBoardingSuccess()&quot; class=&quot;flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-black shadow transition active:scale-95&quot;&gt;
+                    ✅ <span lang="zh-CN">沒錯，出發！</span>
+                &lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
 
-    <script>
-        // --- 1. 時間與日期處理 ---
-        const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+    &lt;script&gt;
+        // --- 1. <span lang="zh-CN">時間與日期處理 </span>---
+        const days = ['<span lang="zh-CN">星期日</span>', '<span lang="zh-CN">星期一</span>', '<span lang="zh-CN">星期二</span>', '<span lang="zh-CN">星期三</span>', '<span lang="zh-CN">星期四</span>', '<span lang="zh-CN">星期五</span>', '<span lang="zh-CN">星期六</span>'];
         
         function updateTime() {
             const now = new Date();
-            const dateString = `${now.getMonth() + 1}月${now.getDate()}日｜${days[now.getDay()]}`;
+            const dateString = `${now.getMonth() + 1}<span lang="zh-CN">月</span>${now.getDate()}<span lang="zh-CN">日｜</span>${days[now.getDay()]}`;
             document.getElementById('current-date').innerText = dateString;
             return now;
         }
 
-        // 動態推算未來的假發車時間與抵達時間
+        // <span lang="zh-CN">動態推算未來的假發車時間與抵達時間</span>
         function generateDynamicTimes() {
             const now = new Date();
             const times = [];
-            let offset = Math.floor(Math.random() * 5) + 3; // 3~8 分鐘後第一班
+            let offset = Math.floor(Math.random() * 5) + 3;
 
-            for(let i=0; i<3; i++) {
+            for(let i=0; i&lt;3; i++) {
                 const departTime = new Date(now.getTime() + offset * 60000);
-                const arriveTime = new Date(departTime.getTime() + 18 * 60000); // 車程算 18 分鐘
+                const arriveTime = new Date(departTime.getTime() + 18 * 60000);
 
                 const depHrs = departTime.getHours().toString().padStart(2, '0');
                 const depMins = departTime.getMinutes().toString().padStart(2, '0');
@@ -213,22 +238,23 @@
                     arriveStr: `${arrHrs}:${arrMins}`,
                     minutesLeft: offset
                 });
-                offset += Math.floor(Math.random() * 8) + 8; // 下一班 8~15 分鐘後
+                offset += Math.floor(Math.random() * 8) + 8;
             }
             return times;
         }
 
-        // --- 2. 桃園真實站牌與行經路線資料庫 ---
+        // --- 2. <span lang="zh-CN">桃園真實站牌擴充資料庫 </span>---
         const taoyuanStopsDB = [
-            { name: '桃園農工', lat: 24.9959, lng: 121.3195, mainRoute: '1路', allRoutes: '1路, 137路, 302路' },
-            { name: '愛買(中山路)', lat: 24.9865, lng: 121.2952, mainRoute: '1路', allRoutes: '1路, 139路, 307路' },
-            { name: '武陵高中', lat: 24.9894, lng: 121.2965, mainRoute: '1路', allRoutes: '1路, 139路, 601路' },
-            { name: '中平路口', lat: 24.9902, lng: 121.3021, mainRoute: '1路', allRoutes: '1路, 220路' },
-            { name: '中山國小', lat: 24.9875, lng: 121.2901, mainRoute: '307路', allRoutes: '1路, 307路' },
-            { name: '桃園火車站', lat: 24.9892, lng: 121.3135, mainRoute: '1路', allRoutes: '各路幹線公車' }
+            { id: '1', name: '<span lang="zh-CN">愛買</span>(<span lang="zh-CN">中山路</span>)', lat: 24.9865, lng: 121.2952, mainRoute: '1<span lang="zh-CN">路</span>', allRoutes: '1<span lang="zh-CN">路</span>, 139<span lang="zh-CN">路</span>, 307<span lang="zh-CN">路</span>' },
+            { id: '2', name: '<span lang="zh-CN">桃園農工</span>', lat: 24.9959, lng: 121.3195, mainRoute: '1<span lang="zh-CN">路</span>', allRoutes: '1<span lang="zh-CN">路</span>, 137<span lang="zh-CN">路</span>, 302<span lang="zh-CN">路</span>' },
+            { id: '3', name: '<span lang="zh-CN">武陵高中</span>', lat: 24.9894, lng: 121.2965, mainRoute: '1<span lang="zh-CN">路</span>', allRoutes: '1<span lang="zh-CN">路</span>, 139<span lang="zh-CN">路</span>, 601<span lang="zh-CN">路</span>' },
+            { id: '4', name: '<span lang="zh-CN">中平路口</span>', lat: 24.9902, lng: 121.3021, mainRoute: '1<span lang="zh-CN">路</span>', allRoutes: '1<span lang="zh-CN">路</span>, 220<span lang="zh-CN">路</span>' },
+            { id: '5', name: '<span lang="zh-CN">中山國小</span>', lat: 24.9875, lng: 121.2901, mainRoute: '307<span lang="zh-CN">路</span>', allRoutes: '1<span lang="zh-CN">路</span>, 307<span lang="zh-CN">路</span>' },
+            { id: '6', name: '<span lang="zh-CN">桃園火車站</span>', lat: 24.9892, lng: 121.3135, mainRoute: '1<span lang="zh-CN">路</span>', allRoutes: '<span lang="zh-CN">各路幹線公車</span>' },
+            { id: '7', name: '<span lang="zh-CN">龍安街口</span>', lat: 24.9840, lng: 121.2890, mainRoute: '307<span lang="zh-CN">路</span>', allRoutes: '307<span lang="zh-CN">路</span>, 1B<span lang="zh-CN">路</span>' }
         ];
 
-        // 哈維辛公式計算距離
+        // <span lang="zh-CN">哈維辛公式計算距離</span>
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3;
             const φ1 = lat1 * Math.PI/180;
@@ -242,32 +268,32 @@
             return Math.round(R * c);
         }
 
-        // --- 3. 定位與動態資料更新 ---
-        let currentClosestStop = null;
-        let currentMode = 'home'; // 預設為回家模式
+        // <span lang="zh-CN">全域變數</span>
+        let processedStops = [];
+        let currentSelectedStop = null;
+        let currentMode = 'home'; // 'home' <span lang="zh-CN">或 </span>'school'
 
         function requestLocation() {
-            document.getElementById('location-text').innerText = "定位中...";
+            document.getElementById('location-text').innerText = &quot;<span lang="zh-CN">定位中</span>...&quot;;
             document.getElementById('gps-icon').classList.add('animate-spin');
 
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    position => {
+                    position =&gt; {
                         document.getElementById('gps-icon').classList.remove('animate-spin');
                         const userLat = position.coords.latitude;
                         const userLng = position.coords.longitude;
                         
-                        const isTaoyuan = (userLat > 24.8 && userLat < 25.1 && userLng > 121.1 && userLng < 121.4);
+                        const isTaoyuan = (userLat &gt; 24.8 &amp;&amp; userLat &lt; 25.1 &amp;&amp; userLng &gt; 121.1 &amp;&amp; userLng &lt; 121.4);
                         const finalLat = isTaoyuan ? userLat : 24.9880; 
                         const finalLng = isTaoyuan ? userLng : 121.2960;
 
-                        document.getElementById('location-text').innerText = isTaoyuan ? "已完成精準定位" : "模擬桃園市區定位";
-                        
+                        document.getElementById('location-text').innerText = isTaoyuan ? &quot;<span lang="zh-CN">已精準定位</span>&quot; : &quot;<span lang="zh-CN">模擬桃園市區定位</span>&quot;;
                         processStops(finalLat, finalLng);
                     },
-                    error => {
+                    error =&gt; {
                         document.getElementById('gps-icon').classList.remove('animate-spin');
-                        document.getElementById('location-text').innerText = "預設定位 (愛買附近)";
+                        document.getElementById('location-text').innerText = &quot;<span lang="zh-CN">預設定位 </span>(<span lang="zh-CN">愛買附近</span>)&quot;;
                         processStops(24.9865, 121.2952);
                     },
                     { enableHighAccuracy: true, timeout: 5000 }
@@ -276,86 +302,150 @@
         }
 
         function processStops(lat, lng) {
-            const stopsWithDistance = taoyuanStopsDB.map(stop => {
+            processedStops = taoyuanStopsDB.map(stop =&gt; {
                 const dist = calculateDistance(lat, lng, stop.lat, stop.lng);
                 const walkMins = Math.max(1, Math.round(dist / 60));
                 const dynamicTimes = generateDynamicTimes();
                 return { ...stop, distance: dist, walkMins: walkMins, times: dynamicTimes };
             });
 
-            stopsWithDistance.sort((a, b) => a.distance - b.distance);
-            const nearestStops = stopsWithDistance.slice(0, 4);
-            currentClosestStop = nearestStops[0];
+            processedStops.sort((a, b) =&gt; a.distance - b.distance);
+            
+            // <span lang="zh-CN">預設選擇第一個最近的站牌</span>
+            if (!currentSelectedStop) {
+                currentSelectedStop = processedStops[0];
+            }
 
-            renderNearby(nearestStops);
-            updateRecommendCard(nearestStops[0]);
+            renderNearbyList(processedStops);
+            updateRecommendCard(currentSelectedStop);
         }
 
-        function renderNearby(stops) {
-            const container = document.getElementById('nearby-stops-list');
-            container.innerHTML = stops.map(stop => `
-                <div class="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-emerald-50 rounded-xl border border-slate-100 transition cursor-pointer active:scale-95">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-blue-100 text-blue-700 p-2 rounded-lg font-bold text-xs flex flex-col items-center w-14">
-                            <span class="text-[10px] text-blue-500">距離</span>
-                            ${stop.distance > 999 ? (stop.distance/1000).toFixed(1)+'km' : stop.distance+'m'}
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h4 class="font-bold text-slate-800 text-base">${stop.name}</h4>
-                                <span class="bg-amber-100 text-amber-800 text-[10px] font-black px-1.5 py-0.5 rounded">${stop.mainRoute}</span>
-                            </div>
-                            <span class="text-xs text-slate-500">🚶 走 ${stop.walkMins} 分鐘 | 經過: ${stop.allRoutes}</span>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-lg font-black text-emerald-600">${stop.times[0].timeStr}</span>
-                        <span class="text-[10px] block text-emerald-500 font-bold">${stop.times[0].minutesLeft} 分後進站</span>
-                    </div>
-                </div>
-            `).join('');
-        }
+        // --- 🔍 <span lang="zh-CN">搜尋功能邏輯 </span>---
+        function handleSearch() {
+            const query = document.getElementById('search-input').value.trim().toLowerCase();
+            const clearBtn = document.getElementById('clear-search-btn');
 
-        function updateRecommendCard(closestStop) {
-            if(!closestStop) return;
-            const nextBus = closestStop.times[0];
-
-            // 判斷當前模式
-            if (currentMode === 'school') {
-                document.getElementById('recommend-route').innerText = "1路 / 302路";
-                document.getElementById('recommend-board').innerText = closestStop.name;
-                document.getElementById('recommend-alight').innerText = "桃園農工";
-                document.getElementById('recommend-direction').innerText = "往 桃園農工/萬壽路 方向";
+            if (query.length &gt; 0) {
+                clearBtn.classList.remove('hidden');
+                document.getElementById('list-title').innerHTML = `&lt;i class=&quot;fa-solid fa-magnifying-glass text-amber-500&quot;&gt;&lt;/i&gt; <span lang="zh-CN">搜尋結果 </span>(<span lang="zh-CN">點擊選擇上車</span>)`;
+                
+                const filtered = processedStops.filter(stop =&gt; 
+                    stop.name.toLowerCase().includes(query) || 
+                    stop.allRoutes.toLowerCase().includes(query)
+                );
+                renderNearbyList(filtered);
             } else {
-                document.getElementById('recommend-route').innerText = "1路 / 307路";
-                document.getElementById('recommend-board').innerText = closestStop.name === "桃園農工" ? "桃園農工" : closestStop.name;
-                document.getElementById('recommend-alight').innerText = "愛買(中山路)";
-                document.getElementById('recommend-direction').innerText = "往 中壢/中山路 方向";
+                clearSearch();
+            }
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('clear-search-btn').classList.add('hidden');
+            document.getElementById('list-title').innerHTML = `&lt;i class=&quot;fa-solid fa-location-arrow text-blue-500&quot;&gt;&lt;/i&gt; <span lang="zh-CN">您附近的站牌 </span>(<span lang="zh-CN">點擊選擇上車</span>)`;
+            renderNearbyList(processedStops);
+        }
+
+        function focusSearch() {
+            const searchInput = document.getElementById('search-input');
+            searchInput.focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // <span lang="zh-CN">渲染站牌清單，並加上「點擊選擇上車」事件</span>
+        function renderNearbyList(stops) {
+            const container = document.getElementById('nearby-stops-list');
+
+            if (stops.length === 0) {
+                container.innerHTML = `
+                    &lt;div class=&quot;text-center p-6 text-slate-400 text-sm&quot;&gt;
+                        &lt;i class=&quot;fa-solid fa-face-frown text-3xl mb-2 text-slate-300&quot;&gt;&lt;/i&gt;&lt;br&gt;
+                        <span lang="zh-CN">找不到相關的站牌或公車號碼喔！</span>
+                    &lt;/div&gt;
+                `;
+                return;
+            }
+
+            container.innerHTML = stops.map(stop =&gt; {
+                const isSelected = currentSelectedStop &amp;&amp; currentSelectedStop.id === stop.id;
+                return `
+                    &lt;div onclick=&quot;selectBoardingStop('${stop.id}')&quot; class=&quot;flex items-center justify-between p-3.5 rounded-xl border transition cursor-pointer active:scale-95 ${isSelected ? 'bg-emerald-100/80 border-emerald-500 ring-2 ring-emerald-400' : 'bg-slate-50 hover:bg-emerald-50 border-slate-100'}&quot;&gt;
+                        &lt;div class=&quot;flex items-center gap-3&quot;&gt;
+                            &lt;div class=&quot;${isSelected ? 'bg-emerald-600 text-white' : 'bg-blue-100 text-blue-700'} p-2 rounded-lg font-bold text-xs flex flex-col items-center w-14&quot;&gt;
+                                &lt;span class=&quot;text-[10px] ${isSelected ? 'text-emerald-100' : 'text-blue-500'}&quot;&gt;${isSelected ? '<span lang="zh-CN">選取中</span>' : '<span lang="zh-CN">距離</span>'}&lt;/span&gt;
+                                ${stop.distance &gt; 999 ? (stop.distance/1000).toFixed(1)+'km' : stop.distance+'m'}
+                            &lt;/div&gt;
+                            &lt;div&gt;
+                                &lt;div class=&quot;flex items-center gap-2&quot;&gt;
+                                    &lt;h4 class=&quot;font-bold text-slate-800 text-base&quot;&gt;${stop.name}&lt;/h4&gt;
+                                    &lt;span class=&quot;bg-amber-100 text-amber-800 text-[10px] font-black px-1.5 py-0.5 rounded&quot;&gt;${stop.mainRoute}&lt;/span&gt;
+                                &lt;/div&gt;
+                                &lt;span class=&quot;text-xs text-slate-500&quot;&gt;🚶 <span lang="zh-CN">走 </span>${stop.walkMins} <span lang="zh-CN">分鐘 </span>| <span lang="zh-CN">經過</span>: ${stop.allRoutes}&lt;/span&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                        &lt;div class=&quot;text-right&quot;&gt;
+                            &lt;span class=&quot;text-lg font-black text-emerald-600&quot;&gt;${stop.times[0].timeStr}&lt;/span&gt;
+                            &lt;span class=&quot;text-[10px] block text-emerald-500 font-bold&quot;&gt;${stop.times[0].minutesLeft} <span lang="zh-CN">分後進站</span>&lt;/span&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                `;
+            }).join('');
+        }
+
+        // <span lang="zh-CN">點擊卡片選擇上車站牌</span>
+        function selectBoardingStop(stopId) {
+            const found = processedStops.find(s =&gt; s.id === stopId);
+            if (found) {
+                currentSelectedStop = found;
+                updateRecommendCard(currentSelectedStop);
+                // <span lang="zh-CN">重新渲染清單標示選取狀態</span>
+                const query = document.getElementById('search-input').value.trim();
+                if (query.length &gt; 0) {
+                    handleSearch();
+                } else {
+                    renderNearbyList(processedStops);
+                }
+            }
+        }
+
+        function updateRecommendCard(stop) {
+            if(!stop) return;
+            const nextBus = stop.times[0];
+
+            if (currentMode === 'school') {
+                document.getElementById('recommend-route').innerText = stop.mainRoute === &quot;307<span lang="zh-CN">路</span>&quot; ? &quot;307<span lang="zh-CN">路</span>&quot; : &quot;1<span lang="zh-CN">路 </span>/ 302<span lang="zh-CN">路</span>&quot;;
+                document.getElementById('recommend-board').innerText = stop.name;
+                document.getElementById('recommend-alight').innerText = &quot;<span lang="zh-CN">桃園農工</span>&quot;;
+                document.getElementById('recommend-direction').innerText = &quot;<span lang="zh-CN">往 桃園農工</span>/<span lang="zh-CN">萬壽路 方向</span>&quot;;
+            } else {
+                document.getElementById('recommend-route').innerText = stop.mainRoute === &quot;307<span lang="zh-CN">路</span>&quot; ? &quot;307<span lang="zh-CN">路</span>&quot; : &quot;1<span lang="zh-CN">路 </span>/ 307<span lang="zh-CN">路</span>&quot;;
+                document.getElementById('recommend-board').innerText = stop.name;
+                document.getElementById('recommend-alight').innerText = &quot;<span lang="zh-CN">愛買</span>(<span lang="zh-CN">中山路</span>)&quot;;
+                document.getElementById('recommend-direction').innerText = &quot;<span lang="zh-CN">往 中壢</span>/<span lang="zh-CN">中山路 方向</span>&quot;;
             }
 
             document.getElementById('recommend-time').innerText = nextBus.timeStr;
             document.getElementById('recommend-board-time').innerText = nextBus.timeStr;
-            document.getElementById('recommend-arrive-time').innerText = `預計 ${nextBus.arriveStr} 到達`;
-            document.getElementById('recommend-walk').innerHTML = `<i class="fa-solid fa-person-walking"></i> 步行約 ${closestStop.walkMins} 分鐘`;
+            document.getElementById('recommend-arrive-time').innerText = `<span lang="zh-CN">預計 </span>${nextBus.arriveStr} <span lang="zh-CN">到達</span>`;
+            document.getElementById('recommend-walk').innerHTML = `&lt;i class=&quot;fa-solid fa-person-walking&quot;&gt;&lt;/i&gt; <span lang="zh-CN">步行約 </span>${stop.walkMins} <span lang="zh-CN">分鐘</span>`;
         }
 
-        // --- 4. 互動模式 (去學校 / 回家) ---
+        // --- 4. <span lang="zh-CN">模式切換 </span>---
         function startMode(type) {
             currentMode = type;
-            if(!currentClosestStop) return alert('正在精準定位中，請稍等一下下喔！');
+            if(!currentSelectedStop) return alert('<span lang="zh-CN">正在搜尋站牌中，請稍等喔！</span>');
+
+            updateRecommendCard(currentSelectedStop);
 
             if (type === 'school') {
-                updateRecommendCard(currentClosestStop);
-                showModal('🏫 去學校模式', '1路 縱貫線', currentClosestStop.name, '桃園農工', currentClosestStop.times[0].timeStr, currentClosestStop.times[0].arriveStr, '往 桃園農工/萬壽路 方向');
+                showModal('🏫 <span lang="zh-CN">去學校模式</span>', document.getElementById('recommend-route').innerText, currentSelectedStop.name, '<span lang="zh-CN">桃園農工</span>', currentSelectedStop.times[0].timeStr, currentSelectedStop.times[0].arriveStr, '<span lang="zh-CN">往 桃園農工</span>/<span lang="zh-CN">萬壽路 方向</span>');
             } else {
-                updateRecommendCard(currentClosestStop);
-                const boardName = currentClosestStop.name === "桃園農工" ? "桃園農工" : currentClosestStop.name;
-                showModal('🏠 回家模式', '1路 縱貫線', boardName, '愛買(中山路)', currentClosestStop.times[0].timeStr, currentClosestStop.times[0].arriveStr, '往 中壢/中山路 方向');
+                showModal('🏠 <span lang="zh-CN">回家模式</span>', document.getElementById('recommend-route').innerText, currentSelectedStop.name, '<span lang="zh-CN">愛買</span>(<span lang="zh-CN">中山路</span>)', currentSelectedStop.times[0].timeStr, currentSelectedStop.times[0].arriveStr, '<span lang="zh-CN">往 中壢</span>/<span lang="zh-CN">中山路 方向</span>');
             }
         }
 
         function confirmTrip() {
-            if(!currentClosestStop) return;
+            if(!currentSelectedStop) return;
             const route = document.getElementById('recommend-route').innerText;
             const board = document.getElementById('recommend-board').innerText;
             const alight = document.getElementById('recommend-alight').innerText;
@@ -363,42 +453,44 @@
             const arriveTime = document.getElementById('recommend-arrive-time').innerText;
             const direction = document.getElementById('recommend-direction').innerText;
 
-            showModal('🚌 上車防錯確認', route, board, alight, time, arriveTime.replace('預計 ', ''), direction);
+            showModal('🚌 <span lang="zh-CN">上車防錯確認</span>', route, board, alight, time, arriveTime.replace('<span lang="zh-CN">預計 </span>', ''), direction);
         }
 
         function showModal(title, route, from, to, time, arriveTime, direction) {
             const modal = document.getElementById('modal');
             const content = document.getElementById('modal-content');
             content.innerHTML = `
-                <p class="text-center font-black text-emerald-800 text-lg mb-2">${title}</p>
-                <div class="space-y-2 text-base font-medium">
-                    <p class="text-slate-900">🚌 搭乘公車：<strong class="text-xl text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">${route}</strong></p>
-                    <p class="bg-amber-50 p-2 rounded-lg border border-amber-200 text-amber-900">
-                        ➡️ 認明方向：<strong class="text-amber-700 font-bold">${direction}</strong>
-                    </p>
-                    <p>📍 上車地點：<strong>${from}</strong> (${time} 發車)</p>
-                    <p>🏁 下車地點：<strong>${to}</strong> (預計 ${arriveTime} 到達)</p>
-                </div>
-                <div class="bg-emerald-100 p-2.5 rounded-lg border border-emerald-300 text-xs text-emerald-900 mt-3 text-center font-bold">
-                    💡 提示小朋友：上車前看一眼公車頭頂的車牌號碼對不對喔！
-                </div>
+                &lt;p class=&quot;text-center font-black text-emerald-800 text-lg mb-2&quot;&gt;${title}&lt;/p&gt;
+                &lt;div class=&quot;space-y-2 text-base font-medium&quot;&gt;
+                    &lt;p class=&quot;text-slate-900&quot;&gt;🚌 <span lang="zh-CN">搭乘公車：</span>&lt;strong class=&quot;text-xl text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200&quot;&gt;${route}&lt;/strong&gt;&lt;/p&gt;
+                    &lt;p class=&quot;bg-amber-50 p-2 rounded-lg border border-amber-200 text-amber-900&quot;&gt;
+                        ➡️ <span lang="zh-CN">認明方向：</span>&lt;strong class=&quot;text-amber-700 font-bold&quot;&gt;${direction}&lt;/strong&gt;
+                    &lt;/p&gt;
+                    &lt;p&gt;📍 <span lang="zh-CN">上車站點：</span>&lt;strong&gt;${from}&lt;/strong&gt; (${time} <span lang="zh-CN">發車</span>)&lt;/p&gt;
+                    &lt;p&gt;🏁 <span lang="zh-CN">下車站點：</span>&lt;strong&gt;${to}&lt;/strong&gt; (<span lang="zh-CN">預計 </span>${arriveTime} <span lang="zh-CN">到達</span>)&lt;/p&gt;
+                &lt;/div&gt;
+                &lt;div class=&quot;bg-emerald-100 p-2.5 rounded-lg border border-emerald-300 text-xs text-emerald-900 mt-3 text-center font-bold&quot;&gt;
+                    💡 <span lang="zh-CN">提示小朋友：上車前看一眼公車頭頂的車牌號碼對不對喔！</span>
+                &lt;/div&gt;
             `;
             modal.classList.remove('hidden');
         }
 
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
         function confirmBoardingSuccess() {
-            alert('設定成功！App 將會在公車即將到達前提醒您出門。');
+            alert('<span lang="zh-CN">設定成功！</span>App <span lang="zh-CN">將會在公車即將到達前提醒您出門。</span>');
             closeModal();
         }
-        function openSettings() { alert('進入家長設定專區 (包含常用站牌與預設路線)'); }
+        function openSettings() { alert('<span lang="zh-CN">進入家長設定專區 </span>(<span lang="zh-CN">包含常用站牌與預設路線</span>)'); }
 
-        // --- 啟動初始化 ---
+        // --- <span lang="zh-CN">啟動初始化 </span>---
         updateTime();
         setInterval(updateTime, 60000); 
         setTimeout(requestLocation, 500);
 
-    </script>
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
 </body>
 </html>
-
