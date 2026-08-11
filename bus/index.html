@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="description" content="給小朋友使用的簡單公車查詢小幫手">
+<title>我的公車小幫手</title>
+
+<!-- 📌 iPhone / Android 加入主畫面圖示 -->
+<link rel="apple-touch-icon" href="custom-icon.png">
+<link rel="icon" type="image/png" href="custom-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ryder的公車">
+<meta name="theme-color" content="#4FB3E8">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --mint-bg:#EAF6EE;
+    --mint-deep:#8FD9BE;
+    --sky:#4FB3E8;
+    --sky-deep:#2E93CC;
+    --navy:#16151F;
+    --amber:#FF7A1A;
+    --coral:#F06A57;
+    --spark:#C6FF3D;
+    --card:#FFFFFF;
+    --line:#D9EEE3;
+    --muted:#8A93A6;
+    --radius-lg:28px;
+    --radius-md:20px;
+    --radius-sm:14px;
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    background:#dff0e6;
+    font-family:'Noto Sans TC','Baloo 2',sans-serif;
+    color:var(--navy);
+    min-height:100vh;
+    min-height:100dvh;
+  }
+
+  .num{ font-family:'Baloo 2','Noto Sans TC',sans-serif; }
+
+  /* ---------- app shell (real PWA container, no mockup bezel) ---------- */
+  .app-shell{
+    max-width:480px;
+    margin:0 auto;
+    background:var(--mint-bg);
+    min-height:100vh;
+    min-height:100dvh;
+    position:relative;
+    box-shadow:0 0 40px rgba(36,33,59,0.10);
+  }
+  .screen{
+    min-height:100vh;
+    min-height:100dvh;
+    display:none;
+    flex-direction:column;
+    padding:calc(env(safe-area-inset-top,0px) + 24px) 18px calc(env(safe-area-inset-bottom,0px) + 100px);
+    animation:fadeIn .25s ease;
+  }
+  .screen.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  /* ---------- top bar ---------- */
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+  .topbar .date{ font-size:13px; color:var(--muted); font-weight:700; letter-spacing:.03em;}
+  .topbar .title{ font-size:22px; font-weight:900; margin-top:2px;}
+  .avatar{
+    width:44px; height:44px; border-radius:16px; background:var(--amber);
+    display:flex; align-items:center; justify-content:center; font-size:22px;
+    border:3px solid var(--navy); flex-shrink:0;
+  }
+
+  /* ---------- signature: countdown ring ---------- */
+  .countdown-card{
+    background:var(--navy);
+    border-radius:var(--radius-lg);
+    padding:22px 20px 20px;
+    color:#fff;
+    margin-bottom:16px;
+    position:relative;
+    overflow:hidden;
+  }
+  .countdown-card::after{
+    content:"";
+    position:absolute; right:-30px; bottom:-30px; width:130px; height:130px;
+    background:var(--sky); opacity:.18; border-radius:50%;
+  }
+  .countdown-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;}
+  .countdown-label{ font-size:14px; font-weight:700; color:#B9C2E0;}
+  .status-pill{
+    font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px;
+    background:#3BC17A; color:#fff; display:flex; align-items:center; gap:5px;
+  }
+  .status-pill.dot::before{ content:"●"; font-size:8px;}
+  .countdown-body{ display:flex; align-items:center; gap:18px;}
+  .ring{
+    width:104px; height:104px; border-radius:50%;
+    background:conic-gradient(var(--amber) 0turn, var(--amber) var(--ring-pct,0.65turn), rgba(255,255,255,0.14) 0turn);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    position:relative;
+  }
+  .ring::before{
+    content:"";
+    position:absolute; inset:-6px; border-radius:50%;
+    background:conic-gradient(from 0deg, transparent 0deg, var(--spark) 18deg, transparent 40deg, transparent 360deg);
+    animation:spin-top 3.5s linear infinite;
+    opacity:.85;
+  }
+  @keyframes spin-top{ from{ transform:rotate(0deg);} to{ transform:rotate(360deg);} }
+  @keyframes spin-once{ from{ transform:rotate(0deg) scale(1);} 60%{ transform:rotate(300deg) scale(1.15);} to{ transform:rotate(360deg) scale(1);} }
+  .avatar.spin-once{ animation:spin-once .6s cubic-bezier(.2,.8,.2,1); }
+  @media (prefers-reduced-motion: reduce){ .ring::before{ animation:none; } .avatar.spin-once{ animation:none; } }
+  .ring-inner{
+    width:82px; height:82px; border-radius:50%; background:var(--navy);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    position:relative; z-index:1;
+  }
+  .ring-inner .n{ font-size:26px; font-weight:800; line-height:1;}
+  .ring-inner .u{ font-size:11px; color:#B9C2E0; margin-top:2px;}
+  .countdown-info .route{ font-size:20px; font-weight:900; margin-bottom:4px;}
+  .countdown-info .stop{ font-size:14px; color:#CBD3EC; margin-bottom:8px;}
+  .walk-chip{
+    display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.12);
+    padding:6px 10px; border-radius:999px; font-size:12.5px; font-weight:700;
+  }
+
+  /* ---------- big CTA buttons ---------- */
+  .cta-row{ display:flex; gap:12px; margin-bottom:20px;}
+  .cta{
+    flex:1; border:none; border-radius:24px; padding:20px 12px 16px;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    font-family:inherit; font-weight:900; font-size:17px; color:#fff;
+    cursor:pointer; border-bottom:5px solid rgba(0,0,0,0.18);
+    transition:transform .08s ease;
+  }
+  .cta:active{ transform:translateY(3px); border-bottom-width:2px;}
+  .cta .ico{ font-size:30px;}
+  .cta.school{ background:var(--amber);}
+  .cta.home{ background:var(--coral);}
+
+  /* ---------- section headers ---------- */
+  .section-head{ display:flex; justify-content:space-between; align-items:baseline; margin:6px 0 12px;}
+  .section-head h2{ font-size:16px; font-weight:900; margin:0;}
+  .section-head .link{ font-size:12.5px; font-weight:700; color:var(--sky-deep); cursor:pointer;}
+
+  /* ---------- stop cards ---------- */
+  .hscroll{ display:flex; gap:12px; overflow-x:auto; padding-bottom:6px; margin-bottom:22px; scrollbar-width:none;}
+  .hscroll::-webkit-scrollbar{ display:none;}
+  .stop-card{
+    min-width:150px; background:var(--card); border-radius:var(--radius-md);
+    border:2px solid var(--line); padding:14px; flex-shrink:0; cursor:pointer;
+  }
+  .stop-card .name{ font-weight:900; font-size:15px; margin-bottom:2px;}
+  .stop-card .walk{ font-size:12px; color:var(--muted); font-weight:700; margin-bottom:10px;}
+  .stop-card .next{ font-size:12px; color:var(--muted); font-weight:700;}
+  .stop-card .next b{ color:var(--navy); font-size:16px; font-family:'Baloo 2';}
+
+  /* ---------- favorites list ---------- */
+  .fav-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px;}
+  .fav-item{
+    display:flex; align-items:center; gap:12px; background:var(--card);
+    border:2px solid var(--line); border-radius:var(--radius-md); padding:12px 14px; cursor:pointer;
+  }
+  .fav-item .heart{ font-size:19px; color:var(--coral); flex-shrink:0;}
+  .fav-item .body{ flex:1;}
+  .fav-item .body .n{ font-weight:800; font-size:15px;}
+  .fav-item .body .r{ font-size:12px; color:var(--muted); font-weight:700; margin-top:2px;}
+  .fav-item .go{ font-size:12px; font-weight:800; color:var(--sky-deep);}
+
+  /* ---------- bottom nav ---------- */
+  .navbar{
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+    width:100%; max-width:480px; height:80px;
+    background:#fff; border-top:2px solid var(--line);
+    display:flex; align-items:center; justify-content:space-around;
+    padding-bottom:calc(env(safe-area-inset-bottom,0px) + 14px); z-index:10;
+  }
+  .navbtn{
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    background:none; border:none; font-family:inherit; cursor:pointer;
+    color:var(--muted); font-size:11px; font-weight:700;
+  }
+  .navbtn .ic{ font-size:21px;}
+  .navbtn.active{ color:var(--sky-deep);}
+
+  /* ---------- generic screen bits ---------- */
+  .back-row{ display:flex; align-items:center; gap:10px; margin-bottom:18px;}
+  .back-btn{
+    width:38px; height:38px; border-radius:12px; border:2px solid var(--line);
+    background:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:18px; cursor:pointer; flex-shrink:0;
+  }
+  .back-row h1{ font-size:19px; font-weight:900; margin:0;}
+
+  /* nearby list (full) */
+  .nb-list{ display:flex; flex-direction:column; gap:12px;}
+  .nb-item{ background:var(--card); border:2px solid var(--line); border-radius:var(--radius-md); padding:14px;}
+  .nb-item-top{ display:flex; justify-content:space-between; align-items:flex-start;}
+  .nb-item .name{ font-weight:900; font-size:16px;}
+  .nb-item .walk{ font-size:12px; color:var(--muted); font-weight:700; margin-top:2px;}
+  .nb-item .heart-btn{ font-size:20px; background:none; border:none; cursor:pointer; color:var(--coral);}
+  .route-tags{ display:flex; gap:6px; flex-wrap:wrap; margin:10px 0;}
+  .route-tag{
+    background:var(--mint-deep); color:var(--navy); font-weight:800; font-size:12px;
+    padding:4px 9px; border-radius:999px;
+  }
+  .nb-item .next-line{ font-size:12.5px; color:var(--muted); font-weight:700;}
+  .nb-item .next-line b{ font-size:18px; color:var(--navy); font-family:'Baloo 2';}
+
+  /* recommend result card */
+  .reco-card{
+    background:var(--card); border-radius:var(--radius-lg); border:3px solid var(--amber);
+    padding:20px; margin-bottom:18px; position:relative;
+  }
+  .reco-badge{
+    position:absolute; top:-13px; left:18px; background:var(--amber); color:#fff;
+    font-size:12px; font-weight:900; padding:5px 12px; border-radius:999px;
+  }
+  .reco-time{ font-size:40px; font-weight:800; font-family:'Baloo 2'; margin:10px 0 2px;}
+  .reco-route{ font-size:15px; font-weight:900; color:var(--sky-deep); margin-bottom:14px;}
+  .reco-line{ display:flex; gap:10px; align-items:flex-start; margin-bottom:10px;}
+  .reco-line .dot{ width:12px; height:12px; border-radius:50%; margin-top:4px; flex-shrink:0;}
+  .reco-line.up .dot{ background:var(--sky);}
+  .reco-line.down .dot{ background:var(--coral);}
+  .reco-line .t{ font-size:11px; color:var(--muted); font-weight:800;}
+  .reco-line .v{ font-size:14.5px; font-weight:800;}
+  .direction-banner{
+    display:flex; align-items:center; gap:8px; background:#FFF3E0; color:#B4690A;
+    font-weight:800; font-size:13px; padding:10px 12px; border-radius:12px; margin:14px 0;
+  }
+  .board-btn{
+    width:100%; background:var(--navy); color:#fff; border:none; border-radius:18px;
+    padding:16px; font-size:16px; font-weight:900; font-family:inherit; cursor:pointer;
+  }
+
+  .other-times{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;}
+  .time-chip{
+    padding:8px 14px; border-radius:999px; border:2px solid var(--line); background:#fff;
+    font-family:'Baloo 2'; font-weight:700; font-size:14px; color:var(--muted);
+  }
+  .time-chip.rec{ background:var(--amber); color:#fff; border-color:var(--amber);}
+
+  /* timetable */
+  .day-tabs{ display:flex; gap:8px; margin-bottom:16px;}
+  .day-tab{
+    flex:1; text-align:center; padding:10px 0; border-radius:14px; font-weight:800; font-size:13px;
+    background:#fff; border:2px solid var(--line); cursor:pointer; color:var(--muted);
+  }
+  .day-tab.on{ background:var(--sky); color:#fff; border-color:var(--sky);}
+  .tt-group{ margin-bottom:18px;}
+  .tt-group h3{ font-size:13px; font-weight:900; color:var(--muted); margin:0 0 10px;}
+  .tt-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:9px;}
+  .tt-slot{
+    text-align:center; padding:10px 0; border-radius:12px; font-family:'Baloo 2'; font-weight:700;
+    font-size:14px; background:#fff; border:2px solid var(--line); color:var(--navy);
+  }
+  .tt-slot.past{ color:#C7CEDA; border-color:#EEF1F5; background:#F7F9FB;}
+  .tt-slot.rec{ background:var(--amber); border-color:var(--amber); color:#fff; position:relative;}
+  .tt-slot.rec::after{ content:"⭐"; position:absolute; top:-9px; right:-6px; font-size:13px;}
+
+  /* mine screen */
+  .mine-header{
+    display:flex; align-items:center; gap:14px; background:var(--navy); color:#fff;
+    border-radius:var(--radius-lg); padding:18px; margin-bottom:20px;
+  }
+  .mine-header .ic{
+    width:52px; height:52px; border-radius:16px; background:var(--sky);
+    display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0;
+  }
+  .mine-header .name{ font-weight:900; font-size:16px;}
+  .mine-header .sub{ font-size:12px; color:#B9C2E0; margin-top:2px;}
+  .mine-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:22px;}
+  .mine-row{
+    display:flex; align-items:center; gap:12px; background:#fff; border:2px solid var(--line);
+    border-radius:var(--radius-md); padding:13px 14px; cursor:pointer;
+  }
+  .mine-row .ic{ font-size:19px; width:26px; text-align:center;}
+  .mine-row .t{ flex:1; font-weight:800; font-size:14.5px;}
+  .mine-row .arrow{ color:var(--muted); font-size:14px;}
+  .parent-lock{ font-size:12px; color:var(--muted); text-align:center; font-weight:700; margin-top:auto; padding-top:8px;}
+
+  /* empty state */
+  .empty-box{
+    text-align:center; padding:26px 16px; color:var(--muted); font-size:13.5px; font-weight:700;
+    background:#fff; border:2px dashed var(--line); border-radius:var(--radius-md); margin-bottom:16px; line-height:1.7;
+  }
+  .empty-box .big{ font-size:30px; display:block; margin-bottom:8px;}
+
+  .helper-note{ text-align:center; font-size:11.5px; color:#9AA6BE; margin-top:18px; line-height:1.6;}
+  .helper-note code{ background:#fff; padding:1px 5px; border-radius:5px;}
+
+  /* ---------- search icon + search bar ---------- */
+  .icon-btn{
+    width:44px; height:44px; border-radius:16px; background:#fff; border:2px solid var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:19px; cursor:pointer; flex-shrink:0;
+  }
+  .search-bar{
+    display:flex; align-items:center; gap:8px; background:#fff; border:2px solid var(--line);
+    border-radius:16px; padding:12px 14px; margin-bottom:16px;
+  }
+  .search-bar .ic{ font-size:16px; color:var(--muted); flex-shrink:0;}
+  .search-bar input{
+    border:none; outline:none; flex:1; font-family:inherit; font-size:14.5px; font-weight:700; color:var(--navy);
+    background:transparent;
+  }
+  .search-bar input::placeholder{ color:#AEB6C6; font-weight:500;}
+  .search-clear{ background:none; border:none; color:var(--muted); font-size:15px; cursor:pointer; display:none;}
+  .quick-tags{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
+  .quick-tag{
+    background:var(--mint-deep); color:var(--navy); font-weight:800; font-size:12.5px;
+    padding:7px 13px; border-radius:999px; cursor:pointer;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="app-shell" id="app-shell">
+
+  <!-- ============ 1. 首頁 ============ -->
+  <div class="screen active" id="screen-home">
+    <div class="topbar">
+      <div>
+        <div class="date">今天・星期二・8月11日</div>
+        <div class="title">嗨，Ryder 👋</div>
+        <div style="font-size:12.5px; color:var(--muted); font-weight:700; margin-top:1px;">你的公車在這裡 🚌</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <div class="icon-btn" onclick="showScreen('search')">🔎</div>
+        <div class="avatar" onclick="this.classList.remove('spin-once'); void this.offsetWidth; this.classList.add('spin-once');">🏀</div>
+      </div>
+    </div>
+
+    <div class="countdown-card">
+      <div class="countdown-top">
+        <span class="countdown-label" id="cd-label">📍 武陵高中（愛買） · 下一班</span>
+        <span class="status-pill dot" id="cd-status">正常</span>
+      </div>
+      <div class="countdown-body">
+        <div class="ring" id="cd-ring" style="--ring-pct:0.72turn;">
+          <div class="ring-inner">
+            <div class="n num" id="cd-mins">15</div>
+            <div class="u">分鐘</div>
+          </div>
+        </div>
+        <div class="countdown-info">
+          <div class="route" id="cd-route">🚌 1　16:25</div>
+          <div class="stop" id="cd-stop">往桃園農工方向</div>
+          <span class="walk-chip" id="cd-walk">🚶 走路約 3 分鐘・現在可以準備出發</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <button class="cta school" onclick="showScreen('school')">
+        <span class="ico">🏫</span> 去學校
+      </button>
+      <button class="cta home" onclick="showScreen('home-mode')">
+        <span class="ico">🏠</span> 回家
+      </button>
+    </div>
+
+    <div class="section-head">
+      <h2>📍 附近站牌</h2>
+      <span class="link" onclick="showScreen('nearby')">全部 →</span>
+    </div>
+    <div class="hscroll" id="home-nearby-scroll">
+      <!-- 由 app.js 動態產生 -->
+    </div>
+
+    <div class="section-head">
+      <h2>❤️ 我的常用站牌</h2>
+      <span class="link" onclick="showScreen('mine')">管理 →</span>
+    </div>
+    <div class="fav-list" id="fav-list">
+      <!-- 由 app.js 依收藏清單動態產生 -->
+    </div>
+
+    <div class="navbar">
+      <button class="navbtn active"><span class="ic">🏠</span>首頁</button>
+      <button class="navbtn" onclick="showScreen('nearby')"><span class="ic">📍</span>附近</button>
+      <button class="navbtn" onclick="showScreen('timetable')"><span class="ic">📅</span>班次</button>
+      <button class="navbtn" onclick="showScreen('mine')"><span class="ic">⭐</span>我的</button>
+    </div>
+  </div>
+
+  <!-- ============ 2. 附近站牌（完整列表） ============ -->
+  <div class="screen" id="screen-nearby">
+    <div class="back-row">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <h1>📍 附近站牌</h1>
+    </div>
+
+    <div class="search-bar" onclick="showScreen('search')">
+      <span class="ic">🔎</span>
+      <input placeholder="搜尋其他站牌，例如：成功路" readonly>
+    </div>
+
+    <div class="nb-list" id="nb-list">
+      <!-- 由 app.js 動態產生 -->
+    </div>
+
+    <div class="navbar">
+      <button class="navbtn" onclick="showScreen('home')"><span class="ic">🏠</span>首頁</button>
+      <button class="navbtn active"><span class="ic">📍</span>附近</button>
+      <button class="navbtn" onclick="showScreen('timetable')"><span class="ic">📅</span>班次</button>
+      <button class="navbtn" onclick="showScreen('mine')"><span class="ic">⭐</span>我的</button>
+    </div>
+  </div>
+
+  <!-- ============ 3. 去學校 → 推薦結果 ============ -->
+  <div class="screen" id="screen-school">
+    <div class="back-row">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <h1>🏫 去學校</h1>
+    </div>
+
+    <div class="reco-card">
+      <span class="reco-badge">⭐ 建議搭這一班</span>
+      <div class="reco-time num" id="sch-time">16:25</div>
+      <div class="reco-route" id="sch-route">🚌 1　往桃園農工方向</div>
+
+      <div class="reco-line up">
+        <div class="dot"></div>
+        <div><div class="t">📍 上車</div><div class="v" id="sch-board">武陵高中（愛買）</div></div>
+      </div>
+      <div class="reco-line down">
+        <div class="dot"></div>
+        <div><div class="t">🏫 下車</div><div class="v" id="sch-alight">地方稅務局（桃農）</div></div>
+      </div>
+
+      <div class="direction-banner" id="sch-banner">➡️ 記得搭「往桃園農工方向」，別搭反了喔！</div>
+
+      <button class="board-btn" onclick="boardThisBus('school')">我要搭這班</button>
+    </div>
+
+    <div class="section-head"><h2>其他選擇</h2></div>
+    <div class="other-times" id="sch-other">
+      <!-- 由 app.js 動態產生 -->
+    </div>
+
+    <div class="navbar">
+      <button class="navbtn" onclick="showScreen('home')"><span class="ic">🏠</span>首頁</button>
+      <button class="navbtn" onclick="showScreen('nearby')"><span class="ic">📍</span>附近</button>
+      <button class="navbtn" onclick="showScreen('timetable')"><span class="ic">📅</span>班次</button>
+      <button class="navbtn" onclick="showScreen('mine')"><span class="ic">⭐</span>我的</button>
+    </div>
+  </div>
+
+  <!-- ============ 3b. 回家模式（結構相同，方向相反） ============ -->
+  <div class="screen" id="screen-home-mode">
+    <div class="back-row">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <h1>🏠 我要回家</h1>
+    </div>
+
+    <div class="reco-card" style="border-color:var(--coral);">
+      <span class="reco-badge" style="background:var(--coral);">⭐ 建議搭這一班</span>
+      <div class="reco-time num" id="hm-time">17:05</div>
+      <div class="reco-route" id="hm-route">🚌 1　往中壢方向</div>
+
+      <div class="reco-line up">
+        <div class="dot"></div>
+        <div><div class="t">📍 上車</div><div class="v" id="hm-board">地方稅務局（桃農）</div></div>
+      </div>
+      <div class="reco-line down">
+        <div class="dot" style="background:var(--coral);"></div>
+        <div><div class="t">🏠 下車</div><div class="v" id="hm-alight">武陵高中（愛買）附近</div></div>
+      </div>
+
+      <div class="direction-banner" id="hm-banner">➡️ 記得搭「往中壢方向」，別搭反了喔！</div>
+
+      <button class="board-btn" onclick="boardThisBus('home')">我要搭這班</button>
+    </div>
+
+    <div class="navbar">
+      <button class="navbtn" onclick="showScreen('home')"><span class="ic">🏠</span>首頁</button>
+      <button class="navbtn" onclick="showScreen('nearby')"><span class="ic">📍</span>附近</button>
+      <button class="navbtn" onclick="showScreen('timetable')"><span class="ic">📅</span>班次</button>
+      <button class="navbtn" onclick="showScreen('mine')"><span class="ic">⭐</span>我的</button>
+    </div>
+  </div>
+
+  <!-- ============ 4. 方向確認 ============ -->
+  <div class="screen" id="screen-confirm">
+    <div class="back-row">
+      <button class="back-btn" onclick="showScreen('school')">←</button>
+      <h1>✅ 確認一下</h1>
+    </div>
+
+    <div class="reco-card" style="text-align:center; border-color:var(--sky);">
+      <div style="font-size:46px; margin:10px 0 6px;">🚌</div>
+      <div style="font-size:22px; font-weight:900; margin-bottom:4px;" id="cf-route">你要搭：1</div>
+      <div style="font-size:16px; font-weight:800; color:var(--sky-deep); margin-bottom:18px;" id="cf-direction">➡️ 往桃園農工方向</div>
+
+      <div style="text-align:left;">
+        <div class="reco-line up"><div class="dot"></div><div><div class="t">📍 在這裡上車</div><div class="v" id="cf-board">武陵高中（愛買）</div></div></div>
+        <div class="reco-line down"><div class="dot"></div><div><div class="t">🏫 在這裡下車</div><div class="v" id="cf-alight">地方稅務局（桃農）</div></div></div>
+      </div>
+
+      <div style="background:#E8F8EE; color:#1E9B57; font-weight:900; border-radius:14px; padding:14px; margin-top:14px; font-size:14.5px;">
+        ✅ 這就是你要搭的公車！
+      </div>
+    </div>
+
+    <button class="board-btn" style="background:var(--amber);" onclick="setReminder()">🔔 設定發車提醒</button>
+
+    <div class="navbar">
+      <button class="navbtn" onclick="showScreen('home')"><span class="ic">🏠</span>首頁</button>
+      <button class="navbtn" onclick="showScreen('nearby')"><span class="ic">📍</span>附近</button>
+      <button class="navbtn" onclick="showScreen('timetable')"><span class="ic">📅</span>班次</button>
+      <button class="navbtn" onclick="showScreen('mine')"><span class="ic">⭐</span>我的</button>
+    </div>
+  </div>
+
+  <!-- ============ 5. 今日班次 ============ -->
+  <div class="screen" id="screen-timetable">
+    <div class="back-row">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <h1>📅 今日班次</h1>
+    </div>
+
+    <div class="day-tabs">
+      <div class="day-tab">🏠 放學（往中壢）</div>
+      <div class="day-tab on">🏫 上學（往桃園農工）</div>
+    </div>
+
+    <div class="tt-group">
+      <h3>🌅 上學時段（含更早班次）</h3>
+      <div class="tt-grid" id="tt-morning">
+        <!-- 由 app.js 動態產生 -->
+      </div>
+    </div>
+
+    <div class="tt-group">
+      <h3>🌇 放學時段</h3>
+      <div class="tt-grid" id="tt-afternoon">
+        <!-- 由 app.js 動態產生 -->
+      </div>
+    </div>
+
+    <div class="helper-note">灰色＝已經過的班次　⭐＝推薦搭乘班次</div>
+
+    <div class="navbar">
+      <button class="navbtn" onclick="showScreen('home')"><span class="ic">🏠</span>首頁</button>
+      <button class="navbtn" onclick="showScreen('nearby')"><span class="ic">📍</span>附近</button>
+      <button class="navbtn active"><span class="ic">📅</span>班次</button>
+      <button class="navbtn" onclick="showScreen('mine')"><span class="ic">⭐</span>我的</button>
+    </div>
+  </div>
+
+  <!-- ============ 6. 我的 ============ -->
+  <div class="screen" id="screen-mine">
+    <div class="mine-header">
+      <div class="ic">🧒</div>
+      <div>
+        <div class="name">小安的公車小幫手</div>
+        <div class="sub">桃園農工 ・ 三年級</div>
+      </div>
+    </div>
+
+    <div class="mine-list">
+      <div class="mine-row" onclick="showScreen('nearby')"><span class="ic">❤️</span><span class="t">我的站牌</span><span class="arrow">›</span></div>
+      <div class="mine-row" onclick="showScreen('routes')"><span class="ic">⭐</span><span class="t">我的路線</span><span class="arrow">›</span></div>
+      <div class="mine-row" onclick="editReminder()"><span class="ic">🔔</span><span class="t">我的提醒</span><span class="arrow">›</span></div>
+      <div class="mine-row" onclick="editSchoolStop()"><span class="ic">🏫</span><span class="t">我的學校</span><span class="arrow">›</span></div>
+      <div class="mine-row" onclick="editHomeStop()"><span class="ic">🏠</span><span class="t">我的家</span><span class="arrow">›</span></div>
+    </div>
+
+    <div class="section-head"><h2>😅 找不到站牌？</h2></div>
+    <div class="empty-box">
+      <span class="big">🔎</span>
+      沒關係，試試「搜尋站牌」，<br>直接輸入地點名稱就可以找到囉。
+    </div>
+
+    <div class="parent-lock">⚙️ 家長設定需要密碼才能修改</div>
+
+    <div class="navbar">
+      <button class="navbtn" onclick="showScreen('home')"><span class="ic">🏠</span>首頁</button>
+      <button class="navbtn" onclick="showScreen('nearby')"><span class="ic">📍</span>附近</button>
+      <button class="navbtn" onclick="showScreen('timetable')"><span class="ic">📅</span>班次</button>
+      <button class="navbtn active"><span class="ic">⭐</span>我的</button>
+    </div>
+  </div>
+
+  <!-- ============ 7. 搜尋站牌 ============ -->
+  <div class="screen" id="screen-search">
+    <div class="back-row">
+      <button class="back-btn" onclick="showScreen('home')">←</button>
+      <h1>🔎 搜尋站牌</h1>
+    </div>
+
+    <div class="search-bar">
+      <span class="ic">🔎</span>
+      <input id="search-input" placeholder="輸入站名，例如：農工、成功路" oninput="renderSearch()" autofocus>
+      <button class="search-clear" id="search-clear-btn" onclick="clearSearch()">✕</button>
+    </div>
+
+    <div class="quick-tags">
+      <span class="quick-tag" onclick="quickSearch('愛買')">武陵高中（愛買）</span>
+      <span class="quick-tag" onclick="quickSearch('稅務局')">地方稅務局（桃農）</span>
+      <span class="quick-tag" onclick="quickSearch('龍安')">龍安街</span>
+      <span class="quick-tag" onclick="quickSearch('藝文')">藝文特區</span>
+    </div>
+
+    <div class="section-head"><h2 id="search-count">全部站牌（6）</h2></div>
+    <div class="nb-list" id="search-results"></div>
+
+    <div class="navbar">
+      <button class="navbtn" onclick="showScreen('home')"><span class="ic">🏠</span>首頁</button>
+      <button class="navbtn" onclick="showScreen('nearby')"><span class="ic">📍</span>附近</button>
+      <button class="navbtn" onclick="showScreen('timetable')"><span class="ic">📅</span>班次</button>
+      <button class="navbtn" onclick="showScreen('mine')"><span class="ic">⭐</span>我的</button>
+    </div>
+  </div>
+
+  <!-- ============ 8. 我的路線 ============ -->
+  <div class="screen" id="screen-routes">
+    <div class="back-row">
+      <button class="back-btn" onclick="showScreen('mine')">←</button>
+      <h1>⭐ 我的路線</h1>
+    </div>
+
+    <div class="empty-box" style="text-align:left; margin-bottom:16px;">
+      <span class="big" style="display:inline;">💡</span> 這裡記錄 Ryder 常搭的路線，不只上學放學，去籃球場、龍安街家裡、藝文特區都可以加進來。
+    </div>
+
+    <div class="fav-list" id="routes-list">
+      <!-- 由 app.js 動態產生 -->
+    </div>
+
+    <button class="board-btn" style="margin-top:6px; background:var(--sky);" onclick="addRoute()">➕ 新增一條路線</button>
+
+    <div class="navbar">
+      <button class="navbtn" onclick="showScreen('home')"><span class="ic">🏠</span>首頁</button>
+      <button class="navbtn" onclick="showScreen('nearby')"><span class="ic">📍</span>附近</button>
+      <button class="navbtn" onclick="showScreen('timetable')"><span class="ic">📅</span>班次</button>
+      <button class="navbtn" onclick="showScreen('mine')"><span class="ic">⭐</span>我的</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* =========================================================================
+   我的公車小幫手 — app.js
+   目前使用「已查證的真實資料」：
+     - 路線：1路（中壢—桃園，桃園客運）
+     - 上學方向：武陵高中（愛買）→ 地方稅務局（桃園農工）
+     - 放學方向：地方稅務局（桃園農工）→ 武陵高中（愛買）
+   班次時間為家長提供的示範時刻，正式時刻請以桃園市公車動態資料為準。
+   下一階段：把 STOPS / TIMETABLE 換成桃園市政府公車開放資料 API 回傳的資料即可。
+   ========================================================================= */
+
+// ---------- 真實站牌資料（目前已知的 2 站 + 幾個示範站牌）----------
+const STOPS = [
+  { id:"wuling",   name:"武陵高中（愛買）",   walk:"約 2 分鐘",  routes:["1","189"],  status:"🟢 正常" },
+  { id:"tax",      name:"地方稅務局（桃農）", walk:"約 9 分鐘",  routes:["1"],        status:"🟢 正常" },
+  { id:"longan",   name:"龍安街",             walk:"約 4 分鐘",  routes:["189"],      status:"🟢 正常" },
+  { id:"artzone",  name:"藝文特區",           walk:"約 20 分鐘", routes:["189"],      status:"🟢 正常" },
+  { id:"jingguo",  name:"經國轉運站",         walk:"約 25 分鐘", routes:["189"],      status:"🟢 正常" },
+  { id:"backstn",  name:"桃園後站",           walk:"約 15 分鐘", routes:["189"],      status:"🟢 正常" },
+];
+
+// ---------- 真實班次（1路，依家長提供的示範時刻）----------
+// direction: "school" = 往桃園農工方向（上學）／"home" = 往中壢方向（放學）
+const TIMETABLE = [
+  { time:"06:40", direction:"school", board:"wuling", alight:"tax" },
+  { time:"06:50", direction:"school", board:"wuling", alight:"tax" },
+  { time:"07:00", direction:"school", board:"wuling", alight:"tax" },
+  { time:"07:20", direction:"school", board:"wuling", alight:"tax" },
+  { time:"07:40", direction:"school", board:"wuling", alight:"tax" },
+  { time:"08:00", direction:"school", board:"wuling", alight:"tax" },
+  { time:"15:30", direction:"home",   board:"tax", alight:"wuling" },
+  { time:"15:50", direction:"home",   board:"tax", alight:"wuling" },
+  { time:"16:10", direction:"home",   board:"tax", alight:"wuling" },
+  { time:"16:25", direction:"home",   board:"tax", alight:"wuling" },
+  { time:"16:45", direction:"home",   board:"tax", alight:"wuling" },
+  { time:"17:05", direction:"home",   board:"tax", alight:"wuling" },
+];
+
+const ROUTE_NO = "1";
+const DIR_LABEL = { school:"往桃園農工方向", home:"往中壢方向" };
+
+// ---------- 小工具 ----------
+const $ = (id) => document.getElementById(id);
+const stopById = (id) => STOPS.find(s => s.id === id);
+
+function nowMinutes(){
+  const d = new Date();
+  return d.getHours()*60 + d.getMinutes();
+}
+function timeToMinutes(t){
+  const [h,m] = t.split(":").map(Number);
+  return h*60+m;
+}
+function minutesToClock(mins){
+  const h = Math.floor(mins/60).toString().padStart(2,"0");
+  const m = (mins%60).toString().padStart(2,"0");
+  return `${h}:${m}`;
+}
+
+// ---------- localStorage：收藏站牌 / 設定 ----------
+const FAV_KEY = "busHelper.favorites";
+const SETTINGS_KEY = "busHelper.settings";
+
+function getFavorites(){
+  try { return JSON.parse(localStorage.getItem(FAV_KEY) || "[]"); }
+  catch(e){ return []; }
+}
+function setFavorites(list){
+  localStorage.setItem(FAV_KEY, JSON.stringify(list));
+}
+window.toggleFav = function(id){
+  let favs = getFavorites();
+  favs = favs.includes(id) ? favs.filter(x => x !== id) : [...favs, id];
+  setFavorites(favs);
+  renderAll();
+};
+
+function getSettings(){
+  const defaults = { schoolStop:"tax", homeStop:"wuling", reminderMin:15 };
+  try { return { ...defaults, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}") }; }
+  catch(e){ return defaults; }
+}
+function setSettings(s){
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+}
+
+// ---------- 核心：找下一班公車 ----------
+// mode: "school" 或 "home"
+function getNextBus(mode){
+  const nowM = nowMinutes();
+  const trips = TIMETABLE
+    .filter(t => t.direction === mode)
+    .map(t => ({...t, mins:timeToMinutes(t.time)}))
+    .sort((a,b) => a.mins - b.mins);
+
+  let next = trips.find(t => t.mins >= nowM);
+  let isTomorrow = false;
+  if(!next){ next = trips[0]; isTomorrow = true; } // 今天沒有了，顯示明天第一班當參考
+  return next ? { ...next, isTomorrow } : null;
+}
+
+function walkMinutesFor(stopId){
+  const s = stopById(stopId);
+  if(!s) return 3;
+  const m = s.walk.match(/\d+/);
+  return m ? parseInt(m[0],10) : 3;
+}
+
+// ========================= 畫面：首頁倒數卡 =========================
+function renderCountdown(){
+  // 早上（<12:00）預設顯示上學方向，其餘顯示放學方向，貼近小朋友一天的實際節奏
+  const mode = new Date().getHours() < 12 ? "school" : "home";
+  const trip = getNextBus(mode);
+  const boardStop = stopById(trip.board);
+  const nowM = nowMinutes();
+  let diff = trip.mins - nowM;
+  if(trip.isTomorrow) diff = null;
+
+  $("cd-label").textContent = `📍 ${boardStop.name} · 下一班`;
+  $("cd-route").textContent = `🚌 ${ROUTE_NO}　${trip.time}`;
+  $("cd-stop").textContent = DIR_LABEL[mode];
+
+  if(diff === null){
+    $("cd-mins").textContent = "—";
+    $("cd-walk").textContent = "🚶 今天已經沒有班次了，明天見！";
+    $("cd-status").textContent = "已收班";
+    $("cd-status").style.background = "#B9C2E0";
+  } else {
+    $("cd-mins").textContent = diff;
+    const walk = walkMinutesFor(trip.board);
+    $("cd-walk").textContent = diff <= walk
+      ? "🚶 現在該出發了，快走吧！"
+      : `🚶 走路約 ${walk} 分鐘・還可以再等一下`;
+    $("cd-status").textContent = "正常";
+    $("cd-status").style.background = "#3BC17A";
+    const pct = Math.max(0.08, Math.min(1, 1 - diff/60));
+    $("cd-ring").style.setProperty("--ring-pct", `${pct}turn`);
+  }
+}
+
+// ========================= 畫面：首頁 附近站牌／常用站牌 =========================
+function stopCardHTML(s){
+  return `
+    <div class="stop-card" onclick="showScreen('nearby')">
+      <div class="name">${s.name}</div>
+      <div class="walk">🚶 ${s.walk}</div>
+      <div class="next">下一班<br><b>${s.status.includes("🟢") ? "查看" : "查看"}</b></div>
+    </div>`;
+}
+function renderHomeNearby(){
+  $("home-nearby-scroll").innerHTML = STOPS.slice(0,3).map(stopCardHTML).join("");
+}
+
+function favItemHTML(s){
+  return `
+    <div class="fav-item" onclick="showScreen('timetable')">
+      <span class="heart" onclick="event.stopPropagation(); toggleFav('${s.id}')">❤️</span>
+      <div class="body"><div class="n">${s.name}</div><div class="r">${s.routes.join("、")} 路</div></div>
+      <span class="go">查看班次 →</span>
+    </div>`;
+}
+function renderFavList(){
+  const favs = getFavorites();
+  const box = $("fav-list");
+  if(favs.length === 0){
+    box.innerHTML = `<div class="empty-box"><span class="big">🤍</span>還沒有收藏站牌，<br>到「附近站牌」按 ♡ 就可以加入常用清單。</div>`;
+    return;
+  }
+  box.innerHTML = favs.map(id => stopById(id)).filter(Boolean).map(favItemHTML).join("");
+}
+
+// ========================= 畫面：附近站牌（完整） =========================
+function nbItemHTML(s){
+  const fav = getFavorites().includes(s.id);
+  return `
+    <div class="nb-item">
+      <div class="nb-item-top">
+        <div><div class="name">${s.name}</div><div class="walk">🚶 ${s.walk}</div></div>
+        <button class="heart-btn" onclick="toggleFav('${s.id}')">${fav ? "❤️" : "♡"}</button>
+      </div>
+      <div class="route-tags">${s.routes.map(r=>`<span class="route-tag">${r}</span>`).join("")}</div>
+      <div class="next-line">路過路線　${s.status}</div>
+    </div>`;
+}
+function renderNearbyFull(){
+  $("nb-list").innerHTML = STOPS.map(nbItemHTML).join("");
+}
+
+// ========================= 畫面：去學校 / 回家 =========================
+function renderSchool(){
+  const trip = getNextBus("school");
+  const others = TIMETABLE.filter(t => t.direction === "school").map(t => t.time);
+  $("sch-time").textContent = trip.time;
+  $("sch-route").textContent = `🚌 ${ROUTE_NO}　${DIR_LABEL.school}`;
+  $("sch-board").textContent = stopById(trip.board).name;
+  $("sch-alight").textContent = stopById(trip.alight).name;
+  $("sch-banner").textContent = `➡️ 記得搭「${DIR_LABEL.school}」，別搭反了喔！`;
+  $("sch-other").innerHTML = others.map(t =>
+    `<span class="time-chip ${t===trip.time ? "rec" : ""} num">${t}${t===trip.time ? " ⭐" : ""}</span>`
+  ).join("");
+}
+function renderHomeMode(){
+  const trip = getNextBus("home");
+  $("hm-time").textContent = trip.time;
+  $("hm-route").textContent = `🚌 ${ROUTE_NO}　${DIR_LABEL.home}`;
+  $("hm-board").textContent = stopById(trip.board).name;
+  $("hm-alight").textContent = stopById(trip.alight).name + "附近";
+  $("hm-banner").textContent = `➡️ 記得搭「${DIR_LABEL.home}」，別搭反了喔！`;
+}
+
+// ---------- 「我要搭這班」→ 記住目前的行程，帶到確認畫面 ----------
+let lastBoardedTrip = null;
+window.boardThisBus = function(mode){
+  lastBoardedTrip = { mode, trip: getNextBus(mode) };
+  renderConfirm();
+  showScreen("confirm");
+};
+function renderConfirm(){
+  if(!lastBoardedTrip) return;
+  const { mode, trip } = lastBoardedTrip;
+  $("cf-route").textContent = `你要搭：${ROUTE_NO}`;
+  $("cf-direction").textContent = `➡️ ${DIR_LABEL[mode]}`;
+  $("cf-board").textContent = stopById(trip.board).name;
+  $("cf-alight").textContent = stopById(trip.alight).name;
+}
+
+// ---------- 發車提醒 ----------
+window.setReminder = function(){
+  if(!lastBoardedTrip){ showScreen("home"); return; }
+  const s = getSettings();
+  alert(`🔔 已設定提醒：${lastBoardedTrip.trip.time} 發車前 ${s.reminderMin} 分鐘會提醒你（此為 V1 示範，正式版會用手機推播通知）。`);
+  showScreen("home");
+};
+
+// ========================= 畫面：今日班次 =========================
+function ttSlotHTML(t, nowM, nextTime){
+  const mins = timeToMinutes(t.time);
+  const cls = mins < nowM ? "past" : (t.time === nextTime ? "rec" : "");
+  return `<div class="tt-slot ${cls} num">${t.time}</div>`;
+}
+function renderTimetable(){
+  const nowM = nowMinutes();
+  const nextSchool = getNextBus("school").time;
+  const nextHome = getNextBus("home").time;
+  $("tt-morning").innerHTML = TIMETABLE.filter(t=>t.direction==="school")
+    .map(t => ttSlotHTML(t, nowM, nextSchool)).join("");
+  $("tt-afternoon").innerHTML = TIMETABLE.filter(t=>t.direction==="home")
+    .map(t => ttSlotHTML(t, nowM, nextHome)).join("");
+}
+
+// ========================= 畫面：我的（設定小工具） =========================
+// ========================= 我的路線（真的存起來、可以自己新增）=========================
+const ROUTES_KEY = "busHelper.routes";
+
+function defaultRoutes(){
+  return [
+    { id:"r-school", name:"🏫 去學校", routeNo:"1/1A/1B", boardId:"wuling", alightId:"tax", direction:"往桃園農工方向" },
+    { id:"r-home",   name:"🏠 回家",   routeNo:"1/1A/1B", boardId:"tax", alightId:"wuling", direction:"往中壢方向" },
+    { id:"r-art",    name:"🎨 去藝文特區", routeNo:"189", boardId:"wuling", alightId:"artzone", direction:"往經國轉運站方向" },
+  ];
+}
+function getRoutes(){
+  try {
+    const saved = JSON.parse(localStorage.getItem(ROUTES_KEY));
+    if(saved && saved.length) return saved;
+  } catch(e){}
+  const d = defaultRoutes();
+  localStorage.setItem(ROUTES_KEY, JSON.stringify(d));
+  return d;
+}
+function setRoutes(list){
+  localStorage.setItem(ROUTES_KEY, JSON.stringify(list));
+}
+
+function routeItemHTML(r){
+  const board = stopById(r.boardId);
+  const alight = stopById(r.alightId);
+  return `
+    <div class="fav-item" style="cursor:default;">
+      <span class="heart" style="cursor:pointer;" onclick="deleteRoute('${r.id}')">🗑️</span>
+      <div class="body">
+        <div class="n">${r.name}</div>
+        <div class="r">${r.routeNo} 路　${board ? board.name : "?"} → ${alight ? alight.name : "?"}　${r.direction}</div>
+      </div>
+    </div>`;
+}
+function renderRoutes(){
+  const box = $("routes-list");
+  const routes = getRoutes();
+  if(routes.length === 0){
+    box.innerHTML = `<div class="empty-box"><span class="big">⭐</span>還沒有記錄任何路線，<br>按下面「新增一條路線」開始記錄吧！</div>`;
+    return;
+  }
+  box.innerHTML = routes.map(routeItemHTML).join("");
+}
+window.deleteRoute = function(id){
+  if(!confirm("要刪除這條路線嗎？")) return;
+  setRoutes(getRoutes().filter(r => r.id !== id));
+  renderRoutes();
+};
+window.addRoute = function(){
+  const name = prompt("這條路線要叫什麼名字？（例如：去籃球場）");
+  if(!name) return;
+  const stopNames = STOPS.map(s => `${s.name}`).join("、");
+  const boardName = prompt(`從哪一站上車？\n可選：${stopNames}`);
+  const board = STOPS.find(s => s.name.includes(boardName || "___"));
+  if(!board){ alert("找不到這個站牌名稱，請確認輸入的站名是否正確。"); return; }
+  const alightName = prompt(`到哪一站下車？\n可選：${stopNames}`);
+  const alight = STOPS.find(s => s.name.includes(alightName || "___"));
+  if(!alight){ alert("找不到這個站牌名稱，請確認輸入的站名是否正確。"); return; }
+  const routeNo = prompt("公車路線號碼？（例如：189，或不確定就留空）", "") || "?";
+  const direction = prompt("行駛方向怎麼寫？（例如：往經國轉運站方向）", "") || "";
+  const routes = getRoutes();
+  routes.push({ id:"r-"+Date.now(), name, routeNo, boardId:board.id, alightId:alight.id, direction });
+  setRoutes(routes);
+  renderRoutes();
+};
+
+window.editReminder = function(){
+  const s = getSettings();
+  const val = prompt("要提前幾分鐘提醒？（分鐘）", s.reminderMin);
+  if(val === null) return;
+  const n = parseInt(val,10);
+  if(!isNaN(n) && n > 0){ setSettings({...s, reminderMin:n}); alert("已更新提醒設定"); }
+};
+window.editSchoolStop = function(){
+  const options = STOPS.map(s=>s.name).join("\n");
+  alert(`🏫 我的學校站牌：${stopById(getSettings().schoolStop)?.name || "尚未設定"}\n\n（V1 示範版，之後可改成下拉選單）\n可選站牌：\n${options}`);
+};
+window.editHomeStop = function(){
+  alert(`🏠 我的家附近站牌：${stopById(getSettings().homeStop)?.name || "尚未設定"}`);
+};
+
+// ========================= 搜尋站牌 =========================
+window.renderSearch = function(){
+  const q = $("search-input").value.trim();
+  $("search-clear-btn").style.display = q ? "block" : "none";
+  const results = q ? STOPS.filter(s => s.name.includes(q)) : STOPS;
+  const box = $("search-results");
+  const count = $("search-count");
+  if(results.length === 0){
+    count.textContent = "找不到符合的站牌";
+    box.innerHTML = `<div class="empty-box"><span class="big">😅</span>附近沒有找到「${q}」這個站牌，<br>換個關鍵字再試試看吧！</div>`;
+  } else {
+    count.textContent = q ? `符合「${q}」（${results.length}）` : `全部站牌（${results.length}）`;
+    box.innerHTML = results.map(nbItemHTML).join("");
+  }
+};
+window.quickSearch = function(term){
+  $("search-input").value = term;
+  renderSearch();
+};
+window.clearSearch = function(){
+  $("search-input").value = "";
+  renderSearch();
+};
+
+// ========================= 導覽 / 畫面切換 =========================
+window.showScreen = function(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  $("screen-" + id).classList.add("active");
+  window.scrollTo({top:0});
+  if(id === "search") renderSearch();
+  if(id === "nearby") renderNearbyFull();
+  if(id === "school") renderSchool();
+  if(id === "home-mode") renderHomeMode();
+  if(id === "timetable") renderTimetable();
+  if(id === "confirm") renderConfirm();
+  if(id === "routes") renderRoutes();
+};
+
+// ========================= 日期文字 =========================
+function renderDate(){
+  const d = new Date();
+  const w = ["日","一","二","三","四","五","六"];
+  const el = document.querySelector(".date");
+  if(el) el.textContent = `今天・星期${w[d.getDay()]}・${d.getMonth()+1}月${d.getDate()}日`;
+}
+
+// ========================= 初始化 =========================
+function renderAll(){
+  renderDate();
+  renderCountdown();
+  renderHomeNearby();
+  renderFavList();
+}
+
+renderAll();
+setInterval(renderAll, 30000); // 每 30 秒重新計算一次倒數，貼近真實使用情境
+
+
+</script>
+</body>
+</html>
