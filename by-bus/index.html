@@ -75,7 +75,7 @@
             <!-- 起點輸入框 -->
             <div class="flex items-center gap-2 bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
                 <i class="fa-solid fa-circle-dot text-emerald-600 text-base pl-1"></i>
-                <input type="text" id="start-input" oninput="handleRouteSearch()" placeholder="上車站 (例如：複興路、國強一街)" class="w-full bg-transparent text-sm font-bold text-slate-800 focus:outline-none placeholder:text-slate-400">
+                <input type="text" id="start-input" oninput="handleRouteSearch()" placeholder="上車站 (例如：復興路、國強一街)" class="w-full bg-transparent text-sm font-bold text-slate-800 focus:outline-none placeholder:text-slate-400">
             </div>
 
             <!-- 終點輸入框 -->
@@ -122,7 +122,7 @@
                 </span>
             </div>
 
-            <!-- 車牌號碼與預估到站時間 (含確切時刻) -->
+            <!-- 車牌號碼與預估到站時間 (明確顯示幾點幾分到站) -->
             <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 my-2 flex justify-between items-center">
                 <div>
                     <span class="text-[10px] text-amber-800 font-bold block">🚍 進站車牌號碼 (看車頭確認)</span>
@@ -130,7 +130,7 @@
                 </div>
                 <div class="text-right">
                     <span id="card-arrive-clock" class="text-[11px] text-emerald-700 font-black block">預計時間</span>
-                    <h2 id="card-eta-time" class="text-2xl font-black text-slate-800">查詢中...</h2>
+                    <h2 id="card-eta-time" class="text-xl font-black text-slate-800">查詢中...</h2>
                 </div>
             </div>
 
@@ -216,7 +216,6 @@
     </div>
 
     <script>
-        // 🌟 集結全桃園核心路網、龍安街雙向、復興路火車站、稅務局與末班車收班判定資料庫
         const REAL_BUS_ROUTES_DB = [
             {
                 routeName: '307路 (龍安幹線 ➔ 往市區/藝文特區)',
@@ -258,14 +257,14 @@
         let selectedRouteObj = null;
 
         function formatEtaText(seconds) {
-            if (seconds === null || seconds === undefined || isNaN(seconds)) return { text: "今日收班 / 無班次", clock: "目前無營運", status: "🔴 已收班" };
-            if (seconds <= 60) return { text: "即將進站", clock: "即將進站", status: "🟢 即將進站" };
-            const mins = Math.floor(seconds / 60);
+            if (seconds === null || seconds === undefined || isNaN(seconds)) return { text: "今日收班", clock: "目前無營運", status: "🔴 已收班" };
             
             const arriveTime = new Date(Date.now() + seconds * 1000);
             const timeStr = `${arriveTime.getHours().toString().padStart(2,'0')}:${arriveTime.getMinutes().toString().padStart(2,'0')}`;
             
-            return { text: `約 ${mins} 分鐘`, clock: `預計 ${timeStr} 到達`, status: "🟢 營運中" };
+            if (seconds <= 60) return { text: "即將進站", clock: `預計 ${timeStr}`, status: "🟢 即將進站" };
+            
+            return { text: `預計 ${timeStr}`, clock: `預計 ${timeStr} 到達`, status: "🟢 營運中" };
         }
 
         async function fetchTDXData() {
@@ -363,8 +362,8 @@
                         `🚍 車牌：${selectedRouteObj.plateNumb}\n` +
                         `📍 上車點：${selectedRouteObj.startStopName}\n` +
                         `🏁 目的地：${selectedRouteObj.endStopName}\n` +
-                        `⏱️ 到站：${selectedRouteObj.etaInfo.text} (${selectedRouteObj.etaInfo.clock})\n` +
-                        `❤️ 我已經上車囉！`;
+                        `⏱️ 公車進站：${selectedRouteObj.etaInfo.clock}\n` +
+                        `❤️ 我已經準備上車囉！`;
             
             const lineUrl = `https://line.me/R/msg/text/?` + encodeURIComponent(msg);
             window.open(lineUrl, '_blank');
@@ -431,7 +430,7 @@
                                 <h4 class="font-bold text-slate-800 text-base">${r.routeName}</h4>
                                 <span class="text-xs ${isOffDuty ? 'text-red-600' : 'text-amber-800'} font-bold">🚍 車牌: ${r.plateNumb} | 📍 ${r.sideHint}</span>
                             </div>
-                            <span class="text-base font-black ${isOffDuty ? 'text-slate-400' : 'text-emerald-600'}">${r.etaInfo.text}</span>
+                            <span class="text-sm font-black ${isOffDuty ? 'text-slate-400' : 'text-emerald-600'}">${r.etaInfo.text}</span>
                         </div>
                     </div>
                 `;
