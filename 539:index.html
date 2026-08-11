@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>今彩539夢幻愛心扭蛋機與統計</title>
+  <!-- 📌 iPhone 桌面 App 圖示 -->
+  <link rel="apple-touch-icon" href="custom-icon.png">
+  <link rel="icon" type="image/png" href="custom-icon.png">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #f7d6d9;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .gumball {
+      position: absolute;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.95);
+      box-shadow: inset -3px -3px 6px rgba(0,0,0,0.25), 2px 3px 5px rgba(0,0,0,0.15);
+      transition: transform 0.2s ease;
+    }
+    @keyframes floatHeart {
+      0% { transform: translateY(0px) rotate(0deg); opacity: 0.8; }
+      50% { transform: translateY(-10px) rotate(5deg); opacity: 1; }
+      100% { transform: translateY(0px) rotate(0deg); opacity: 0.8; }
+    }
+    .floating-heart {
+      animation: floatHeart 3s ease-in-out infinite;
+    }
+    @keyframes shake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-5px, 4px) rotate(-4deg); }
+      40% { transform: translate(5px, -3px) rotate(4deg); }
+      60% { transform: translate(-4px, -4px) rotate(-3deg); }
+      80% { transform: translate(4px, 3px) rotate(3deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    .shaking {
+      animation: shake 0.4s ease-in-out infinite;
+    }
+    @keyframes dropOut {
+      0% { transform: translateY(-35px) scale(0.4); opacity: 0; }
+      60% { transform: translateY(12px) scale(1.15); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .dropping {
+      animation: dropOut 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center p-4 relative">
+
+  <!-- 背景漂浮小愛心 -->
+  <div class="absolute top-6 left-8 text-red-400 text-2xl floating-heart" style="animation-delay: 0s;">❤️</div>
+  <div class="absolute top-20 right-10 text-rose-400 text-xl floating-heart" style="animation-delay: 1s;">💖</div>
+
+  <!-- 頂部標題 -->
+  <header class="text-center mt-3 z-10 mb-2">
+    <h1 class="text-2xl font-black text-red-600 tracking-wider drop-shadow-sm">💖 夢幻愛心今彩539 💖</h1>
+    <p class="text-xs text-rose-700 font-medium mt-1">抽號碼 ＋ 勾選中獎紀錄，自動統計中獎率！</p>
+  </header>
+
+  <!-- 扭蛋機主體區域 -->
+  <main class="relative w-72 h-96 flex flex-col items-center z-10 my-2">
+    
+    <!-- 散落旁邊的球與愛心 -->
+    <div class="absolute -left-11 bottom-10 w-11 h-11 rounded-full bg-gradient-to-br from-red-400 to-rose-600 flex items-center justify-center text-white font-bold shadow-md transform -rotate-12 border-2 border-white">
+      <span class="text-xs">✨</span>
+    </div>
+    <div class="absolute -right-9 bottom-4 w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-red-500 flex items-center justify-center text-white font-bold shadow-md transform rotate-12 border-2 border-white">
+      <span class="text-xs">💖</span>
+    </div>
+
+    <!-- 扭蛋機頂蓋 -->
+    <div class="absolute top-0 w-36 h-12 bg-red-600 rounded-t-full shadow-md z-20 flex justify-center items-center border-b-4 border-red-800">
+      <div class="w-4 h-4 bg-red-700 rounded-full -top-3 absolute border border-red-900 shadow-inner"></div>
+    </div>
+
+    <!-- 玻璃球容器 -->
+    <div id="globe" class="absolute top-10 w-64 h-52 bg-white/50 backdrop-blur-xs rounded-full border-4 border-white/90 shadow-inner overflow-hidden z-10 flex items-center justify-center">
+      <div id="balls-container" class="relative w-full h-full"></div>
+    </div>
+
+    <!-- 機器頸部 -->
+    <div class="absolute top-58 w-32 h-6 bg-rose-500 rounded-t-lg z-20 shadow-md border-b-2 border-rose-700"></div>
+
+    <!-- 梯形底座 -->
+    <div class="absolute top-62 w-72 h-34 bg-red-600 rounded-b-2xl shadow-xl z-10 flex flex-col items-center pt-3 border-t-4 border-red-500">
+      
+      <!-- 中間心型面板 -->
+      <div class="w-24 h-16 bg-pink-100 rounded-xl shadow-inner flex flex-col items-center justify-center p-1 border-2 border-pink-300 relative">
+        <div class="absolute -top-2 w-6 h-3 bg-pink-200 rounded-t-md"></div>
+        <div id="dial" class="w-10 h-10 bg-rose-600 rounded-full flex items-center justify-center shadow-md cursor-pointer transition-transform duration-300 border-2 border-white">
+          <span class="text-white text-xs font-bold">❤️</span>
+        </div>
+      </div>
+
+      <!-- 下方掉球出口槽 -->
+      <div class="mt-2 w-28 h-10 bg-gray-100 rounded-t-xl border-t-2 border-gray-300 shadow-inner flex items-center justify-center relative overflow-hidden">
+        <div id="dispensed-ball" class="w-8 h-8 rounded-full bg-red-600 text-white font-bold flex items-center justify-center text-sm shadow-md opacity-0 border border-white">
+          -
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 控制按鈕區 -->
+  <div class="w-full max-w-xs flex gap-3 my-2 z-10">
+    <button onclick="shakeMachine()" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-1 border-2 border-white/60">
+      <span>🌀</span> 攪動球球
+    </button>
+    <button onclick="drawBall()" id="draw-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-1 border-2 border-white/60">
+      <span>🔘</span> 掉球 (539)
+    </button>
+  </div>
+
+  <!-- 本次開獎結果展示列 -->
+  <div class="w-full max-w-sm bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-lg border-2 border-pink-200 mb-3 z-10">
+    <div class="flex justify-between items-center mb-2">
+      <span class="text-xs font-bold text-rose-700">💖 本次抽出的 5 碼：</span>
+      <button onclick="resetCurrentDraw()" class="text-xs text-red-500 hover:underline font-semibold">清除本組</button>
+    </div>
+    <div id="result-row" class="flex justify-center gap-2">
+      <div class="w-9 h-9 rounded-full bg-pink-50 border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 font-bold text-xs">1</div>
+      <div class="w-9 h-9 rounded-full bg-pink-50 border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 font-bold text-xs">2</div>
+      <div class="w-9 h-9 rounded-full bg-pink-50 border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 font-bold text-xs">3</div>
+      <div class="w-9 h-9 rounded-full bg-pink-50 border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 font-bold text-xs">4</div>
+      <div class="w-9 h-9 rounded-full bg-pink-50 border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 font-bold text-xs">5</div>
+    </div>
+  </div>
+
+  <!-- 歷史紀錄與中獎勾選區 -->
+  <div class="w-full max-w-sm bg-white/95 p-4 rounded-2xl shadow-lg border-2 border-pink-200 mb-4 z-10">
+    <div class="flex justify-between items-center mb-2">
+      <span class="text-xs font-bold text-gray-700">📋 歷史抽球紀錄與中獎勾選</span>
+      <button onclick="clearHistory()" class="text-xs text-gray-400 hover:text-red-500">清空全部紀錄</button>
+    </div>
+    <p class="text-[11px] text-gray-500 mb-2">💡 勾選代表該次抽出的號碼「有中獎」，系統將自動計算中獎率！</p>
+    <div id="history-list" class="max-h-40 overflow-y-auto space-y-2 pr-1 text-xs">
+      <p class="text-gray-400 text-center py-3">尚無抽球紀錄，快去轉蛋抽號碼吧！</p>
+    </div>
+  </div>
+
+  <!-- 統計分析區 -->
+  <div class="w-full max-w-sm bg-gradient-to-br from-pink-50 to-rose-50 p-4 rounded-2xl shadow-md border-2 border-pink-300 mb-6 z-10">
+    <h3 class="text-xs font-bold text-rose-800 mb-2 flex items-center gap-1">
+      <span>📊</span> 號碼中獎率統計分析排行
+    </h3>
+    <div id="stats-summary" class="text-xs text-gray-600">
+      目前尚無中獎數據。
+    </div>
+  </div>
+
+  <!-- 提示訊息框 -->
+  <div id="message-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+    <div class="bg-white p-6 rounded-3xl shadow-2xl max-w-xs w-full text-center border-4 border-pink-200">
+      <p id="modal-text" class="text-gray-800 font-medium mb-4 text-sm"></p>
+      <button onclick="closeModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-xl w-full shadow-md">確定</button>
+    </div>
+  </div>
+
+  <script>
+    let currentDraw = [];
+    let historyRecords = []; // 儲存歷史紀錄 { id, numbers: [...], hits: {num: boolean} }
+    const maxDraws = 5;
+    const colors = ['bg-red-500', 'bg-rose-500', 'bg-pink-500', 'bg-amber-400', 'bg-purple-500', 'bg-rose-400'];
+    const emojis = ['❤️', '💖', '✨', '💕', '🌸', '⭐️'];
+
+    function initBalls() {
+      const container = document.getElementById('balls-container');
+      container.innerHTML = '';
+      for (let i = 0; i < 22; i++) {
+        const ball = document.createElement('div');
+        ball.className = `gumball ${colors[i % colors.length]}`;
+        const size = Math.floor(Math.random() * 8) + 24;
+        ball.style.width = `${size}px`;
+        ball.style.height = `${size}px`;
+        ball.style.left = `${Math.random() * 200 + 15}px`;
+        ball.style.top = `${Math.random() * 130 + 10}px`;
+        ball.innerHTML = `<span style="font-size:9px">${emojis[i % emojis.length]}</span>`;
+        container.appendChild(ball);
+      }
+    }
+
+    function showMsg(text) {
+      document.getElementById('modal-text').innerText = text;
+      document.getElementById('message-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('message-modal').classList.add('hidden');
+    }
+
+    function shakeMachine() {
+      const globe = document.getElementById('globe');
+      const dial = document.getElementById('dial');
+      globe.classList.add('shaking');
+      dial.style.transform = 'rotate(360deg) scale(1.1)';
+      setTimeout(() => {
+        globe.classList.remove('shaking');
+        dial.style.transform = 'rotate(0deg) scale(1)';
+        initBalls();
+      }, 400);
+    }
+
+    function drawBall() {
+      if (currentDraw.length >= maxDraws) {
+        showMsg("本組 5 碼已抽滿！系統已自動將本組加入歷史紀錄，您可以開始勾選中獎號碼囉！");
+        return;
+      }
+
+      shakeMachine();
+
+      let randNum;
+      do {
+        randNum = Math.floor(Math.random() * 39) + 1;
+      } while (currentDraw.includes(randNum));
+
+      currentDraw.push(randNum);
+
+      setTimeout(() => {
+        const dispensed = document.getElementById('dispensed-ball');
+        dispensed.innerText = randNum;
+        dispensed.classList.remove('dropping');
+        void dispensed.offsetWidth;
+        dispensed.classList.add('dropping');
+
+        updateResultRow();
+
+        // 當集滿 5 個號碼時，自動新增一筆歷史紀錄
+        if (currentDraw.length === maxDraws) {
+          historyRecords.unshift({
+            id: Date.now(),
+            numbers: [...currentDraw],
+            hits: {} // 記錄哪個號碼被勾選中獎
+          });
+          renderHistory();
+          updateStats();
+        }
+      }, 400);
+    }
+
+    function updateResultRow() {
+      const row = document.getElementById('result-row');
+      row.innerHTML = '';
+      for (let i = 0; i < maxDraws; i++) {
+        const item = document.createElement('div');
+        if (i < currentDraw.length) {
+          item.className = 'w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-rose-600 text-white font-bold flex items-center justify-center text-xs shadow-md animate-bounce border-2 border-white';
+          item.innerText = currentDraw[i];
+        } else {
+          item.className = 'w-9 h-9 rounded-full bg-pink-50 border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 font-bold text-xs';
+          item.innerText = i + 1;
+        }
+        row.appendChild(item);
+      }
+    }
+
+    function resetCurrentDraw() {
+      currentDraw = [];
+      document.getElementById('dispensed-ball').classList.remove('dropping');
+      document.getElementById('dispensed-ball').style.opacity = '0';
+      updateResultRow();
+    }
+
+    // 切換中獎勾選狀態
+    function toggleHit(recordId, num) {
+      const record = historyRecords.find(r => r.id === recordId);
+      if (record) {
+        record.hits[num] = !record.hits[num];
+        renderHistory();
+        updateStats();
+      }
+    }
+
+    function renderHistory() {
+      const listContainer = document.getElementById('history-list');
+      if (historyRecords.length === 0) {
+        listContainer.innerHTML = '<p class="text-gray-400 text-center py-3">尚無抽球紀錄，快去轉蛋抽號碼吧！</p>';
+        return;
+      }
+
+      listContainer.innerHTML = '';
+      historyRecords.forEach((rec, idx) => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'bg-pink-50/60 p-2 rounded-xl border border-pink-200 flex flex-col gap-1';
+        
+        let headerHtml = `<div class="flex justify-between text-[11px] text-gray-500 font-medium"><span>第 ${historyRecords.length - idx} 次抽獎</span><span>勾選有中的號碼：</span></div>`;
+        
+        let numsHtml = '<div class="flex flex-wrap gap-1.5 items-center">';
+        rec.numbers.forEach(num => {
+          const isHit = rec.hits[num] ? true : false;
+          numsHtml += `
+            <label class="cursor-pointer flex items-center gap-1 bg-white px-2 py-1 rounded-lg border ${isHit ? 'border-red-500 bg-red-50 text-red-600 font-bold' : 'border-gray-200 text-gray-700'} shadow-xs">
+              <input type="checkbox" ${isHit ? 'checked' : ''} onchange="toggleHit(${rec.id}, ${num})" class="accent-red-500 w-3 h-3">
+              <span>${num}</span>
+            </label>
+          `;
+        });
+        numsHtml += '</div>';
+
+        rowDiv.innerHTML = headerHtml + numsHtml;
+        listContainer.appendChild(rowDiv);
+      });
+    }
+
+    // 統計計算中獎率
+    function updateStats() {
+      let totalAppearances = {}; // 號碼出現次數
+      let totalHits = {};        // 號碼中獎次數
+
+      historyRecords.forEach(rec => {
+        rec.numbers.forEach(num => {
+          totalAppearances[num] = (totalAppearances[num] || 0) + 1;
+          if (rec.hits[num]) {
+            totalHits[num] = (totalHits[num] || 0) + 1;
+          }
+        });
+      });
+
+      const statsContainer = document.getElementById('stats-summary');
+      const numKeys = Object.keys(totalAppearances);
+
+      if (numKeys.length === 0) {
+        statsContainer.innerHTML = '目前尚無中獎數據。';
+        return;
+      }
+
+      // 計算各號碼中獎率並排序
+      let statsArray = numKeys.map(num => {
+        const app = totalAppearances[num];
+        const hit = totalHits[num] || 0;
+        const rate = Math.round((hit / app) * 100);
+        return { num: parseInt(num), app, hit, rate };
+      });
+
+      // 依中獎率由高到低排序
+      statsArray.sort((a, b) => b.rate - a.rate || b.hit - a.hit);
+
+      let html = '<div class="space-y-1 max-h-28 overflow-y-auto pr-1">';
+      statsArray.slice(0, 6).forEach((item, index) => {
+        html += `
+          <div class="flex justify-between items-center bg-white px-3 py-1.5 rounded-lg border border-pink-200 shadow-2xs">
+            <span class="font-bold text-red-600">🔥 號碼 ${item.num} 號</span>
+            <span class="text-gray-600">中獎率: <strong class="text-rose-600">${item.rate}%</strong> (中 ${item.hit} / 出現 ${item.app} 次)</span>
+          </div>
+        `;
+      });
+      html += '</div>';
+      statsContainer.innerHTML = html;
+    }
+
+    function clearHistory() {
+      historyRecords = [];
+      renderHistory();
+      updateStats();
+    }
+
+    window.onload = function() {
+      initBalls();
+      updateResultRow();
+    };
+  </script>
+</body>
+</html>
+
