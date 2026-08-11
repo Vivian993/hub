@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>刮運來 & 扭蛋機</title>
+<link rel="apple-touch-icon" href="custom-icon.png">
+<link rel="icon" type="image/png" href="custom-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="刮運來">
+<meta name="theme-color" content="#f6c3ca">
+<style>
+  :root{
+    --pink-bg: #f6c3ca;
+    --red: #d5423f;
+    --red-deep: #a92e2c;
+    --cream: #fffaf0;
+    --ink: #5c2a2a;
+    --teal: #1f7a6c;
+    --teal-deep: #145a4f;
+    --coral: #ef6b4d;
+    --coral-deep: #c94f34;
+    --line: #ecd6d4;
+    --dot: #b98177;
+    --dot-done: #fdf6ec;
+    --lavender: #cdb8e0;
+    --lavender-deep: #4a2f4f;
+  }
+
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body{ margin:0; padding:0; height:100%; overflow:hidden; }
+  body{
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", sans-serif;
+    background:
+      repeating-radial-gradient(circle at 0 0, transparent 0, transparent 3px, rgba(160,60,60,.06) 3px, rgba(160,60,60,.06) 4px),
+      var(--pink-bg);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---------- tab bar ---------- */
+  .tabbar{
+    display: flex;
+    gap: 8px;
+    padding: 12px 12px 8px;
+    flex-shrink: 0;
+  }
+  .tab{
+    flex: 1;
+    text-align: center;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 900;
+    padding: 11px 6px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    background: rgba(255,255,255,.55);
+    color: var(--ink);
+    opacity: .7;
+  }
+  .tab.active{
+    background: var(--red);
+    color: #fff;
+    opacity: 1;
+    box-shadow: 0 3px 0 var(--red-deep);
+  }
+
+  .view-container{
+    flex: 1;
+    min-height: 0;
+    position: relative;
+  }
+  .view{
+    display: none;
+    height: 100%;
+  }
+  .view.active{ display: block; }
+
+  /* ================= view: scratch card picker ================= */
+  #view-scratch.active{
+    overflow-y: auto;
+  }
+  #view-scratch .wrap{
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 4px 12px 40px;
+  }
+  #view-scratch header{ text-align:center; margin-bottom: 12px; }
+  #view-scratch header .badge{
+    display: inline-block;
+    background: var(--coral);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.25em;
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 8px;
+  }
+  #view-scratch header h1{
+    font-size: 22px; margin: 0; font-weight: 900; color: var(--teal-deep);
+  }
+
+  #view-scratch .machine-row{ margin-bottom: 12px; }
+  #view-scratch .machine-current{
+    display: flex; align-items: center; gap: 8px;
+    background: var(--teal); color: #fff;
+    border-radius: 100px; padding: 8px 8px 8px 16px; margin-bottom: 8px;
+  }
+  #view-scratch .machine-current span{ flex: 1; font-size: 13px; font-weight: 800; }
+  #view-scratch .machine-current button{
+    background: rgba(255,255,255,.2); color: #fff; padding: 6px 12px; font-size: 12px; box-shadow: none;
+  }
+  #view-scratch .machine-list{ display: flex; gap: 6px; flex-wrap: wrap; }
+  #view-scratch .machine-chip{
+    background: var(--cream); border: 2px solid var(--line); color: #9a7a76;
+    font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 100px; cursor: pointer;
+  }
+  #view-scratch .machine-chip.active{ border-color: var(--teal); color: var(--teal-deep); background: #eaf4f1; }
+  #view-scratch .machine-form{ display: none; gap: 8px; margin-top: 8px; }
+  #view-scratch .machine-form.open{ display: flex; }
+  #view-scratch .machine-form input{
+    flex: 1; border: 2px solid var(--line); border-radius: 100px; padding: 10px 14px;
+    font-size: 14px; font-family: inherit; background: var(--cream); color: var(--ink);
+  }
+  #view-scratch .machine-form input:focus{ outline:none; border-color: var(--teal); }
+  #view-scratch .machine-form button{
+    background: var(--teal); color: #fff; padding: 10px 16px; font-size: 13px; box-shadow: 0 3px 0 var(--teal-deep);
+  }
+
+  #view-scratch .stat-row{ display: flex; gap: 10px; margin-bottom: 12px; }
+  #view-scratch .stat-box{
+    flex: 1; background: var(--cream); border: 2px solid var(--line);
+    border-radius: 16px; padding: 10px 6px; text-align: center;
+  }
+  #view-scratch .stat-box b{ display:block; font-size: 22px; color: var(--teal-deep); }
+  #view-scratch .stat-box span{ font-size: 11px; color: #9a7a76; }
+
+  #view-scratch .callout{
+    background: var(--teal); color: #fff; border-radius: 16px; padding: 12px 16px;
+    text-align: center; font-size: 14px; font-weight: 700; margin-bottom: 14px;
+    min-height: 20px; line-height: 1.6;
+  }
+  #view-scratch .callout b{ color: #ffe9a8; font-size: 16px; }
+
+  #view-scratch .btn-row{ display: flex; gap: 8px; margin-bottom: 18px; }
+  #view-scratch button{
+    font-family: inherit; border: none; border-radius: 100px; font-size: 14px;
+    font-weight: 800; cursor: pointer; padding: 13px 10px; transition: transform .12s ease;
+  }
+  #view-scratch button:active{ transform: scale(0.95); }
+  #view-scratch .btn-pick{ flex: 1.4; background: var(--coral); color: #fff; box-shadow: 0 4px 0 var(--coral-deep); }
+  #view-scratch .btn-mark{ flex: 1; background: #fff; color: var(--teal-deep); border: 2px solid var(--teal); box-shadow: 0 4px 0 var(--line); }
+  #view-scratch .btn-reset{ flex: 0.7; background: var(--cream); color: #9a7a76; border: 2px solid var(--line); }
+
+  #view-scratch .card{
+    background: var(--cream); border: 3px solid var(--ink); border-radius: 20px;
+    padding: 14px 10px; margin-bottom: 16px; position: relative; box-shadow: 6px 6px 0 var(--teal);
+  }
+  #view-scratch .card-tag{
+    position: absolute; top: -12px; left: 16px; background: var(--teal); color: #fff;
+    font-size: 12px; font-weight: 800; padding: 3px 12px; border-radius: 100px;
+  }
+  #view-scratch .card h2{ font-size: 14px; margin: 6px 0 10px 4px; color: #9a7a76; font-weight: 700; }
+
+  #view-scratch .grid{ display: grid; grid-template-columns: repeat(15, 1fr); gap: 3px; }
+  #view-scratch .cell{
+    aspect-ratio: 1; border-radius: 50%; background: var(--dot); cursor: pointer;
+    position: relative; transition: transform .1s ease, background .15s ease;
+  }
+  #view-scratch .cell:active{ transform: scale(0.88); }
+  #view-scratch .cell.scratched{ background: var(--dot-done); border: 2px solid var(--teal); }
+  #view-scratch .cell.scratched::after{
+    content: '✕'; position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 8px; color: var(--teal-deep); font-weight: 900;
+  }
+  #view-scratch .cell.picked{ background: var(--coral); animation: sc-pop .4s ease-out; }
+  #view-scratch .cell.picked::before{
+    content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 3px solid var(--coral-deep);
+  }
+  @keyframes sc-pop{
+    0%{ transform: scale(0.5); } 60%{ transform: scale(1.25); } 100%{ transform: scale(1); }
+  }
+
+  #view-scratch footer{ text-align:center; font-size: 11px; color: #b08a86; margin-top: 16px; line-height: 1.8; }
+
+  /* ================= view: gumball lottery machine ================= */
+  #view-lottery.active{
+    overflow-y: auto;
+    background:
+      repeating-radial-gradient(circle at 0 0, transparent 0, transparent 3px, rgba(160,60,60,.06) 3px, rgba(160,60,60,.06) 4px),
+      var(--pink-bg);
+  }
+  #view-lottery .stage{
+    width: 100%;
+    position: relative;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 8px 14px 10px;
+    overflow: visible;
+    background: var(--pink-bg);
+  }
+  #view-lottery .heart{ position: absolute; color: var(--red); opacity: .45; animation: lt-float 6s ease-in-out infinite; }
+  @keyframes lt-float{
+    0%,100%{ transform: translateY(0) rotate(-8deg); }
+    50%{ transform: translateY(-14px) rotate(8deg); }
+  }
+
+  #view-lottery h1{ font-size: 20px; font-weight: 900; color: var(--red-deep); margin: 0 0 2px; text-align: center; }
+  #view-lottery .sub{ font-size: 11px; color: var(--ink); opacity: .7; margin-bottom: 8px; text-align: center; }
+
+  #view-lottery .machine{
+    position: relative; width: 220px;
+    display: flex; flex-direction: column; align-items: center; margin-bottom: 6px;
+  }
+  #view-lottery .knob{ width: 20px; height: 14px; background: var(--red); border-radius: 100px; margin-bottom: -2px; z-index: 3; }
+  #view-lottery .cap{
+    width: 124px; height: 46px; background: linear-gradient(160deg, #e5534e, var(--red) 60%, var(--red-deep));
+    border-radius: 22px 22px 6px 6px; z-index: 2; margin-bottom: -16px;
+  }
+  #view-lottery .globe{
+    width: 210px; height: 210px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fffdf7, var(--cream) 70%);
+    position: relative; z-index: 1;
+    box-shadow: inset 0 -20px 30px rgba(0,0,0,.06), inset 0 10px 18px rgba(255,255,255,.6);
+    overflow: hidden;
+  }
+  #view-lottery .ball{
+    position: absolute; border-radius: 50%;
+    box-shadow: inset -3px -3px 5px rgba(0,0,0,.18), inset 2px 2px 3px rgba(255,255,255,.3);
+  }
+  #view-lottery .ball::after{
+    content: ''; position: absolute; top: 16%; left: 20%; width: 32%; height: 22%;
+    background: rgba(255,255,255,.55); border-radius: 50%; filter: blur(1px);
+  }
+  #view-lottery .ball-layer{ position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
+  #view-lottery .ball.bob{ animation: lt-bob 3.6s ease-in-out infinite; }
+  @keyframes lt-bob{ 0%,100%{ margin-top: 0px; } 50%{ margin-top: 3px; } }
+
+  #view-lottery .neck{
+    width: 58px; height: 58px; background: linear-gradient(160deg, #ddc9ee, var(--lavender));
+    border-radius: 14px; margin-top: -14px; z-index: 2; position: relative;
+  }
+  #view-lottery .neck::after{
+    content: ''; position: absolute; inset: 8px; border-radius: 8px;
+    border: 2px solid var(--lavender-deep); opacity: .35;
+  }
+  #view-lottery .stand{
+    width: 180px; height: 82px; background: linear-gradient(160deg, #e5534e, var(--red) 55%, var(--red-deep));
+    clip-path: polygon(18% 0%, 82% 0%, 100% 100%, 0% 100%); margin-top: -6px; position: relative; z-index: 1;
+  }
+  #view-lottery .stand::after{
+    content: ''; position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%);
+    width: 28px; height: 11px; background: var(--red-deep); border-radius: 100px;
+  }
+  #view-lottery .base{
+    width: 210px; height: 15px; background: linear-gradient(160deg, var(--red), var(--red-deep));
+    border-radius: 100px; margin-top: -3px; z-index: 0;
+  }
+  #view-lottery .loose-ball{ position: absolute; border-radius: 50%; box-shadow: inset -2px -2px 4px rgba(0,0,0,.2); }
+
+  #view-lottery .output-wrap{ display: flex; flex-direction: column; align-items: center; margin-top: 4px; }
+  #view-lottery .output{
+    width: 60px; height: 60px; border-radius: 50%; background: var(--cream); color: var(--red-deep);
+    display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900;
+    box-shadow: 0 5px 0 #d8b8b0; margin-bottom: 8px; transition: transform .1s ease;
+  }
+  #view-lottery .output.empty{ font-size: 17px; color: #b89a9a; font-weight: 700; }
+  #view-lottery .output.pop{ animation: lt-popIn .5s cubic-bezier(.2,1.5,.4,1); }
+  @keyframes lt-popIn{
+    0%{ transform: scale(0) translateY(-30px); opacity:0; }
+    60%{ transform: scale(1.25); opacity:1; }
+    100%{ transform: scale(1); }
+  }
+
+  #view-lottery .results{ display: flex; gap: 6px; margin-bottom: 8px; }
+  #view-lottery .rslot{
+    width: 30px; height: 30px; border-radius: 50%; border: 2px dashed rgba(92,42,42,.3);
+    display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;
+    color: rgba(92,42,42,.4);
+  }
+  #view-lottery .rslot.filled{ border: none; color: #fff; animation: lt-popIn .4s ease-out; }
+
+  #view-lottery .btn-row{ display: flex; align-items: center; gap: 16px; }
+  #view-lottery .btn-churn{
+    font-family: inherit; border: none; background: linear-gradient(160deg, #e5d3f5, var(--lavender));
+    color: var(--lavender-deep); border-radius: 100px; font-size: 13px; font-weight: 800;
+    padding: 12px 18px; cursor: pointer; box-shadow: 0 4px 0 #a98fc4;
+  }
+  #view-lottery .btn-churn:active{ transform: translateY(3px); box-shadow: 0 1px 0 #a98fc4; }
+
+  #view-lottery .btn-drop{
+    width: 60px; height: 60px; border-radius: 50%; border: none;
+    background: radial-gradient(circle at 35% 30%, #ff6f65, var(--red) 70%);
+    box-shadow: 0 5px 0 var(--red-deep), inset 0 3px 4px rgba(255,255,255,.4);
+    color: #fff; font-size: 22px; cursor: pointer;
+  }
+  #view-lottery .btn-drop:active{ transform: translateY(3px); box-shadow: 0 2px 0 var(--red-deep); }
+  #view-lottery .btn-drop:disabled{ background: #cfa9a9; box-shadow: 0 5px 0 #a98a8a; }
+  #view-lottery .btn-drop-label{ font-size: 10px; text-align: center; margin-top: 4px; color: var(--ink); opacity: .6; }
+
+  #view-lottery .btn-lottery-reset{
+    margin-top: 8px; background: transparent; border: none; color: var(--ink);
+    font-size: 11px; font-weight: 700; text-decoration: underline; cursor: pointer;
+  }
+
+  #view-lottery .ribbon{
+    position: absolute; bottom: 10px; right: -6px; background: var(--red); color: #fff;
+    font-family: cursive; font-size: 12px; padding: 5px 18px 5px 12px; border-radius: 100px 0 0 100px;
+  }
+
+  #view-lottery .panels{
+    max-width: 480px; margin: 0 auto; padding: 4px 16px 30px;
+  }
+  #view-lottery .panel{
+    background: var(--cream); border-radius: 16px; padding: 12px 14px;
+    margin-bottom: 14px; box-shadow: 0 4px 0 rgba(169,46,44,.12);
+  }
+  #view-lottery .panel h3{
+    font-size: 13px; margin: 0 0 10px; color: var(--red-deep); font-weight: 900;
+  }
+  #view-lottery .panel .empty-hint{
+    font-size: 12px; color: #b89a9a; text-align: center; padding: 10px 0;
+  }
+
+  #view-lottery .history-entry{
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 0; border-bottom: 1px dashed var(--line);
+  }
+  #view-lottery .history-entry:last-child{ border-bottom: none; }
+  #view-lottery .history-time{
+    font-size: 10px; color: #b89a9a; width: 44px; flex-shrink: 0; line-height: 1.4;
+  }
+  #view-lottery .history-balls{ display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+  #view-lottery .entry-ball{
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+    background: #fff; cursor: pointer;
+    transition: transform .12s ease, background .15s ease, color .15s ease;
+  }
+  #view-lottery .entry-ball:active{ transform: scale(0.85); }
+  #view-lottery .entry-ball.won{
+    background: var(--red); color: #fff;
+    box-shadow: 0 0 0 3px rgba(213,66,63,.28);
+    animation: lt-popIn .3s ease-out;
+  }
+
+  #view-lottery .stats-row{
+    display: flex; align-items: center; gap: 8px; padding: 6px 0;
+  }
+  #view-lottery .stats-rank{
+    font-size: 10px; color: #cba8a4; width: 16px; text-align: center; flex-shrink: 0;
+  }
+  #view-lottery .stats-badge{
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: #fff;
+  }
+  #view-lottery .stats-bar-wrap{
+    flex: 1; height: 8px; background: #f1ddd9; border-radius: 100px; overflow: hidden;
+  }
+  #view-lottery .stats-bar{
+    height: 100%; background: linear-gradient(90deg, #f0a8a2, var(--red)); border-radius: 100px;
+  }
+  #view-lottery .stats-nums{
+    font-size: 10px; color: #9a7a76; width: 78px; text-align: right; flex-shrink: 0; line-height: 1.3;
+  }
+  #view-lottery .stats-pct{
+    font-size: 13px; font-weight: 900; color: var(--red-deep); width: 42px; text-align: right; flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+  <div class="tabbar">
+    <button class="tab active" id="tab-scratch" data-view="view-scratch">🎫 刮刮卡選格器</button>
+    <button class="tab" id="tab-lottery" data-view="view-lottery">🍬 扭蛋機開球</button>
+  </div>
+
+  <div class="view-container">
+
+    <!-- ===== view 1: scratch card picker ===== -->
+    <div class="view active" id="view-scratch">
+      <div class="wrap">
+
+        <header>
+          <div class="badge">SCRATCH & WIN</div>
+          <h1>刮運來 · 選格器</h1>
+        </header>
+
+        <div class="machine-row">
+          <div class="machine-current">
+            <span id="machine-name">載入中…</span>
+            <button id="btn-machine-new">➕ 新機台</button>
+          </div>
+          <div class="machine-list" id="machine-list"></div>
+          <div class="machine-form" id="machine-form">
+            <input id="machine-input" type="text" placeholder="輸入機台名稱，例如：西門店A台" maxlength="20">
+            <button id="btn-machine-save">建立</button>
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-box"><b id="stat-remaining">300</b><span>剩餘</span></div>
+          <div class="stat-box"><b id="stat-scratched">0</b><span>已刮</span></div>
+        </div>
+
+        <div class="callout" id="callout">按「隨機選一格」開始，抽到的格子會用橘色標出來。</div>
+
+        <div class="btn-row">
+          <button class="btn-pick" id="btn-pick">🎲 隨機選一格</button>
+          <button class="btn-mark" id="btn-mark">這格已刮過</button>
+          <button class="btn-reset" id="btn-reset">重設</button>
+        </div>
+
+        <div class="card" data-label="1-1 版">
+          <div class="card-tag">卡片一 · 1-1版</div>
+          <h2>15 × 10</h2>
+          <div class="grid" id="grid-1"></div>
+        </div>
+
+        <div class="card" data-label="1-2 版">
+          <div class="card-tag">卡片二 · 1-2版</div>
+          <h2>15 × 10</h2>
+          <div class="grid" id="grid-2"></div>
+        </div>
+
+        <footer>
+          點格子也可以手動標記已刮開。「這格已刮過」是指目前橘色被選中的那格。<br>
+          不同機台的紀錄會分開儲存，只有你看得到，換機台按上面的名稱標籤就好。<br>
+          工具只負責公平隨機挑選，不會改變中獎機率。
+        </footer>
+
+      </div>
+    </div>
+
+    <!-- ===== view 2: gumball lottery machine ===== -->
+    <div class="view" id="view-lottery">
+      <div class="stage" id="stage">
+
+        <h1>扭蛋機開球</h1>
+        <div class="sub">今彩539　1～39　按🔘掉出一顆球</div>
+
+        <div class="machine">
+          <div class="knob"></div>
+          <div class="cap"></div>
+          <div class="globe" id="globe"></div>
+          <div class="neck"></div>
+          <div class="stand"></div>
+          <div class="base"></div>
+        </div>
+
+        <div class="output-wrap">
+          <div class="output empty" id="output">？</div>
+          <div class="results" id="results"></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-churn" id="btn-churn">🌀 攪動球球</button>
+          <div>
+            <button class="btn-drop" id="btn-drop">●</button>
+            <div class="btn-drop-label">掉球</div>
+          </div>
+        </div>
+
+        <button class="btn-lottery-reset" id="btn-lottery-reset" style="display:none;">重新開球</button>
+
+        <div class="ribbon">今彩 539</div>
+      </div>
+
+      <div class="panels">
+        <div class="panel">
+          <h3>📜 歷史紀錄</h3>
+          <div id="history-list"></div>
+        </div>
+        <div class="panel">
+          <h3>🔥 智慧中獎率排行</h3>
+          <div id="stats-list"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  /* ---------------- tab switching ---------------- */
+  document.querySelectorAll('.tab').forEach(tabBtn => {
+    tabBtn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      tabBtn.classList.add('active');
+      document.getElementById(tabBtn.dataset.view).classList.add('active');
+    });
+  });
+
+  /* ================= scratch card picker logic ================= */
+  const ROWS = 10, COLS = 15;
+  const DEFAULT_MACHINE = '預設機台';
+  let currentMachine = DEFAULT_MACHINE;
+  let state = {
+    1: Array(ROWS * COLS).fill(false),
+    2: Array(ROWS * COLS).fill(false),
+  };
+  let lastPicked = null;
+
+  async function listMachines(){
+    try{
+      const res = await window.storage.list('machine:', false);
+      if(!res || !res.keys) return [];
+      return res.keys.map(k => k.slice('machine:'.length));
+    }catch(e){
+      console.error('listMachines failed', e);
+      return [];
+    }
+  }
+
+  async function loadMachine(name){
+    try{
+      const res = await window.storage.get('machine:' + name, false);
+      if(res && res.value){
+        const parsed = JSON.parse(res.value);
+        return { 1: parsed[1] || Array(ROWS*COLS).fill(false),
+                  2: parsed[2] || Array(ROWS*COLS).fill(false) };
+      }
+    }catch(e){ /* not found -> blank */ }
+    return { 1: Array(ROWS*COLS).fill(false), 2: Array(ROWS*COLS).fill(false) };
+  }
+
+  async function saveMachine(){
+    try{
+      await window.storage.set('machine:' + currentMachine, JSON.stringify(state), false);
+    }catch(e){ console.error('saveMachine failed', e); }
+  }
+
+  async function renderMachineList(){
+    const names = await listMachines();
+    if(!names.includes(DEFAULT_MACHINE) && currentMachine === DEFAULT_MACHINE){
+      names.unshift(DEFAULT_MACHINE);
+    }
+    const listEl = document.getElementById('machine-list');
+    listEl.innerHTML = '';
+    names.forEach(name => {
+      const chip = document.createElement('div');
+      chip.className = 'machine-chip' + (name === currentMachine ? ' active' : '');
+      chip.textContent = name;
+      chip.addEventListener('click', () => switchMachine(name));
+      listEl.appendChild(chip);
+    });
+    document.getElementById('machine-name').textContent = currentMachine;
+  }
+
+  async function switchMachine(name){
+    currentMachine = name;
+    lastPicked = null;
+    state = await loadMachine(name);
+    document.getElementById('callout').textContent = `已切換到「${name}」，繼續刮吧。`;
+    render();
+    renderMachineList();
+  }
+
+  document.getElementById('btn-machine-new').addEventListener('click', () => {
+    const form = document.getElementById('machine-form');
+    form.classList.toggle('open');
+    document.getElementById('machine-input').focus();
+  });
+
+  document.getElementById('btn-machine-save').addEventListener('click', async () => {
+    const input = document.getElementById('machine-input');
+    const name = input.value.trim();
+    if(!name) return;
+    input.value = '';
+    document.getElementById('machine-form').classList.remove('open');
+    currentMachine = name;
+    lastPicked = null;
+    state = await loadMachine(name);
+    await saveMachine();
+    document.getElementById('callout').textContent = `已建立機台「${name}」。`;
+    render();
+    renderMachineList();
+  });
+
+  function buildGrid(cardId){
+    const el = document.getElementById('grid-' + cardId);
+    el.innerHTML = '';
+    for(let i = 0; i < ROWS * COLS; i++){
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.addEventListener('click', () => toggleCell(cardId, i));
+      el.appendChild(cell);
+    }
+  }
+  buildGrid(1);
+  buildGrid(2);
+
+  function toggleCell(cardId, idx){
+    state[cardId][idx] = !state[cardId][idx];
+    if(lastPicked && lastPicked.card === cardId && lastPicked.idx === idx && state[cardId][idx]){
+      lastPicked = null;
+    }
+    render();
+    saveMachine();
+  }
+
+  function render(){
+    let scratched = 0;
+    [1,2].forEach(cardId => {
+      const el = document.getElementById('grid-' + cardId);
+      state[cardId].forEach((val, idx) => {
+        const cell = el.children[idx];
+        cell.classList.toggle('scratched', val);
+        cell.classList.toggle('picked', !!lastPicked && lastPicked.card === cardId && lastPicked.idx === idx);
+        if(val) scratched++;
+      });
+    });
+    document.getElementById('stat-scratched').textContent = scratched;
+    document.getElementById('stat-remaining').textContent = (ROWS*COLS*2) - scratched;
+    document.getElementById('btn-mark').disabled = !lastPicked;
+    document.getElementById('btn-mark').style.opacity = lastPicked ? 1 : 0.4;
+  }
+
+  function describe(choice){
+    const row = Math.floor(choice.idx / COLS) + 1;
+    const col = (choice.idx % COLS) + 1;
+    const cardName = choice.card === 1 ? '卡片一' : '卡片二';
+    return `${cardName}　第 ${row} 行　第 ${col} 格`;
+  }
+
+  function pickRandom(){
+    const pool = [];
+    [1,2].forEach(cardId => {
+      state[cardId].forEach((val, idx) => {
+        if(!val) pool.push({ card: cardId, idx });
+      });
+    });
+
+    const callout = document.getElementById('callout');
+    if(pool.length === 0){
+      callout.innerHTML = '所有格子都刮完了，辛苦了 🎉';
+      lastPicked = null;
+      render();
+      return;
+    }
+
+    const choice = pool[Math.floor(Math.random() * pool.length)];
+    lastPicked = choice;
+    render();
+    callout.innerHTML = `刮這格 → <b>${describe(choice)}</b>`;
+
+    document.getElementById('grid-' + choice.card).children[choice.idx]
+      .scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function markPickedScratched(){
+    if(!lastPicked) return;
+    state[lastPicked.card][lastPicked.idx] = true;
+    const callout = document.getElementById('callout');
+    callout.innerHTML = `已標記　${describe(lastPicked)}　為刮過`;
+    lastPicked = null;
+    render();
+    saveMachine();
+  }
+
+  document.getElementById('btn-pick').addEventListener('click', pickRandom);
+  document.getElementById('btn-mark').addEventListener('click', markPickedScratched);
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    state[1].fill(false);
+    state[2].fill(false);
+    lastPicked = null;
+    document.getElementById('callout').textContent = `「${currentMachine}」已重設。按「隨機選一格」開始。`;
+    render();
+    saveMachine();
+  });
+
+  (async function initScratch(){
+    state = await loadMachine(DEFAULT_MACHINE);
+    render();
+    await renderMachineList();
+  })();
+
+  /* ================= gumball lottery machine logic ================= */
+  const TOTAL = 5, MIN = 1, MAX = 39;
+  let drawn = [];
+  const palette = ['#d5423f','#a83e7c','#c9a227','#ec8fa0','#7a4fae','#4f8fae','#d99a3f'];
+
+  const stage = document.getElementById('stage');
+  for(let i=0;i<8;i++){
+    const h = document.createElement('div');
+    h.className = 'heart';
+    h.textContent = '♥';
+    h.style.left = Math.random()*92 + '%';
+    h.style.top = Math.random()*90 + '%';
+    h.style.fontSize = (12 + Math.random()*16) + 'px';
+    h.style.animationDelay = (Math.random()*4) + 's';
+    stage.insertBefore(h, stage.firstChild.nextSibling);
+  }
+
+  const globe = document.getElementById('globe');
+  const ballLayer = document.createElement('div');
+  ballLayer.className = 'ball-layer';
+  globe.appendChild(ballLayer);
+
+  const layout = [
+    [38,16],[62,16],
+    [24,29],[50,27],[76,29],
+    [14,43],[38,41],[62,41],[86,43],
+    [24,57],[50,59],[76,57],
+    [38,73],[62,73]
+  ];
+  layout.forEach((pos, i) => {
+    const b = document.createElement('div');
+    b.className = 'ball bob';
+    const size = 44 + Math.random()*6;
+    b.style.width = size + 'px';
+    b.style.height = size + 'px';
+    b.style.left = pos[0] + '%';
+    b.style.top = pos[1] + '%';
+    b.style.transform = 'translate(-50%,-50%)';
+    b.style.background = palette[i % palette.length];
+    b.style.animationDelay = (Math.random()*3) + 's';
+    ballLayer.appendChild(b);
+  });
+
+  const loose1 = document.createElement('div');
+  loose1.className = 'loose-ball';
+  loose1.style.cssText = 'width:24px;height:24px;left:6%;bottom:8%;background:' + palette[1];
+  const loose2 = document.createElement('div');
+  loose2.className = 'loose-ball';
+  loose2.style.cssText = 'width:18px;height:18px;left:11%;bottom:5%;background:' + palette[4];
+  stage.appendChild(loose1);
+  stage.appendChild(loose2);
+
+  function buildResultSlots(){
+    const r = document.getElementById('results');
+    r.innerHTML = '';
+    for(let i=0;i<TOTAL;i++){
+      const s = document.createElement('div');
+      s.className = 'rslot';
+      s.id = 'rslot-' + i;
+      r.appendChild(s);
+    }
+  }
+  buildResultSlots();
+
+  function randomUnique(){
+    let n;
+    do{ n = Math.floor(Math.random()*(MAX-MIN+1))+MIN; } while(drawn.includes(n));
+    return n;
+  }
+
+  let churning = false;
+  let currentRotation = 0;
+
+  function easeInOutCubic(t){
+    return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3)/2;
+  }
+
+  function churn(callback){
+    if(churning){ if(callback) callback(); return; }
+    churning = true;
+    const startRotation = currentRotation;
+    const spin = 300 + Math.random()*160;
+    const targetRotation = startRotation + spin;
+    const duration = 1100;
+    const startTime = performance.now();
+
+    function frame(now){
+      const t = Math.min(1, (now - startTime) / duration);
+      const eased = easeInOutCubic(t);
+      currentRotation = startRotation + (targetRotation - startRotation) * eased;
+      ballLayer.style.transform = `rotate(${currentRotation}deg)`;
+      if(t < 1){
+        requestAnimationFrame(frame);
+      } else {
+        churning = false;
+        if(callback) callback();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function dropBall(){
+    if(drawn.length >= TOTAL) return;
+    churn(() => {
+      const n = randomUnique();
+      drawn.push(n);
+
+      const output = document.getElementById('output');
+      output.classList.remove('empty');
+      output.classList.remove('pop');
+      void output.offsetWidth;
+      output.classList.add('pop');
+      output.textContent = n;
+      output.style.background = palette[(drawn.length-1) % palette.length];
+      output.style.color = '#fff';
+
+      const slot = document.getElementById('rslot-' + (drawn.length-1));
+      slot.textContent = n;
+      slot.classList.add('filled');
+      slot.style.background = palette[(drawn.length-1) % palette.length];
+
+      if(drawn.length >= TOTAL){
+        document.getElementById('btn-drop').disabled = true;
+        document.getElementById('btn-lottery-reset').style.display = 'inline-block';
+        addHistoryRecord(drawn.slice());
+      }
+    });
+  }
+
+  /* ---- history & stats: persisted ---- */
+  let historyRecords = [];
+  const HISTORY_KEY = 'lottery539:history';
+
+  async function loadHistory(){
+    try{
+      const res = await window.storage.get(HISTORY_KEY, false);
+      if(res && res.value){
+        return JSON.parse(res.value);
+      }
+    }catch(e){ /* not found -> empty */ }
+    return [];
+  }
+
+  async function saveHistory(){
+    try{
+      await window.storage.set(HISTORY_KEY, JSON.stringify(historyRecords), false);
+    }catch(e){ console.error('saveHistory failed', e); }
+  }
+
+  function addHistoryRecord(numbers){
+    const now = new Date();
+    const timeLabel = `${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}\n${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    historyRecords.unshift({
+      id: now.getTime(),
+      timeLabel,
+      numbers,
+      wins: numbers.map(() => false),
+    });
+    saveHistory();
+    renderHistory();
+    renderStats();
+  }
+
+  function toggleWin(recordId, idx){
+    const rec = historyRecords.find(r => r.id === recordId);
+    if(!rec) return;
+    rec.wins[idx] = !rec.wins[idx];
+    saveHistory();
+    renderHistory();
+    renderStats();
+  }
+
+  function renderHistory(){
+    const el = document.getElementById('history-list');
+    if(historyRecords.length === 0){
+      el.innerHTML = '<div class="empty-hint">抽滿 5 碼後，會自動出現在這裡</div>';
+      return;
+    }
+    el.innerHTML = '';
+    historyRecords.forEach(rec => {
+      const row = document.createElement('div');
+      row.className = 'history-entry';
+
+      const time = document.createElement('div');
+      time.className = 'history-time';
+      time.style.whiteSpace = 'pre-line';
+      time.textContent = rec.timeLabel;
+      row.appendChild(time);
+
+      const balls = document.createElement('div');
+      balls.className = 'history-balls';
+      rec.numbers.forEach((n, idx) => {
+        const b = document.createElement('div');
+        b.className = 'entry-ball' + (rec.wins[idx] ? ' won' : '');
+        b.textContent = n;
+        if(!rec.wins[idx]){
+          b.style.boxShadow = `inset 0 0 0 2px ${palette[idx % palette.length]}`;
+          b.style.color = palette[idx % palette.length];
+        }
+        b.addEventListener('click', () => toggleWin(rec.id, idx));
+        balls.appendChild(b);
+      });
+      row.appendChild(balls);
+
+      el.appendChild(row);
+    });
+  }
+
+  function renderStats(){
+    const el = document.getElementById('stats-list');
+    const tally = {};
+    for(let n = MIN; n <= MAX; n++){
+      tally[n] = { appear: 0, win: 0 };
+    }
+    historyRecords.forEach(rec => {
+      rec.numbers.forEach((n, idx) => {
+        tally[n].appear++;
+        if(rec.wins[idx]) tally[n].win++;
+      });
+    });
+
+    const rows = Object.keys(tally)
+      .map(n => ({ number: Number(n), appear: tally[n].appear, win: tally[n].win }))
+      .filter(r => r.appear > 0)
+      .map(r => ({ ...r, pct: r.appear > 0 ? (r.win / r.appear) * 100 : 0 }))
+      .sort((a, b) => b.pct - a.pct || b.win - a.win || b.appear - a.appear || a.number - b.number);
+
+    if(rows.length === 0){
+      el.innerHTML = '<div class="empty-hint">還沒有資料，開始抽球後會自動統計</div>';
+      return;
+    }
+
+    el.innerHTML = '';
+    rows.forEach((r, i) => {
+      const row = document.createElement('div');
+      row.className = 'stats-row';
+
+      const rank = document.createElement('div');
+      rank.className = 'stats-rank';
+      rank.textContent = i + 1;
+      row.appendChild(rank);
+
+      const badge = document.createElement('div');
+      badge.className = 'stats-badge';
+      badge.textContent = r.number;
+      badge.style.background = palette[r.number % palette.length];
+      row.appendChild(badge);
+
+      const barWrap = document.createElement('div');
+      barWrap.className = 'stats-bar-wrap';
+      const bar = document.createElement('div');
+      bar.className = 'stats-bar';
+      bar.style.width = r.pct + '%';
+      barWrap.appendChild(bar);
+      row.appendChild(barWrap);
+
+      const nums = document.createElement('div');
+      nums.className = 'stats-nums';
+      nums.textContent = `出現${r.appear}・中${r.win}`;
+      row.appendChild(nums);
+
+      const pct = document.createElement('div');
+      pct.className = 'stats-pct';
+      pct.textContent = Math.round(r.pct) + '%';
+      row.appendChild(pct);
+
+      el.appendChild(row);
+    });
+  }
+
+  (async function initLottery(){
+    historyRecords = await loadHistory();
+    renderHistory();
+    renderStats();
+  })();
+
+  document.getElementById('btn-churn').addEventListener('click', () => churn());
+  document.getElementById('btn-drop').addEventListener('click', dropBall);
+  document.getElementById('btn-lottery-reset').addEventListener('click', () => {
+    drawn = [];
+    document.getElementById('btn-drop').disabled = false;
+    document.getElementById('btn-lottery-reset').style.display = 'none';
+    const output = document.getElementById('output');
+    output.classList.add('empty');
+    output.classList.remove('pop');
+    output.textContent = '？';
+    output.style.background = '';
+    output.style.color = '';
+    buildResultSlots();
+  });
+</script>
+</body>
+</html>
