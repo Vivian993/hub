@@ -84,7 +84,7 @@
     gap:18px;
   }
   @media(min-width:980px){
-    main{grid-template-columns: 300px 1fr 300px; align-items:start;}
+    main{grid-template-columns: 1fr 320px; align-items:start;}
   }
 
   .panel{
@@ -240,6 +240,23 @@
     font-weight:600;
   }
   .actionselect:disabled{opacity:.4;}
+  .actionrow{
+    display:flex;flex-wrap:wrap;gap:6px;
+    margin-bottom:2px;
+  }
+  .chipbtn{
+    font-size:12px;
+    padding:6px 10px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    cursor:pointer;
+    color:var(--ink);
+    font-family:inherit;
+    white-space:nowrap;
+  }
+  .chipbtn.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .chipbtn.danger{color:var(--shutter);border-color:#EBC9C1;}
   .cropHint{
     font-size:12px;
     color:var(--ink-soft);
@@ -500,18 +517,29 @@
     flex:0 0 auto;
   }
   .sheet-scroll{margin-top:10px;}
+  .layersection{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:14px;
+    background:var(--paper);
+  }
+  .layersection-head{
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:8px;
+    margin-bottom:10px;
+  }
 
   @media(max-width:979px){
     main{gap:14px;}
     .col-stage{order:1;}
-    .col-upload{order:2;}
-    .col-preview{order:3;}
+    .col-preview{order:2;}
     .stagewrap{
       position:sticky;
       top:0;
       z-index:45;
       background:var(--panel);
-      box-shadow:0 6px 16px rgba(38,34,32,.08);
+      box-shadow:0 6px 16px rgba(38,34,32,.1);
     }
     #propPanel{
       max-height:none;
@@ -536,58 +564,13 @@
 </header>
 
 <main>
-  <!-- LEFT: upload + layers -->
-  <div class="col-upload">
-    <div class="panel">
-      <h3>① 上傳商品照片</h3>
-      <p class="sub">可一次選多張，主商品、配件、零件都可以分開上傳，各自獨立調整。</p>
-      <div class="dropzone" id="dropzone">
-        <span class="icon">🖼️</span>
-        <div class="t1">點擊或拖曳照片到這裡</div>
-        <div class="t2">支援 JPG／PNG，可多選</div>
-      </div>
-      <input type="file" id="fileInput" accept="image/*" multiple>
-      <div class="quickbtns">
-        <button class="qbtn" id="btnArrange">整齊排列</button>
-        <button class="qbtn" id="btnClearAll">全部清空</button>
-      </div>
-
-      <div class="labelbox">
-        <label class="labelbox-title">多款商品編號排版</label>
-        <p class="sub" style="margin-bottom:8px;">3～10幾張款式照，一鍵排整齊，下方可加編號或價格（各自可再點選修改）。</p>
-        <div class="labelrow">
-          <select id="labelStyleSelect">
-            <option value="number">數字 1、2、3…</option>
-            <option value="letter">英文 A、B、C…</option>
-            <option value="price">價格（可各自修改，例如 $299）</option>
-            <option value="none">不加標籤，只排列整齊</option>
-          </select>
-          <button class="qbtn accentbtn" id="btnArrangeLabel">排列＋加編號</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h3>圖層</h3>
-      <p class="sub">點選縮圖來調整物件，或直接在畫布上點選。編號／價格標籤太小不好點時，用這裡的縮圖選取最準。</p>
-      <div class="layerstrip" id="layerStrip"></div>
-      <div class="emptyhint" id="layerEmptyHint">尚未加入任何物件</div>
-    </div>
-  </div>
+  <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
 
   <!-- CENTER: stage -->
   <div class="col-stage">
     <div class="stagewrap">
       <div class="stagetoolbar">
-        <select class="actionselect" id="actionSelect" disabled>
-          <option value="">操作商品／插圖...🔽</option>
-          <option value="removebg">✂️ 一鍵去背</option>
-          <option value="crop">🖼️ 裁切照片</option>
-          <option value="lock">🔒 鎖定／解鎖位置</option>
-          <option value="layerup">⬆️ 圖層上移</option>
-          <option value="layerdown">⬇️ 圖層下移</option>
-          <option value="delete">🗑️ 刪除物件</option>
-        </select>
+        <button class="toolbtn primary" id="btnAddPhoto">📷 新增照片</button>
         <button class="toolbtn primary hidden" id="btnCropApply">✅ 套用裁切</button>
         <button class="toolbtn hidden" id="btnCropCancel">✕ 取消裁切</button>
       </div>
@@ -607,7 +590,7 @@
         <span class="ratio-badge">1:1・1000×1000px</span>
         <canvas id="stageCanvas" width="1000" height="1000"></canvas>
       </div>
-      <div class="emptyhint" id="stageEmptyHint">畫布是 1:1 正方形，各平台都能直接使用。先從左邊上傳商品照片開始吧！</div>
+      <div class="emptyhint" id="stageEmptyHint">畫布是 1:1 正方形，各平台都能直接使用。點畫布中間的相機圖示，加入第一張商品照片吧！</div>
     </div>
 
     <div class="panel" id="propPanel">
@@ -623,6 +606,30 @@
         </div>
       </div>
       <div class="sheet-scroll" id="sheetScroll">
+        <div class="layersection">
+          <div class="layersection-head">
+            <span class="eyebrow">圖層</span>
+            <div class="quickbtns" style="margin:0;">
+              <button class="qbtn" id="btnArrange">整齊排列</button>
+              <button class="qbtn" id="btnClearAll">全部清空</button>
+            </div>
+          </div>
+          <div class="layerstrip" id="layerStrip"></div>
+          <div class="emptyhint" id="layerEmptyHint">尚未加入任何物件，點畫布上的相機圖示新增照片。</div>
+          <div class="labelbox">
+            <label class="labelbox-title">多款商品編號排版</label>
+            <p class="sub" style="margin-bottom:8px;">3～10幾張款式照，一鍵排整齊，下方可加編號或價格（各自可再點選修改）。</p>
+            <div class="labelrow">
+              <select id="labelStyleSelect">
+                <option value="number">數字 1、2、3…</option>
+                <option value="letter">英文 A、B、C…</option>
+                <option value="price">價格（可各自修改，例如 $299）</option>
+                <option value="none">不加標籤，只排列整齊</option>
+              </select>
+              <button class="qbtn accentbtn" id="btnArrangeLabel">排列＋加編號</button>
+            </div>
+          </div>
+        </div>
         <p class="sub" id="propSub">先幫商品挑一個乾淨好看的背景，之後也能隨時換。</p>
         <div id="propBody"></div>
       </div>
@@ -1190,6 +1197,7 @@
   function render(){
     drawScene(canvas,false);
     renderPlatformPreviews();
+    canvas.style.cursor = (state.objects.length===0 && !cropMode) ? 'pointer' : 'grab';
   }
 
   /* ---------- hit testing ---------- */
@@ -1242,6 +1250,10 @@
     const pt = pointerToCanvas(e);
     if(cropMode){
       cropPointerDown(pt);
+      return;
+    }
+    if(state.objects.length===0){
+      fileInput.click();
       return;
     }
     let target = state.selectedId ? state.objects.find(o=>o.id===state.selectedId) : null;
@@ -1331,7 +1343,6 @@
   }
   function updateCropToolbarVisibility(){
     const inCrop = !!cropMode;
-    document.getElementById('actionSelect').classList.toggle('hidden', inCrop);
     document.getElementById('btnCropApply').classList.toggle('hidden', !inCrop);
     document.getElementById('btnCropCancel').classList.toggle('hidden', !inCrop);
     document.getElementById('cropHint').classList.toggle('hidden', !inCrop);
@@ -1450,28 +1461,43 @@
     afterChange();
   }
 
-  document.getElementById('actionSelect').onchange = (e)=>{
-    const val = e.target.value;
-    const o = getSelected();
-    if(val==='removebg' && o && o.type==='image'){
-      const tol = o._removeTol ?? 48;
-      o.processedCanvas = removeBackgroundFromImage(o.imgEl, tol);
-      o.useProcessed = true;
-      afterChange();
-    } else if(val==='crop' && o && o.type==='image'){
-      enterCropMode(o.id);
-    } else if(val==='lock' && o){
-      o.locked = !o.locked;
-      afterChange();
-    } else if(val==='layerup'){
-      moveLayer(1);
-    } else if(val==='layerdown'){
-      moveLayer(-1);
-    } else if(val==='delete'){
-      deleteSelected();
+  function toggleLock(o){ o.locked = !o.locked; afterChange(); }
+
+  function buildActionRow(o, opts){
+    opts = opts || {};
+    const row = document.createElement('div');
+    row.className = 'actionrow';
+    if(opts.removebg){
+      const b = document.createElement('button'); b.className='chipbtn'; b.textContent='✂️ 一鍵去背';
+      b.onclick = ()=>{
+        const tol = o._removeTol ?? 48;
+        o.processedCanvas = removeBackgroundFromImage(o.imgEl, tol);
+        o.useProcessed = true;
+        afterChange();
+      };
+      row.appendChild(b);
     }
-    e.target.value = '';
-  };
+    if(opts.crop){
+      const b = document.createElement('button'); b.className='chipbtn'; b.textContent='🖼️ 裁切照片';
+      b.onclick = ()=> enterCropMode(o.id);
+      row.appendChild(b);
+    }
+    const lockBtn = document.createElement('button');
+    lockBtn.className='chipbtn'+(o.locked?' on':'');
+    lockBtn.textContent = o.locked ? '🔓 解鎖位置' : '🔒 鎖定位置';
+    lockBtn.onclick = ()=> toggleLock(o);
+    row.appendChild(lockBtn);
+    const upBtn = document.createElement('button'); upBtn.className='chipbtn'; upBtn.textContent='⬆️ 上移';
+    upBtn.onclick = ()=> moveLayer(1);
+    row.appendChild(upBtn);
+    const downBtn = document.createElement('button'); downBtn.className='chipbtn'; downBtn.textContent='⬇️ 下移';
+    downBtn.onclick = ()=> moveLayer(-1);
+    row.appendChild(downBtn);
+    const delBtn = document.createElement('button'); delBtn.className='chipbtn danger'; delBtn.textContent='🗑️ 刪除';
+    delBtn.onclick = deleteSelected;
+    row.appendChild(delBtn);
+    return row;
+  }
 
   document.getElementById('btnArrange').onclick = ()=>{
     const imgs = state.objects.filter(o=>o.type==='image');
@@ -1589,13 +1615,13 @@
   });
 
   /* ---------- upload ---------- */
-  const dropzone = document.getElementById('dropzone');
   const fileInput = document.getElementById('fileInput');
-  dropzone.onclick = ()=>fileInput.click();
   fileInput.onchange = e=> handleFiles(e.target.files);
-  ['dragenter','dragover'].forEach(ev=>dropzone.addEventListener(ev,e=>{e.preventDefault();dropzone.classList.add('drag');}));
-  ['dragleave','drop'].forEach(ev=>dropzone.addEventListener(ev,e=>{e.preventDefault();dropzone.classList.remove('drag');}));
-  dropzone.addEventListener('drop', e=>{ handleFiles(e.dataTransfer.files); });
+  document.getElementById('btnAddPhoto').onclick = ()=> fileInput.click();
+
+  const stageCoreEl = document.querySelector('.stagecore');
+  ['dragenter','dragover'].forEach(ev=>stageCoreEl.addEventListener(ev,e=>{e.preventDefault();}));
+  stageCoreEl.addEventListener('drop', e=>{ e.preventDefault(); handleFiles(e.dataTransfer.files); });
 
   function handleFiles(fileList){
     Array.from(fileList).forEach(file=>{
@@ -1648,14 +1674,6 @@
 
   /* ---------- toolbar enable/disable ---------- */
   function updateToolbarState(){
-    const o = getSelected();
-    const sel = document.getElementById('actionSelect');
-    sel.disabled = !o;
-    const isImage = o && o.type==='image';
-    sel.querySelector('option[value="removebg"]').disabled = !isImage;
-    sel.querySelector('option[value="crop"]').disabled = !isImage;
-    const lockOpt = sel.querySelector('option[value="lock"]');
-    lockOpt.textContent = (o && o.locked) ? '🔓 解鎖位置' : '🔒 鎖定／解鎖位置';
     document.getElementById('stageEmptyHint').style.display = state.objects.length? 'none':'block';
   }
 
@@ -1714,6 +1732,8 @@
     const wrap = document.createElement('div');
     wrap.className='propgrid';
 
+    wrap.appendChild(buildActionRow(o, {removebg:true}));
+
     // crop / trim edges
     if(!o.crop) o.crop = {top:0,bottom:0,left:0,right:0};
     const cropSection = document.createElement('div'); cropSection.className='field';
@@ -1769,6 +1789,8 @@
     const wrap = document.createElement('div');
     wrap.className='propgrid';
 
+    wrap.appendChild(buildActionRow(o, {}));
+
     const colorRow = document.createElement('div'); colorRow.className='colorrow';
     const colorInput = document.createElement('input');
     colorInput.type='color'; colorInput.value = rgbToHex(o.color) || '#E8A33D'; colorInput.className='swatch';
@@ -1799,6 +1821,8 @@
   function buildTextProps(o){
     const wrap = document.createElement('div');
     wrap.className='propgrid';
+
+    wrap.appendChild(buildActionRow(o, {}));
 
     const ta = document.createElement('textarea');
     ta.value = o.text;
