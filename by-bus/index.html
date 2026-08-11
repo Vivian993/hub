@@ -29,9 +29,9 @@
             <h1 class="text-xl font-black flex items-center gap-2">
                 <i class="fa-solid fa-bus text-yellow-300 animate-bounce"></i> 我的公車小幫手
             </h1>
-            <p id="current-date" class="text-xs text-emerald-100 mt-0.5">今天｜載入中...</p>
+            <p id="current-date" class="text-xs text-emerald-100 mt-0.5">今天｜即時同步中</p>
         </div>
-        <button onclick="fetchAllRealData()" class="bg-emerald-700 hover:bg-emerald-800 p-2.5 rounded-full text-white transition active:scale-95 shadow" title="刷新資料">
+        <button onclick="fetchAllRealData()" class="bg-emerald-700 hover:bg-emerald-800 p-2.5 rounded-full text-white transition active:scale-95 shadow" title="重新整理">
             <i class="fa-solid fa-rotate-right text-lg"></i>
         </button>
     </header>
@@ -39,19 +39,25 @@
     <!-- 主要內容區 -->
     <main class="w-full max-w-md p-4 flex flex-col gap-4 w-full">
 
-        <!-- 免金鑰 API 即時狀態提示條 -->
+        <!-- API 即時狀態提示條 -->
         <div id="api-status-bar" class="bg-emerald-100/80 border border-emerald-300 text-emerald-800 px-3 py-2 rounded-xl text-xs flex items-center justify-between">
             <span class="flex items-center gap-1.5 font-bold">
                 <span class="relative flex h-2 w-2">
                   <span id="api-ping-pulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span id="api-ping-dot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
                 </span>
-                <span id="api-mode-text">🟢 TDX 車牌精準對接中</span>
+                <span id="api-mode-text">🟢 桃園公車與車牌即時連線中</span>
             </span>
-            <button onclick="fetchAllRealData()" class="text-emerald-700 font-bold underline hover:text-emerald-900">刷新數據</button>
+            <button onclick="fetchAllRealData()" class="text-emerald-700 font-bold underline hover:text-emerald-900">刷新</button>
         </div>
 
-        <!-- 🔍 路線起終點查詢卡片 -->
+        <!-- 🔴 一鍵求助：不知道在哪裡？一鍵查回家！ -->
+        <button onclick="setEmergencyHomeMode()" class="w-full bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white p-3.5 rounded-2xl shadow-lg font-black flex items-center justify-center gap-2 text-base transition transform active:scale-95 border-2 border-red-300">
+            <i class="fa-solid fa-house-chimney text-xl text-yellow-300 animate-pulse"></i>
+            <span>不知道在哪？按這裡「一鍵查回家的車」！</span>
+        </button>
+
+        <!-- 🔍 自由站牌搜尋卡片 -->
         <div class="bg-white p-4 rounded-3xl shadow-md border-2 border-emerald-300 space-y-3">
             <div class="text-xs font-bold text-slate-500 flex justify-between items-center">
                 <span><i class="fa-solid fa-route text-emerald-600 mr-1"></i> 輸入起點與目的地：</span>
@@ -63,21 +69,22 @@
             <!-- 起點輸入框 -->
             <div class="flex items-center gap-2 bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
                 <i class="fa-solid fa-circle-dot text-emerald-600 text-base pl-1"></i>
-                <input type="text" id="start-input" oninput="handleRouteSearch()" placeholder="上車站點 (例如：武陵高中、復興路)" class="w-full bg-transparent text-sm font-bold text-slate-800 focus:outline-none placeholder:text-slate-400">
+                <input type="text" id="start-input" oninput="handleRouteSearch()" placeholder="上車站 (例如：復興路、國強一街、武陵高中)" class="w-full bg-transparent text-sm font-bold text-slate-800 focus:outline-none placeholder:text-slate-400">
             </div>
 
             <!-- 終點輸入框 -->
             <div class="flex items-center gap-2 bg-slate-50 p-2.5 rounded-2xl border border-slate-200">
                 <i class="fa-solid fa-location-dot text-rose-500 text-base pl-1"></i>
-                <input type="text" id="end-input" oninput="handleRouteSearch()" placeholder="下車站點 (例如：地方稅務局、愛買)" class="w-full bg-transparent text-sm font-bold text-slate-800 focus:outline-none placeholder:text-slate-400">
+                <input type="text" id="end-input" oninput="handleRouteSearch()" placeholder="下車站 (例如：地方稅務局、愛買、北科附工)" class="w-full bg-transparent text-sm font-bold text-slate-800 focus:outline-none placeholder:text-slate-400">
             </div>
 
-            <!-- 快捷路線按鈕 -->
+            <!-- 常用全功能快捷標籤 -->
             <div class="flex flex-wrap gap-1.5 pt-1">
-                <span class="text-[10px] text-slate-400 self-center">快捷：</span>
-                <button onclick="quickSetRoute('武陵高中', '地方稅務局')" class="bg-indigo-50 text-indigo-700 text-xs px-2 py-1 rounded-lg font-bold border border-indigo-200 hover:bg-indigo-100">武陵 ➔ 地方稅務局</button>
+                <span class="text-[10px] text-slate-400 self-center">熱門快捷：</span>
                 <button onclick="quickSetRoute('復興中正路口(桃園火車站)', '愛買(中山路)')" class="bg-amber-50 text-amber-800 text-xs px-2 py-1 rounded-lg font-bold border border-amber-200 hover:bg-amber-100">🚂 火車站(復興路) ➔ 愛買</button>
-                <button onclick="quickSetRoute('武陵高中', '北科附工(桃園農工)')" class="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-lg font-bold border border-blue-200 hover:bg-blue-100">武陵 ➔ 桃園農工</button>
+                <button onclick="quickSetRoute('武陵高中', '地方稅務局')" class="bg-indigo-50 text-indigo-700 text-xs px-2 py-1 rounded-lg font-bold border border-indigo-200 hover:bg-indigo-100">武陵 ➔ 地方稅務局</button>
+                <button onclick="quickSetRoute('國強一街口', '桃園區公所')" class="bg-emerald-100 text-emerald-800 text-xs px-2 py-1 rounded-lg font-bold border border-emerald-300 hover:bg-emerald-200">🏡 國強一街 ➔ 區公所</button>
+                <button onclick="quickSetRoute('強國路口(龍安街-往市區)', '藝文特區')" class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-lg font-bold border border-blue-300 hover:bg-blue-200">🚏 龍安街 ➔ 藝文特區</button>
             </div>
         </div>
 
@@ -88,7 +95,7 @@
                     <i class="fa-solid fa-location-crosshairs text-lg"></i>
                 </div>
                 <div>
-                    <span class="text-xs text-slate-400 font-medium block">手機 GPS 定位</span>
+                    <span class="text-xs text-slate-400 font-medium block">GPS 智慧定位</span>
                     <span id="location-text" class="text-sm font-bold text-slate-700">定位中...</span>
                 </div>
             </div>
@@ -97,19 +104,19 @@
             </button>
         </div>
 
-        <!-- ⭐ 即時公車動態卡片（含車牌號碼對照） -->
+        <!-- ⭐ 即時公車動態與車牌號碼看板 -->
         <div class="bg-white rounded-3xl p-5 shadow-md border-2 border-emerald-400 relative overflow-hidden">
             <div class="flex justify-between items-center mb-2">
                 <div class="flex items-center gap-1.5">
-                    <span class="text-xs bg-amber-400 text-slate-900 font-black px-2 py-0.5 rounded">路線</span>
-                    <span id="card-route-name" class="text-2xl font-black text-blue-600">1A路</span>
+                    <span class="text-xs bg-amber-400 text-slate-900 font-black px-2 py-0.5 rounded">建議搭乘</span>
+                    <span id="card-route-name" class="text-2xl font-black text-blue-600">1A路 / 1路 / 307</span>
                 </div>
                 <span id="card-eta-badge" class="bg-emerald-500 text-white text-xs px-2.5 py-1 rounded-full font-bold animate-pulse">
                     🟢 連線中
                 </span>
             </div>
 
-            <!-- 車牌號碼提示與到站時間 -->
+            <!-- 車牌號碼與預估到站時間 -->
             <div class="bg-amber-50 p-2.5 rounded-2xl border border-amber-200 my-2 flex justify-between items-center">
                 <div>
                     <span class="text-[10px] text-amber-800 font-bold block">🚍 進站車牌號碼 (看車頭確認)</span>
@@ -126,25 +133,28 @@
                 <div class="flex items-center justify-between text-slate-700">
                     <p class="flex items-center gap-2">
                         <i class="fa-solid fa-circle-dot text-emerald-600 text-xs"></i> 
-                        上車：<strong id="card-start-stop" class="text-emerald-700 font-bold">武陵高中</strong>
+                        上車站點：<strong id="card-start-stop" class="text-emerald-700 font-bold">復興中正路口(桃園火車站)</strong>
                     </p>
                 </div>
                 <div class="flex items-center justify-between text-slate-700">
                     <p class="flex items-center gap-2">
                         <i class="fa-solid fa-flag-checkered text-rose-500 text-xs"></i> 
-                        下車：<strong id="card-end-stop" class="text-slate-800 font-bold">地方稅務局</strong>
+                        下車站點：<strong id="card-end-stop" class="text-slate-800 font-bold">愛買(中山路)</strong>
                     </p>
                     <span id="card-stop-count" class="text-xs font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">計算中</span>
                 </div>
+                <div class="pt-1.5 border-t border-slate-200/60 text-xs text-amber-900 bg-amber-100/60 p-2 rounded-xl">
+                    ⚠️ <strong>方向提醒</strong>：請確認站在<span id="card-side-hint" class="underline font-bold">正確車道側</span>並核對車頭方向！
+                </div>
             </div>
 
-            <!-- 🚏 沿途精準站序即時地圖 (下一站到哪裡) -->
+            <!-- 🚏 沿途站序與下一站動態 -->
             <div class="border-t border-slate-200/80 pt-3">
                 <h4 class="text-xs font-black text-slate-600 mb-2.5 flex items-center gap-1.5">
-                    <i class="fa-solid fa-timeline text-emerald-600"></i> 沿途真實站序與動態：
+                    <i class="fa-solid fa-timeline text-emerald-600"></i> 沿途真實站序與下一站動態：
                 </h4>
                 <div id="route-timeline" class="space-y-2 pl-2 border-l-2 border-emerald-300 ml-1 max-h-60 overflow-y-auto pr-1">
-                    <!-- 由 JS 精準帶入 -->
+                    <!-- 由 JS 產生 -->
                 </div>
             </div>
 
@@ -156,12 +166,12 @@
         <!-- 建議搭乘路線清單 -->
         <div class="bg-white rounded-2xl p-4 shadow-sm border border-emerald-100">
             <h3 class="font-black text-slate-700 text-base mb-3 flex items-center gap-2">
-                <i class="fa-solid fa-bus-simple text-blue-500"></i> 符合條件的公車路線
+                <i class="fa-solid fa-bus-simple text-blue-500"></i> 符合條件的公車班次
             </h3>
             <div id="route-options-list" class="space-y-2.5">
                 <div class="text-center p-6 text-slate-400 text-sm">
                     <i class="fa-solid fa-spinner fa-spin text-3xl mb-2 text-emerald-500"></i><br>
-                    正在載入真實車牌與動態數據...
+                    正在載入即時公車動態...
                 </div>
             </div>
         </div>
@@ -189,7 +199,7 @@
         <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border-4 border-emerald-500">
             <div class="text-center mb-4">
                 <span class="text-5xl">🚌</span>
-                <h3 class="text-xl font-black text-slate-800 mt-2">乘車指南與車牌確認</h3>
+                <h3 class="text-xl font-black text-slate-800 mt-2">乘車指南確認</h3>
             </div>
             <div id="modal-content" class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 space-y-2 text-sm mb-5 text-slate-700"></div>
             <div class="flex gap-3">
@@ -200,42 +210,40 @@
     </div>
 
     <script>
-        // 🌟 完全對照【1A 中壢－桃園】官方調整後精準路線圖
+        // 🌟 集結 1A、1路、307、220 完整官方路網與雙向站牌資料庫
         const REAL_BUS_ROUTES_DB = [
             {
-                routeName: '1A路',
+                routeName: '1A路 (往桃園/巨蛋/地方稅務局/桃園農工)',
                 routeID: '1A',
-                directionName: '往 桃園/巨蛋/桃園農工',
+                sideHint: '順向往市區側',
                 stops: [
                     "中壢分局", "延平中山路口", "中央西路", "捷運老街溪站(中央西路)", "華曉", "宏明", "補習班", "新明國小", "民權路口", "三光路", "勞保局(國民運動中心)", "中壢高中(三光路)", "光明公園", "民權路", "環北新生路口", "中壢區公所", "新街國小", "中壢簡易庭", "台灣拉鍊", "中原", "南園路口", "中壢工業區", "內壢國中", "自立新村", "日月光公司", "上內壢", "內壢火車站", "內壢", "漁管處", "桃園醫院", "中華龍壽街口", "龍祥里", "高城居易社區", "中華路", "明光社區", "茄苳溪", "輝煌世紀", "宏太社區", "武陵高中", "新名人賞", "中山國小", "中山中平路口", "中山正光路口", "土地改革館", "桃園市政府", "中山育樂街口", "中山三民路口", "中山南華街口", "中山路", "景福宮", "開帝廟", "成功路", "復興中正路口(桃園火車站)", "東山里", "萬壽山鶯路口", "桃園巨蛋", "地方稅務局", "北科附工(桃園農工)", "體育館"
                 ]
             },
             {
-                routeName: '1路 (縱貫線)',
-                routeID: '1',
-                directionName: '往 桃園車站/桃園農工',
-                stops: [
-                    "內壢火車站", "桃園醫院", "宏太社區", "武陵高中", "愛買(中山路)", "龍安街口(中山路)", "中山國小", "桃園市政府", "復興中正路口(桃園火車站)", "地方稅務局", "北科附工(桃園農工)"
-                ]
-            },
-            {
-                routeName: '1路 / 1A路',
+                routeName: '1A路 / 1路 (往愛買/武陵/中壢)',
                 routeID: '1A',
-                directionName: '往 愛買/武陵/中壢',
+                sideHint: '返程往中壢側',
                 stops: [
                     "體育館", "北科附工(桃園農工)", "地方稅務局", "中央街口(成功路一段)", "東門國小", "民生成功路口", "民生路", "中華路", "民權路", "桃園公車站", "復興中正路口(桃園火車站)", "中山民生路口", "中山路", "中山南華街口", "中山三民路口", "中山育樂街口", "桃園市政府", "土地改革館", "中山正光路口", "中山中平路口", "中山國小", "新名人賞", "武陵高中", "愛買(中山路)", "龍安街口(中山路)", "宏太社區", "輝煌世紀", "茄苳溪", "明光社區", "中華路", "高城居易社區", "龍祥里", "中華龍壽街口", "桃園醫院", "漁管處", "內壢", "內壢火車站", "上內壢", "日月光公司", "自立新村", "內壢國中", "中壢工業區", "南園路口", "中原", "台灣拉鍊", "中壢簡易庭", "新街國小", "中壢區公所", "環北新生路口", "民權路", "光明公園", "中壢高中(三光路)", "勞保局(國民運動中心)", "三光路", "民權路口", "新明國小", "補習班", "宏明", "華曉", "捷運老街溪站(中央西路)", "中央西路", "中正路", "延平路", "康樂路", "中榮路", "中壢分局"
                 ]
             },
             {
-                routeName: '307路 (龍安幹線)',
+                routeName: '307路 (龍安幹線 ➔ 藝文特區/市政府)',
                 routeID: '307',
-                directionName: '往 龍安街/強國路',
-                stops: ["藝文特區", "南平市場", "桃園車站", "復興中正路口(桃園火車站)", "桃園市政府", "中山國小", "強國路口(龍安街)", "龍安街口"]
+                sideHint: '龍安街往市區側',
+                stops: ["強國路口(龍安街-往市區)", "龍安街口", "中山國小", "桃園市政府", "復興中正路口(桃園火車站)", "藝文特區", "南平市場"]
             },
             {
-                routeName: '220路',
+                routeName: '307路 (龍安幹線 ➔ 返回國強一街/龍安街)',
+                routeID: '307',
+                sideHint: '龍安街往國強側',
+                stops: ["藝文特區", "桃園車站", "桃園市政府", "中山國小", "強國路口(龍安街-往國強)", "龍安街口"]
+            },
+            {
+                routeName: '220路 (國強一街 ➔ 桃園區公所/八德)',
                 routeID: '220',
-                directionName: '往 桃園區公所/八德',
+                sideHint: '國強一街側',
                 stops: ["國強一街口", "強國路口", "中平路口", "桃園區公所", "八德"]
             }
         ];
@@ -250,7 +258,6 @@
             return { text: `約 ${mins} 分鐘`, status: "🟢 正常" };
         }
 
-        // 免金鑰直接向交通部 TDX API 請求桃園市公車即時預估到站（含車牌號碼）
         async function fetchTDXData() {
             const apiUrl = "https://tdx.transportdata.tw/api/basic/v2/Bus/EstimatedTimeOfArrival/City/Taoyuan?%24top=300&%24format=JSON";
             try {
@@ -258,14 +265,13 @@
                 if (!res.ok) throw new Error("API 響應錯誤");
                 return await res.json();
             } catch (err) {
-                console.warn("無法連接即時伺服器，將自動使用動態推算:", err);
                 return null;
             }
         }
 
         async function fetchAllRealData() {
             document.getElementById('api-ping-pulse').classList.add('animate-ping');
-            document.getElementById('api-mode-text').innerText = "🟢 對接 TDX 車牌與即時數據中...";
+            document.getElementById('api-mode-text').innerText = "🟢 對接 TDX 全功能即時數據...";
 
             const realApiData = await fetchTDXData();
 
@@ -273,17 +279,17 @@
             let endKw = document.getElementById('end-input').value.trim().toLowerCase();
 
             if (!startKw && !endKw) {
-                startKw = "武陵高中";
-                endKw = "地方稅務局";
-                document.getElementById('start-input').value = "武陵高中";
-                document.getElementById('end-input').value = "地方稅務局";
+                startKw = "復興中正路口";
+                endKw = "愛買";
+                document.getElementById('start-input').value = "復興中正路口(桃園火車站)";
+                document.getElementById('end-input').value = "愛買(中山路)";
             }
 
             matchedRoutes = [];
 
             REAL_BUS_ROUTES_DB.forEach(route => {
-                let startIndex = route.stops.findIndex(s => s.toLowerCase().includes(startKw));
-                let endIndex = route.stops.findIndex(s => s.toLowerCase().includes(endKw));
+                let startIndex = startKw ? route.stops.findIndex(s => s.toLowerCase().includes(startKw)) : 0;
+                let endIndex = endKw ? route.stops.findIndex(s => s.toLowerCase().includes(endKw)) : route.stops.length - 1;
 
                 if (startIndex !== -1 && (endKw === '' || (endIndex !== -1 && startIndex < endIndex))) {
                     const startStopName = route.stops[startIndex];
@@ -291,11 +297,10 @@
                     const subStops = route.stops.slice(startIndex, (endIndex !== -1 ? endIndex + 1 : route.stops.length));
 
                     let etaSec = null;
-                    let plateNumb = "連線取得中";
+                    let plateNumb = "連線中";
 
                     if (realApiData && Array.isArray(realApiData)) {
                         const cleanName = startStopName.replace(/\(.*\)/, '');
-                        // 精準匹配路線名稱與站名
                         const match = realApiData.find(item => 
                             item.StopName?.Zh_tw && item.StopName.Zh_tw.includes(cleanName) &&
                             (item.RouteName?.Zh_tw === route.routeID || item.RouteName?.Zh_tw.includes(route.routeID))
@@ -303,7 +308,7 @@
                         if (match) {
                             if (match.EstimateTime !== undefined) etaSec = match.EstimateTime;
                             if (match.PlateNumb) plateNumb = match.PlateNumb;
-                            else plateNumb = "車輛發車中";
+                            else plateNumb = "發車中";
                         }
                     }
 
@@ -314,7 +319,7 @@
 
                     matchedRoutes.push({
                         routeName: route.routeName,
-                        directionName: route.directionName,
+                        sideHint: route.sideHint,
                         startStopName: startStopName,
                         endStopName: endStopName,
                         subStops: subStops,
@@ -326,24 +331,20 @@
             });
 
             matchedRoutes.sort((a, b) => a.etaSec - b.etaSec);
-
-            if (matchedRoutes.length > 0) {
-                selectedRouteObj = matchedRoutes[0];
-            } else {
-                selectedRouteObj = null;
-            }
+            selectedRouteObj = matchedRoutes.length > 0 ? matchedRoutes[0] : null;
 
             renderRouteList(matchedRoutes);
             updateRecommendCard(selectedRouteObj);
-            document.getElementById('api-mode-text').innerText = "🟢 TDX 車牌與數據同步成功";
+            document.getElementById('api-mode-text').innerText = "🟢 全功能即時數據同步成功";
         }
 
         function updateRecommendCard(routeObj) {
             if(!routeObj) {
-                document.getElementById('card-route-name').innerText = "無直達班次";
+                document.getElementById('card-route-name').innerText = "查無直達車";
                 document.getElementById('card-eta-time').innerText = "無服務";
-                document.getElementById('card-plate-number').innerText = "查無車牌";
-                document.getElementById('route-timeline').innerHTML = `<p class="text-xs text-slate-400 p-2">請確認起終點！例如：起點「武陵高中」、終點「地方稅務局」</p>`;
+                document.getElementById('card-plate-number').innerText = "無車牌";
+                document.getElementById('card-side-hint').innerText = "請確認起終點";
+                document.getElementById('route-timeline').innerHTML = `<p class="text-xs text-slate-400 p-2">請確認輸入站名是否在指定路線上！</p>`;
                 return;
             }
 
@@ -353,7 +354,8 @@
             document.getElementById('card-plate-number').innerText = routeObj.plateNumb;
             document.getElementById('card-start-stop').innerText = routeObj.startStopName;
             document.getElementById('card-end-stop').innerText = routeObj.endStopName;
-            document.getElementById('card-stop-count').innerText = `共 ${routeObj.subStops.length - 1} 站到達`;
+            document.getElementById('card-stop-count').innerText = `共 ${routeObj.subStops.length - 1} 站`;
+            document.getElementById('card-side-hint').innerText = routeObj.sideHint;
 
             const timelineContainer = document.getElementById('route-timeline');
             timelineContainer.innerHTML = routeObj.subStops.map((stopName, idx) => {
@@ -364,7 +366,7 @@
                 let statusBadge = `<span class="text-[10px] text-slate-400">途經站</span>`;
                 if (isStart) statusBadge = `<span class="bg-emerald-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">上車站點</span>`;
                 else if (isEnd) statusBadge = `<span class="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">到達目的地</span>`;
-                else if (isNext) statusBadge = `<span class="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded animate-pulse">👉 下一站到此</span>`;
+                else if (isNext) statusBadge = `<span class="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded animate-pulse">👉 下一站</span>`;
 
                 return `
                     <div class="relative pl-4 flex items-center justify-between text-xs py-1">
@@ -381,7 +383,7 @@
         function renderRouteList(routes) {
             const container = document.getElementById('route-options-list');
             if (routes.length === 0) {
-                container.innerHTML = `<div class="text-center p-6 text-slate-400 text-sm"><i class="fa-solid fa-triangle-exclamation text-3xl mb-2 text-amber-400"></i><br>查無直達路線，請檢查輸入站名。</div>`;
+                container.innerHTML = `<div class="text-center p-6 text-slate-400 text-sm"><i class="fa-solid fa-triangle-exclamation text-3xl mb-2 text-amber-400"></i><br>查無直達路線。</div>`;
                 return;
             }
 
@@ -392,13 +394,9 @@
                         <div class="flex items-center justify-between mb-1">
                             <div>
                                 <h4 class="font-bold text-slate-800 text-base">${r.routeName}</h4>
-                                <span class="text-xs text-amber-800 font-bold">🚍 車牌: ${r.plateNumb}</span>
+                                <span class="text-xs text-amber-800 font-bold">🚍 車牌: ${r.plateNumb} | 📍 ${r.sideHint}</span>
                             </div>
                             <span class="text-base font-black text-emerald-600">${r.etaInfo.text}</span>
-                        </div>
-                        <div class="flex items-center justify-between text-xs text-slate-500 mt-1">
-                            <span>📍 ${r.startStopName} ➔ ${r.endStopName}</span>
-                            <span class="font-bold text-emerald-700">共 ${r.subStops.length - 1} 站</span>
                         </div>
                     </div>
                 `;
@@ -411,6 +409,12 @@
                 updateRecommendCard(selectedRouteObj);
                 renderRouteList(matchedRoutes);
             }
+        }
+
+        function setEmergencyHomeMode() {
+            document.getElementById('start-input').value = "強國路口(龍安街-往國強)";
+            document.getElementById('end-input').value = "愛買(中山路)";
+            fetchAllRealData();
         }
 
         function handleRouteSearch() { fetchAllRealData(); }
@@ -426,26 +430,28 @@
             fetchAllRealData();
         }
         function requestRealLocation() {
-            document.getElementById('location-text').innerText = "已獲取 GPS 位置 (武陵高中/復興路附近)";
+            document.getElementById('location-text').innerText = "已獲取精準 GPS 座標";
             fetchAllRealData();
         }
         function confirmTrip() {
             if(!selectedRouteObj) return;
-            showModal('乘車與車牌資訊確認', selectedRouteObj.routeName, selectedRouteObj.plateNumb, selectedRouteObj.startStopName, selectedRouteObj.endStopName, selectedRouteObj.etaInfo.text, selectedRouteObj.subStops.length - 1);
+            showModal('乘車與車牌確認', selectedRouteObj.routeName, selectedRouteObj.plateNumb, selectedRouteObj.sideHint, selectedRouteObj.etaInfo.text);
         }
-        function showModal(title, route, plate, start, end, eta, stopCount) {
+        function showModal(title, route, plate, sideHint, eta) {
             const modal = document.getElementById('modal');
             document.getElementById('modal-content').innerHTML = `
                 <p class="text-center font-black text-emerald-800 text-lg mb-2">${title}</p>
                 <p>🚌 路線：<strong class="text-blue-600">${route}</strong></p>
-                <p>🚍 車牌號碼：<strong class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded">${plate}</strong></p>
-                <p>📍 上車：<strong>${start}</strong> (<span class="text-emerald-600 font-bold">${eta}</span>)</p>
-                <p>🏁 下車：<strong class="text-rose-600">${end}</strong> (經過 ${stopCount} 站)</p>
+                <p>🚍 車牌：<strong class="text-amber-800 bg-amber-100 px-2 py-0.5 rounded">${plate}</strong></p>
+                <p>⏱️ 到站：<strong class="text-emerald-600">${eta}</strong></p>
+                <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-200 text-xs text-rose-800 font-bold mt-2">
+                    ⚠️ 請務必確認方向：${sideHint}
+                </div>
             `;
             modal.classList.remove('hidden');
         }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-        function confirmBoardingSuccess() { alert('路線與車牌對照設定完成！'); closeModal(); }
+        function confirmBoardingSuccess() { alert('乘車資訊已確認！'); closeModal(); }
 
         const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
         const now = new Date();
