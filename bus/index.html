@@ -788,6 +788,7 @@ window.toggleFav = function(id){
   favs = favs.includes(id) ? favs.filter(x => x !== id) : [...favs, id];
   setFavorites(favs);
   renderAll();
+  renderNearbyFull();
 };
 
 function getSettings(){
