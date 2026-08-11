@@ -460,14 +460,14 @@
     box-shadow:0 4px 14px rgba(38,34,32,.1);
   }
   .mini-preview-frame canvas{width:100%;height:100%;display:block;}
-  .mini-preview-tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
-  .mini-preview-tags span{
-    font-size:10.5px;color:var(--ink-soft);
-    background:var(--paper);
-    border:1px solid var(--line);
-    border-radius:999px;
-    padding:3px 9px;
+  .mini-preview-tags{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    text-align:center;
+    max-width:220px;
+    line-height:1.6;
   }
+  .mini-preview-tags b{color:var(--ink);font-weight:600;}
   .platform-card{display:flex;gap:12px;align-items:center;}
   .platform-thumbwrap{
     width:78px;height:78px;
@@ -686,9 +686,9 @@
                 <option value="none">不加標籤，只排列整齊</option>
               </select>
               <select id="labelPositionSelect">
-                <option value="below">位置：下方置中</option>
-                <option value="left">位置：商品左側</option>
-                <option value="right">位置：商品右側</option>
+                <option value="center">位置：正下方置中</option>
+                <option value="left">位置：正下方靠左</option>
+                <option value="right">位置：正下方靠右</option>
               </select>
               <button class="qbtn accentbtn" id="btnArrangeLabel">排列＋加編號</button>
             </div>
@@ -710,7 +710,7 @@
           <canvas id="miniPreviewCanvas" width="160" height="160"></canvas>
         </div>
         <div class="mini-preview-tags">
-          <span>蝦皮</span><span>賣貨便</span><span>露天</span><span>FB社團</span><span>Instagram</span>
+          適用平台：<b>蝦皮</b>、<b>賣貨便</b>、<b>露天</b>、<b>FB社團</b>、<b>Instagram</b>
         </div>
       </div>
     </div>
@@ -1678,8 +1678,16 @@
     afterChange();
   };
 
+  function estimateLabelWidth(text, fontSize){
+    ctx.font = `700 ${fontSize}px ${FONT_OPTIONS[0].v}`;
+    const m = ctx.measureText(text||' ');
+    const textW = Math.max(m.width, 4);
+    const padX = fontSize*0.55; // badge enabled
+    return textW + padX*2;
+  }
+
   function arrangeWithLabels(style, position){
-    position = position || 'below';
+    position = position || 'center';
     const imgs = state.objects.filter(o=>o.type==='image');
     const n = imgs.length; if(!n) return;
     // remove previously auto-generated labels so re-running doesn't stack duplicates
@@ -1690,45 +1698,36 @@
     const cellW = (CANVAS_SIZE-margin*2)/cols;
     const cellH = (CANVAS_SIZE-margin*2)/rows;
     const showLabel = style !== 'none';
+    const labelZoneH = showLabel ? Math.max(56, cellH*0.18) : 0;
+    const imgAreaH = cellH - labelZoneH;
     const newLabels = [];
 
-    if(position==='below' || !showLabel){
-      const labelZoneH = showLabel ? Math.max(56, cellH*0.18) : 0;
-      const imgAreaH = cellH - labelZoneH;
-      imgs.forEach((o,i)=>{
-        const col = i%cols, row = Math.floor(i/cols);
-        const cellX = margin+cellW*col;
-        const cellY = margin+cellH*row;
-        const cx = cellX+cellW/2;
-        const cy = cellY + imgAreaH/2;
-        const nat = o.naturalW/o.naturalH;
-        let w = cellW*0.78, h = w/nat;
-        if(h > imgAreaH*0.86){ h = imgAreaH*0.86; w = h*nat; }
-        o.x=cx; o.y=cy; o.width=w; o.height=h; o.rotation=0;
-        if(!showLabel) return;
-        const fontSize = Math.max(30, Math.min(56, labelZoneH*0.62));
-        newLabels.push(makeLabelObj(style, i, o, cx, cellY+imgAreaH+labelZoneH/2, fontSize));
-      });
-    } else {
-      // left / right: reserve a vertical strip beside the image instead of below it
-      const labelZoneW = Math.max(90, cellW*0.24);
-      const imgAreaW = cellW - labelZoneW;
-      imgs.forEach((o,i)=>{
-        const col = i%cols, row = Math.floor(i/cols);
-        const cellX = margin+cellW*col;
-        const cellY = margin+cellH*row;
-        const imgSideX = position==='left' ? cellX+labelZoneW : cellX;
-        const labelCenterX = position==='left' ? cellX+labelZoneW/2 : cellX+cellW-labelZoneW/2;
-        const cx = imgSideX + imgAreaW/2;
-        const cy = cellY + cellH/2;
-        const nat = o.naturalW/o.naturalH;
-        let w = imgAreaW*0.86, h = w/nat;
-        if(h > cellH*0.86){ h = cellH*0.86; w = h*nat; }
-        o.x=cx; o.y=cy; o.width=w; o.height=h; o.rotation=0;
-        const fontSize = Math.max(30, Math.min(56, labelZoneW*0.4));
-        newLabels.push(makeLabelObj(style, i, o, labelCenterX, cy, fontSize));
-      });
-    }
+    imgs.forEach((o,i)=>{
+      const col = i%cols, row = Math.floor(i/cols);
+      const cellX = margin+cellW*col;
+      const cellY = margin+cellH*row;
+      const cx = cellX+cellW/2;
+      const cy = cellY + imgAreaH/2;
+      const nat = o.naturalW/o.naturalH;
+      let w = cellW*0.78, h = w/nat;
+      if(h > imgAreaH*0.86){ h = imgAreaH*0.86; w = h*nat; }
+      o.x=cx; o.y=cy; o.width=w; o.height=h; o.rotation=0;
+      if(!showLabel) return;
+
+      const fontSize = Math.max(30, Math.min(56, labelZoneH*0.62));
+      const labelText = style==='letter' ? String.fromCharCode(65+(i%26)) : (style==='price' ? '$299' : String(i+1));
+      const labelW = estimateLabelWidth(labelText, fontSize);
+      const labelY = cellY + imgAreaH + labelZoneH/2;
+      let labelX;
+      if(position==='left'){
+        labelX = (o.x - o.width/2) + labelW/2; // left edge of label lines up with left edge of image
+      } else if(position==='right'){
+        labelX = (o.x + o.width/2) - labelW/2; // right edge of label lines up with right edge of image
+      } else {
+        labelX = cx; // centered under the image
+      }
+      newLabels.push(makeLabelObj(style, i, o, labelX, labelY, fontSize));
+    });
 
     state.objects.push(...newLabels);
     state.selectedId = null;
@@ -1748,11 +1747,21 @@
       isAutoLabel:true, linkedImageId:o.id
     };
   }
-  document.getElementById('btnArrangeLabel').onclick = ()=>{
+  function runArrangeWithLabels(){
     const style = document.getElementById('labelStyleSelect').value;
     const position = document.getElementById('labelPositionSelect').value;
     arrangeWithLabels(style, position);
-  };
+  }
+  document.getElementById('btnArrangeLabel').onclick = runArrangeWithLabels;
+  // if labels have already been arranged once, changing either dropdown
+  // immediately re-arranges so the canvas never shows a stale position/style
+  // that no longer matches what the dropdowns say.
+  function rerunIfAlreadyArranged(){
+    const hasAutoLabels = state.objects.some(o=>o.type==='text' && o.isAutoLabel);
+    if(hasAutoLabels) runArrangeWithLabels();
+  }
+  document.getElementById('labelStyleSelect').onchange = rerunIfAlreadyArranged;
+  document.getElementById('labelPositionSelect').onchange = rerunIfAlreadyArranged;
 
   document.getElementById('btnQuickAddText').onclick = ()=> addTextObject('新文字', {});
   document.getElementById('quickAddShapeSelect').onchange = (e)=>{
