@@ -225,6 +225,12 @@
     color:var(--paper);
     border-color:var(--ink);
   }
+  .toolbtn.accent{
+    background:var(--amber);
+    color:var(--ink);
+    border-color:var(--amber);
+    font-weight:700;
+  }
   .toolbtn.danger{color:var(--shutter);border-color:#EBC9C1;}
   .toolbtn:disabled{opacity:.35;cursor:not-allowed;}
   .actionselect{
@@ -570,7 +576,7 @@
   <div class="col-stage">
     <div class="stagewrap">
       <div class="stagetoolbar">
-        <button class="toolbtn primary" id="btnAddPhoto">📷 新增照片</button>
+        <button class="toolbtn accent" id="btnAddPhoto">📷 新增照片</button>
         <button class="toolbtn primary hidden" id="btnCropApply">✅ 套用裁切</button>
         <button class="toolbtn hidden" id="btnCropCancel">✕ 取消裁切</button>
       </div>
@@ -797,7 +803,7 @@
       bold:true,
       badge: { enabled: !!opts.badge, bg: opts.badgeBg||'#E8A33D' },
       stroke: { enabled: !!opts.stroke, color:'#FFFFFF' },
-      width:10, height:10
+      width:null, height:null
     };
     state.objects.push(obj);
     state.selectedId = obj.id;
@@ -815,8 +821,19 @@
     const textH = o.fontSize*1.25;
     const padX = o.badge.enabled ? o.fontSize*0.55 : 4;
     const padY = o.badge.enabled ? o.fontSize*0.32 : 4;
-    o.width = textW + padX*2;
-    o.height = textH + padY*2;
+    const newWidth = textW + padX*2;
+    const newHeight = textH + padY*2;
+    // keep the left edge anchored as text is typed/edited, instead of growing
+    // symmetrically around the center (which made the box appear to "jump").
+    if(o.width != null){
+      const dx = (newWidth - o.width)/2;
+      const dy = (newHeight - o.height)/2;
+      const cos = Math.cos(o.rotation), sin = Math.sin(o.rotation);
+      o.x += dx*cos - dy*sin;
+      o.y += dx*sin + dy*cos;
+    }
+    o.width = newWidth;
+    o.height = newHeight;
     o._padX = padX; o._padY = padY;
   }
 
@@ -1556,7 +1573,7 @@
         rotation:0, opacity:1,
         fontSize, color:textColor, font: FONT_OPTIONS[0].v, bold:true,
         badge:{enabled:true, bg:badgeBg}, stroke:{enabled:false,color:'#FFFFFF'},
-        width:10, height:10,
+        width:null, height:null,
         isAutoLabel:true, linkedImageId:o.id
       };
       newLabels.push(labelObj);
