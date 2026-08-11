@@ -535,6 +535,22 @@
     flex-wrap:wrap;gap:8px;
     margin-bottom:10px;
   }
+  .quickadd-row{
+    display:flex;gap:8px;flex-wrap:wrap;
+    margin-top:10px;
+  }
+  .quickadd-select{
+    flex:1;
+    min-width:160px;
+    font-size:12.5px;
+    padding:7px 10px;
+    border-radius:8px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+    font-family:inherit;
+    font-weight:600;
+  }
 
   @media(max-width:979px){
     main{gap:14px;}
@@ -622,6 +638,26 @@
           </div>
           <div class="layerstrip" id="layerStrip"></div>
           <div class="emptyhint" id="layerEmptyHint">尚未加入任何物件，點畫布上的相機圖示新增照片。</div>
+
+          <div class="quickadd-row">
+            <button class="qbtn accentbtn" id="btnQuickAddText">✚ 新增文字</button>
+            <select id="quickAddShapeSelect" class="quickadd-select">
+              <option value="">✚ 新增插圖...</option>
+              <option value="star">★ 星星</option>
+              <option value="heart">♥ 愛心</option>
+              <option value="sparkle">✦ 閃亮</option>
+              <option value="burst">✺ 爆炸貼紙</option>
+              <option value="price-tag">🏷️ 價格吊牌</option>
+              <option value="bubble">💬 對話框</option>
+              <option value="check">✓ 品質保證</option>
+              <option value="tape">▤ 紙膠帶</option>
+              <option value="spin-top">🌀 陀螺</option>
+              <option value="motion-swirl">〰️ 旋轉動感</option>
+              <option value="trophy">🏆 冠軍獎盃</option>
+            </select>
+          </div>
+          <p class="sub" style="margin:4px 0 0;">不管現在有沒有選到其他物件，按這裡都會直接新增一個獨立的新物件，選到它之後再刪除或調整也不影響其他東西。</p>
+
           <div class="labelbox">
             <label class="labelbox-title">多款商品編號排版</label>
             <p class="sub" style="margin-bottom:8px;">3～10幾張款式照，一鍵排整齊，下方可加編號或價格（各自可再點選修改）。</p>
@@ -1587,6 +1623,12 @@
     arrangeWithLabels(style);
   };
 
+  document.getElementById('btnQuickAddText').onclick = ()=> addTextObject('新文字', {});
+  document.getElementById('quickAddShapeSelect').onchange = (e)=>{
+    if(e.target.value){ addShapeObject(e.target.value); }
+    e.target.value = '';
+  };
+
   document.getElementById('btnClearAll').onclick = ()=>{
     if(!state.objects.length) return;
     if(confirm('確定要清空所有物件嗎？')){
@@ -1999,6 +2041,24 @@
 
   setSheetCollapsed(true);
   afterChange();
+
+  // Canvas text does not auto-trigger webfont loading the way DOM text does,
+  // so the very first draw can measure text with a fallback font, then jump
+  // to a different width/position once the real font finishes downloading.
+  // Explicitly preload every font family used for labels/text, then redraw
+  // once they're ready so object positions don't shift under the user.
+  const FONT_FAMILIES_TO_PRELOAD = [
+    "Noto Sans TC", "Noto Serif TC", "Space Grotesk",
+    "Iansui", "Klee One", "Cactus Classical Serif"
+  ];
+  if(document.fonts && document.fonts.load){
+    Promise.allSettled(
+      FONT_FAMILIES_TO_PRELOAD.map(f => document.fonts.load(`700 40px "${f}"`))
+    ).then(()=> render());
+    if(document.fonts.ready){
+      document.fonts.ready.then(()=> render());
+    }
+  }
 })();
 </script>
 </body>
