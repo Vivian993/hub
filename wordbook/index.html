@@ -120,7 +120,10 @@
   <!-- ============ 成語面板 ============ -->
   <div id="panelIdiom" class="panel -mt-1 p-6 sm:p-8 space-y-6">
     <div class="no-print grid grid-cols-1 sm:grid-cols-4 gap-3">
-      <input id="idiomInput" placeholder="輸入成語，例如：守株待兔" class="sm:col-span-2 px-4 py-3 crayon-border text-lg bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--yellow)]">
+      <div class="sm:col-span-2 relative">
+        <input id="idiomInput" placeholder="輸入成語，例如：守株待兔" autocomplete="off" oninput="renderIdiomSuggestions()" onfocus="renderIdiomSuggestions()" class="w-full px-4 py-3 crayon-border text-lg bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--yellow)]">
+        <div id="idiomSuggestions" class="hidden absolute z-30 left-0 right-0 mt-1 bg-white crayon-border max-h-72 overflow-y-auto shadow-lg"></div>
+      </div>
       <select id="idiomGrade" class="px-3 py-3 crayon-border bg-white focus:outline-none">
         <option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option selected>五年級</option><option>六年級</option><option>補充</option>
       </select>
@@ -335,11 +338,19 @@
         <div class="flex flex-wrap gap-2 items-center">
           <select id="filterGrade" onchange="renderLibrary()" class="px-3 py-2 crayon-border text-sm bg-white font-bold"><option value="">全部年級</option></select>
           <select id="filterLesson" onchange="renderLibrary()" class="px-3 py-2 crayon-border text-sm bg-white font-bold"><option value="">全部課次</option></select>
-          <select id="filterType" onchange="renderLibrary()" class="px-3 py-2 crayon-border text-sm bg-white font-bold"><option value="">全部類別</option><option value="idiom">成語</option><option value="vocab">生字</option></select>
           <button onclick="printLibrary()" class="btn-doodle bg-[color:var(--green)] text-white text-sm font-bold px-4 py-2">🖨️ 列印此頁清單</button>
         </div>
       </div>
-      <div id="libraryContainer" class="flex flex-col gap-4"></div>
+
+      <div class="mb-8">
+        <h4 class="display text-xl text-[color:var(--coral)] mb-3">🪎 成語百寶箱</h4>
+        <div id="libraryContainerIdiom" class="flex flex-col gap-4"></div>
+      </div>
+
+      <div>
+        <h4 class="display text-xl text-[color:var(--purple)] mb-3">🔤 生字寶盒</h4>
+        <div id="libraryContainerVocab" class="flex flex-col gap-4"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -844,6 +855,70 @@ async function getCharBreakdown(chars, idiomZhuyin){
   });
 }
 
+// 📚 成語輸入自動比對歷史紀錄：把 IndexedDB（AI 圖卡庫）跟收藏庫合併，依成語去重複，
+// 有圖片的優先顯示圖片版本（資訊比較完整）
+function getIdiomHistoryList(){
+    const map = {};
+    savedLibrary.filter(i => i.type === 'idiom').forEach(item => {
+        map[item.idiom] = {
+            idiom: item.idiom,
+            meaning: item.meaningSimple || item.meaning || '',
+            image: item.singleImage || null
+        };
+    });
+    Object.keys(userLibrary).forEach(idiom => {
+        const rec = userLibrary[idiom];
+        const existing = map[idiom] || {};
+        map[idiom] = {
+            idiom: idiom,
+            meaning: existing.meaning || rec.meaningSimple || rec.meaning || '',
+            image: rec.singleImage || existing.image || null
+        };
+    });
+    return Object.values(map);
+}
+
+function renderIdiomSuggestions(){
+    const box = document.getElementById('idiomSuggestions');
+    const inputEl = document.getElementById('idiomInput');
+    const keyword = inputEl.value.trim();
+
+    if(!keyword){ box.classList.add('hidden'); box.innerHTML=''; return; }
+
+    const matches = getIdiomHistoryList()
+        .filter(item => item.idiom.includes(keyword))
+        .sort((a,b) => a.idiom.indexOf(keyword) - b.idiom.indexOf(keyword))
+        .slice(0, 8);
+
+    if(matches.length === 0){ box.classList.add('hidden'); box.innerHTML=''; return; }
+
+    box.innerHTML = matches.map(item => `
+        <div onmousedown="selectIdiomSuggestion('${item.idiom}')" class="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-[color:var(--cream)] border-b border-dashed border-[color:var(--ink)]/10 last:border-b-0">
+            ${item.image ? `<img src="${item.image}" class="w-10 h-10 rounded-lg object-cover border border-[color:var(--ink)]/20 shrink-0">` : `<div class="w-10 h-10 rounded-lg bg-[color:var(--cream)] flex items-center justify-center text-lg shrink-0">📖</div>`}
+            <div class="min-w-0">
+                <div class="font-bold text-[color:var(--coral)] display text-lg">${item.idiom}</div>
+                <div class="text-xs text-[color:var(--ink)]/60 truncate">${item.meaning ? item.meaning.replace(/</g,'&lt;') : '（查過，但沒有存意思）'}</div>
+            </div>
+        </div>
+    `).join('');
+    box.classList.remove('hidden');
+}
+
+function selectIdiomSuggestion(idiom){
+    document.getElementById('idiomInput').value = idiom;
+    document.getElementById('idiomSuggestions').classList.add('hidden');
+    generateIdiomContent(idiom);
+}
+
+document.addEventListener('click', function(e){
+    const box = document.getElementById('idiomSuggestions');
+    const input = document.getElementById('idiomInput');
+    if(!box || !input) return;
+    if(e.target !== input && !box.contains(e.target)){
+        box.classList.add('hidden');
+    }
+});
+
 async function generateIdiomContent(forceIdiom = null){
   const idiom = forceIdiom || document.getElementById('idiomInput').value.trim();
   if(forceIdiom) document.getElementById('idiomInput').value = forceIdiom;
@@ -948,6 +1023,16 @@ async function saveAiImageToLibrary(idiom, imageUrl) {
     try {
         await idbPut(record);
         userLibrary[idiom] = record;
+
+        // 只要放了成語圖片進去，就自動存進收藏庫，不用再手動按「收藏」
+        const idx = savedLibrary.findIndex(i => i.idiom === idiom && i.type === 'idiom');
+        if(idx >= 0){
+            savedLibrary[idx] = { ...savedLibrary[idx], ...record };
+        } else {
+            savedLibrary.push(record);
+        }
+        localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+
         generateIdiomContent(idiom);
     } catch (e) { alert('儲存失敗'); }
 }
@@ -1409,25 +1494,36 @@ function saveLessonNames(){
 }
 
 function renderLibrary(){
-  const container = document.getElementById('libraryContainer');
+  const containerIdiom = document.getElementById('libraryContainerIdiom');
+  const containerVocab = document.getElementById('libraryContainerVocab');
   const fg = document.getElementById('filterGrade').value;
   const fl = document.getElementById('filterLesson').value;
-  const ft = document.getElementById('filterType').value;
-  container.innerHTML='';
-  let filtered = savedLibrary;
-  if(fg) filtered = filtered.filter(i=>i.grade===fg);
-  if(fl) filtered = filtered.filter(i=>i.lesson===fl);
-  if(ft) filtered = filtered.filter(i=>i.type===ft);
-  
-  if(filtered.length===0){
-    container.innerHTML = `<p class="text-sm col-span-2 text-center py-10 text-[color:var(--ink)]/50 bg-white crayon-border">目前還沒有收藏資料喔！🚀</p>`;
+  containerIdiom.innerHTML = '';
+  containerVocab.innerHTML = '';
+
+  let base = savedLibrary;
+  if(fg) base = base.filter(i=>i.grade===fg);
+  if(fl) base = base.filter(i=>i.lesson===fl);
+
+  const idiomList = base.filter(i=>i.type==='idiom');
+  const vocabList = base.filter(i=>i.type==='vocab');
+
+  renderLibrarySection(containerIdiom, idiomList, 'idiom');
+  renderLibrarySection(containerVocab, vocabList, 'vocab');
+}
+
+function renderLibrarySection(container, items, type){
+  if(items.length===0){
+    container.innerHTML = `<p class="text-sm text-center py-8 text-[color:var(--ink)]/50 bg-white crayon-border">${type==='idiom' ? '成語百寶箱🪎還是空的，快去查一個成語收藏吧！' : '生字寶盒還是空的，快去查生字收藏吧！'}</p>`;
     return;
   }
-  
-  filtered.forEach((item,idx)=>{
+
+  items.forEach((item)=>{
+    const trueIdx = savedLibrary.indexOf(item); // 用真正在 savedLibrary 裡的位置，避免篩選後索引對不上刪錯/勾錯項目
+
     const cardWrapper = document.createElement('div');
-    cardWrapper.className = "library-card-item crayon-border bg-white p-4 flex flex-col gap-3 transition-all";
-    
+    cardWrapper.className = "library-card-item crayon-border bg-white p-4 flex flex-col gap-3 transition-all" + (item.needReview ? " ring-4 ring-[color:var(--yellow)]" : "");
+
     const mainRow = document.createElement('div');
     mainRow.className = "flex justify-between items-center cursor-pointer hover:opacity-80";
 
@@ -1435,29 +1531,35 @@ function renderLibrary(){
       const userImg = userLibrary[item.idiom] ? userLibrary[item.idiom].singleImage : null;
       const imgToUse = userImg || item.singleImage;
 
-      mainRow.innerHTML = `<div class="flex gap-3 items-center flex-1" onclick="toggleLibraryDetail(${idx})">
+      mainRow.innerHTML = `<div class="flex gap-3 items-center flex-1" onclick="toggleLibraryDetail(${trueIdx})">
         ${imgToUse ? `<img src="${imgToUse}" class="w-16 h-16 object-cover rounded-xl border border-[color:var(--ink)]/20 shrink-0">` : '<div class="w-16 h-16 bg-[color:var(--cream)] rounded-xl flex items-center justify-center text-2xl shrink-0 border border-[color:var(--ink)]/20">📖</div>'}
         <div>
           <span class="bg-[color:var(--coral)]/20 text-xs px-2 py-0.5 rounded font-bold">${formatGradeLesson(item.grade, item.lesson, " | ")}</span>
           <h4 class="display text-xl mt-1 text-[color:var(--coral)]">${item.idiom} <span class="text-xs text-[color:var(--ink)]/50 font-normal">▼ 點擊展開解析</span></h4>
         </div>
       </div>
-      <button onclick="event.stopPropagation(); removeItem(${idx})" class="no-print text-[color:var(--coral)] font-bold text-xl px-3 py-1 hover:scale-125 transition-transform">✕</button>`;
+      <div class="flex items-center gap-2 shrink-0">
+        <label class="no-print flex flex-col items-center gap-0.5 cursor-pointer" onclick="event.stopPropagation()" title="加入複習清單">
+          <input type="checkbox" ${item.needReview ? 'checked' : ''} onchange="toggleReviewMark(${trueIdx})" class="w-5 h-5 accent-[color:var(--coral)] cursor-pointer">
+          <span class="text-[10px] text-[color:var(--ink)]/50 font-bold">複習</span>
+        </label>
+        <button onclick="event.stopPropagation(); removeItem(${trueIdx})" class="no-print text-[color:var(--coral)] font-bold text-xl px-2 py-1 hover:scale-125 transition-transform">✕</button>
+      </div>`;
     } else {
-      mainRow.innerHTML = `<div class="flex gap-3 items-center flex-1" onclick="toggleLibraryDetail(${idx})">
+      mainRow.innerHTML = `<div class="flex gap-3 items-center flex-1" onclick="toggleLibraryDetail(${trueIdx})">
         <div class="w-16 h-16 bg-[color:var(--purple)] text-white rounded-xl flex items-center justify-center text-3xl display shrink-0 shadow-inner">${item.char}</div>
         <div>
           <span class="bg-[color:var(--green)]/20 text-xs px-2 py-0.5 rounded font-bold">${formatGradeLesson(item.grade, item.lesson, " | ")}</span>
           <h4 class="display text-xl mt-1 text-[color:var(--purple)]">${item.char} <span class="text-sm ml-1">${item.zhuyin||''}</span> <span class="text-xs text-[color:var(--ink)]/50 font-normal">▼ 點擊展開解析</span></h4>
         </div>
       </div>
-      <button onclick="event.stopPropagation(); removeItem(${idx})" class="no-print text-[color:var(--coral)] font-bold text-xl px-3 py-1 hover:scale-125 transition-transform">✕</button>`;
+      <button onclick="event.stopPropagation(); removeItem(${trueIdx})" class="no-print text-[color:var(--coral)] font-bold text-xl px-3 py-1 hover:scale-125 transition-transform">✕</button>`;
     }
 
     const detailBox = document.createElement('div');
-    detailBox.id = `lib-detail-${idx}`;
+    detailBox.id = `lib-detail-${trueIdx}`;
     detailBox.className = "lib-detail-box hidden pt-3 border-t-2 border-dashed border-[color:var(--ink)]/20 text-sm space-y-2";
-    
+
     if(item.type === 'idiom') {
         detailBox.innerHTML = `
             <p><strong>注音：</strong>${item.zhuyin || '（無）'}</p>
@@ -1495,6 +1597,13 @@ function renderLibrary(){
     cardWrapper.appendChild(detailBox);
     container.appendChild(cardWrapper);
   });
+}
+
+function toggleReviewMark(trueIdx){
+    if(!savedLibrary[trueIdx]) return;
+    savedLibrary[trueIdx].needReview = !savedLibrary[trueIdx].needReview;
+    localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+    renderLibrary();
 }
 
 function toggleLibraryDetail(idx) {
