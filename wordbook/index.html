@@ -580,7 +580,8 @@ function openGeminiGem(idiom){
 
 function manualUploadHtml(idiom){
   return `<div class="mt-4 pt-4 border-t-2 border-dashed border-[color:var(--ink)]/20">
-      <p class="text-xs text-[color:var(--ink)]/60 mb-2">或者，也可以手動用您的 Gemini 生圖，完成後上傳回來：</p>
+      <p class="text-xs text-[color:var(--ink)]/60 mb-1">或者，也可以手動用您的 Gemini 生圖，完成後上傳回來：</p>
+      <p class="text-xs text-[color:var(--coral)] font-bold mb-2">👉 進入 Gemini 後，記得先點選「圖片」再送出提示詞，這樣才會生成圖片喔！</p>
       <div class="flex gap-2 justify-center flex-wrap">
         <button onclick="openGeminiGem('${idiom}')" class="btn-doodle bg-[color:var(--blue)] text-white px-4 py-2 text-sm font-bold">🔗 開啟 Gemini 手動生圖</button>
         <label class="btn-doodle bg-white text-[color:var(--ink)] px-4 py-2 text-sm font-bold cursor-pointer">
@@ -686,7 +687,7 @@ async function generateChildSentence(idiom, meaning){
 async function handleGenerateChildSentence(){
     if(!currentIdiomData){ return; }
     const idiom = currentIdiomData.idiom;
-    const meaning = currentIdiomData.meaning;
+    const meaning = currentIdiomData.meaningSimple || currentIdiomData.meaning;
     const resultDiv = document.getElementById('childSentenceResult');
 
     const key = getGeminiApiKey();
@@ -763,8 +764,9 @@ function speak(text){
     const voice = _pickZhVoice();
     if(voice) u.voice = voice;
     u.onerror = (ev)=>{ console.error('語音錯誤', ev); };
-    // iOS Safari 有時需要延遲一點點才會真正發聲
-    setTimeout(()=>{ window.speechSynthesis.speak(u); }, 50);
+    // 一定要在使用者點擊的當下「同步」呼叫 speak()，iOS Safari 才會允許發聲；
+    // 用 setTimeout 延遲呼叫會被 iOS 判定不是使用者手勢觸發而靜音失敗
+    window.speechSynthesis.speak(u);
   }catch(e){ console.error(e); }
 }
 function splitList(str){
@@ -916,7 +918,7 @@ async function handleGenerateImage(idiom) {
         return;
     }
 
-    const meaning = currentIdiomData.meaning;
+    const meaning = currentIdiomData.meaningSimple || currentIdiomData.meaning;
     const container = document.getElementById('ai-draw-container');
     container.innerHTML = `<div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[color:var(--coral)] border-t-transparent mb-4"></div>
         <h5 class="display text-xl text-[color:var(--coral)] mb-2">魔法小畫家正在繪製水彩圖...</h5><p class="text-sm font-bold">約需 10 秒 🎨</p>`;
@@ -1053,6 +1055,24 @@ function registerSpeakText(text){
     return window._vocabSpeakTexts.length - 1;
 }
 
+function vocabWordsHtml(r){
+    if(!r.aiWords || !r.aiWords.length) return '';
+    return `<div class="mt-2 flex flex-wrap gap-2">${r.aiWords.map(w =>
+        `<span class="bg-[color:var(--blue)]/10 px-2 py-1 rounded-lg text-xs"><strong class="text-[color:var(--blue)]">${(w.word||'').replace(/</g,'&lt;')}</strong>：${(w.explain||'').replace(/</g,'&lt;')}</span>`
+    ).join('')}</div>`;
+}
+
+function renderVocabReadingContent(batchIdx, rIdx, r){
+    const simpleEl = document.getElementById(`vSimple-${batchIdx}-${rIdx}`);
+    if(simpleEl) simpleEl.innerText = r.simpleDef ? r.simpleDef.replace(/</g,'&lt;') : (r.definitions && r.definitions.length ? '（無淺顯解釋，請點下方查看字典原文）' : '（無資料）');
+
+    const wordsEl = document.getElementById(`vWords-${batchIdx}-${rIdx}`);
+    if(wordsEl) wordsEl.innerHTML = vocabWordsHtml(r);
+
+    const sentEl = document.getElementById(`vAiSentence-${batchIdx}-${rIdx}`);
+    if(sentEl) sentEl.innerText = r.aiSentence ? r.aiSentence.replace(/</g,'&lt;') : '';
+}
+
 function showVocabCard(index) {
     const d = batchVocabList[index];
     currentVocabData = d;
@@ -1083,24 +1103,26 @@ function showVocabCard(index) {
         const simpleId = `vSimple-${index}-${rIdx}`;
         const simpleBlock = `<div id="${simpleId}" class="text-sm bg-white p-2 rounded-lg mb-1 text-[color:var(--ink)]">${r.simpleDef ? r.simpleDef.replace(/</g,'&lt;') : (r.definitions && r.definitions.length ? '（無淺顯解釋，字典原文如下）' : '（無資料）')}</div>`;
 
+        const wordsBlock = `<div id="vWords-${index}-${rIdx}">${vocabWordsHtml(r)}</div>`;
+
         const originalBlock = (r.definitions && r.definitions.length)
-            ? `<details class="text-xs text-[color:var(--ink)]/50 mt-1"><summary class="cursor-pointer">📖 查看字典完整解釋</summary>${r.definitions.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg mt-1">${item}</p>`).join('')}</details>`
+            ? `<details class="text-xs text-[color:var(--ink)]/50 mt-2"><summary class="cursor-pointer">📖 查看字典完整解釋</summary>${r.definitions.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg mt-1">${item}</p>`).join('')}</details>`
             : '';
 
-        return `<div class="mb-4 pb-3 ${rIdx < readings.length-1 ? 'border-b border-dashed border-[color:var(--ink)]/20' : ''}">${readingLabel}${simpleBlock}${originalBlock}</div>`;
+        return `<div class="mb-4 pb-3 ${rIdx < readings.length-1 ? 'border-b border-dashed border-[color:var(--ink)]/20' : ''}">${readingLabel}${simpleBlock}${wordsBlock}${originalBlock}</div>`;
     }).join('');
 
-    if(readings.some(r => r.sentences && r.sentences.length)){
-        sentContainer.innerHTML = readings.map(r => {
-            if(!r.sentences || !r.sentences.length) return '';
-            const body = r.sentences.map(item => `<p class="p-2 bg-[color:var(--blue)]/10 rounded-lg text-[color:var(--ink)]">${item}</p>`).join('');
-            return multiReading
-                ? `<div class="mb-3"><div class="text-xs font-bold text-[color:var(--purple)] mb-1">🔊 讀音：${r.zhuyin || '（無）'}</div>${body}</div>`
-                : body;
-        }).join('');
-    } else {
-        sentContainer.innerHTML = '<p class="text-sm text-[color:var(--ink)]/60">（無造句範例）</p>';
-    }
+    sentContainer.innerHTML = readings.map((r, rIdx) => {
+        const aiSentId = `vAiSentence-${index}-${rIdx}`;
+        const aiBlock = `<div id="${aiSentId}" class="p-2 bg-[color:var(--blue)]/10 rounded-lg text-[color:var(--ink)] mb-1">${r.aiSentence ? r.aiSentence.replace(/</g,'&lt;') : (r.sentences && r.sentences.length ? '' : '（無造句範例）')}</div>`;
+
+        const originalBlock = (r.sentences && r.sentences.length)
+            ? `<details class="text-xs text-[color:var(--ink)]/50"><summary class="cursor-pointer">📖 查看字典原始造句/引用</summary>${r.sentences.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg mt-1">${item}</p>`).join('')}</details>`
+            : '';
+
+        const label = multiReading ? `<div class="text-xs font-bold text-[color:var(--purple)] mb-1">🔊 讀音：${r.zhuyin || '（無）'}</div>` : '';
+        return `<div class="mb-3">${label}${aiBlock}${originalBlock}</div>`;
+    }).join('');
 
     document.getElementById('vocabResult').classList.remove('hidden');
     autoSimplifyVocab(d, index);
@@ -1109,9 +1131,17 @@ function showVocabCard(index) {
 async function generateSimpleVocabDef(char, zhuyin, defsText){
     const key = getStoredApiKeyOnly();
     if(!key) throw new Error('NO_KEY');
-    const prompt = `你是一位親切的國小老師。這個字是「${char}」，這個讀音是「${zhuyin || '無'}」，字典解釋是：「${defsText}」。請用國小低中年級學生聽得懂的口語化中文，簡單解釋這個字在這個讀音下的意思，25字以內，可以舉一個簡單的詞語或情境幫助理解。只回傳解釋本身，不要有任何前言、引號或其他文字。`;
+    const prompt = `你是一位親切的國小老師，正在為國小低中年級學生準備生字教材。這個字是「${char}」，這個讀音是「${zhuyin || '無'}」，字典原始解釋是：「${defsText}」。
+
+請只回傳一個 JSON 物件，不要有任何其他文字、說明或 Markdown 符號，格式如下：
+{"meaning":"用口語化中文簡單解釋這個字在這個讀音下的意思，25字以內","words":[{"word":"語詞1","explain":"這個語詞的簡單解釋，15字以內"},{"word":"語詞2","explain":"..."}],"sentence":"包含「${char}」這個字、符合這個讀音意思的簡單例句，適合國小生程度"}
+
+words 請提供2個國小生常見、會用到的詞語（必須包含「${char}」這個字，且要符合這個讀音的意思）。`;
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
-    const payload = { contents: [{ parts: [{ text: prompt }] }] };
+    const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: 'application/json' }
+    };
     const data = await fetchWithRetry(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1119,10 +1149,14 @@ async function generateSimpleVocabDef(char, zhuyin, defsText){
     }, 3);
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
     if(!text) throw new Error('AI 沒有回傳解釋內容');
-    return text.replace(/^["「]|["」]$/g, '');
+    let parsed;
+    try{ parsed = JSON.parse(text); }
+    catch(e){ throw new Error('AI 回傳格式錯誤'); }
+    if(!parsed.meaning) throw new Error('AI 沒有回傳解釋內容');
+    return parsed;
 }
 
-// 查生字時，如果已經設定金鑰，自動把每個讀音的解釋改寫成淺顯版本（有快取，同一個字不會一直重複問 AI）
+// 查生字時，如果已經設定金鑰，自動把每個讀音的解釋改寫成淺顯版本，並整理出語詞與造句（有快取，同一個字不會一直重複問 AI）
 async function autoSimplifyVocab(d, batchIdx){
     const key = getStoredApiKeyOnly();
     if(!key) return; // 沒設定金鑰就維持顯示字典原文，不強迫跳出金鑰視窗
@@ -1136,22 +1170,26 @@ async function autoSimplifyVocab(d, batchIdx){
         if(!r.definitions || !r.definitions.length) continue;
 
         const el = document.getElementById(`vSimple-${batchIdx}-${rIdx}`);
-        if(el) el.innerText = '🤔 AI 老師正在想淺顯的解釋...';
+        if(el) el.innerText = '🤔 AI 老師正在準備教材...';
 
         try{
             const defsText = r.definitions.join('；').replace(/^\d+\.\s*/, '');
-            const simple = await generateSimpleVocabDef(d.char, r.zhuyin, defsText);
-            r.simpleDef = simple;
+            const result = await generateSimpleVocabDef(d.char, r.zhuyin, defsText);
+            r.simpleDef = result.meaning;
+            r.aiWords = result.words || [];
+            r.aiSentence = result.sentence || '';
 
             // 確認使用者還停留在同一張卡片才更新畫面（避免覆蓋到別的字）
-            if(currentVocabData === d && document.getElementById(`vSimple-${batchIdx}-${rIdx}`)){
-                document.getElementById(`vSimple-${batchIdx}-${rIdx}`).innerText = simple;
+            if(currentVocabData === d){
+                renderVocabReadingContent(batchIdx, rIdx, r);
             }
 
             // 若已收藏過，一併更新收藏庫的快取
             const libIdx = savedLibrary.findIndex(i => i.char === d.char && i.type === 'vocab');
             if(libIdx >= 0 && savedLibrary[libIdx].readings && savedLibrary[libIdx].readings[rIdx]){
-                savedLibrary[libIdx].readings[rIdx].simpleDef = simple;
+                savedLibrary[libIdx].readings[rIdx].simpleDef = result.meaning;
+                savedLibrary[libIdx].readings[rIdx].aiWords = result.words || [];
+                savedLibrary[libIdx].readings[rIdx].aiSentence = result.sentence || '';
                 localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
             }
         }catch(e){
@@ -1378,7 +1416,10 @@ function renderLibrary(){
             const defs = (r.definitions || []).join('<br>') || '（無詳細字義）';
             const sents = (r.sentences || []).join('<br>') || '（無造句範例）';
             const label = multiReading ? `<p class="text-xs font-bold text-[color:var(--purple)] mt-2">🔊 讀音：${r.zhuyin||'（無）'}</p>` : '';
-            return `${label}<p><strong>詳細字義：</strong><br>${defs}</p><p><strong>造句範例：</strong><br>${sents}</p>`;
+            const simpleP = r.simpleDef ? `<p><strong>淺顯解釋：</strong>${r.simpleDef}</p>` : '';
+            const wordsP = (r.aiWords && r.aiWords.length) ? `<p><strong>語詞：</strong>${r.aiWords.map(w=>`${w.word}（${w.explain}）`).join('、')}</p>` : '';
+            const aiSentP = r.aiSentence ? `<p><strong>造句：</strong>${r.aiSentence}</p>` : '';
+            return `${label}${simpleP}${wordsP}${aiSentP}<p class="text-xs text-[color:var(--ink)]/50"><strong>字典原文：</strong>${defs}</p><p class="text-xs text-[color:var(--ink)]/50"><strong>字典原造句：</strong>${sents}</p>`;
         }).join('');
         detailBox.innerHTML = `
             <p><strong>部首/筆畫：</strong>${item.radical || '（無）'}</p>
