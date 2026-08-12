@@ -2112,14 +2112,17 @@
     catch(e){ console.error('saveSlotHistory failed', e); }
   }
 
-  let slotHistoryCache = { san: [], bingo: [] };
+  let slotHistoryCache = { san: null, bingo: null };
+
+  async function ensureSlotHistoryLoaded(mode){
+    if(slotHistoryCache[mode] === null){
+      slotHistoryCache[mode] = await loadSlotHistory(slotModes[mode].historyKey);
+    }
+  }
 
   async function renderSlotHistory(){
-    const key = slotModes[slotMode].historyKey;
-    if(!slotHistoryCache[slotMode] || slotHistoryCache[slotMode].__unloaded !== false){
-      slotHistoryCache[slotMode] = await loadSlotHistory(key);
-    }
-    const list = slotHistoryCache[slotMode];
+    await ensureSlotHistoryLoaded(slotMode);
+    const list = slotHistoryCache[slotMode] || [];
     const el = document.getElementById('slot-history-list');
     if(!list || list.length === 0){
       el.innerHTML = '<div class="empty-hint">拉一次之後，紀錄會出現在這裡</div>';
@@ -2142,13 +2145,13 @@
   }
 
   async function addSlotHistory(text){
+    await ensureSlotHistoryLoaded(slotMode);
     const key = slotModes[slotMode].historyKey;
     const now = new Date();
     const timeLabel = `${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-    if(!slotHistoryCache[slotMode]) slotHistoryCache[slotMode] = [];
     slotHistoryCache[slotMode].unshift({ text, timeLabel });
-    await saveSlotHistory(key, slotHistoryCache[slotMode]);
     renderSlotHistory();
+    await saveSlotHistory(key, slotHistoryCache[slotMode]);
   }
 
   function playSlotWhoosh(duration){
