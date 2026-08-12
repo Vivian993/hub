@@ -1135,7 +1135,7 @@ function showVocabCard(index) {
     defContainer.innerHTML = readings.map((r, rIdx) => {
         const readingLabel = multiReading
             ? `<div class="flex items-center gap-2 mb-1">
-                 <span class="text-xs font-bold text-[color:var(--purple)]">🔊 讀音：${r.zhuyin || '（無）'}</span>
+                 <span class="text-xs font-bold text-[color:var(--purple)]">讀音：${r.zhuyin || '（無）'}</span>
                  <button onclick="speakVocabDef(${index}, ${rIdx})" class="no-print text-lg hover:scale-110 transition-transform">🔈</button>
                  <span class="bg-[color:var(--coral)]/20 text-[color:var(--coral)] text-xs font-bold px-2 py-0.5 rounded-full">⚠️ 破音字</span>
                </div>`
@@ -1167,9 +1167,9 @@ function showVocabCard(index) {
             ? `<details class="text-xs text-[color:var(--ink)]/50"><summary class="cursor-pointer">📖 查看字典原始造句/引用</summary>${sentsList}</details>`
             : `<div class="text-xs text-[color:var(--ink)]/70 space-y-1">${sentsList}</div>`);
 
-        if(!r.aiSentence && !sentsList) return multiReading ? `<div class="mb-3"><div class="text-xs font-bold text-[color:var(--purple)] mb-1">🔊 讀音：${r.zhuyin || '（無）'}</div><p class="text-sm text-[color:var(--ink)]/60">（無造句範例）</p></div>` : '<p class="text-sm text-[color:var(--ink)]/60">（無造句範例）</p>';
+        if(!r.aiSentence && !sentsList) return multiReading ? `<div class="mb-3"><div class="text-xs font-bold text-[color:var(--purple)] mb-1">讀音：${r.zhuyin || '（無）'}</div><p class="text-sm text-[color:var(--ink)]/60">（無造句範例）</p></div>` : '<p class="text-sm text-[color:var(--ink)]/60">（無造句範例）</p>';
 
-        const label = multiReading ? `<div class="text-xs font-bold text-[color:var(--purple)] mb-1">🔊 讀音：${r.zhuyin || '（無）'}</div>` : '';
+        const label = multiReading ? `<div class="text-xs font-bold text-[color:var(--purple)] mb-1">讀音：${r.zhuyin || '（無）'}</div>` : '';
         return `<div class="mb-3">${label}${aiBlock}${originalBlock}</div>`;
     }).join('');
 
@@ -1478,7 +1478,7 @@ function renderLibrary(){
             const speakText = r.simpleDef || cleanDictText((r.definitions||[])[0]) || item.char;
             const speakUid = registerSpeakText(speakText);
             const label = multiReading
-                ? `<p class="text-xs font-bold text-[color:var(--purple)] mt-2 flex items-center gap-2">🔊 讀音：${r.zhuyin||'（無）'}<button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-base hover:scale-110 transition-transform">🔈</button></p>`
+                ? `<p class="text-xs font-bold text-[color:var(--purple)] mt-2 flex items-center gap-2">讀音：${r.zhuyin||'（無）'}<button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-base hover:scale-110 transition-transform">🔈</button></p>`
                 : `<p class="mt-2"><button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-xs text-[color:var(--purple)] font-bold inline-flex items-center gap-1">🔈 唸一遍</button></p>`;
             const simpleP = r.simpleDef ? `<p><strong>淺顯解釋：</strong>${r.simpleDef}</p>` : '';
             const wordsP = (r.aiWords && r.aiWords.length) ? `<p><strong>語詞：</strong>${r.aiWords.map(w=>`${w.word}（${w.explain}）`).join('、')}</p>` : '';
