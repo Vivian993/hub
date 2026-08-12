@@ -397,7 +397,7 @@ document.addEventListener('click', function(e){
   if(btn) playClickSound();
 }, true);
 
-let currentIdiomData=null, currentVocabData=null;
+let currentIdiomData=null, currentVocabData=null, currentVocabIndex=-1;
 let batchVocabList = [];
 
 const LESSONS = Array.from({length:15},(_,i)=>`第${i+1}課`);
@@ -1046,9 +1046,17 @@ function renderVocabTabs(){
     `).join('');
 }
 
+// 讓 speak() 按鈕能安全帶入含有標點/特殊符號的例句文字，不用擔心 onclick 字串跳脫問題
+window._vocabSpeakTexts = window._vocabSpeakTexts || [];
+function registerSpeakText(text){
+    window._vocabSpeakTexts.push(text);
+    return window._vocabSpeakTexts.length - 1;
+}
+
 function showVocabCard(index) {
     const d = batchVocabList[index];
     currentVocabData = d;
+    currentVocabIndex = index;
     document.getElementById('vChar').innerText = d.char;
     document.getElementById('vMeta').innerText = formatGradeLesson(d.grade, d.lesson);
     document.getElementById('vZhuyin').innerText = d.zhuyin;
@@ -1060,18 +1068,27 @@ function showVocabCard(index) {
     const readings = (d.readings && d.readings.length) ? d.readings : [{zhuyin: d.zhuyin, definitions: d.definitions||[], sentences: d.sentences||[]}];
     const multiReading = readings.length > 1;
 
-    if(readings.some(r => r.definitions && r.definitions.length)){
-        defContainer.innerHTML = readings.map(r => {
-            const body = (r.definitions && r.definitions.length)
-                ? r.definitions.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg text-[color:var(--ink)]">${item}</p>`).join('')
-                : '<p class="text-xs text-[color:var(--ink)]/50">（此讀音無詳細字義）</p>';
-            return multiReading
-                ? `<div class="mb-3"><div class="text-xs font-bold text-[color:var(--purple)] mb-1">🔊 讀音：${r.zhuyin || '（無）'}</div>${body}</div>`
-                : body;
-        }).join('');
-    } else {
-        defContainer.innerHTML = '<p class="text-sm text-[color:var(--ink)]/60">（無詳細字義紀錄）</p>';
-    }
+    defContainer.innerHTML = readings.map((r, rIdx) => {
+        // 發音按鈕：如果這個讀音有例句，優先唸例句（比較容易唸出正確讀音），沒有的話才唸單字本身
+        const speakSource = (r.sentences && r.sentences[0]) ? r.sentences[0].replace(/^[例引]：/,'') : d.char;
+        const speakUid = registerSpeakText(speakSource);
+        const readingLabel = multiReading
+            ? `<div class="flex items-center gap-2 mb-1">
+                 <span class="text-xs font-bold text-[color:var(--purple)]">🔊 讀音：${r.zhuyin || '（無）'}</span>
+                 <button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-lg hover:scale-110 transition-transform">🔈</button>
+                 <span class="bg-[color:var(--coral)]/20 text-[color:var(--coral)] text-xs font-bold px-2 py-0.5 rounded-full">⚠️ 破音字</span>
+               </div>`
+            : `<button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-sm text-[color:var(--purple)] font-bold mb-1 inline-flex items-center gap-1">🔈 唸一遍</button>`;
+
+        const simpleId = `vSimple-${index}-${rIdx}`;
+        const simpleBlock = `<div id="${simpleId}" class="text-sm bg-white p-2 rounded-lg mb-1 text-[color:var(--ink)]">${r.simpleDef ? r.simpleDef.replace(/</g,'&lt;') : (r.definitions && r.definitions.length ? '（無淺顯解釋，字典原文如下）' : '（無資料）')}</div>`;
+
+        const originalBlock = (r.definitions && r.definitions.length)
+            ? `<details class="text-xs text-[color:var(--ink)]/50 mt-1"><summary class="cursor-pointer">📖 查看字典完整解釋</summary>${r.definitions.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg mt-1">${item}</p>`).join('')}</details>`
+            : '';
+
+        return `<div class="mb-4 pb-3 ${rIdx < readings.length-1 ? 'border-b border-dashed border-[color:var(--ink)]/20' : ''}">${readingLabel}${simpleBlock}${originalBlock}</div>`;
+    }).join('');
 
     if(readings.some(r => r.sentences && r.sentences.length)){
         sentContainer.innerHTML = readings.map(r => {
@@ -1086,6 +1103,62 @@ function showVocabCard(index) {
     }
 
     document.getElementById('vocabResult').classList.remove('hidden');
+    autoSimplifyVocab(d, index);
+}
+
+async function generateSimpleVocabDef(char, zhuyin, defsText){
+    const key = getStoredApiKeyOnly();
+    if(!key) throw new Error('NO_KEY');
+    const prompt = `你是一位親切的國小老師。這個字是「${char}」，這個讀音是「${zhuyin || '無'}」，字典解釋是：「${defsText}」。請用國小低中年級學生聽得懂的口語化中文，簡單解釋這個字在這個讀音下的意思，25字以內，可以舉一個簡單的詞語或情境幫助理解。只回傳解釋本身，不要有任何前言、引號或其他文字。`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+    const payload = { contents: [{ parts: [{ text: prompt }] }] };
+    const data = await fetchWithRetry(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }, 3);
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if(!text) throw new Error('AI 沒有回傳解釋內容');
+    return text.replace(/^["「]|["」]$/g, '');
+}
+
+// 查生字時，如果已經設定金鑰，自動把每個讀音的解釋改寫成淺顯版本（有快取，同一個字不會一直重複問 AI）
+async function autoSimplifyVocab(d, batchIdx){
+    const key = getStoredApiKeyOnly();
+    if(!key) return; // 沒設定金鑰就維持顯示字典原文，不強迫跳出金鑰視窗
+
+    const readings = d.readings && d.readings.length ? d.readings : null;
+    if(!readings) return;
+
+    for(let rIdx = 0; rIdx < readings.length; rIdx++){
+        const r = readings[rIdx];
+        if(r.simpleDef) continue; // 已經有快取
+        if(!r.definitions || !r.definitions.length) continue;
+
+        const el = document.getElementById(`vSimple-${batchIdx}-${rIdx}`);
+        if(el) el.innerText = '🤔 AI 老師正在想淺顯的解釋...';
+
+        try{
+            const defsText = r.definitions.join('；').replace(/^\d+\.\s*/, '');
+            const simple = await generateSimpleVocabDef(d.char, r.zhuyin, defsText);
+            r.simpleDef = simple;
+
+            // 確認使用者還停留在同一張卡片才更新畫面（避免覆蓋到別的字）
+            if(currentVocabData === d && document.getElementById(`vSimple-${batchIdx}-${rIdx}`)){
+                document.getElementById(`vSimple-${batchIdx}-${rIdx}`).innerText = simple;
+            }
+
+            // 若已收藏過，一併更新收藏庫的快取
+            const libIdx = savedLibrary.findIndex(i => i.char === d.char && i.type === 'vocab');
+            if(libIdx >= 0 && savedLibrary[libIdx].readings && savedLibrary[libIdx].readings[rIdx]){
+                savedLibrary[libIdx].readings[rIdx].simpleDef = simple;
+                localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+            }
+        }catch(e){
+            console.log('生字淺顯解釋失敗：', e);
+            if(el && currentVocabData === d) el.innerText = (r.definitions[0] || '（無資料）').replace(/^\d+\.\s*/, '');
+        }
+    }
 }
 
 function saveAllBatchToLibrary() {
