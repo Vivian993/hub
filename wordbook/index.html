@@ -342,6 +342,11 @@
         </div>
       </div>
 
+      <div id="reviewListSection" class="mb-8">
+        <h4 class="display text-xl text-[color:var(--yellow)] mb-3 flex items-center gap-2">📌 複習清單 <span class="text-xs font-normal text-[color:var(--ink)]/50">（勾選「複習」的成語都會出現在這裡）</span></h4>
+        <div id="libraryContainerReview" class="flex flex-col gap-4"></div>
+      </div>
+
       <div class="mb-8">
         <h4 class="display text-xl text-[color:var(--coral)] mb-3">🪎 成語百寶箱</h4>
         <div id="libraryContainerIdiom" class="flex flex-col gap-4"></div>
@@ -919,6 +924,22 @@ document.addEventListener('click', function(e){
     }
 });
 
+// 新增或更新一筆成語收藏，會保留原本已經打勾的「複習」狀態跟已存的圖片，不會被覆蓋掉
+function upsertIdiomToLibrary(record){
+    const idx = savedLibrary.findIndex(i => i.idiom === record.idiom && i.type === 'idiom');
+    if(idx >= 0){
+        savedLibrary[idx] = {
+            ...savedLibrary[idx],
+            ...record,
+            singleImage: record.singleImage || savedLibrary[idx].singleImage,
+            needReview: savedLibrary[idx].needReview || false
+        };
+    } else {
+        savedLibrary.push({ ...record });
+    }
+    localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+}
+
 async function generateIdiomContent(forceIdiom = null){
   const idiom = forceIdiom || document.getElementById('idiomInput').value.trim();
   if(forceIdiom) document.getElementById('idiomInput').value = forceIdiom;
@@ -943,6 +964,7 @@ async function generateIdiomContent(forceIdiom = null){
     
     d.grade=grade; d.lesson=lesson; d.type='idiom';
     currentIdiomData = d;
+    upsertIdiomToLibrary(d); // 查過的成語直接自動收藏到百寶箱，不用再手動按收藏
 
     document.getElementById('cardMeta').innerText = formatGradeLesson(grade, lesson);
     document.getElementById('cardTitle').innerText = d.idiom;
@@ -1023,16 +1045,7 @@ async function saveAiImageToLibrary(idiom, imageUrl) {
     try {
         await idbPut(record);
         userLibrary[idiom] = record;
-
-        // 只要放了成語圖片進去，就自動存進收藏庫，不用再手動按「收藏」
-        const idx = savedLibrary.findIndex(i => i.idiom === idiom && i.type === 'idiom');
-        if(idx >= 0){
-            savedLibrary[idx] = { ...savedLibrary[idx], ...record };
-        } else {
-            savedLibrary.push(record);
-        }
-        localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
-
+        upsertIdiomToLibrary(record);
         generateIdiomContent(idiom);
     } catch (e) { alert('儲存失敗'); }
 }
@@ -1367,11 +1380,8 @@ function saveVocabToLibrary(){
 }
 function saveIdiomToLibrary(){
   if(!currentIdiomData) return;
-  if(!savedLibrary.some(i => i.idiom === currentIdiomData.idiom && i.type === 'idiom')) {
-      savedLibrary.push(currentIdiomData);
-      localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
-      alert('🌟 已成功收藏成語！');
-  } else { alert('這個成語已經在收藏庫裡囉！'); }
+  upsertIdiomToLibrary(currentIdiomData);
+  alert('🌟 已收藏在百寶箱囉！（其實查詢的當下就已經自動收藏了，這個按鈕主要是幫您確認一下 😊）');
 }
 
 function renderQuizSelection() {
@@ -1496,10 +1506,13 @@ function saveLessonNames(){
 function renderLibrary(){
   const containerIdiom = document.getElementById('libraryContainerIdiom');
   const containerVocab = document.getElementById('libraryContainerVocab');
+  const containerReview = document.getElementById('libraryContainerReview');
+  const reviewSection = document.getElementById('reviewListSection');
   const fg = document.getElementById('filterGrade').value;
   const fl = document.getElementById('filterLesson').value;
   containerIdiom.innerHTML = '';
   containerVocab.innerHTML = '';
+  containerReview.innerHTML = '';
 
   let base = savedLibrary;
   if(fg) base = base.filter(i=>i.grade===fg);
@@ -1507,6 +1520,14 @@ function renderLibrary(){
 
   const idiomList = base.filter(i=>i.type==='idiom');
   const vocabList = base.filter(i=>i.type==='vocab');
+  const reviewList = idiomList.filter(i=>i.needReview);
+
+  if(reviewList.length === 0){
+    reviewSection.classList.add('hidden');
+  } else {
+    reviewSection.classList.remove('hidden');
+    renderLibrarySection(containerReview, reviewList, 'idiom');
+  }
 
   renderLibrarySection(containerIdiom, idiomList, 'idiom');
   renderLibrarySection(containerVocab, vocabList, 'vocab');
