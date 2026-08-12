@@ -1073,14 +1073,35 @@ function renderVocabReadingContent(batchIdx, rIdx, r){
     if(sentEl) sentEl.innerText = r.aiSentence ? r.aiSentence.replace(/</g,'&lt;') : '';
 }
 
-// 生字讀音的發音按鈕：優先唸 AI 造句（比較能唸出正確讀音），還沒有的話才唸單字本身
-// 用即時查找而不是預先寫死文字，這樣 AI 造句完成後，按鈕會自動唸新內容，不會停留在舊資料，也不會唸到不相干的字典引用
+// 生字讀音的發音按鈕：優先唸 AI 造句（比較能唸出正確讀音）
+// 破音字（有多個讀音）如果 AI 造句還沒準備好，寧可提醒使用者，也不要盲目唸單字本身
+// ——因為瀏覽器的語音引擎遇到單獨一個沒有上下文的破音字，一定只會唸最常見的那個讀音，會誤導孩子
 function speakVocabReading(batchIdx, rIdx){
     const d = batchVocabList[batchIdx];
     if(!d) return;
+    const multiReading = d.readings && d.readings.length > 1;
     const r = (d.readings && d.readings[rIdx]) ? d.readings[rIdx] : null;
-    const text = (r && r.aiSentence) ? r.aiSentence : (d.char || '');
-    speak(text);
+
+    if(r && r.aiSentence){
+        speak(r.aiSentence);
+        return;
+    }
+    if(multiReading){
+        alert('這個字有好幾種讀音（破音字），AI 例句還沒準備好，沒辦法保證唸出正確的讀音，請稍等或點下方「🔄 重新產生」再試一次喔！');
+        return;
+    }
+    // 只有一種讀音的字，沒有歧義疑慮，直接唸單字本身沒問題
+    speak(d.char || '');
+}
+
+// 手動重新產生某個讀音的 AI 教材（例如剛好額度撞在一起失敗時，不用重查整個字就能單獨重試）
+async function retryVocabReading(batchIdx, rIdx){
+    const d = batchVocabList[batchIdx];
+    if(!d || !d.readings || !d.readings[rIdx]) return;
+    d.readings[rIdx].simpleDef = '';
+    d.readings[rIdx].aiWords = [];
+    d.readings[rIdx].aiSentence = '';
+    await generateOneVocabReading(d, batchIdx, rIdx);
 }
 
 function showVocabCard(index) {
@@ -1163,7 +1184,46 @@ words 請提供2個國小生常見、會用到的詞語（必須包含「${char}
     return parsed;
 }
 
+// 產生（或重新產生）單一讀音的 AI 教材，成功/失敗都會直接更新畫面，失敗時附上「🔄 重新產生」按鈕
+async function generateOneVocabReading(d, batchIdx, rIdx){
+    const readings = d.readings;
+    if(!readings || !readings[rIdx]) return;
+    const r = readings[rIdx];
+    if(!r.definitions || !r.definitions.length) return;
+
+    const el = document.getElementById(`vSimple-${batchIdx}-${rIdx}`);
+    if(el && currentVocabData === d) el.innerText = '🤔 AI 老師正在準備教材...';
+
+    try{
+        const defsText = r.definitions.join('；').replace(/^\d+\.\s*/, '');
+        const result = await generateSimpleVocabDef(d.char, r.zhuyin, defsText);
+        r.simpleDef = result.meaning;
+        r.aiWords = result.words || [];
+        r.aiSentence = result.sentence || '';
+
+        if(currentVocabData === d){
+            renderVocabReadingContent(batchIdx, rIdx, r);
+        }
+
+        const libIdx = savedLibrary.findIndex(i => i.char === d.char && i.type === 'vocab');
+        if(libIdx >= 0 && savedLibrary[libIdx].readings && savedLibrary[libIdx].readings[rIdx]){
+            savedLibrary[libIdx].readings[rIdx].simpleDef = result.meaning;
+            savedLibrary[libIdx].readings[rIdx].aiWords = result.words || [];
+            savedLibrary[libIdx].readings[rIdx].aiSentence = result.sentence || '';
+            localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+        }
+    }catch(e){
+        console.log('生字教材產生失敗：', e);
+        const msg = (e && e.message) ? e.message : String(e);
+        if(el && currentVocabData === d){
+            el.innerHTML = `<span class="text-[color:var(--coral)] text-xs">產生失敗：${msg.replace(/</g,'&lt;')}</span>
+                <button onclick="retryVocabReading(${batchIdx}, ${rIdx})" class="no-print block mt-1 text-xs text-[color:var(--purple)] font-bold underline">🔄 重新產生</button>`;
+        }
+    }
+}
+
 // 查生字時，如果已經設定金鑰，自動把每個讀音的解釋改寫成淺顯版本，並整理出語詞與造句（有快取，同一個字不會一直重複問 AI）
+// 每個讀音之間間隔一點時間再問 AI，降低同時連續呼叫撞到額度限制的機率
 async function autoSimplifyVocab(d, batchIdx){
     const key = getStoredApiKeyOnly();
     if(!key) return; // 沒設定金鑰就維持顯示字典原文，不強迫跳出金鑰視窗
@@ -1172,37 +1232,9 @@ async function autoSimplifyVocab(d, batchIdx){
     if(!readings) return;
 
     for(let rIdx = 0; rIdx < readings.length; rIdx++){
-        const r = readings[rIdx];
-        if(r.simpleDef) continue; // 已經有快取
-        if(!r.definitions || !r.definitions.length) continue;
-
-        const el = document.getElementById(`vSimple-${batchIdx}-${rIdx}`);
-        if(el) el.innerText = '🤔 AI 老師正在準備教材...';
-
-        try{
-            const defsText = r.definitions.join('；').replace(/^\d+\.\s*/, '');
-            const result = await generateSimpleVocabDef(d.char, r.zhuyin, defsText);
-            r.simpleDef = result.meaning;
-            r.aiWords = result.words || [];
-            r.aiSentence = result.sentence || '';
-
-            // 確認使用者還停留在同一張卡片才更新畫面（避免覆蓋到別的字）
-            if(currentVocabData === d){
-                renderVocabReadingContent(batchIdx, rIdx, r);
-            }
-
-            // 若已收藏過，一併更新收藏庫的快取
-            const libIdx = savedLibrary.findIndex(i => i.char === d.char && i.type === 'vocab');
-            if(libIdx >= 0 && savedLibrary[libIdx].readings && savedLibrary[libIdx].readings[rIdx]){
-                savedLibrary[libIdx].readings[rIdx].simpleDef = result.meaning;
-                savedLibrary[libIdx].readings[rIdx].aiWords = result.words || [];
-                savedLibrary[libIdx].readings[rIdx].aiSentence = result.sentence || '';
-                localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
-            }
-        }catch(e){
-            console.log('生字淺顯解釋失敗：', e);
-            if(el && currentVocabData === d) el.innerText = (r.definitions[0] || '（無資料）').replace(/^\d+\.\s*/, '');
-        }
+        if(readings[rIdx].simpleDef) continue; // 已經有快取
+        await generateOneVocabReading(d, batchIdx, rIdx);
+        if(rIdx < readings.length - 1) await new Promise(res => setTimeout(res, 500));
     }
 }
 
