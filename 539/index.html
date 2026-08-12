@@ -3,27 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>今彩539夢幻愛心扭蛋機與統計</title>
-  <!-- 📌 iPhone 桌面 App 圖示 -->
+  <title>粉紅夢幻多頁面彩券與骰子樂園</title>
+  <!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
   <link rel="apple-touch-icon" href="custom-icon.png">
   <link rel="icon" type="image/png" href="custom-icon.png">
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti 慶祝特效庫 -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   <style>
     body {
-      background-color: #f7d6d9;
+      background-color: var(--bg-color, #f7d6d9);
       font-family: system-ui, -apple-system, sans-serif;
-    }
-    .gumball {
-      position: absolute;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: rgba(255, 255, 255, 0.95);
-      box-shadow: inset -3px -3px 6px rgba(0,0,0,0.25), 2px 3px 5px rgba(0,0,0,0.15);
-      transition: transform 0.2s ease;
+      transition: background-color 0.4s ease;
     }
     @keyframes floatHeart {
       0% { transform: translateY(0px) rotate(0deg); opacity: 0.8; }
@@ -33,127 +25,216 @@
     .floating-heart {
       animation: floatHeart 3s ease-in-out infinite;
     }
-    @keyframes shake {
-      0% { transform: translate(0, 0) rotate(0deg); }
-      20% { transform: translate(-5px, 4px) rotate(-4deg); }
-      40% { transform: translate(5px, -3px) rotate(4deg); }
-      60% { transform: translate(-4px, -4px) rotate(-3deg); }
-      80% { transform: translate(4px, 3px) rotate(3deg); }
-      100% { transform: translate(0, 0) rotate(0deg); }
+    @keyframes slotSpin {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0); }
     }
-    .shaking {
-      animation: shake 0.4s ease-in-out infinite;
+    .spinning {
+      animation: slotSpin 0.08s linear infinite;
     }
-    @keyframes dropOut {
-      0% { transform: translateY(-35px) scale(0.4); opacity: 0; }
-      60% { transform: translateY(12px) scale(1.15); opacity: 1; }
-      100% { transform: translateY(0) scale(1); opacity: 1; }
+    @keyframes pullLever {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(35deg) scaleY(0.9); }
+      100% { transform: rotate(0deg); }
     }
-    .dropping {
-      animation: dropOut 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    .pulling {
+      animation: pullLever 0.4s ease-in-out;
+    }
+    @keyframes diceRoll {
+      0% { transform: rotate(0deg) scale(0.8); }
+      50% { transform: rotate(180deg) scale(1.1); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+    .rolling {
+      animation: diceRoll 0.4s ease-in-out;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col items-center p-4 relative">
+<body class="min-h-screen flex flex-col items-center p-4 relative pb-16">
 
   <!-- 背景漂浮小愛心 -->
-  <div class="absolute top-6 left-8 text-red-400 text-2xl floating-heart" style="animation-delay: 0s;">❤️</div>
-  <div class="absolute top-20 right-10 text-rose-400 text-xl floating-heart" style="animation-delay: 1s;">💖</div>
+  <div class="absolute top-6 left-6 text-red-400 text-2xl floating-heart" style="animation-delay: 0s;">❤️</div>
+  <div class="absolute top-20 right-8 text-rose-400 text-xl floating-heart" style="animation-delay: 1s;">💖</div>
 
-  <!-- 頂部標題 -->
-  <header class="text-center mt-3 z-10 mb-2">
-    <h1 class="text-2xl font-black text-red-600 tracking-wider drop-shadow-sm">💖 夢幻愛心今彩539 💖</h1>
-    <p class="text-xs text-rose-700 font-medium mt-1">抽號碼 ＋ 勾選中獎紀錄，自動統計中獎率！</p>
+  <!-- 頂部標題、音樂控制列與主題切換 -->
+  <header class="text-center mt-2 z-10 mb-4 w-full max-w-sm flex flex-col items-center">
+    <h1 class="text-2xl font-black text-red-600 tracking-wider drop-shadow-sm" id="main-title">💖 夢幻彩券骰子樂園 💖</h1>
+    <p class="text-xs text-rose-700 font-medium mt-1">搖一搖手機或點擊按鈕，解鎖專屬幸運！</p>
+    
+    <div class="flex gap-2 mt-2 w-full justify-center flex-wrap">
+      <button onclick="toggleBgMusic()" id="music-btn" class="bg-white text-rose-700 font-bold py-1 px-3 rounded-full shadow-md text-xs border border-pink-300 flex items-center gap-1 active:scale-95 transition">
+        <span>🎵</span> 音樂：關閉
+      </button>
+      <select onchange="changeTheme(this.value)" class="bg-white text-rose-800 font-bold py-1 px-2 rounded-full shadow-md text-xs border border-pink-300 outline-none cursor-pointer">
+        <option value="pink">🍓 草莓甜心</option>
+        <option value="purple">💜 薰衣草紫</option>
+        <option value="mint">🌿 薄荷奶綠</option>
+      </select>
+    </div>
   </header>
 
-  <!-- 扭蛋機主體區域 -->
-  <main class="relative w-72 h-96 flex flex-col items-center z-10 my-2">
-    
-    <!-- 散落旁邊的球與愛心 -->
-    <div class="absolute -left-11 bottom-10 w-11 h-11 rounded-full bg-gradient-to-br from-red-400 to-rose-600 flex items-center justify-center text-white font-bold shadow-md transform -rotate-12 border-2 border-white">
-      <span class="text-xs">✨</span>
-    </div>
-    <div class="absolute -right-9 bottom-4 w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-red-500 flex items-center justify-center text-white font-bold shadow-md transform rotate-12 border-2 border-white">
-      <span class="text-xs">💖</span>
-    </div>
-
-    <!-- 扭蛋機頂蓋 -->
-    <div class="absolute top-0 w-36 h-12 bg-red-600 rounded-t-full shadow-md z-20 flex justify-center items-center border-b-4 border-red-800">
-      <div class="w-4 h-4 bg-red-700 rounded-full -top-3 absolute border border-red-900 shadow-inner"></div>
-    </div>
-
-    <!-- 玻璃球容器 -->
-    <div id="globe" class="absolute top-10 w-64 h-52 bg-white/50 backdrop-blur-xs rounded-full border-4 border-white/90 shadow-inner overflow-hidden z-10 flex items-center justify-center">
-      <div id="balls-container" class="relative w-full h-full"></div>
-    </div>
-
-    <!-- 機器頸部 -->
-    <div class="absolute top-58 w-32 h-6 bg-rose-500 rounded-t-lg z-20 shadow-md border-b-2 border-rose-700"></div>
-
-    <!-- 梯形底座 -->
-    <div class="absolute top-62 w-72 h-34 bg-red-600 rounded-b-2xl shadow-xl z-10 flex flex-col items-center pt-3 border-t-4 border-red-500">
-      
-      <!-- 中間心型面板 -->
-      <div class="w-24 h-16 bg-pink-100 rounded-xl shadow-inner flex flex-col items-center justify-center p-1 border-2 border-pink-300 relative">
-        <div class="absolute -top-2 w-6 h-3 bg-pink-200 rounded-t-md"></div>
-        <div id="dial" class="w-10 h-10 bg-rose-600 rounded-full flex items-center justify-center shadow-md cursor-pointer transition-transform duration-300 border-2 border-white">
-          <span class="text-white text-xs font-bold">❤️</span>
+  <!-- ================= 首頁：三大功能選單 ================= -->
+  <div id="page-home" class="w-full max-w-sm flex flex-col gap-4 z-10 my-auto">
+    <button onclick="goToPage('slot')" class="w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-black py-5 px-6 rounded-3xl shadow-xl border-4 border-white text-lg flex items-center justify-between transition transform active:scale-95">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">🎰</span>
+        <div class="text-left">
+          <div>3星彩拉霸機</div>
+          <div class="text-xs font-normal opacity-90">000 - 999 幸運對獎</div>
         </div>
       </div>
-
-      <!-- 下方掉球出口槽 -->
-      <div class="mt-2 w-28 h-10 bg-gray-100 rounded-t-xl border-t-2 border-gray-300 shadow-inner flex items-center justify-center relative overflow-hidden">
-        <div id="dispensed-ball" class="w-8 h-8 rounded-full bg-red-600 text-white font-bold flex items-center justify-center text-sm shadow-md opacity-0 border border-white">
-          -
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- 控制按鈕區 -->
-  <div class="w-full max-w-xs flex gap-3 my-2 z-10">
-    <button onclick="shakeMachine()" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-1 border-2 border-white/60">
-      <span>🌀</span> 攪動球球
+      <span>➡️</span>
     </button>
-    <button onclick="drawBall()" id="draw-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-1 border-2 border-white/60">
-      <span>🔘</span> 掉球 (539)
+
+    <button onclick="goToPage('gumball')" class="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-black py-5 px-6 rounded-3xl shadow-xl border-4 border-white text-lg flex items-center justify-between transition transform active:scale-95">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">🔮</span>
+        <div class="text-left">
+          <div>今彩539選號機</div>
+          <div class="text-xs font-normal opacity-90">1 - 39 幸運 5 碼連抽</div>
+        </div>
+      </div>
+      <span>➡️</span>
+    </button>
+
+    <button onclick="goToPage('dice')" class="w-full bg-gradient-to-r from-pink-500 to-red-400 hover:from-pink-600 hover:to-red-500 text-white font-black py-5 px-6 rounded-3xl shadow-xl border-4 border-white text-lg flex items-center justify-between transition transform active:scale-95">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">🎲</span>
+        <div class="text-left">
+          <div>幸運骰子器</div>
+          <div class="text-xs font-normal opacity-90">自由設定 1 顆、2 顆、3 顆</div>
+        </div>
+      </div>
+      <span>➡️</span>
     </button>
   </div>
 
-  <!-- 本次開獎結果展示列 -->
-  <div class="w-full max-w-sm bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-lg border-2 border-pink-200 mb-3 z-10">
-    <div class="flex justify-between items-center mb-2">
-      <span class="text-xs font-bold text-rose-700">💖 本次抽出的 5 碼：</span>
-      <button onclick="resetCurrentDraw()" class="text-xs text-red-500 hover:underline font-semibold">清除本組</button>
+  <!-- ================= 頁面一：3星彩拉霸機 ================= -->
+  <div id="page-slot" class="w-full max-w-sm flex flex-col items-center z-10 hidden">
+    <div class="w-full flex justify-between items-center mb-2">
+      <button onclick="goHome()" class="bg-white text-red-600 font-bold py-1.5 px-4 rounded-xl shadow-md text-xs border border-red-200">🏠 返回主選單</button>
+      <button onclick="triggerShakeAction()" class="bg-red-500 text-white font-bold py-1.5 px-3 rounded-xl shadow-md text-xs">📱 模擬搖一搖</button>
     </div>
-    <div id="result-row" class="flex justify-center gap-2">
-      <div class="w-9 h-9 rounded-full bg-pink-50 border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 font-bold text-xs">1</div>
-      <div class="w-9 h-9 rounded-full bg-pink-50 border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 font-bold text-xs">2</div>
-      <div class="w-9 h-9 rounded-full bg-pink-50 border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 font-bold text-xs">3</div>
-      <div class="w-9 h-9 rounded-full bg-pink-50 border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 font-bold text-xs">4</div>
-      <div class="w-9 h-9 rounded-full bg-pink-50 border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 font-bold text-xs">5</div>
+
+    <div class="relative w-full bg-gradient-to-b from-pink-300 to-pink-400 rounded-3xl border-4 border-red-500 shadow-2xl flex flex-col items-center p-5 mb-4">
+      <div class="w-48 h-8 bg-red-600 rounded-full border-2 border-red-300 flex items-center justify-center shadow-inner mb-4">
+        <span class="text-white font-black tracking-widest text-sm drop-shadow">✨ 3星彩 (000-999) ✨</span>
+      </div>
+
+      <div class="w-full h-36 bg-white rounded-2xl border-4 border-red-500 shadow-inner flex justify-around items-center px-2 relative overflow-hidden mb-4">
+        <div class="w-20 h-28 bg-pink-50 rounded-xl border-2 border-pink-300 flex items-center justify-center text-4xl shadow-inner font-black text-red-600" id="digit-1">0</div>
+        <div class="w-20 h-28 bg-pink-50 rounded-xl border-2 border-pink-300 flex items-center justify-center text-4xl shadow-inner font-black text-red-600" id="digit-2">0</div>
+        <div class="w-20 h-28 bg-pink-50 rounded-xl border-2 border-pink-300 flex items-center justify-center text-4xl shadow-inner font-black text-red-600" id="digit-3">0</div>
+      </div>
+
+      <div class="w-full flex flex-col items-center gap-2">
+        <button onclick="spinNumberSlot()" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3.5 rounded-2xl shadow-lg border-2 border-white/80 text-base active:scale-95 transition flex items-center justify-center gap-2">
+          <span>🎰</span> 拉動拉桿 / 產出 3 位數！
+        </button>
+      </div>
+
+      <div id="lever" onclick="spinNumberSlot()" class="absolute -right-5 top-32 w-6 h-36 flex flex-col items-center cursor-pointer transition-transform origin-top">
+        <div class="w-6 h-6 bg-red-600 rounded-full shadow-md border-2 border-white"></div>
+        <div class="w-2 h-28 bg-red-500 rounded-full shadow-inner"></div>
+        <div class="w-8 h-10 bg-red-700 rounded-xl shadow-lg -mt-2 border-2 border-white"></div>
+      </div>
     </div>
   </div>
 
-  <!-- 歷史紀錄與中獎勾選區 -->
-  <div class="w-full max-w-sm bg-white/95 p-4 rounded-2xl shadow-lg border-2 border-pink-200 mb-4 z-10">
-    <div class="flex justify-between items-center mb-2">
-      <span class="text-xs font-bold text-gray-700">📋 歷史抽球紀錄與中獎勾選</span>
-      <button onclick="clearHistory()" class="text-xs text-gray-400 hover:text-red-500">清空全部紀錄</button>
+  <!-- ================= 頁面二：今彩539選號機 ================= -->
+  <div id="page-gumball" class="w-full max-w-sm flex flex-col items-center z-10 hidden">
+    <div class="w-full flex justify-between items-center mb-2">
+      <button onclick="goHome()" class="bg-white text-red-600 font-bold py-1.5 px-4 rounded-xl shadow-md text-xs border border-red-200">🏠 返回主選單</button>
+      <button onclick="triggerShakeAction()" class="bg-red-500 text-white font-bold py-1.5 px-3 rounded-xl shadow-md text-xs">📱 模擬搖一搖</button>
     </div>
-    <p class="text-[11px] text-gray-500 mb-2">💡 勾選代表該次抽出的號碼「有中獎」，系統將自動計算中獎率！</p>
+
+    <div class="w-full bg-gradient-to-b from-rose-300 to-pink-400 rounded-3xl border-4 border-red-500 shadow-2xl flex flex-col items-center p-5 mb-4">
+      <div class="w-48 h-8 bg-red-600 rounded-full border-2 border-red-300 flex items-center justify-center shadow-inner mb-2">
+        <span class="text-white font-black tracking-widest text-sm drop-shadow">🔮 今彩539選號機 🔮</span>
+      </div>
+
+      <main class="relative w-64 h-48 flex flex-col items-center my-1">
+        <div class="absolute top-0 w-32 h-10 bg-red-600 rounded-t-full shadow-md z-20 flex justify-center items-center border-b-4 border-red-800">
+          <div class="w-3 h-3 bg-red-700 rounded-full -top-2 absolute border border-red-900"></div>
+        </div>
+
+        <div id="globe" class="absolute top-8 w-56 h-36 bg-white/50 backdrop-blur-xs rounded-full border-4 border-white/90 shadow-inner overflow-hidden z-10 flex items-center justify-center">
+          <div id="balls-container" class="relative w-full h-full"></div>
+        </div>
+
+        <div class="absolute top-42 w-28 h-5 bg-rose-500 rounded-t-lg z-20 shadow-md"></div>
+        <div class="absolute top-46 w-64 h-24 bg-red-600 rounded-b-2xl shadow-xl z-10 flex flex-col items-center pt-1 border-t-2 border-red-500">
+          <div class="w-20 h-10 bg-pink-100 rounded-lg shadow-inner flex items-center justify-center p-1 border border-pink-300">
+            <div id="dispensed-ball" class="w-7 h-7 rounded-full bg-red-600 text-white font-bold flex items-center justify-center text-xs shadow-md opacity-0 border border-white">
+              -
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <div class="w-full flex gap-2 my-2">
+        <button onclick="shakeMachine()" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 px-2 rounded-xl shadow-md text-xs flex items-center justify-center gap-1 border border-white/60">
+          <span>🌀</span> 攪動球球
+        </button>
+        <button onclick="drawBall()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-2 rounded-xl shadow-md text-xs flex items-center justify-center gap-1 border border-white/60">
+          <span>🔘</span> 掉球 (539)
+        </button>
+      </div>
+
+      <div class="w-full bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-inner border-2 border-pink-200">
+        <div class="flex justify-between items-center mb-1.5">
+          <span class="text-xs font-bold text-rose-700">💖 本次抽出的 5 碼：</span>
+          <button onclick="resetCurrentDraw()" class="text-xs text-red-500 hover:underline font-semibold">清除本組</button>
+        </div>
+        <div id="result-row" class="flex justify-center gap-1.5"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= 頁面三：幸運骰子器 ================= -->
+  <div id="page-dice" class="w-full max-w-sm flex flex-col items-center z-10 hidden">
+    <div class="w-full flex justify-between items-center mb-2">
+      <button onclick="goHome()" class="bg-white text-red-600 font-bold py-1.5 px-4 rounded-xl shadow-md text-xs border border-red-200">🏠 返回主選單</button>
+      <button onclick="triggerShakeAction()" class="bg-red-500 text-white font-bold py-1.5 px-3 rounded-xl shadow-md text-xs">📱 模擬搖一搖</button>
+    </div>
+
+    <div class="w-full bg-gradient-to-b from-pink-300 to-rose-400 rounded-3xl border-4 border-red-500 shadow-2xl flex flex-col items-center p-5 mb-4">
+      <div class="w-48 h-8 bg-red-600 rounded-full border-2 border-red-300 flex items-center justify-center shadow-inner mb-3">
+        <span class="text-white font-black tracking-widest text-sm drop-shadow">🎲 幸運骰子器 🎲</span>
+      </div>
+
+      <div class="flex gap-2 mb-3 w-full justify-center">
+        <button onclick="setDiceCount(1)" id="dice-btn-1" class="flex-1 bg-red-600 text-white font-bold py-2 rounded-xl text-xs shadow-md transition">1 顆</button>
+        <button onclick="setDiceCount(2)" id="dice-btn-2" class="flex-1 bg-pink-200 text-rose-800 font-bold py-2 rounded-xl text-xs shadow-xs transition">2 顆</button>
+        <button onclick="setDiceCount(3)" id="dice-btn-3" class="flex-1 bg-pink-200 text-rose-800 font-bold py-2 rounded-xl text-xs shadow-xs transition">3 顆</button>
+      </div>
+
+      <div id="dice-container" class="w-full h-36 bg-white/90 rounded-2xl border-4 border-red-500 shadow-inner flex justify-center items-center gap-4 px-3 mb-3">
+        <!-- 動態產生骰子 -->
+      </div>
+
+      <div class="w-full bg-pink-50 p-2.5 rounded-xl border border-pink-300 text-center mb-4">
+        <p class="text-xs font-bold text-rose-900" id="dice-summary-text">總點數：0點</p>
+      </div>
+
+      <button onclick="rollDice()" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3.5 rounded-2xl shadow-lg border-2 border-white/80 text-base active:scale-95 transition flex items-center justify-center gap-2">
+        <span>🎲</span> 開始擲骰子！
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= 共用歷史紀錄與管理區 (含一鍵複製) ================= -->
+  <div class="w-full max-w-sm bg-white/95 p-4 rounded-3xl shadow-xl border-4 border-pink-300 z-10">
+    <div class="flex justify-between items-center mb-2">
+      <span class="text-xs font-bold text-gray-700">📋 歷史紀錄與分享管理</span>
+      <div class="flex gap-2">
+        <button onclick="copyAllHistory()" class="text-xs text-rose-600 hover:text-red-700 font-bold bg-pink-100 px-2 py-0.5 rounded-md border border-pink-200">一鍵複製</button>
+        <button onclick="clearHistory()" class="text-xs text-gray-400 hover:text-red-500 font-bold">清空</button>
+      </div>
+    </div>
     <div id="history-list" class="max-h-40 overflow-y-auto space-y-2 pr-1 text-xs">
-      <p class="text-gray-400 text-center py-3">尚無抽球紀錄，快去轉蛋抽號碼吧！</p>
-    </div>
-  </div>
-
-  <!-- 統計分析區 -->
-  <div class="w-full max-w-sm bg-gradient-to-br from-pink-50 to-rose-50 p-4 rounded-2xl shadow-md border-2 border-pink-300 mb-6 z-10">
-    <h3 class="text-xs font-bold text-rose-800 mb-2 flex items-center gap-1">
-      <span>📊</span> 號碼中獎率統計分析排行
-    </h3>
-    <div id="stats-summary" class="text-xs text-gray-600">
-      目前尚無中獎數據。
+      <p class="text-gray-400 text-center py-3">尚無紀錄，快來遊玩任一機器吧！</p>
     </div>
   </div>
 
@@ -166,56 +247,344 @@
   </div>
 
   <script>
+    // 🎨 主題切換設定
+    const themes = {
+      pink: '#f7d6d9',
+      purple: '#e2d6f7',
+      mint: '#d6f7e2'
+    };
+    function changeTheme(themeName) {
+      document.documentElement.style.setProperty('--bg-color', themes[themeName] || '#f7d6d9');
+      playClickSound();
+    }
+
+    // 📱 手機搖一搖偵測 (DeviceMotion API)
+    let lastX = 0, lastY = 0, lastZ = 0;
+    let lastUpdate = 0;
+    window.addEventListener('devicemotion', (e) => {
+      const current = e.accelerationIncludingGravity;
+      if (!current) return;
+      const currentTime = Date.now();
+      if ((currentTime - lastUpdate) > 100) {
+        const diffTime = currentTime - lastUpdate;
+        lastUpdate = currentTime;
+        const speed = Math.abs(current.x + current.y + current.z - lastX - lastY - lastZ) / diffTime * 10000;
+        if (speed > 800) {
+          triggerShakeAction();
+        }
+        lastX = current.x; lastY = current.y; lastZ = current.z;
+      }
+    });
+
+    // 觸發搖一搖動作 (依目前所在頁面執行對應功能)
+    function triggerShakeAction() {
+      if (!document.getElementById('page-slot').classList.contains('hidden')) {
+        spinNumberSlot();
+      } else if (!document.getElementById('page-gumball').classList.contains('hidden')) {
+        drawBall();
+      } else if (!document.getElementById('page-dice').classList.contains('hidden')) {
+        rollDice();
+      }
+    }
+
+    // 🎵 Web Audio API 專屬音效與背景音樂器
+    let audioCtx = null;
+    let bgMusicInterval = null;
+    let isMusicPlaying = false;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function toggleBgMusic() {
+      const btn = document.getElementById('music-btn');
+      const ctx = getAudioContext();
+
+      if (isMusicPlaying) {
+        clearInterval(bgMusicInterval);
+        isMusicPlaying = false;
+        btn.innerHTML = '<span>🎵</span> 音樂：關閉';
+        btn.className = 'bg-white text-rose-700 font-bold py-1 px-3 rounded-full shadow-md text-xs border border-pink-300 flex items-center gap-1 active:scale-95 transition';
+      } else {
+        isMusicPlaying = true;
+        btn.innerHTML = '<span>🎶</span> 音樂：播放中';
+        btn.className = 'bg-rose-600 text-white font-bold py-1 px-3 rounded-full shadow-md text-xs border border-white flex items-center gap-1 active:scale-95 transition animate-pulse';
+
+        const notes = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77, 1046.50];
+        const melody = [0, 2, 4, 7, 4, 2, 0, 4, 5, 7, 5, 4, 2, 0];
+        let index = 0;
+
+        bgMusicInterval = setInterval(() => {
+          if (!isMusicPlaying) return;
+          try {
+            const noteIdx = melody[index % melody.length];
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(notes[noteIdx], ctx.currentTime);
+            gain.gain.setValueAtTime(0.03, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.8);
+            index++;
+          } catch (e) {}
+        }, 500);
+      }
+    }
+
+    function playGumballSpinSound() {
+      try {
+        const ctx = getAudioContext();
+        for (let i = 0; i < 8; i++) {
+          setTimeout(() => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(250 + Math.random() * 400, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.005, ctx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.08);
+          }, i * 50);
+        }
+      } catch (e) {}
+    }
+
+    function playBallDropSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+          gain.gain.setValueAtTime(0.15, now + idx * 0.06);
+          gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.06 + 0.12);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.06);
+          osc.stop(now + idx * 0.06 + 0.12);
+        });
+      } catch (e) {}
+    }
+
+    function playSlotSpinSound() {
+      try {
+        const ctx = getAudioContext();
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(180 + i * 30, ctx.currentTime);
+            gain.gain.setValueAtTime(0.06, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.04);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.04);
+          }, i * 50);
+        }
+      } catch (e) {}
+    }
+
+    function playDiceSound() {
+      try {
+        const ctx = getAudioContext();
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(300 + Math.random() * 200, ctx.currentTime);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.05);
+          }, i * 80);
+        }
+      } catch (e) {}
+    }
+
+    function playJackpotSound() {
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+          gain.gain.setValueAtTime(0.2, now + idx * 0.1);
+          gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.1 + 0.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.1);
+          osc.stop(now + idx * 0.1 + 0.2);
+        });
+      } catch (e) {}
+    }
+
+    function playClickSound() {
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+      } catch (e) {}
+    }
+
+    function speakResults(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'zh-TW';
+        utterance.rate = 1.1;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+      }
+    }
+
+    // 幸運色彩與籤語庫
+    const luckyColors = ['粉紅甜心', '柔和薰衣草', '暖心鵝黃', '清新薄荷綠', '招財櫻桃紅'];
+    const fortuneQuotes = ['今日運勢大吉，財神爺就在你身邊！', '心想事成，幸運號碼直落！', '保持好心情，今天一定會中大獎！', '福氣滿滿，試試手氣吧！'];
+
+    function getRandomLuck() {
+      const color = luckyColors[Math.floor(Math.random() * luckyColors.length)];
+      const quote = fortuneQuotes[Math.floor(Math.random() * fortuneQuotes.length)];
+      return `🎨 幸運色: ${color} | 💡 籤語: ${quote}`;
+    }
+
+    // 頁面切換控制
+    function goToPage(page) {
+      playClickSound();
+      document.getElementById('page-home').classList.add('hidden');
+      document.getElementById('page-slot').classList.add('hidden');
+      document.getElementById('page-gumball').classList.add('hidden');
+      document.getElementById('page-dice').classList.add('hidden');
+
+      if (page === 'slot') {
+        document.getElementById('page-slot').classList.remove('hidden');
+      } else if (page === 'gumball') {
+        document.getElementById('page-gumball').classList.remove('hidden');
+        initBalls();
+        updateResultRow();
+      } else if (page === 'dice') {
+        document.getElementById('page-dice').classList.remove('hidden');
+        renderDiceView();
+      }
+    }
+
+    function goHome() {
+      playClickSound();
+      document.getElementById('page-home').classList.remove('hidden');
+      document.getElementById('page-slot').classList.add('hidden');
+      document.getElementById('page-gumball').classList.add('hidden');
+      document.getElementById('page-dice').classList.add('hidden');
+    }
+
+    // ================= 1. 3星彩拉霸邏輯 =================
+    function spinNumberSlot() {
+      playSlotSpinSound();
+      const d1 = document.getElementById('digit-1');
+      const d2 = document.getElementById('digit-2');
+      const d3 = document.getElementById('digit-3');
+      const lever = document.getElementById('lever');
+
+      lever.classList.add('pulling');
+      setTimeout(() => lever.classList.remove('pulling'), 400);
+
+      d1.classList.add('spinning');
+      d2.classList.add('spinning');
+      d3.classList.add('spinning');
+
+      setTimeout(() => {
+        d1.classList.remove('spinning');
+        d2.classList.remove('spinning');
+        d3.classList.remove('spinning');
+
+        const randNum = Math.floor(Math.random() * 1000);
+        const paddedStr = String(randNum).padStart(3, '0');
+        const [n1, n2, n3] = paddedStr.split('');
+
+        d1.innerText = n1;
+        d2.innerText = n2;
+        d3.innerText = n3;
+
+        playJackpotSound();
+        triggerConfetti();
+        const luck = getRandomLuck();
+        speakResults(`3星彩開獎號碼：${n1}、${n2}、${n3}，總共是 ${paddedStr} 號！`);
+
+        historyRecords.unshift({
+          id: Date.now(),
+          type: 'slot3',
+          content: `${paddedStr} (${luck})`
+        });
+        renderHistory();
+      }, 600);
+    }
+
+    // ================= 2. 今彩539選號邏輯 =================
     let currentDraw = [];
-    let historyRecords = []; // 儲存歷史紀錄 { id, numbers: [...], hits: {num: boolean} }
     const maxDraws = 5;
-    const colors = ['bg-red-500', 'bg-rose-500', 'bg-pink-500', 'bg-amber-400', 'bg-purple-500', 'bg-rose-400'];
-    const emojis = ['❤️', '💖', '✨', '💕', '🌸', '⭐️'];
+    const colors = ['bg-red-500', 'bg-rose-500', 'bg-pink-500', 'bg-amber-400', 'bg-purple-500'];
+    const emojis = ['❤️', '💖', '✨', '💕', '🌸'];
 
     function initBalls() {
       const container = document.getElementById('balls-container');
       container.innerHTML = '';
-      for (let i = 0; i < 22; i++) {
+      for (let i = 0; i < 16; i++) {
         const ball = document.createElement('div');
-        ball.className = `gumball ${colors[i % colors.length]}`;
-        const size = Math.floor(Math.random() * 8) + 24;
+        ball.className = `absolute rounded-full flex items-center justify-center font-bold text-white shadow-inner ${colors[i % colors.length]}`;
+        const size = Math.floor(Math.random() * 6) + 22;
         ball.style.width = `${size}px`;
         ball.style.height = `${size}px`;
-        ball.style.left = `${Math.random() * 200 + 15}px`;
-        ball.style.top = `${Math.random() * 130 + 10}px`;
-        ball.innerHTML = `<span style="font-size:9px">${emojis[i % emojis.length]}</span>`;
+        ball.style.left = `${Math.random() * 140 + 15}px`;
+        ball.style.top = `${Math.random() * 90 + 10}px`;
+        ball.innerHTML = `<span style="font-size:8px">${emojis[i % emojis.length]}</span>`;
         container.appendChild(ball);
       }
     }
 
-    function showMsg(text) {
-      document.getElementById('modal-text').innerText = text;
-      document.getElementById('message-modal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-      document.getElementById('message-modal').classList.add('hidden');
-    }
-
     function shakeMachine() {
-      const globe = document.getElementById('globe');
-      const dial = document.getElementById('dial');
-      globe.classList.add('shaking');
-      dial.style.transform = 'rotate(360deg) scale(1.1)';
-      setTimeout(() => {
-        globe.classList.remove('shaking');
-        dial.style.transform = 'rotate(0deg) scale(1)';
-        initBalls();
-      }, 400);
+      playGumballSpinSound();
+      initBalls();
     }
 
     function drawBall() {
       if (currentDraw.length >= maxDraws) {
-        showMsg("本組 5 碼已抽滿！系統已自動將本組加入歷史紀錄，您可以開始勾選中獎號碼囉！");
+        showMsg("本組 5 碼已抽滿！系統已自動將本組加入歷史紀錄。");
         return;
       }
-
-      shakeMachine();
+      playGumballSpinSound();
 
       let randNum;
       do {
@@ -225,25 +594,29 @@
       currentDraw.push(randNum);
 
       setTimeout(() => {
+        playBallDropSound();
         const dispensed = document.getElementById('dispensed-ball');
         dispensed.innerText = randNum;
-        dispensed.classList.remove('dropping');
-        void dispensed.offsetWidth;
-        dispensed.classList.add('dropping');
+        dispensed.style.opacity = '1';
 
         updateResultRow();
 
-        // 當集滿 5 個號碼時，自動新增一筆歷史紀錄
         if (currentDraw.length === maxDraws) {
+          playJackpotSound();
+          triggerConfetti();
+          const luck = getRandomLuck();
+          speakResults(`今彩539號碼已抽滿：${currentDraw.join('，')}。祝您中大獎！`);
+          
           historyRecords.unshift({
             id: Date.now(),
-            numbers: [...currentDraw],
-            hits: {} // 記錄哪個號碼被勾選中獎
+            type: 'gumball',
+            content: `${currentDraw.join(', ')} (${luck})`
           });
           renderHistory();
-          updateStats();
+        } else {
+          speakResults(`第 ${currentDraw.length} 球：${randNum}`);
         }
-      }, 400);
+      }, 300);
     }
 
     function updateResultRow() {
@@ -252,7 +625,7 @@
       for (let i = 0; i < maxDraws; i++) {
         const item = document.createElement('div');
         if (i < currentDraw.length) {
-          item.className = 'w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-rose-600 text-white font-bold flex items-center justify-center text-xs shadow-md animate-bounce border-2 border-white';
+          item.className = 'w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-rose-600 text-white font-bold flex items-center justify-center text-xs shadow-md border-2 border-white';
           item.innerText = currentDraw[i];
         } else {
           item.className = 'w-9 h-9 rounded-full bg-pink-50 border-2 border-dashed border-pink-300 flex items-center justify-center text-pink-400 font-bold text-xs';
@@ -263,109 +636,139 @@
     }
 
     function resetCurrentDraw() {
+      playClickSound();
       currentDraw = [];
-      document.getElementById('dispensed-ball').classList.remove('dropping');
       document.getElementById('dispensed-ball').style.opacity = '0';
       updateResultRow();
     }
 
-    // 切換中獎勾選狀態
-    function toggleHit(recordId, num) {
-      const record = historyRecords.find(r => r.id === recordId);
-      if (record) {
-        record.hits[num] = !record.hits[num];
-        renderHistory();
-        updateStats();
+    // ================= 3. 幸運骰子器邏輯 =================
+    let diceCount = 1;
+    let lastDiceValues = [1];
+
+    function setDiceCount(count) {
+      playClickSound();
+      diceCount = count;
+      for (let i = 1; i <= 3; i++) {
+        const btn = document.getElementById(`dice-btn-${i}`);
+        if (i === count) {
+          btn.className = "flex-1 bg-red-600 text-white font-bold py-2 rounded-xl text-xs shadow-md transition";
+        } else {
+          btn.className = "flex-1 bg-pink-200 text-rose-800 font-bold py-2 rounded-xl text-xs shadow-xs transition";
+        }
       }
+      lastDiceValues = Array(diceCount).fill(1);
+      renderDiceView();
     }
+
+    function renderDiceView() {
+      const container = document.getElementById('dice-container');
+      container.innerHTML = '';
+      
+      const sum = lastDiceValues.reduce((a, b) => a + b, 0);
+      document.getElementById('dice-summary-text').innerText = `目前顆數：${diceCount} 顆 | 總點數：${sum} 點`;
+
+      lastDiceValues.forEach(val => {
+        const diceEl = document.createElement('div');
+        diceEl.className = "w-14 h-14 bg-white rounded-2xl border-4 border-red-500 shadow-md flex items-center justify-center text-3xl font-black text-red-600 rolling";
+        diceEl.innerText = val;
+        container.appendChild(diceEl);
+      });
+    }
+
+    function rollDice() {
+      playDiceSound();
+      lastDiceValues = [];
+      for (let i = 0; i < diceCount; i++) {
+        lastDiceValues.push(Math.floor(Math.random() * 6) + 1);
+      }
+
+      renderDiceView();
+
+      const sum = lastDiceValues.reduce((a, b) => a + b, 0);
+
+      playJackpotSound();
+      triggerConfetti();
+      const luck = getRandomLuck();
+      speakResults(`骰子結果：${lastDiceValues.join('、')}，總點數 ${sum} 點！`);
+
+      historyRecords.unshift({
+        id: Date.now(),
+        type: 'dice',
+        content: `${diceCount} 顆 [${lastDiceValues.join(', ')}] (共 ${sum}點) - ${luck}`
+      });
+      renderHistory();
+    }
+
+    // ================= 共用歷史紀錄管理與一鍵複製 =================
+    let historyRecords = [];
 
     function renderHistory() {
       const listContainer = document.getElementById('history-list');
       if (historyRecords.length === 0) {
-        listContainer.innerHTML = '<p class="text-gray-400 text-center py-3">尚無抽球紀錄，快去轉蛋抽號碼吧！</p>';
+        listContainer.innerHTML = '<p class="text-gray-400 text-center py-3">尚無紀錄，快來遊玩任一機器吧！</p>';
         return;
       }
 
       listContainer.innerHTML = '';
-      historyRecords.forEach((rec, idx) => {
+      historyRecords.forEach((rec) => {
         const rowDiv = document.createElement('div');
-        rowDiv.className = 'bg-pink-50/60 p-2 rounded-xl border border-pink-200 flex flex-col gap-1';
+        rowDiv.className = 'bg-pink-50 p-2.5 rounded-xl border border-pink-200 flex justify-between items-center';
         
-        let headerHtml = `<div class="flex justify-between text-[11px] text-gray-500 font-medium"><span>第 ${historyRecords.length - idx} 次抽獎</span><span>勾選有中的號碼：</span></div>`;
-        
-        let numsHtml = '<div class="flex flex-wrap gap-1.5 items-center">';
-        rec.numbers.forEach(num => {
-          const isHit = rec.hits[num] ? true : false;
-          numsHtml += `
-            <label class="cursor-pointer flex items-center gap-1 bg-white px-2 py-1 rounded-lg border ${isHit ? 'border-red-500 bg-red-50 text-red-600 font-bold' : 'border-gray-200 text-gray-700'} shadow-xs">
-              <input type="checkbox" ${isHit ? 'checked' : ''} onchange="toggleHit(${rec.id}, ${num})" class="accent-red-500 w-3 h-3">
-              <span>${num}</span>
-            </label>
-          `;
-        });
-        numsHtml += '</div>';
+        let badge = '';
+        if (rec.type === 'slot3') badge = '<span class="bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded text-[10px]">3星彩</span>';
+        else if (rec.type === 'gumball') badge = '<span class="bg-rose-100 text-rose-700 font-bold px-1.5 py-0.5 rounded text-[10px]">539</span>';
+        else if (rec.type === 'dice') badge = '<span class="bg-pink-200 text-rose-800 font-bold px-1.5 py-0.5 rounded text-[10px]">骰子</span>';
 
-        rowDiv.innerHTML = headerHtml + numsHtml;
+        rowDiv.innerHTML = `
+          <div class="flex items-center gap-2">
+            ${badge}
+            <span class="text-gray-700">${rec.content}</span>
+          </div>
+          <button onclick="deleteRecord(${rec.id})" class="text-xs text-gray-400 hover:text-red-500 font-bold px-2 py-1 bg-white rounded-md border border-gray-200">刪除</button>
+        `;
         listContainer.appendChild(rowDiv);
       });
     }
 
-    // 統計計算中獎率
-    function updateStats() {
-      let totalAppearances = {}; // 號碼出現次數
-      let totalHits = {};        // 號碼中獎次數
-
-      historyRecords.forEach(rec => {
-        rec.numbers.forEach(num => {
-          totalAppearances[num] = (totalAppearances[num] || 0) + 1;
-          if (rec.hits[num]) {
-            totalHits[num] = (totalHits[num] || 0) + 1;
-          }
-        });
-      });
-
-      const statsContainer = document.getElementById('stats-summary');
-      const numKeys = Object.keys(totalAppearances);
-
-      if (numKeys.length === 0) {
-        statsContainer.innerHTML = '目前尚無中獎數據。';
+    function copyAllHistory() {
+      if (historyRecords.length === 0) {
+        showMsg("目前沒有歷史紀錄可以複製喔！");
         return;
       }
+      const textToCopy = historyRecords.map(r => `[${r.type}] ${r.content}`).join('\n');
+      const tempTextArea = document.createElement('textarea');
+      tempTextArea.value = textToCopy;
+      document.body.appendChild(tempTextArea);
+      tempTextArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempTextArea);
+      playClickSound();
+      showMsg("✅ 成功複製所有歷史紀錄！");
+    }
 
-      // 計算各號碼中獎率並排序
-      let statsArray = numKeys.map(num => {
-        const app = totalAppearances[num];
-        const hit = totalHits[num] || 0;
-        const rate = Math.round((hit / app) * 100);
-        return { num: parseInt(num), app, hit, rate };
-      });
-
-      // 依中獎率由高到低排序
-      statsArray.sort((a, b) => b.rate - a.rate || b.hit - a.hit);
-
-      let html = '<div class="space-y-1 max-h-28 overflow-y-auto pr-1">';
-      statsArray.slice(0, 6).forEach((item, index) => {
-        html += `
-          <div class="flex justify-between items-center bg-white px-3 py-1.5 rounded-lg border border-pink-200 shadow-2xs">
-            <span class="font-bold text-red-600">🔥 號碼 ${item.num} 號</span>
-            <span class="text-gray-600">中獎率: <strong class="text-rose-600">${item.rate}%</strong> (中 ${item.hit} / 出現 ${item.app} 次)</span>
-          </div>
-        `;
-      });
-      html += '</div>';
-      statsContainer.innerHTML = html;
+    function deleteRecord(id) {
+      playClickSound();
+      historyRecords = historyRecords.filter(r => r.id !== id);
+      renderHistory();
     }
 
     function clearHistory() {
+      playClickSound();
       historyRecords = [];
       renderHistory();
-      updateStats();
     }
 
-    window.onload = function() {
-      initBalls();
-      updateResultRow();
-    };
+    function showMsg(text) {
+      playClickSound();
+      document.getElementById('modal-text').innerText = text;
+      document.getElementById('message-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      playClickSound();
+      document.getElementById('message-modal').classList.add('hidden');
+    }
   </script>
 </body>
 </html>
