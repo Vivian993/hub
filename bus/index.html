@@ -145,6 +145,8 @@
   .cta .ico{ font-size:30px;}
   .cta.school{ background:var(--amber);}
   .cta.home{ background:var(--coral);}
+  .cta.unselected{ opacity:0.4;}
+  .cta.selected{ box-shadow:0 0 0 4px rgba(0,0,0,0.15) inset;}
 
   /* ---------- section headers ---------- */
   .section-head{ display:flex; justify-content:space-between; align-items:baseline; margin:6px 0 12px;}
@@ -381,7 +383,7 @@
       </button>
     </div>
 
-    <button class="board-btn" style="background:var(--amber); margin-bottom:20px;" onclick="showScreen('route-track')">📍 不知道在哪？教我怎麼回家</button>
+    <button class="board-btn" style="background:var(--amber); margin-bottom:20px;" onclick="showScreen('route-track')">📍 不知道在哪？教我怎麼去</button>
 
     <div class="section-head">
       <h2>📍 附近站牌</h2>
@@ -654,7 +656,7 @@
     </div>
 
     <button class="board-btn" style="margin-top:6px; background:var(--sky);" onclick="addRoute()">➕ 新增一條路線</button>
-    <button class="board-btn" style="margin-top:10px; background:#fff; color:var(--mint-deep); border:2px solid var(--mint-deep);" onclick="showScreen('route-track')">🏠 回家小幫手・搭幾號車</button>
+    <button class="board-btn" style="margin-top:10px; background:#fff; color:var(--mint-deep); border:2px solid var(--mint-deep);" onclick="showScreen('route-track')">📍 去哪裡小幫手・搭幾號車</button>
 
     <div class="navbar">
       <button class="navbtn" onclick="showScreen('home')"><span class="ic">🏠</span>首頁</button>
@@ -664,18 +666,27 @@
     </div>
   </div>
 
-  <!-- ============ 9. 回家小幫手 + 路線站牌 ============ -->
+  <!-- ============ 9. 去哪裡小幫手 + 路線站牌 ============ -->
   <div class="screen" id="screen-route-track">
     <div class="back-row">
       <button class="back-btn" onclick="showScreen('routes')">←</button>
-      <h1>🏠 回家小幫手</h1>
+      <h1>📍 去哪裡小幫手</h1>
     </div>
 
     <div class="empty-box" style="text-align:left; margin-bottom:14px;">
-      <span class="big" style="display:inline;">💡</span> 不知道在哪裡、不知道要搭幾號車回家？按下面按鈕，用手機目前位置抓最近的一個真的站牌，直接告訴你要搭幾號車、往哪個方向。
+      <span class="big" style="display:inline;">💡</span> 不知道在哪裡、不知道要搭幾號車？先選要去哪，再按下面按鈕，用手機目前位置抓最近的一個真的站牌，直接告訴你要搭幾號車、往哪個方向。
     </div>
 
-    <button class="board-btn" style="background:var(--amber); margin-bottom:10px;" onclick="findWayHome()">📍 我在哪裡？教我怎麼回家</button>
+    <div class="cta-row" style="margin-bottom:10px;">
+      <button class="cta home" id="target-home-btn" onclick="setHelperTarget('home')">
+        <span class="ico">🏠</span> 回家
+      </button>
+      <button class="cta school" id="target-school-btn" onclick="setHelperTarget('school')">
+        <span class="ico">🏫</span> 去學校
+      </button>
+    </div>
+
+    <button class="board-btn" style="background:var(--amber); margin-bottom:10px;" onclick="findWayTo()">📍 我在哪裡？教我怎麼去</button>
     <div id="home-help-status" style="font-size:12.5px; color:var(--muted); font-weight:700; margin:-4px 0 10px 2px;"></div>
     <div id="home-help-result"></div>
 
@@ -719,19 +730,26 @@
 // ---------- 真實站牌資料（目前已知的 2 站 + 幾個示範站牌）----------
 const STOPS = [
   { id:"wuling",   name:"武陵高中（愛買）",     walk:"約 6 分鐘",  routes:["1","189"],  status:"🟢 正常", lat:24.988530, lng:121.285410,
-    homeAdvice:{ routeNo:"—", direction:"", note:"這裡離家很近了，走路約 6 分鐘就到家。" } },
+    homeAdvice:{ routeNo:"—", direction:"", note:"這裡離家很近了，走路約 6 分鐘就到家。" },
+    schoolAdvice:{ routeNo:"1", direction:"往桃園農工方向", note:"直接搭這班，坐到「地方稅務局（桃農）」站下車，就到學校了。" } },
   { id:"tax",      name:"地方稅務局（桃農）",   walk:"約 2 分鐘",  routes:["1"],        status:"🟢 正常", lat:24.995117, lng:121.319595,
-    homeAdvice:{ routeNo:"1", direction:"往中壢方向", note:"坐到「武陵高中（愛買）」站下車，走路回家。" } },
+    homeAdvice:{ routeNo:"1", direction:"往中壢方向", note:"坐到「武陵高中（愛買）」站下車，走路回家。" },
+    schoolAdvice:{ routeNo:"—", direction:"", note:"你已經在學校旁邊了，走路約 2 分鐘。" } },
   { id:"longan",   name:"龍安街",               walk:"約 4 分鐘",  routes:["189"],      status:"🟢 正常", lat:24.991310, lng:121.280326,
-    homeAdvice:{ routeNo:"—", direction:"", note:"你已經在家附近了！" } },
+    homeAdvice:{ routeNo:"—", direction:"", note:"你已經在家附近了！" },
+    schoolAdvice:{ routeNo:"1", direction:"往桃園農工方向", note:"先走路到「武陵高中（愛買）」站（約4分鐘），再搭這班到地方稅務局站下車。" } },
   { id:"artzone",  name:"藝文特區",             walk:"約 20 分鐘", routes:["189"],      status:"🟢 正常", lat:25.014410, lng:121.299148,
-    homeAdvice:{ routeNo:"189", direction:"往桃園後站方向", note:"坐到「武陵高中」或「龍安街」站下車，就到家附近了。" } },
+    homeAdvice:{ routeNo:"189", direction:"往桃園後站方向", note:"坐到「武陵高中」或「龍安街」站下車，就到家附近了。" },
+    schoolAdvice:{ routeNo:"189", direction:"往桃園後站方向", note:"先坐到「武陵高中」站下車，轉搭 1路「往桃園農工方向」到地方稅務局站。" } },
   { id:"jingguo",  name:"經國轉運站",           walk:"約 25 分鐘", routes:["189"],      status:"🟢 正常", lat:25.028602, lng:121.300231,
-    homeAdvice:{ routeNo:"189", direction:"往桃園後站方向", note:"坐到「武陵高中」或「龍安街」站下車，就到家附近了。" } },
+    homeAdvice:{ routeNo:"189", direction:"往桃園後站方向", note:"坐到「武陵高中」或「龍安街」站下車，就到家附近了。" },
+    schoolAdvice:{ routeNo:"189", direction:"往桃園後站方向", note:"先坐到「武陵高中」站下車，轉搭 1路「往桃園農工方向」到地方稅務局站。" } },
   { id:"backstn",  name:"桃園後站",             walk:"約 15 分鐘", routes:["189"],      status:"🟢 正常", lat:24.988418, lng:121.314430,
-    homeAdvice:{ routeNo:"189", direction:"往經國轉運站方向", note:"坐到「武陵高中」或「龍安街」站下車，就到家附近了。" } },
+    homeAdvice:{ routeNo:"189", direction:"往經國轉運站方向", note:"坐到「武陵高中」或「龍安街」站下車，就到家附近了。" },
+    schoolAdvice:{ routeNo:"189", direction:"往經國轉運站方向", note:"先坐到「武陵高中」站下車，轉搭 1路「往桃園農工方向」到地方稅務局站。" } },
   { id:"trainstn", name:"復興中正路口（桃園火車站）", walk:"約 15 分鐘", routes:["1"],   status:"🟢 正常", lat:24.990740, lng:121.313810,
-    homeAdvice:{ routeNo:"1", direction:"往中壢方向", note:"坐到「武陵高中（愛買）」站下車，走路回家。" } },
+    homeAdvice:{ routeNo:"1", direction:"往中壢方向", note:"坐到「武陵高中（愛買）」站下車，走路回家。" },
+    schoolAdvice:{ routeNo:"1", direction:"", uncertain:true, note:"這裡到學校的正確方向我還沒有百分之百確認，先按「看即時公車」查1路站序，找往「地方稅務局」方向的站牌再上車，比較保險。" } },
 ];
 
 // ---------- 真實班次（1路，依家長提供的示範時刻）----------
@@ -753,6 +771,10 @@ const TIMETABLE = [
 
 const ROUTE_NO = "1";
 const DIR_LABEL = { school:"往桃園農工方向", home:"往中壢方向" };
+// 1路公車實際營運時間（查證過的真實資料）：平日約 05:25–23:00，每 3–10 分鐘一班。
+// 下面 TIMETABLE 只是「範例班次」，不是完整時刻表 — 超出這個範例時間，不代表真的沒有公車了！
+const REAL_SERVICE_START_MIN = 5*60 + 25;
+const REAL_SERVICE_END_MIN   = 23*60;
 
 // ---------- 小工具 ----------
 const $ = (id) => document.getElementById(id);
@@ -857,15 +879,26 @@ function renderCountdown(){
   if(trip.isTomorrow) diff = null;
 
   $("cd-label").textContent = `📍 ${boardStop.name} · 下一班`;
-  $("cd-route").textContent = `🚌 ${ROUTE_NO}　${trip.time}`;
   $("cd-stop").textContent = DIR_LABEL[mode];
 
-  if(diff === null){
+  const reallyNoService = nowM < REAL_SERVICE_START_MIN || nowM > REAL_SERVICE_END_MIN;
+
+  if(diff === null && reallyNoService){
+    // 真的超過營運時間（約 05:25–23:00）才能說今天沒車了
+    $("cd-route").textContent = `🚌 ${ROUTE_NO}`;
     $("cd-mins").textContent = "—";
-    $("cd-walk").textContent = "🚶 今天已經沒有班次了，明天見！";
+    $("cd-walk").textContent = "🚶 今天營運時間結束了（約 05:25–23:00），明天見！";
     $("cd-status").textContent = "已收班";
     $("cd-status").style.background = "#B9C2E0";
+  } else if(diff === null){
+    // 還在營運時間內，只是範例時刻表沒有涵蓋 —— 不能說沒車，公車還是每 3-10 分鐘一班
+    $("cd-route").textContent = `🚌 ${ROUTE_NO}　每 3-10 分鐘一班`;
+    $("cd-mins").textContent = "?";
+    $("cd-walk").textContent = "🚶 範例時刻表沒有這個時間，但公車還在跑，點下面看即時公車最準！";
+    $("cd-status").textContent = "營運中";
+    $("cd-status").style.background = "";
   } else {
+    $("cd-route").textContent = `🚌 ${ROUTE_NO}　${trip.time}`;
     $("cd-mins").textContent = diff;
     const walk = walkMinutesFor(trip.board);
     const tag = walkIsLive() ? "📍 目前位置" : "🏠 從家裡估算";
@@ -931,22 +964,38 @@ function renderNearbyFull(){
 function renderSchool(){
   const trip = getNextBus("school");
   const others = TIMETABLE.filter(t => t.direction === "school").map(t => t.time);
-  $("sch-time").textContent = trip.time;
-  $("sch-route").textContent = `🚌 ${ROUTE_NO}　${DIR_LABEL.school}`;
+  const nowM = nowMinutes();
+  const reallyNoService = nowM < REAL_SERVICE_START_MIN || nowM > REAL_SERVICE_END_MIN;
+  if(trip.isTomorrow && !reallyNoService){
+    $("sch-time").textContent = "?";
+    $("sch-route").textContent = `🚌 ${ROUTE_NO}　每 3-10 分鐘一班`;
+    $("sch-banner").textContent = "範例時刻表沒有這個時間，但公車還在跑，按下面「看即時公車在哪裡」最準！";
+  } else {
+    $("sch-time").textContent = trip.time;
+    $("sch-route").textContent = `🚌 ${ROUTE_NO}　${DIR_LABEL.school}`;
+    $("sch-banner").textContent = `➡️ 記得搭「${DIR_LABEL.school}」，別搭反了喔！`;
+  }
   $("sch-board").textContent = stopById(trip.board).name;
   $("sch-alight").textContent = stopById(trip.alight).name;
-  $("sch-banner").textContent = `➡️ 記得搭「${DIR_LABEL.school}」，別搭反了喔！`;
   $("sch-other").innerHTML = others.map(t =>
     `<span class="time-chip ${t===trip.time ? "rec" : ""} num">${t}${t===trip.time ? " ⭐" : ""}</span>`
   ).join("");
 }
 function renderHomeMode(){
   const trip = getNextBus("home");
-  $("hm-time").textContent = trip.time;
-  $("hm-route").textContent = `🚌 ${ROUTE_NO}　${DIR_LABEL.home}`;
+  const nowM = nowMinutes();
+  const reallyNoService = nowM < REAL_SERVICE_START_MIN || nowM > REAL_SERVICE_END_MIN;
+  if(trip.isTomorrow && !reallyNoService){
+    $("hm-time").textContent = "?";
+    $("hm-route").textContent = `🚌 ${ROUTE_NO}　每 3-10 分鐘一班`;
+    $("hm-banner").textContent = "範例時刻表沒有這個時間，但公車還在跑，按下面「看即時公車在哪裡」最準！";
+  } else {
+    $("hm-time").textContent = trip.time;
+    $("hm-route").textContent = `🚌 ${ROUTE_NO}　${DIR_LABEL.home}`;
+    $("hm-banner").textContent = `➡️ 記得搭「${DIR_LABEL.home}」，別搭反了喔！`;
+  }
   $("hm-board").textContent = stopById(trip.board).name;
   $("hm-alight").textContent = stopById(trip.alight).name + "附近";
-  $("hm-banner").textContent = `➡️ 記得搭「${DIR_LABEL.home}」，別搭反了喔！`;
 }
 
 // ---------- 「我要搭這班」→ 記住目前的行程，帶到確認畫面 ----------
@@ -1003,7 +1052,16 @@ function renderRouteTrack(){
   ).join("");
 }
 
-// ========================= 回家小幫手：真的用手機目前位置，找最近的真實站牌，直接說要搭幾號車 =========================
+// ========================= 去哪裡小幫手：真的用手機目前位置，找最近的真實站牌，直接說要搭幾號車 =========================
+let helperTarget = "home";
+window.setHelperTarget = function(target){
+  helperTarget = target;
+  $("target-home-btn").className = "cta home" + (target === "home" ? " selected" : " unselected");
+  $("target-school-btn").className = "cta school" + (target === "school" ? " selected" : " unselected");
+  $("home-help-status").textContent = "";
+  $("home-help-result").innerHTML = "";
+  renderKnownStops(null);
+};
 function nearestKnownStop(){
   if(!userLoc) return null;
   let best = null, bestDist = Infinity;
@@ -1027,7 +1085,8 @@ function renderKnownStops(nearestId){
     </div>`;
   }).join("") + `</div>`;
 }
-window.findWayHome = function(){
+window.findWayTo = function(){
+  const targetLabel = helperTarget === "home" ? "回家" : "去學校";
   $("home-help-status").textContent = "定位中…";
   $("home-help-result").innerHTML = "";
   tryGetLocation(() => {
@@ -1042,12 +1101,18 @@ window.findWayHome = function(){
     if(distance > 800){
       $("home-help-status").textContent = `目前位置離最近有資料的站牌（${stop.name}）大約 ${distance} 公尺，有點遠，這個結果可能不準，建議直接打開即時公車網站查詢。`;
     } else {
-      $("home-help-status").textContent = `📍 用手機目前位置定位，離「${stop.name}」大約 ${distance} 公尺。`;
+      $("home-help-status").textContent = `📍 用手機目前位置定位，離「${stop.name}」大約 ${distance} 公尺，要${targetLabel}的話：`;
     }
-    const adv = stop.homeAdvice;
+    const adv = helperTarget === "home" ? stop.homeAdvice : stop.schoolAdvice;
     const box = $("home-help-result");
     if(!adv || adv.routeNo === "—"){
-      box.innerHTML = `<div class="direction-banner" style="background:var(--mint-deep); color:#fff;">🏠 ${adv ? adv.note : "已經在家附近了！"}</div>`;
+      box.innerHTML = `<div class="direction-banner" style="background:var(--mint-deep); color:#fff;">🏠 ${adv ? adv.note : `已經在${targetLabel === "回家" ? "家" : "學校"}附近了！`}</div>`;
+    } else if(adv.uncertain){
+      box.innerHTML = `
+        <div class="direction-banner" style="background:#B9C2E0; color:var(--ink);">⚠️ 這一段方向還沒完全確認</div>
+        <div style="font-size:13.5px; color:var(--muted); font-weight:700; margin:8px 0 12px 2px;">${adv.note}</div>
+        <button class="board-btn" style="background:#fff; color:var(--sky-deep); border:2px solid var(--sky-deep);" onclick="openLiveBus('${adv.routeNo}')">🔴 看即時公車查站序</button>
+      `;
     } else {
       box.innerHTML = `
         <div class="direction-banner" style="background:var(--amber); color:#fff; font-size:16px;">
@@ -1192,7 +1257,7 @@ window.showScreen = function(id){
   if(id === "timetable") renderTimetable();
   if(id === "confirm") renderConfirm();
   if(id === "routes") renderRoutes();
-  if(id === "route-track") renderRouteTrack();
+  if(id === "route-track"){ renderRouteTrack(); setHelperTarget(helperTarget); }
 };
 
 // ========================= 日期文字 =========================
