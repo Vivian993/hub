@@ -67,30 +67,10 @@
   ::-webkit-scrollbar{height:8px;width:8px;}
   ::-webkit-scrollbar-thumb{background:#d9c092;border-radius:8px;}
 
-  /* 📜 成語學習單：直式書寫，由右至左（傳統作業單排版） */
-  .quiz-vertical-list{
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    display: flex;
-    flex-direction: row-reverse;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    height: 68vh;
-    max-height: 900px;
-  }
-  .quiz-vertical-list > li{
-    margin-left: 1.75rem;
-    padding-bottom: 0.75rem;
-    list-style: none;
-  }
-  .quiz-vertical-title{
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    display: inline-block;
-    margin-left: 0.5rem;
-  }
-  @media print{
-    .quiz-vertical-list{ height: 235mm; }
+  /* 📜 成語學習單：直式書寫在手機瀏覽器上容易疊字跑版，改用清楚易讀的橫式編排 */
+  .quiz-list > li{
+    margin-bottom: 1rem;
+    line-height: 1.9;
   }
 
   @page {
@@ -299,12 +279,12 @@
 
         <div class="mb-10">
             <h4 class="font-bold text-lg mb-3">📖 成語解釋</h4>
-            <ol id="quizDefinitions" class="quiz-vertical-list"></ol>
+            <ol id="quizDefinitions" class="quiz-list list-none space-y-2"></ol>
         </div>
 
         <div class="mb-6">
             <h4 class="font-bold text-lg mb-3">✍️ 例句填空（請將成語填入空格）</h4>
-            <ol id="quizQuestions" class="quiz-vertical-list"></ol>
+            <ol id="quizQuestions" class="quiz-list list-none space-y-2"></ol>
         </div>
 
         <div class="no-print mt-8 flex justify-center gap-3 flex-wrap">
@@ -314,7 +294,7 @@
 
         <div id="quizAnswerSection" class="hidden mt-10 pt-6 border-t-2 border-dashed border-[color:var(--ink)]/30">
             <h4 class="font-bold text-lg mb-3">✅ 參考答案</h4>
-            <ol id="quizAnswers" class="quiz-vertical-list"></ol>
+            <ol id="quizAnswers" class="quiz-list list-none space-y-2"></ol>
         </div>
     </div>
   </div>
@@ -377,8 +357,11 @@
       </div>
 
       <div id="reviewListSection" class="mb-8">
-        <h4 class="display text-xl text-[color:var(--yellow)] mb-3 flex items-center gap-2">📌 複習清單 <span class="text-xs font-normal text-[color:var(--ink)]/50">（勾選「複習」的成語都會出現在這裡）</span></h4>
-        <div id="libraryContainerReview" class="flex flex-col gap-4"></div>
+        <button onclick="toggleReviewListCollapse()" class="w-full flex justify-between items-center text-left mb-3">
+          <h4 class="display text-xl text-[color:var(--yellow)] flex items-center gap-2">📌 複習清單 <span class="text-xs font-normal text-[color:var(--ink)]/50">（勾選「複習」的成語都會出現在這裡）</span></h4>
+          <span id="reviewListArrow" class="text-2xl text-[color:var(--yellow)]">▼</span>
+        </button>
+        <div id="libraryContainerReview" class="hidden flex flex-col gap-4"></div>
       </div>
 
       <div class="mb-8">
@@ -1445,6 +1428,21 @@ function renderQuizSelection() {
     `).join('');
 }
 
+// 把字典解釋裡常見的文言文引用（例如《論語．學而》：「...」）過濾掉，只保留白話說明部分
+function stripCitations(text){
+    if(!text) return '';
+    let cleaned = text.replace(/《[^》]*》[：:]?「[^」]*」[。.]?/g, '');
+    cleaned = cleaned.replace(/[\u4e00-\u9fff]+[．・][\u4e00-\u9fff]+[：:]「[^」]*」[。.]?/g, ''); // 沒有書名號但格式類似的引用
+    return cleaned.trim();
+}
+
+function getKidFriendlyMeaning(item){
+    if(item.meaningSimple) return item.meaningSimple;
+    const cleaned = stripCitations(item.meaning);
+    if(cleaned && cleaned.length >= 4) return cleaned;
+    return '（這句成語還沒有淺顯解釋，建議先到「成語圖說」設定金鑰產生喔）';
+}
+
 function generateQuiz() {
     const checkboxes = document.querySelectorAll('.quiz-checkbox:checked');
     if(checkboxes.length === 0) { alert("請至少勾選一個成語來出題喔！"); return; }
@@ -1469,8 +1467,8 @@ function generateQuiz() {
     quizData.forEach((item, idx) => {
         const num = idx + 1;
 
-        // 📖 成語解釋：優先用淺顯解釋（AI 改寫過的），避免用小朋友看不懂的文言文字典原文
-        const kidMeaning = item.meaningSimple || item.meaning || '（無解釋）';
+        // 📖 成語解釋：優先用淺顯解釋（AI 改寫過的），沒有的話也會強制濾掉文言文引用，絕不讓文言文出現在學習單上
+        const kidMeaning = getKidFriendlyMeaning(item);
         defList.innerHTML += `<li>${num}、【${item.idiom}】：${kidMeaning}</li>`;
 
         // ✍️ 例句填空：只用「AI 造句」（已確認是白話文）；沒有的話就用淺顯解釋直接出「這是哪個成語」的題型，
@@ -1582,6 +1580,8 @@ function renderLibrary(){
   } else {
     reviewSection.classList.remove('hidden');
     renderLibrarySection(containerReview, reviewList, 'idiom');
+    containerReview.classList.toggle('hidden', !window._reviewListExpanded);
+    document.getElementById('reviewListArrow').innerText = window._reviewListExpanded ? '▲' : '▼';
   }
 
   renderLibrarySection(containerIdiom, idiomList, 'idiom');
@@ -1686,6 +1686,13 @@ function toggleReviewMark(trueIdx){
 window._reviewEditMode = false;
 function toggleReviewEditMode(){
     window._reviewEditMode = !window._reviewEditMode;
+    renderLibrary();
+}
+
+// 📌 複習清單內容預設收合，點標題旁的箭頭才會展開
+window._reviewListExpanded = false;
+function toggleReviewListCollapse(){
+    window._reviewListExpanded = !window._reviewListExpanded;
     renderLibrary();
 }
 
