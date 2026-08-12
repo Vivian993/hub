@@ -1130,6 +1130,8 @@ function showVocabCard(index) {
     const readings = (d.readings && d.readings.length) ? d.readings : [{zhuyin: d.zhuyin, definitions: d.definitions||[], sentences: d.sentences||[]}];
     const multiReading = readings.length > 1;
 
+    const isBatchQuery = batchVocabList.length > 1;
+
     defContainer.innerHTML = readings.map((r, rIdx) => {
         const readingLabel = multiReading
             ? `<div class="flex items-center gap-2 mb-1">
@@ -1140,31 +1142,34 @@ function showVocabCard(index) {
             : `<button onclick="speakVocabDef(${index}, ${rIdx})" class="no-print text-sm text-[color:var(--purple)] font-bold mb-1 inline-flex items-center gap-1">🔈 唸一遍</button>`;
 
         const simpleId = `vSimple-${index}-${rIdx}`;
-        const simpleBlock = `<div id="${simpleId}" class="text-sm bg-white p-2 rounded-lg mb-1 text-[color:var(--ink)]">${r.simpleDef ? r.simpleDef.replace(/</g,'&lt;') : (r.definitions && r.definitions.length ? '（無淺顯解釋，字典原文如下）' : '（無資料）')}</div>`;
+        const simpleBlock = r.simpleDef
+            ? `<div id="${simpleId}" class="text-sm bg-white p-2 rounded-lg mb-1 text-[color:var(--ink)]">${r.simpleDef.replace(/</g,'&lt;')}</div>`
+            : `<div id="${simpleId}" class="hidden"></div>`;
 
         const wordsBlock = `<div id="vWords-${index}-${rIdx}">${vocabWordsHtml(r)}</div>`;
 
-        const originalBlock = (r.definitions && r.definitions.length)
-            ? `<details class="text-xs text-[color:var(--ink)]/50 mt-2"><summary class="cursor-pointer">📖 查看字典完整解釋</summary>${r.definitions.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg mt-1">${item}</p>`).join('')}</details>`
-            : '';
+        const defsList = (r.definitions && r.definitions.length) ? r.definitions.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg mt-1">${item}</p>`).join('') : '<p class="text-xs text-[color:var(--ink)]/50">（無資料）</p>';
+        const originalBlock = isBatchQuery
+            ? `<details class="text-xs text-[color:var(--ink)]/50 mt-2"><summary class="cursor-pointer">📖 查看字典完整解釋</summary>${defsList}</details>`
+            : `<div class="text-xs text-[color:var(--ink)]/70 mt-2 space-y-1">${defsList}</div>`;
 
         return `<div class="mb-4 pb-3 ${rIdx < readings.length-1 ? 'border-b border-dashed border-[color:var(--ink)]/20' : ''}">${readingLabel}${simpleBlock}${wordsBlock}${originalBlock}</div>`;
     }).join('');
 
     sentContainer.innerHTML = readings.map((r, rIdx) => {
         const aiSentId = `vAiSentence-${index}-${rIdx}`;
-        const aiBlock = `<div id="${aiSentId}" class="p-2 bg-[color:var(--blue)]/10 rounded-lg text-[color:var(--ink)] mb-1">${r.aiSentence ? r.aiSentence.replace(/</g,'&lt;') : (r.sentences && r.sentences.length ? '' : '（無造句範例）')}</div>`;
+        const aiBlock = r.aiSentence
+            ? `<div id="${aiSentId}" class="p-2 bg-[color:var(--blue)]/10 rounded-lg text-[color:var(--ink)] mb-1">${r.aiSentence.replace(/</g,'&lt;')}</div>`
+            : `<div id="${aiSentId}" class="hidden"></div>`;
 
-        const originalBlock = (r.sentences && r.sentences.length)
-            ? `<details class="text-xs text-[color:var(--ink)]/50"><summary class="cursor-pointer">📖 查看字典原始造句/引用</summary>${r.sentences.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg mt-1">${item}</p>`).join('')}</details>`
-            : '';
+        const sentsList = (r.sentences && r.sentences.length) ? r.sentences.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg mt-1">${item}</p>`).join('') : '';
+        const originalBlock = !sentsList ? '' : (isBatchQuery
+            ? `<details class="text-xs text-[color:var(--ink)]/50"><summary class="cursor-pointer">📖 查看字典原始造句/引用</summary>${sentsList}</details>`
+            : `<div class="text-xs text-[color:var(--ink)]/70 space-y-1">${sentsList}</div>`);
 
-        const label = multiReading
-            ? `<div class="flex items-center gap-2 mb-1">
-                 <span class="text-xs font-bold text-[color:var(--purple)]">🔊 讀音：${r.zhuyin || '（無）'}</span>
-                 <button onclick="speakVocabSentence(${index}, ${rIdx})" class="no-print text-lg hover:scale-110 transition-transform">🔈</button>
-               </div>`
-            : `<button onclick="speakVocabSentence(${index}, ${rIdx})" class="no-print text-sm text-[color:var(--purple)] font-bold mb-1 inline-flex items-center gap-1">🔈 唸一遍</button>`;
+        if(!r.aiSentence && !sentsList) return multiReading ? `<div class="mb-3"><div class="text-xs font-bold text-[color:var(--purple)] mb-1">🔊 讀音：${r.zhuyin || '（無）'}</div><p class="text-sm text-[color:var(--ink)]/60">（無造句範例）</p></div>` : '<p class="text-sm text-[color:var(--ink)]/60">（無造句範例）</p>';
+
+        const label = multiReading ? `<div class="text-xs font-bold text-[color:var(--purple)] mb-1">🔊 讀音：${r.zhuyin || '（無）'}</div>` : '';
         return `<div class="mb-3">${label}${aiBlock}${originalBlock}</div>`;
     }).join('');
 
@@ -1242,35 +1247,15 @@ async function generateOneVocabReading(d, batchIdx, rIdx){
 // 每個讀音之間間隔一點時間再問 AI，降低同時連續呼叫撞到額度限制的機率
 async function autoSimplifyVocab(d, batchIdx){
     const key = getStoredApiKeyOnly();
+    if(!key) return; // 沒設定金鑰就單純顯示字典原文，不多顯示提示
+
     const readings = d.readings && d.readings.length ? d.readings : null;
     if(!readings) return;
-
-    if(!key){
-        // 沒偵測到金鑰：明確顯示提示按鈕，而不是悄悄什麼都不做讓人猜不到原因
-        readings.forEach((r, rIdx) => {
-            if(r.simpleDef) return;
-            const el = document.getElementById(`vSimple-${batchIdx}-${rIdx}`);
-            if(el && currentVocabData === d && r.definitions && r.definitions.length){
-                el.innerHTML = `<span class="text-[color:var(--ink)]/60">尚未設定金鑰，暫時顯示字典原文。</span>
-                    <button onclick="handleSetKeyThenGenerate(${batchIdx})" class="no-print block mt-1 text-xs text-[color:var(--purple)] font-bold underline">🔑 設定金鑰，自動產生淺顯解釋</button>`;
-            }
-        });
-        return;
-    }
 
     for(let rIdx = 0; rIdx < readings.length; rIdx++){
         if(readings[rIdx].simpleDef) continue; // 已經有快取
         await generateOneVocabReading(d, batchIdx, rIdx);
         if(rIdx < readings.length - 1) await new Promise(res => setTimeout(res, 500));
-    }
-}
-
-// 讓使用者在查生字卡片上直接設定金鑰，設定完立刻開始產生淺顯解釋，不用切去別的畫面
-function handleSetKeyThenGenerate(batchIdx){
-    const key = getGeminiApiKey(); // 這個函式會在沒有金鑰時跳出輸入視窗
-    if(key){
-        const d = batchVocabList[batchIdx];
-        if(d) autoSimplifyVocab(d, batchIdx);
     }
 }
 
@@ -1490,16 +1475,14 @@ function renderLibrary(){
         const readingsHtml = readings.map(r=>{
             const defs = (r.definitions || []).join('<br>') || '（無詳細字義）';
             const sents = (r.sentences || []).join('<br>') || '（無造句範例）';
-            const defSpeakText = r.simpleDef || cleanDictText((r.definitions||[])[0]) || item.char;
-            const defSpeakUid = registerSpeakText(defSpeakText);
-            const sentSpeakText = r.aiSentence || cleanDictText((r.sentences||[])[0]) || item.char;
-            const sentSpeakUid = registerSpeakText(sentSpeakText);
+            const speakText = r.simpleDef || cleanDictText((r.definitions||[])[0]) || item.char;
+            const speakUid = registerSpeakText(speakText);
             const label = multiReading
-                ? `<p class="text-xs font-bold text-[color:var(--purple)] mt-2 flex items-center gap-2">🔊 讀音：${r.zhuyin||'（無）'}<button onclick="speak(window._vocabSpeakTexts[${defSpeakUid}])" class="no-print text-base hover:scale-110 transition-transform">🔈</button></p>`
-                : `<p class="mt-2"><button onclick="speak(window._vocabSpeakTexts[${defSpeakUid}])" class="no-print text-xs text-[color:var(--purple)] font-bold inline-flex items-center gap-1">🔈 唸一遍</button></p>`;
+                ? `<p class="text-xs font-bold text-[color:var(--purple)] mt-2 flex items-center gap-2">🔊 讀音：${r.zhuyin||'（無）'}<button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-base hover:scale-110 transition-transform">🔈</button></p>`
+                : `<p class="mt-2"><button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-xs text-[color:var(--purple)] font-bold inline-flex items-center gap-1">🔈 唸一遍</button></p>`;
             const simpleP = r.simpleDef ? `<p><strong>淺顯解釋：</strong>${r.simpleDef}</p>` : '';
             const wordsP = (r.aiWords && r.aiWords.length) ? `<p><strong>語詞：</strong>${r.aiWords.map(w=>`${w.word}（${w.explain}）`).join('、')}</p>` : '';
-            const aiSentP = r.aiSentence ? `<p class="flex items-center gap-2"><span><strong>造句：</strong>${r.aiSentence}</span><button onclick="speak(window._vocabSpeakTexts[${sentSpeakUid}])" class="no-print text-base hover:scale-110 transition-transform">🔈</button></p>` : '';
+            const aiSentP = r.aiSentence ? `<p><strong>造句：</strong>${r.aiSentence}</p>` : '';
             return `${label}${simpleP}${wordsP}${aiSentP}<p class="text-xs text-[color:var(--ink)]/50"><strong>字典原文：</strong>${defs}</p><p class="text-xs text-[color:var(--ink)]/50"><strong>字典原造句：</strong>${sents}</p>`;
         }).join('');
         detailBox.innerHTML = `
