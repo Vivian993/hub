@@ -1073,6 +1073,16 @@ function renderVocabReadingContent(batchIdx, rIdx, r){
     if(sentEl) sentEl.innerText = r.aiSentence ? r.aiSentence.replace(/</g,'&lt;') : '';
 }
 
+// 生字讀音的發音按鈕：優先唸 AI 造句（比較能唸出正確讀音），還沒有的話才唸單字本身
+// 用即時查找而不是預先寫死文字，這樣 AI 造句完成後，按鈕會自動唸新內容，不會停留在舊資料，也不會唸到不相干的字典引用
+function speakVocabReading(batchIdx, rIdx){
+    const d = batchVocabList[batchIdx];
+    if(!d) return;
+    const r = (d.readings && d.readings[rIdx]) ? d.readings[rIdx] : null;
+    const text = (r && r.aiSentence) ? r.aiSentence : (d.char || '');
+    speak(text);
+}
+
 function showVocabCard(index) {
     const d = batchVocabList[index];
     currentVocabData = d;
@@ -1089,16 +1099,13 @@ function showVocabCard(index) {
     const multiReading = readings.length > 1;
 
     defContainer.innerHTML = readings.map((r, rIdx) => {
-        // 發音按鈕：如果這個讀音有例句，優先唸例句（比較容易唸出正確讀音），沒有的話才唸單字本身
-        const speakSource = (r.sentences && r.sentences[0]) ? r.sentences[0].replace(/^[例引]：/,'') : d.char;
-        const speakUid = registerSpeakText(speakSource);
         const readingLabel = multiReading
             ? `<div class="flex items-center gap-2 mb-1">
                  <span class="text-xs font-bold text-[color:var(--purple)]">🔊 讀音：${r.zhuyin || '（無）'}</span>
-                 <button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-lg hover:scale-110 transition-transform">🔈</button>
+                 <button onclick="speakVocabReading(${index}, ${rIdx})" class="no-print text-lg hover:scale-110 transition-transform">🔈</button>
                  <span class="bg-[color:var(--coral)]/20 text-[color:var(--coral)] text-xs font-bold px-2 py-0.5 rounded-full">⚠️ 破音字</span>
                </div>`
-            : `<button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-sm text-[color:var(--purple)] font-bold mb-1 inline-flex items-center gap-1">🔈 唸一遍</button>`;
+            : `<button onclick="speakVocabReading(${index}, ${rIdx})" class="no-print text-sm text-[color:var(--purple)] font-bold mb-1 inline-flex items-center gap-1">🔈 唸一遍</button>`;
 
         const simpleId = `vSimple-${index}-${rIdx}`;
         const simpleBlock = `<div id="${simpleId}" class="text-sm bg-white p-2 rounded-lg mb-1 text-[color:var(--ink)]">${r.simpleDef ? r.simpleDef.replace(/</g,'&lt;') : (r.definitions && r.definitions.length ? '（無淺顯解釋，字典原文如下）' : '（無資料）')}</div>`;
@@ -1415,7 +1422,11 @@ function renderLibrary(){
         const readingsHtml = readings.map(r=>{
             const defs = (r.definitions || []).join('<br>') || '（無詳細字義）';
             const sents = (r.sentences || []).join('<br>') || '（無造句範例）';
-            const label = multiReading ? `<p class="text-xs font-bold text-[color:var(--purple)] mt-2">🔊 讀音：${r.zhuyin||'（無）'}</p>` : '';
+            const speakText = r.aiSentence || item.char;
+            const speakUid = registerSpeakText(speakText);
+            const label = multiReading
+                ? `<p class="text-xs font-bold text-[color:var(--purple)] mt-2 flex items-center gap-2">🔊 讀音：${r.zhuyin||'（無）'}<button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-base hover:scale-110 transition-transform">🔈</button></p>`
+                : `<p class="mt-2"><button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-xs text-[color:var(--purple)] font-bold inline-flex items-center gap-1">🔈 唸一遍</button></p>`;
             const simpleP = r.simpleDef ? `<p><strong>淺顯解釋：</strong>${r.simpleDef}</p>` : '';
             const wordsP = (r.aiWords && r.aiWords.length) ? `<p><strong>語詞：</strong>${r.aiWords.map(w=>`${w.word}（${w.explain}）`).join('、')}</p>` : '';
             const aiSentP = r.aiSentence ? `<p><strong>造句：</strong>${r.aiSentence}</p>` : '';
