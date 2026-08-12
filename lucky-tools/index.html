@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>刮運來 & 扭蛋機</title>
+<title>好運來</title>
 <link rel="apple-touch-icon" href="custom-icon.png">
 <link rel="icon" type="image/png" href="custom-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="刮運來">
+<meta name="apple-mobile-web-app-title" content="好運來">
 <meta name="theme-color" content="#f6c3ca">
 <style>
   :root{
@@ -43,23 +43,27 @@
   /* ---------- tab bar ---------- */
   .tabbar{
     display: flex;
-    gap: 8px;
+    gap: 6px;
     padding: 12px 12px 8px;
     flex-shrink: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
+  .tabbar::-webkit-scrollbar{ display: none; }
   .tab{
-    flex: 1;
+    flex: 0 0 auto;
     text-align: center;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 900;
-    padding: 11px 6px;
+    padding: 11px 14px;
     border-radius: 100px;
     border: none;
     cursor: pointer;
     background: rgba(255,255,255,.55);
     color: var(--ink);
     opacity: .7;
+    white-space: nowrap;
   }
   .tab.active{
     background: var(--red);
@@ -146,6 +150,82 @@
   }
   #view-scratch .callout b{ color: #ffe9a8; font-size: 16px; }
 
+  #view-scratch .config-row{ margin-bottom: 10px; }
+  #view-scratch .config-toggle{
+    width: 100%; background: #fff; color: var(--teal-deep); border: 2px solid var(--teal);
+    border-radius: 14px; padding: 10px; font-size: 12px; font-weight: 800;
+  }
+  #view-scratch .config-form{
+    display: none; gap: 8px; margin-top: 8px; flex-wrap: wrap;
+    background: var(--cream); border: 2px solid var(--line); border-radius: 14px; padding: 10px;
+  }
+  #view-scratch .config-form.open{ display: flex; }
+  #view-scratch .config-field{ display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 70px; }
+  #view-scratch .config-field label{ font-size: 10px; color: #9a7a76; font-weight: 700; }
+  #view-scratch .config-field input{
+    border: 2px solid var(--line); border-radius: 10px; padding: 8px; font-size: 14px;
+    font-family: inherit; background: #fff; color: var(--ink); width: 100%;
+  }
+  #view-scratch .config-field input:focus{ outline: none; border-color: var(--teal); }
+  #view-scratch .config-apply{
+    flex-basis: 100%;
+    background: var(--teal); color: #fff; padding: 10px; font-size: 13px;
+    box-shadow: 0 3px 0 var(--teal-deep);
+  }
+
+  #view-scratch .draw-stage{
+    display: none;
+    gap: 8px;
+    margin-bottom: 12px;
+    justify-content: center;
+  }
+  #view-scratch .draw-stage.show{ display: flex; }
+  #view-scratch .draw-slot{
+    flex: 1;
+    background: linear-gradient(160deg, #2a2620, #1c1912);
+    border-radius: 16px;
+    padding: 12px 6px;
+    text-align: center;
+    box-shadow: 0 4px 0 rgba(0,0,0,.3);
+  }
+  #view-scratch .draw-slot-label{
+    font-size: 10px; color: #d8a7a0; letter-spacing: .15em; margin-bottom: 4px;
+  }
+  #view-scratch .draw-slot-value{
+    font-size: 34px; font-weight: 900; color: var(--coral);
+    text-shadow: 0 0 14px rgba(239,107,77,.6);
+  }
+  #view-scratch .draw-slot-value.settled{
+    animation: sc-pop .4s cubic-bezier(.2,1.6,.4,1);
+    color: #ffe9a8;
+  }
+
+  #view-scratch .photo-row{ margin-bottom: 12px; }
+  #view-scratch .photo-btn{
+    width: 100%;
+    background: #fff; color: var(--teal-deep); border: 2px dashed var(--teal);
+    border-radius: 14px; padding: 11px; font-size: 13px; font-weight: 800;
+  }
+  #view-scratch .photo-panel{
+    display: none;
+    margin-top: 8px;
+    background: var(--cream);
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 8px;
+  }
+  #view-scratch .photo-panel.open{ display: block; }
+  #view-scratch .photo-panel img{
+    width: 100%; border-radius: 10px; display: block;
+  }
+  #view-scratch .photo-panel .photo-hint{
+    font-size: 11px; color: #9a7a76; text-align: center; margin: 6px 0 2px;
+  }
+  #view-scratch .photo-panel .photo-close{
+    display: block; margin: 6px auto 0; background: transparent; border: none;
+    color: #9a7a76; font-size: 12px; text-decoration: underline;
+  }
+
   #view-scratch .btn-row{ display: flex; gap: 8px; margin-bottom: 18px; }
   #view-scratch button{
     font-family: inherit; border: none; border-radius: 100px; font-size: 14px;
@@ -166,7 +246,7 @@
   }
   #view-scratch .card h2{ font-size: 14px; margin: 6px 0 10px 4px; color: #9a7a76; font-weight: 700; }
 
-  #view-scratch .grid{ display: grid; grid-template-columns: repeat(15, 1fr); gap: 3px; }
+  #view-scratch .grid{ display: grid; gap: 3px; }
   #view-scratch .cell{
     aspect-ratio: 1; border-radius: 50%; background: var(--dot); cursor: pointer;
     position: relative; transition: transform .1s ease, background .15s ease;
@@ -372,13 +452,424 @@
   #view-lottery .stats-pct{
     font-size: 13px; font-weight: 900; color: var(--red-deep); width: 42px; text-align: right; flex-shrink: 0;
   }
+
+  /* ================= view: heart dice roller ================= */
+  #view-dice.active{
+    overflow-y: auto;
+    background: radial-gradient(circle at 50% 8%, #3a1526, #170a10 68%);
+  }
+  #view-dice .dice-stage{
+    width: 100%;
+    min-height: 100%;
+    position: relative;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 26px 16px 50px;
+    color: #ffe3ea;
+  }
+
+  #view-dice .dice-spark{
+    position: absolute;
+    color: #ff9fb5;
+    opacity: .8;
+    font-size: 20px;
+    animation: dice-twinkle 2.4s ease-in-out infinite;
+  }
+  @keyframes dice-twinkle{
+    0%, 100%{ opacity: .25; transform: scale(.8) rotate(0deg); }
+    50%{ opacity: 1; transform: scale(1.15) rotate(20deg); }
+  }
+
+  #view-dice h1{
+    font-size: clamp(30px, 9vw, 42px);
+    font-weight: 900; margin: 0 0 4px;
+    color: #ff5c7d;
+    text-shadow: 0 0 22px rgba(255,92,125,.7);
+    letter-spacing: .02em;
+  }
+  #view-dice .sub{ font-size: 13px; opacity: .7; margin-bottom: 22px; text-align: center; }
+
+  #view-dice .count-row{
+    display: flex; gap: 8px; margin-bottom: 30px;
+    background: rgba(255,255,255,.06);
+    padding: 7px; border-radius: 100px;
+  }
+  #view-dice .count-btn{
+    font-family: inherit;
+    border: none; border-radius: 100px;
+    padding: 11px 26px; font-size: 15px; font-weight: 800;
+    background: transparent; color: #ffb3c4;
+    cursor: pointer;
+  }
+  #view-dice .count-btn.active{
+    background: linear-gradient(160deg, #ff6f8f, #d5285a);
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(213,40,90,.55);
+  }
+
+  #view-dice .dice-tray{
+    display: flex; gap: 22px; justify-content: center; align-items: flex-end;
+    min-height: 190px;
+    margin-bottom: 30px;
+    perspective: 900px;
+  }
+
+  #view-dice .die-wrap{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 170px;
+  }
+  #view-dice .die-shadow{
+    width: 74px; height: 16px;
+    background: radial-gradient(ellipse, rgba(0,0,0,.55), transparent 70%);
+    border-radius: 50%;
+    margin-top: 8px;
+    transition: transform .1s ease, opacity .1s ease;
+  }
+  #view-dice .die-wrap.rolling .die-shadow{
+    animation: dice-shadow-pulse .32s ease-in-out infinite;
+  }
+  @keyframes dice-shadow-pulse{
+    0%{ transform: scale(1); opacity: .55; }
+    45%{ transform: scale(0.4); opacity: .18; }
+    100%{ transform: scale(1); opacity: .55; }
+  }
+
+  #view-dice .die{
+    width: 96px; height: 96px;
+    border-radius: 20px;
+    background: linear-gradient(160deg, #ffd3dd, #ff8fa8 55%, #ff5c82);
+    border: 4px solid #c81f4c;
+    box-shadow: 0 8px 0 #9c1339, inset 0 4px 8px rgba(255,255,255,.55), inset 0 -8px 14px rgba(0,0,0,.1);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 13px;
+    gap: 3px;
+    position: absolute;
+    bottom: 24px;
+    transform-style: preserve-3d;
+  }
+  #view-dice .die.rolling{
+    animation: dice-tumble .32s cubic-bezier(.4,0,.2,1) infinite;
+  }
+  @keyframes dice-tumble{
+    0%{   transform: translateY(0)     rotateX(0deg)   rotateY(0deg)   rotateZ(0deg)   scale(1); }
+    20%{  transform: translateY(-58px) rotateX(160deg) rotateY(40deg)  rotateZ(20deg)  scale(1.06); }
+    45%{  transform: translateY(-84px) rotateX(300deg) rotateY(160deg) rotateZ(-30deg) scale(0.96); }
+    70%{  transform: translateY(-40px) rotateX(460deg) rotateY(260deg) rotateZ(50deg)  scale(1.08); }
+    88%{  transform: translateY(-4px)  rotateX(560deg) rotateY(330deg) rotateZ(-10deg) scale(0.98); }
+    100%{ transform: translateY(0)     rotateX(640deg) rotateY(360deg) rotateZ(0deg)   scale(1); }
+  }
+  #view-dice .die.landed{
+    animation: dice-land .5s cubic-bezier(.2,1.8,.35,1);
+  }
+  @keyframes dice-land{
+    0%{ transform: translateY(-20px) scale(0.8) rotate(-8deg); }
+    50%{ transform: translateY(4px) scale(1.15) rotate(3deg); }
+    75%{ transform: translateY(-6px) scale(0.96); }
+    100%{ transform: translateY(0) scale(1) rotate(0deg); }
+  }
+
+  #view-dice .pip{
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px;
+    color: #c81f4c;
+    opacity: 0;
+    transform: scale(0.3);
+    transition: opacity .12s ease, transform .12s ease;
+  }
+  #view-dice .pip.on{ opacity: 1; transform: scale(1); }
+
+  #view-dice .total-wrap{
+    text-align: center;
+    margin-bottom: 26px;
+  }
+  #view-dice .total-label{
+    font-size: 12px; letter-spacing: .3em; opacity: .6; margin-bottom: 4px;
+  }
+  #view-dice .total-value{
+    font-size: clamp(64px, 20vw, 96px);
+    font-weight: 900; color: #ff5c7d; line-height: 1;
+    text-shadow: 0 0 30px rgba(255,92,125,.6), 0 0 60px rgba(255,92,125,.3);
+    min-height: 1em;
+  }
+  #view-dice .total-value.pop{ animation: dice-total-pop .45s cubic-bezier(.2,1.6,.4,1); }
+  @keyframes dice-total-pop{
+    0%{ transform: scale(0.4); opacity: 0; }
+    60%{ transform: scale(1.3); opacity: 1; }
+    100%{ transform: scale(1); }
+  }
+
+  #view-dice .btn-roll{
+    font-family: inherit;
+    border: none; border-radius: 100px;
+    font-size: 20px; font-weight: 900;
+    padding: 20px 56px;
+    cursor: pointer;
+    background: linear-gradient(160deg, #ff6f8f, #d5285a);
+    color: #fff;
+    box-shadow: 0 8px 0 #8f1235, 0 14px 30px rgba(213,40,90,.45);
+    letter-spacing: .05em;
+  }
+  #view-dice .btn-roll:active{ transform: translateY(5px); box-shadow: 0 3px 0 #8f1235; }
+  #view-dice .btn-roll:disabled{ background: #6b3a48; box-shadow: 0 8px 0 #4a2732; cursor: default; }
+
+  #view-dice .burst{
+    position: absolute;
+    pointer-events: none;
+    font-size: 18px;
+    color: #ffb3c4;
+    animation: dice-burst .7s ease-out forwards;
+  }
+  @keyframes dice-burst{
+    0%{ transform: translate(0,0) scale(0.4); opacity: 1; }
+    100%{ transform: var(--burst-end) scale(1.1); opacity: 0; }
+  }
+
+  /* ================= view: cute slot machine ================= */
+  #view-slot.active{
+    overflow-y: auto;
+    background:
+      radial-gradient(circle at 50% 0%, #fff1f7, transparent 55%),
+      var(--pink-bg);
+  }
+  #view-slot .slot-page{
+    width: 100%;
+    min-height: 100%;
+    position: relative;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 18px 16px 40px;
+  }
+
+  #view-slot .confetti{
+    position: absolute;
+    pointer-events: none;
+    border-radius: 2px;
+  }
+
+  #view-slot h1{
+    font-size: 24px; font-weight: 900; margin: 0 0 2px;
+    color: #c81f6b;
+    text-align: center;
+  }
+  #view-slot .sub{ font-size: 12px; color: #a3487a; opacity: .8; margin-bottom: 14px; text-align: center; }
+
+  #view-slot .mode-row{
+    display: flex; gap: 8px; margin-bottom: 18px;
+    background: rgba(255,255,255,.55);
+    padding: 6px; border-radius: 100px;
+  }
+  #view-slot .mode-btn{
+    font-family: inherit;
+    border: none; border-radius: 100px;
+    padding: 9px 14px; font-size: 12px; font-weight: 800;
+    background: transparent; color: #a3487a;
+    cursor: pointer;
+  }
+  #view-slot .mode-btn.active{
+    background: linear-gradient(160deg, #ff8fc0, #d5257e);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(213,37,126,.4);
+  }
+
+  #view-slot .machine{
+    position: relative;
+    width: 280px;
+    background: linear-gradient(180deg, #ffd9ea, #ffc2de);
+    border: 4px solid #e0538f;
+    border-radius: 26px 26px 18px 18px;
+    padding: 18px 16px 20px;
+    box-shadow: 0 10px 0 #b23268, 0 16px 26px rgba(178,50,104,.25);
+    margin-bottom: 18px;
+  }
+
+  #view-slot .topper{
+    position: absolute;
+    top: -46px; left: 50%;
+    transform: translateX(-50%);
+    width: 190px; height: 60px;
+    display: flex; align-items: flex-end; justify-content: center; gap: 10px;
+  }
+  #view-slot .topper::before{
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 10px solid transparent;
+    border-top: 10px solid #ffd1e6;
+    border-radius: 100px 100px 0 0;
+    border-bottom: none;
+    background:
+      linear-gradient(#ffd1e6,#ffd1e6) padding-box,
+      conic-gradient(from 180deg, #ffb3d1, #ffe1a8, #b3e0ff, #ffb3d1) border-box;
+    -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  #view-slot .topper-star{
+    font-size: 20px;
+    color: #ffcb3d;
+    text-shadow: 0 0 6px rgba(255,203,61,.7);
+    z-index: 1;
+    animation: slot-star-glow 1.8s ease-in-out infinite;
+  }
+  #view-slot .topper-star:nth-child(2){ font-size: 26px; animation-delay: .3s; }
+  #view-slot .topper-star:nth-child(3){ animation-delay: .6s; }
+  @keyframes slot-star-glow{
+    0%,100%{ transform: scale(1); opacity: .8; }
+    50%{ transform: scale(1.2); opacity: 1; }
+  }
+
+  #view-slot .lever{
+    position: absolute;
+    top: 30px; right: -20px;
+    width: 14px; height: 90px;
+    background: linear-gradient(90deg, #c8c8d8, #f0f0fa);
+    border-radius: 100px;
+    transform-origin: top center;
+    transition: transform .15s ease;
+  }
+  #view-slot .lever::after{
+    content: '';
+    position: absolute;
+    bottom: -10px; left: 50%;
+    transform: translateX(-50%);
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff9fc0, #e0538f);
+    box-shadow: 0 3px 0 #b23268;
+  }
+  #view-slot .lever.pulled{ transform: rotate(24deg); }
+
+  #view-slot .reels{
+    display: flex; gap: 8px;
+    background: #fff;
+    border: 3px solid #e0538f;
+    border-radius: 14px;
+    padding: 10px;
+    margin-bottom: 4px;
+  }
+  #view-slot .reel{
+    flex: 1;
+    height: 66px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #fff6fa, #ffe6f1);
+    border: 2px solid #f5c3da;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 900;
+    color: #d5257e;
+    overflow: hidden;
+    position: relative;
+  }
+  #view-slot .reel.spinning{
+    animation: slot-reel-blur .08s linear infinite;
+  }
+  @keyframes slot-reel-blur{
+    0%{ filter: blur(0px); }
+    50%{ filter: blur(1.5px); }
+    100%{ filter: blur(0px); }
+  }
+  #view-slot .reel.landed{
+    animation: slot-reel-land .4s cubic-bezier(.2,1.7,.4,1);
+  }
+  @keyframes slot-reel-land{
+    0%{ transform: translateY(-10px) scale(0.85); }
+    55%{ transform: translateY(3px) scale(1.15); }
+    100%{ transform: translateY(0) scale(1); }
+  }
+
+  #view-slot .machine-label{
+    text-align: center;
+    font-size: 11px; font-weight: 800; letter-spacing: .3em;
+    color: #b23268; margin-top: 8px;
+  }
+
+  #view-slot .result-wrap{
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  #view-slot .result-label{
+    font-size: 11px; letter-spacing: .2em; color: #a3487a; margin-bottom: 4px;
+  }
+  #view-slot .result-value{
+    font-size: clamp(30px, 9vw, 42px);
+    font-weight: 900; color: #d5257e;
+    letter-spacing: .06em;
+    min-height: 1.2em;
+  }
+  #view-slot .result-value.pop{ animation: dice-total-pop .4s cubic-bezier(.2,1.6,.4,1); }
+
+  #view-slot .btn-spin{
+    font-family: inherit;
+    border: none; border-radius: 100px;
+    font-size: 17px; font-weight: 900;
+    padding: 15px 40px;
+    cursor: pointer;
+    background: linear-gradient(160deg, #ff8fc0, #d5257e);
+    color: #fff;
+    box-shadow: 0 6px 0 #9c1a5c, 0 10px 20px rgba(213,37,126,.4);
+    margin-bottom: 20px;
+  }
+  #view-slot .btn-spin:active{ transform: translateY(3px); box-shadow: 0 2px 0 #9c1a5c; }
+  #view-slot .btn-spin:disabled{ background: #d6a7c0; box-shadow: 0 6px 0 #a97e97; }
+
+  #view-slot .panel{
+    width: 100%; max-width: 400px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 12px 14px;
+    box-shadow: 0 4px 0 rgba(178,50,104,.12);
+  }
+  #view-slot .panel h3{
+    font-size: 13px; margin: 0 0 10px; color: #d5257e; font-weight: 900;
+  }
+  #view-slot .slot-history-entry{
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 0; border-bottom: 1px dashed #f5c3da; font-size: 13px;
+  }
+  #view-slot .slot-history-entry:last-child{ border-bottom: none; }
+  #view-slot .slot-history-entry .val{ font-weight: 900; color: #d5257e; letter-spacing: .04em; }
+  #view-slot .slot-history-entry .time{ font-size: 10px; color: #b98aa1; }
+  #view-slot .empty-hint{ font-size: 12px; color: #c993ac; text-align: center; padding: 10px 0; }
+
+  .music-toggle{
+    position: fixed;
+    top: 10px; right: 10px;
+    z-index: 100;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,.75);
+    box-shadow: 0 3px 8px rgba(0,0,0,.18);
+    font-size: 17px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .15s ease;
+  }
+  .music-toggle:active{ transform: scale(0.9); }
+  .music-toggle.on{
+    background: linear-gradient(160deg, #ff8fc0, #d5257e);
+    animation: music-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes music-pulse{
+    0%,100%{ box-shadow: 0 3px 8px rgba(213,37,126,.3); }
+    50%{ box-shadow: 0 3px 16px rgba(213,37,126,.6); }
+  }
 </style>
 </head>
 <body>
 
+  <button class="music-toggle" id="btn-music" title="背景音樂">🔇</button>
+
   <div class="tabbar">
     <button class="tab active" id="tab-scratch" data-view="view-scratch">🎫 刮刮卡選格器</button>
     <button class="tab" id="tab-lottery" data-view="view-lottery">🍬 扭蛋機開球</button>
+    <button class="tab" id="tab-dice" data-view="view-dice">🎲 愛心骰子</button>
+    <button class="tab" id="tab-slot" data-view="view-slot">🎰 拉霸選號</button>
   </div>
 
   <div class="view-container">
@@ -389,7 +880,7 @@
 
         <header>
           <div class="badge">SCRATCH & WIN</div>
-          <h1>刮運來 · 選格器</h1>
+          <h1>好運來 · 選格器</h1>
         </header>
 
         <div class="machine-row">
@@ -409,30 +900,64 @@
           <div class="stat-box"><b id="stat-scratched">0</b><span>已刮</span></div>
         </div>
 
-        <div class="callout" id="callout">按「隨機選一格」開始，抽到的格子會用橘色標出來。</div>
+        <div class="config-row">
+          <button class="config-toggle" id="btn-config-toggle">⚙️ 設定橫排／直行／幾張卡（依實際刮卡調整）</button>
+          <div class="config-form" id="config-form">
+            <div class="config-field">
+              <label>橫排數</label>
+              <input type="number" id="config-rows" min="1" max="30" value="10">
+            </div>
+            <div class="config-field">
+              <label>直行數</label>
+              <input type="number" id="config-cols" min="1" max="30" value="15">
+            </div>
+            <div class="config-field">
+              <label>幾張卡</label>
+              <input type="number" id="config-cards" min="1" max="4" value="2">
+            </div>
+            <button class="config-apply" id="btn-config-apply">套用設定（會清空目前這台的刮開紀錄）</button>
+          </div>
+        </div>
+
+        <div class="draw-stage" id="draw-stage">
+          <div class="draw-slot" id="draw-slot-card" style="display:none;">
+            <div class="draw-slot-label">卡片</div>
+            <div class="draw-slot-value" id="draw-card-val">？</div>
+          </div>
+          <div class="draw-slot">
+            <div class="draw-slot-label">橫排</div>
+            <div class="draw-slot-value" id="draw-row-val">？</div>
+          </div>
+          <div class="draw-slot">
+            <div class="draw-slot-label">直行</div>
+            <div class="draw-slot-value" id="draw-col-val">？</div>
+          </div>
+        </div>
+
+        <div class="callout" id="callout">按「抽籤選格」開始，會先抽排、再抽行，抽到的格子用橘色標出來。</div>
+
+        <div class="photo-row">
+          <button class="photo-btn" id="btn-photo">📷 上傳／拍照對照刮卡（不會自動辨識，方便你邊看邊點格子）</button>
+          <div class="photo-panel" id="photo-panel">
+            <img id="photo-img" src="" alt="刮刮卡照片">
+            <div class="photo-hint">照片僅供對照，需要你自己點格子標記</div>
+            <button class="photo-close" id="btn-photo-close">收起照片</button>
+          </div>
+          <input type="file" accept="image/*" capture="environment" id="photo-input" style="display:none;">
+        </div>
 
         <div class="btn-row">
-          <button class="btn-pick" id="btn-pick">🎲 隨機選一格</button>
+          <button class="btn-pick" id="btn-pick">🎲 抽籤選格</button>
           <button class="btn-mark" id="btn-mark">這格已刮過</button>
           <button class="btn-reset" id="btn-reset">重設</button>
         </div>
 
-        <div class="card" data-label="1-1 版">
-          <div class="card-tag">卡片一 · 1-1版</div>
-          <h2>15 × 10</h2>
-          <div class="grid" id="grid-1"></div>
-        </div>
-
-        <div class="card" data-label="1-2 版">
-          <div class="card-tag">卡片二 · 1-2版</div>
-          <h2>15 × 10</h2>
-          <div class="grid" id="grid-2"></div>
-        </div>
+        <div id="cards-container"></div>
 
         <footer>
           點格子也可以手動標記已刮開。「這格已刮過」是指目前橘色被選中的那格。<br>
-          不同機台的紀錄會分開儲存，只有你看得到，換機台按上面的名稱標籤就好。<br>
-          工具只負責公平隨機挑選，不會改變中獎機率。
+          不同機台的紀錄、橫排直行張數設定都會分開儲存，只有你看得到，換機台按上面的名稱標籤就好。<br>
+          工具只負責公平隨機挑選，不會改變中獎機率；抽籤動畫只是呈現方式。
         </footer>
 
       </div>
@@ -484,6 +1009,70 @@
       </div>
     </div>
 
+    <!-- ===== view 3: heart dice roller ===== -->
+    <div class="view" id="view-dice">
+      <div class="dice-stage" id="dice-stage">
+
+        <h1>愛心骰子</h1>
+        <div class="sub">選幾顆骰子，擲出來自動加總</div>
+
+        <div class="count-row" id="count-row">
+          <button class="count-btn active" data-count="1">1 顆</button>
+          <button class="count-btn" data-count="2">2 顆</button>
+          <button class="count-btn" data-count="3">3 顆</button>
+        </div>
+
+        <div class="dice-tray" id="dice-tray"></div>
+
+        <div class="total-wrap">
+          <div class="total-label">TOTAL</div>
+          <div class="total-value" id="dice-total">－</div>
+        </div>
+
+        <button class="btn-roll" id="btn-roll">🎲 擲骰子</button>
+
+      </div>
+    </div>
+
+    <!-- ===== view 4: cute slot machine (3星彩 / BINGO BINGO 3星) ===== -->
+    <div class="view" id="view-slot">
+      <div class="slot-page" id="slot-page">
+
+        <h1>拉霸選號</h1>
+        <div class="sub">3星彩　或　BINGO BINGO 3星　拉一次自動選好號碼</div>
+
+        <div class="mode-row" id="slot-mode-row">
+          <button class="mode-btn active" data-mode="san">🎯 3星彩（000～999）</button>
+          <button class="mode-btn" data-mode="bingo">🔵 BINGO BINGO（01～80）</button>
+        </div>
+
+        <div class="machine" id="slot-machine">
+          <div class="topper">
+            <div class="topper-star">★</div>
+            <div class="topper-star">★</div>
+            <div class="topper-star">★</div>
+          </div>
+          <div class="lever" id="slot-lever"></div>
+
+          <div class="reels" id="slot-reels"></div>
+          <div class="machine-label">LUCKY PICK</div>
+        </div>
+
+        <div class="result-wrap">
+          <div class="result-label" id="result-label">3 星彩號碼</div>
+          <div class="result-value" id="slot-result">－ － －</div>
+        </div>
+
+        <button class="btn-spin" id="btn-spin">🎰 拉一下！</button>
+
+        <div class="panel">
+          <h3>📜 選號紀錄</h3>
+          <div id="slot-history-list"></div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
 <script>
@@ -498,14 +1087,17 @@
   });
 
   /* ================= scratch card picker logic ================= */
-  const ROWS = 10, COLS = 15;
   const DEFAULT_MACHINE = '預設機台';
+  const DEFAULT_CONFIG = { rows: 10, cols: 15, cards: 2 };
   let currentMachine = DEFAULT_MACHINE;
-  let state = {
-    1: Array(ROWS * COLS).fill(false),
-    2: Array(ROWS * COLS).fill(false),
-  };
+
+  function blankCells(config){
+    return Array.from({ length: config.cards }, () => Array(config.rows * config.cols).fill(false));
+  }
+
+  let state = { config: { ...DEFAULT_CONFIG }, cells: blankCells(DEFAULT_CONFIG) };
   let lastPicked = null;
+  let drawing = false;
 
   async function listMachines(){
     try{
@@ -518,16 +1110,41 @@
     }
   }
 
+  function normalizeLoaded(parsed){
+    // new shape already
+    if(parsed && parsed.config && parsed.cells){
+      const config = {
+        rows: parsed.config.rows || DEFAULT_CONFIG.rows,
+        cols: parsed.config.cols || DEFAULT_CONFIG.cols,
+        cards: parsed.config.cards || DEFAULT_CONFIG.cards,
+      };
+      const cells = Array.from({ length: config.cards }, (_, i) =>
+        (parsed.cells[i] && parsed.cells[i].length === config.rows*config.cols)
+          ? parsed.cells[i]
+          : Array(config.rows*config.cols).fill(false)
+      );
+      return { config, cells };
+    }
+    // legacy shape: { "1": [...150], "2": [...150] } fixed 10x15
+    if(parsed && (parsed['1'] || parsed['2'])){
+      const config = { rows: 10, cols: 15, cards: 2 };
+      const cells = [
+        parsed['1'] || Array(150).fill(false),
+        parsed['2'] || Array(150).fill(false),
+      ];
+      return { config, cells };
+    }
+    return { config: { ...DEFAULT_CONFIG }, cells: blankCells(DEFAULT_CONFIG) };
+  }
+
   async function loadMachine(name){
     try{
       const res = await window.storage.get('machine:' + name, false);
       if(res && res.value){
-        const parsed = JSON.parse(res.value);
-        return { 1: parsed[1] || Array(ROWS*COLS).fill(false),
-                  2: parsed[2] || Array(ROWS*COLS).fill(false) };
+        return normalizeLoaded(JSON.parse(res.value));
       }
     }catch(e){ /* not found -> blank */ }
-    return { 1: Array(ROWS*COLS).fill(false), 2: Array(ROWS*COLS).fill(false) };
+    return { config: { ...DEFAULT_CONFIG }, cells: blankCells(DEFAULT_CONFIG) };
   }
 
   async function saveMachine(){
@@ -557,6 +1174,8 @@
     currentMachine = name;
     lastPicked = null;
     state = await loadMachine(name);
+    syncConfigInputs();
+    buildGridsDOM();
     document.getElementById('callout').textContent = `已切換到「${name}」，繼續刮吧。`;
     render();
     renderMachineList();
@@ -577,28 +1196,78 @@
     currentMachine = name;
     lastPicked = null;
     state = await loadMachine(name);
+    syncConfigInputs();
+    buildGridsDOM();
     await saveMachine();
     document.getElementById('callout').textContent = `已建立機台「${name}」。`;
     render();
     renderMachineList();
   });
 
-  function buildGrid(cardId){
-    const el = document.getElementById('grid-' + cardId);
-    el.innerHTML = '';
-    for(let i = 0; i < ROWS * COLS; i++){
-      const cell = document.createElement('div');
-      cell.className = 'cell';
-      cell.addEventListener('click', () => toggleCell(cardId, i));
-      el.appendChild(cell);
-    }
+  function syncConfigInputs(){
+    document.getElementById('config-rows').value = state.config.rows;
+    document.getElementById('config-cols').value = state.config.cols;
+    document.getElementById('config-cards').value = state.config.cards;
   }
-  buildGrid(1);
-  buildGrid(2);
 
-  function toggleCell(cardId, idx){
-    state[cardId][idx] = !state[cardId][idx];
-    if(lastPicked && lastPicked.card === cardId && lastPicked.idx === idx && state[cardId][idx]){
+  document.getElementById('btn-config-toggle').addEventListener('click', () => {
+    document.getElementById('config-form').classList.toggle('open');
+  });
+
+  document.getElementById('btn-config-apply').addEventListener('click', async () => {
+    const rows = Math.max(1, Math.min(30, Number(document.getElementById('config-rows').value) || 10));
+    const cols = Math.max(1, Math.min(30, Number(document.getElementById('config-cols').value) || 15));
+    const cards = Math.max(1, Math.min(4, Number(document.getElementById('config-cards').value) || 1));
+    state.config = { rows, cols, cards };
+    state.cells = blankCells(state.config);
+    lastPicked = null;
+    buildGridsDOM();
+    render();
+    document.getElementById('config-form').classList.remove('open');
+    document.getElementById('callout').textContent = `已套用新設定：${rows}排 × ${cols}行 × ${cards}張卡。`;
+    await saveMachine();
+  });
+
+  function buildGridsDOM(){
+    const container = document.getElementById('cards-container');
+    container.innerHTML = '';
+    const { rows, cols, cards } = state.config;
+    const cardLabels = ['一','二','三','四'];
+    for(let c = 0; c < cards; c++){
+      const cardEl = document.createElement('div');
+      cardEl.className = 'card';
+
+      const tag = document.createElement('div');
+      tag.className = 'card-tag';
+      tag.textContent = cards > 1 ? `卡片${cardLabels[c]}` : '刮刮卡';
+      cardEl.appendChild(tag);
+
+      const h2 = document.createElement('h2');
+      h2.textContent = `${rows} × ${cols}`;
+      cardEl.appendChild(h2);
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      grid.id = 'grid-' + c;
+      grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+      for(let i = 0; i < rows*cols; i++){
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.addEventListener('click', () => toggleCell(c, i));
+        grid.appendChild(cell);
+      }
+      cardEl.appendChild(grid);
+      container.appendChild(cardEl);
+    }
+
+    const cardSlot = document.getElementById('draw-slot-card');
+    cardSlot.style.display = cards > 1 ? '' : 'none';
+  }
+  buildGridsDOM();
+
+  function toggleCell(cardIdx, idx){
+    state.cells[cardIdx][idx] = !state.cells[cardIdx][idx];
+    if(lastPicked && lastPicked.card === cardIdx && lastPicked.idx === idx && state.cells[cardIdx][idx]){
       lastPicked = null;
     }
     render();
@@ -606,36 +1275,98 @@
   }
 
   function render(){
+    const { rows, cols, cards } = state.config;
     let scratched = 0;
-    [1,2].forEach(cardId => {
-      const el = document.getElementById('grid-' + cardId);
-      state[cardId].forEach((val, idx) => {
+    for(let c = 0; c < cards; c++){
+      const el = document.getElementById('grid-' + c);
+      if(!el) continue;
+      state.cells[c].forEach((val, idx) => {
         const cell = el.children[idx];
         cell.classList.toggle('scratched', val);
-        cell.classList.toggle('picked', !!lastPicked && lastPicked.card === cardId && lastPicked.idx === idx);
+        cell.classList.toggle('picked', !!lastPicked && lastPicked.card === c && lastPicked.idx === idx);
         if(val) scratched++;
       });
-    });
+    }
     document.getElementById('stat-scratched').textContent = scratched;
-    document.getElementById('stat-remaining').textContent = (ROWS*COLS*2) - scratched;
+    document.getElementById('stat-remaining').textContent = (rows*cols*cards) - scratched;
     document.getElementById('btn-mark').disabled = !lastPicked;
     document.getElementById('btn-mark').style.opacity = lastPicked ? 1 : 0.4;
+    document.getElementById('btn-pick').disabled = drawing;
   }
 
   function describe(choice){
-    const row = Math.floor(choice.idx / COLS) + 1;
-    const col = (choice.idx % COLS) + 1;
-    const cardName = choice.card === 1 ? '卡片一' : '卡片二';
-    return `${cardName}　第 ${row} 行　第 ${col} 格`;
+    const { cols, cards } = state.config;
+    const row = Math.floor(choice.idx / cols) + 1;
+    const col = (choice.idx % cols) + 1;
+    const cardLabels = ['一','二','三','四'];
+    const cardName = cards > 1 ? `卡片${cardLabels[choice.card]}　` : '';
+    return `${cardName}第 ${row} 排　第 ${col} 行`;
   }
 
-  function pickRandom(){
-    const pool = [];
-    [1,2].forEach(cardId => {
-      state[cardId].forEach((val, idx) => {
-        if(!val) pool.push({ card: cardId, idx });
-      });
+  /* ---- draw (抽籤) suspense reveal ---- */
+  function playTick(){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.value = 880;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.1, now + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.09);
+  }
+
+  function playSettle(){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(660, now);
+    osc.frequency.exponentialRampToValueAtTime(990, now + 0.1);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.4, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.38);
+  }
+
+  function spinSlot(el, finalValue, duration){
+    return new Promise(resolve => {
+      const start = performance.now();
+      const tickInterval = setInterval(() => {
+        el.textContent = 1 + Math.floor(Math.random() * finalValue.max);
+        playTick();
+      }, 70);
+      setTimeout(() => {
+        clearInterval(tickInterval);
+        el.textContent = finalValue.value;
+        el.classList.remove('settled');
+        void el.offsetWidth;
+        el.classList.add('settled');
+        playSettle();
+        resolve();
+      }, duration);
     });
+  }
+
+  async function pickRandom(){
+    if(drawing) return;
+    const { rows, cols, cards } = state.config;
+    const pool = [];
+    for(let c = 0; c < cards; c++){
+      state.cells[c].forEach((val, idx) => {
+        if(!val) pool.push({ card: c, idx });
+      });
+    }
 
     const callout = document.getElementById('callout');
     if(pool.length === 0){
@@ -646,17 +1377,57 @@
     }
 
     const choice = pool[Math.floor(Math.random() * pool.length)];
+    const row = Math.floor(choice.idx / cols) + 1;
+    const col = (choice.idx % cols) + 1;
+
+    drawing = true;
+    render();
+    document.getElementById('draw-stage').classList.add('show');
+    callout.textContent = '抽籤中…';
+
+    document.getElementById('draw-row-val').textContent = '？';
+    document.getElementById('draw-col-val').textContent = '？';
+    document.getElementById('draw-row-val').classList.remove('settled');
+    document.getElementById('draw-col-val').classList.remove('settled');
+
+    if(cards > 1){
+      const cardEl = document.getElementById('draw-card-val');
+      cardEl.textContent = '？';
+      cardEl.classList.remove('settled');
+      const cardLabels = ['一','二','三','四'];
+      await new Promise(resolve => {
+        const start = performance.now();
+        const tickInterval = setInterval(() => {
+          cardEl.textContent = cardLabels[Math.floor(Math.random()*cards)];
+          playTick();
+        }, 70);
+        setTimeout(() => {
+          clearInterval(tickInterval);
+          cardEl.textContent = cardLabels[choice.card];
+          cardEl.classList.add('settled');
+          playSettle();
+          resolve();
+        }, 650);
+      });
+    }
+
+    await spinSlot(document.getElementById('draw-row-val'), { value: row, max: rows }, 700);
+    await spinSlot(document.getElementById('draw-col-val'), { value: col, max: cols }, 700);
+
     lastPicked = choice;
+    drawing = false;
     render();
     callout.innerHTML = `刮這格 → <b>${describe(choice)}</b>`;
 
-    document.getElementById('grid-' + choice.card).children[choice.idx]
-      .scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const gridEl = document.getElementById('grid-' + choice.card);
+    if(gridEl){
+      gridEl.children[choice.idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 
   function markPickedScratched(){
     if(!lastPicked) return;
-    state[lastPicked.card][lastPicked.idx] = true;
+    state.cells[lastPicked.card][lastPicked.idx] = true;
     const callout = document.getElementById('callout');
     callout.innerHTML = `已標記　${describe(lastPicked)}　為刮過`;
     lastPicked = null;
@@ -666,17 +1437,33 @@
 
   document.getElementById('btn-pick').addEventListener('click', pickRandom);
   document.getElementById('btn-mark').addEventListener('click', markPickedScratched);
+
+  document.getElementById('btn-photo').addEventListener('click', () => {
+    document.getElementById('photo-input').click();
+  });
+  document.getElementById('photo-input').addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const url = URL.createObjectURL(file);
+    document.getElementById('photo-img').src = url;
+    document.getElementById('photo-panel').classList.add('open');
+  });
+  document.getElementById('btn-photo-close').addEventListener('click', () => {
+    document.getElementById('photo-panel').classList.remove('open');
+  });
   document.getElementById('btn-reset').addEventListener('click', () => {
-    state[1].fill(false);
-    state[2].fill(false);
+    state.cells = blankCells(state.config);
     lastPicked = null;
-    document.getElementById('callout').textContent = `「${currentMachine}」已重設。按「隨機選一格」開始。`;
+    document.getElementById('draw-stage').classList.remove('show');
+    document.getElementById('callout').textContent = `「${currentMachine}」已重設。按「抽籤選格」開始。`;
     render();
     saveMachine();
   });
 
   (async function initScratch(){
     state = await loadMachine(DEFAULT_MACHINE);
+    syncConfigInputs();
+    buildGridsDOM();
     render();
     await renderMachineList();
   })();
@@ -751,6 +1538,86 @@
     return n;
   }
 
+  /* ---- sound effects (synthesized, no external files needed) ---- */
+  let audioCtx = null;
+  function getAudioCtx(){
+    if(!audioCtx){
+      try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch(e){ return null; }
+    }
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  function playChurnSound(duration){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const bufferSize = Math.floor(ctx.sampleRate * (duration/1000));
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++){
+      data[i] = (Math.random()*2 - 1) * 0.5;
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 500;
+    filter.Q.value = 0.6;
+
+    const gain = ctx.createGain();
+    const now = ctx.currentTime;
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.35, now + 0.15);
+    gain.gain.setValueAtTime(0.35, now + (duration/1000) - 0.25);
+    gain.gain.linearRampToValueAtTime(0.0001, now + duration/1000);
+
+    // gentle wobble on filter frequency for a tumbling feel
+    filter.frequency.setValueCurveAtTime(
+      [400, 700, 350, 650, 450, 300],
+      now, duration/1000
+    );
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    noise.start(now);
+    noise.stop(now + duration/1000);
+  }
+
+  function playDropSound(){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(1320, now + 0.08);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.5, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.45);
+  }
+
+  function speakNumber(n){
+    try{
+      if(!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(`號碼 ${n}`);
+      utter.lang = 'zh-TW';
+      utter.rate = 1;
+      window.speechSynthesis.speak(utter);
+    }catch(e){ /* speech not available */ }
+  }
+
   let churning = false;
   let currentRotation = 0;
 
@@ -766,6 +1633,7 @@
     const targetRotation = startRotation + spin;
     const duration = 1100;
     const startTime = performance.now();
+    playChurnSound(duration);
 
     function frame(now){
       const t = Math.min(1, (now - startTime) / duration);
@@ -787,6 +1655,8 @@
     churn(() => {
       const n = randomUnique();
       drawn.push(n);
+      playDropSound();
+      speakNumber(n);
 
       const output = document.getElementById('output');
       output.classList.remove('empty');
@@ -970,6 +1840,588 @@
     output.style.background = '';
     output.style.color = '';
     buildResultSlots();
+  });
+
+  /* ================= heart dice roller logic ================= */
+  const dicePipMap = {
+    1: [4],
+    2: [0,8],
+    3: [0,4,8],
+    4: [0,2,6,8],
+    5: [0,2,4,6,8],
+    6: [0,2,3,5,6,8],
+  };
+
+  let diceCount = 1;
+  let diceRolling = false;
+  const diceStage = document.getElementById('dice-stage');
+
+  // decorative twinkles
+  for(let i=0;i<7;i++){
+    const s = document.createElement('div');
+    s.className = 'dice-spark';
+    s.textContent = '✦';
+    s.style.left = Math.random()*92 + '%';
+    s.style.top = Math.random()*85 + '%';
+    s.style.fontSize = (12 + Math.random()*14) + 'px';
+    s.style.animationDelay = (Math.random()*2.4) + 's';
+    diceStage.appendChild(s);
+  }
+
+  function buildDie(){
+    const wrap = document.createElement('div');
+    wrap.className = 'die-wrap';
+
+    const die = document.createElement('div');
+    die.className = 'die';
+    for(let i=0;i<9;i++){
+      const pip = document.createElement('div');
+      pip.className = 'pip';
+      pip.textContent = '♥';
+      die.appendChild(pip);
+    }
+
+    const shadow = document.createElement('div');
+    shadow.className = 'die-shadow';
+
+    wrap.appendChild(die);
+    wrap.appendChild(shadow);
+    return wrap;
+  }
+
+  function setDieValue(wrap, value){
+    const die = wrap.querySelector('.die');
+    const active = dicePipMap[value] || [];
+    Array.from(die.children).forEach((pip, i) => {
+      pip.classList.toggle('on', active.includes(i));
+    });
+  }
+
+  function buildDiceTray(){
+    const tray = document.getElementById('dice-tray');
+    tray.innerHTML = '';
+    for(let i=0;i<diceCount;i++){
+      const wrap = buildDie();
+      setDieValue(wrap, 1);
+      tray.appendChild(wrap);
+    }
+    document.getElementById('dice-total').textContent = '－';
+    document.getElementById('dice-total').classList.remove('pop');
+  }
+  buildDiceTray();
+
+  document.getElementById('count-row').addEventListener('click', (e) => {
+    const btn = e.target.closest('.count-btn');
+    if(!btn || diceRolling) return;
+    document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    diceCount = Number(btn.dataset.count);
+    buildDiceTray();
+  });
+
+  function playRollClicks(duration){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const interval = 0.07;
+    const steps = Math.floor((duration/1000) / interval);
+    for(let i=0;i<steps;i++){
+      const t = now + i*interval;
+      const osc = ctx.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.value = 500 + Math.random()*300;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.08, t + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.07);
+    }
+  }
+
+  function playThud(){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(70, now + 0.15);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.45, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.32);
+  }
+
+  function spawnBurst(originEl){
+    const stageRect = diceStage.getBoundingClientRect();
+    const rect = originEl.getBoundingClientRect();
+    const cx = rect.left - stageRect.left + rect.width/2;
+    const cy = rect.top - stageRect.top + rect.height/2;
+    for(let i=0;i<6;i++){
+      const b = document.createElement('div');
+      b.className = 'burst';
+      b.textContent = ['♥','✦','♥'][i % 3];
+      const angle = (Math.PI*2) * (i/6) + Math.random()*0.4;
+      const dist = 34 + Math.random()*22;
+      const dx = Math.cos(angle)*dist;
+      const dy = Math.sin(angle)*dist;
+      b.style.left = cx + 'px';
+      b.style.top = cy + 'px';
+      b.style.setProperty('--burst-end', `translate(${dx}px, ${dy}px)`);
+      diceStage.appendChild(b);
+      setTimeout(() => b.remove(), 750);
+    }
+  }
+
+  function rollDice(){
+    if(diceRolling) return;
+    diceRolling = true;
+    document.getElementById('btn-roll').disabled = true;
+
+    const tray = document.getElementById('dice-tray');
+    const wraps = Array.from(tray.children);
+    const dice = wraps.map(w => w.querySelector('.die'));
+    const duration = 900;
+
+    wraps.forEach(w => w.classList.add('rolling'));
+    dice.forEach(die => die.classList.add('rolling'));
+    playRollClicks(duration);
+
+    const flicker = setInterval(() => {
+      wraps.forEach(w => setDieValue(w, 1 + Math.floor(Math.random()*6)));
+    }, 90);
+
+    setTimeout(() => {
+      clearInterval(flicker);
+      wraps.forEach(w => w.classList.remove('rolling'));
+      dice.forEach(die => die.classList.remove('rolling'));
+
+      const values = wraps.map(() => 1 + Math.floor(Math.random()*6));
+      wraps.forEach((w, i) => {
+        setDieValue(w, values[i]);
+        dice[i].classList.add('landed');
+        setTimeout(() => dice[i].classList.remove('landed'), 500);
+      });
+
+      playThud();
+      dice.forEach(die => spawnBurst(die));
+
+      const total = values.reduce((a,b) => a+b, 0);
+      const totalEl = document.getElementById('dice-total');
+      totalEl.textContent = total;
+      totalEl.classList.remove('pop');
+      void totalEl.offsetWidth;
+      totalEl.classList.add('pop');
+
+      diceRolling = false;
+      document.getElementById('btn-roll').disabled = false;
+    }, duration);
+  }
+
+  document.getElementById('btn-roll').addEventListener('click', rollDice);
+
+  /* ================= cute slot machine: 3星彩 / BINGO BINGO 3星 ================= */
+  const slotModes = {
+    san: {
+      resultLabel: '3 星彩號碼',
+      historyKey: 'slotHistory:san',
+      genValues: () => [
+        Math.floor(Math.random()*10),
+        Math.floor(Math.random()*10),
+        Math.floor(Math.random()*10),
+      ],
+      reelText: (v) => String(v),
+      randomSpinText: () => String(Math.floor(Math.random()*10)),
+      display: (values) => values.join(''),
+    },
+    bingo: {
+      resultLabel: 'BINGO BINGO 號碼',
+      historyKey: 'slotHistory:bingo',
+      genValues: () => {
+        const nums = new Set();
+        while(nums.size < 3){ nums.add(1 + Math.floor(Math.random()*80)); }
+        return Array.from(nums);
+      },
+      reelText: (v) => String(v).padStart(2,'0'),
+      randomSpinText: () => String(1 + Math.floor(Math.random()*80)).padStart(2,'0'),
+      display: (values) => values.map(v => String(v).padStart(2,'0')).join('  ·  '),
+    },
+  };
+
+  let slotMode = 'san';
+  let slotSpinning = false;
+  const slotPage = document.getElementById('slot-page');
+
+  // decorative confetti
+  const confettiColors = ['#ff8fc0','#ffe1a8','#b3e0ff','#c9a8ff','#ff5c8a'];
+  for(let i=0;i<14;i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    const size = 5 + Math.random()*5;
+    c.style.width = size + 'px';
+    c.style.height = size + 'px';
+    c.style.left = Math.random()*94 + '%';
+    c.style.top = Math.random()*90 + '%';
+    c.style.background = confettiColors[i % confettiColors.length];
+    c.style.opacity = 0.6 + Math.random()*0.4;
+    c.style.transform = `rotate(${Math.random()*360}deg)`;
+    slotPage.appendChild(c);
+  }
+
+  function buildReels(){
+    const reelsEl = document.getElementById('slot-reels');
+    reelsEl.innerHTML = '';
+    for(let i=0;i<3;i++){
+      const r = document.createElement('div');
+      r.className = 'reel';
+      r.id = 'slot-reel-' + i;
+      r.textContent = slotModes[slotMode].reelText(slotMode === 'san' ? 0 : 1);
+      reelsEl.appendChild(r);
+    }
+  }
+  buildReels();
+
+  document.getElementById('slot-mode-row').addEventListener('click', (e) => {
+    const btn = e.target.closest('.mode-btn');
+    if(!btn || slotSpinning) return;
+    document.querySelectorAll('#slot-mode-row .mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    slotMode = btn.dataset.mode;
+    document.getElementById('result-label').textContent = slotModes[slotMode].resultLabel;
+    document.getElementById('slot-result').textContent = slotMode === 'san' ? '－ － －' : '－ ・ － ・ －';
+    buildReels();
+    renderSlotHistory();
+  });
+
+  async function loadSlotHistory(key){
+    try{
+      const res = await window.storage.get(key, false);
+      if(res && res.value) return JSON.parse(res.value);
+    }catch(e){ /* not found */ }
+    return [];
+  }
+  async function saveSlotHistory(key, list){
+    try{ await window.storage.set(key, JSON.stringify(list), false); }
+    catch(e){ console.error('saveSlotHistory failed', e); }
+  }
+
+  let slotHistoryCache = { san: [], bingo: [] };
+
+  async function renderSlotHistory(){
+    const key = slotModes[slotMode].historyKey;
+    if(!slotHistoryCache[slotMode] || slotHistoryCache[slotMode].__unloaded !== false){
+      slotHistoryCache[slotMode] = await loadSlotHistory(key);
+    }
+    const list = slotHistoryCache[slotMode];
+    const el = document.getElementById('slot-history-list');
+    if(!list || list.length === 0){
+      el.innerHTML = '<div class="empty-hint">拉一次之後，紀錄會出現在這裡</div>';
+      return;
+    }
+    el.innerHTML = '';
+    list.slice(0, 15).forEach(rec => {
+      const row = document.createElement('div');
+      row.className = 'slot-history-entry';
+      const val = document.createElement('div');
+      val.className = 'val';
+      val.textContent = rec.text;
+      const time = document.createElement('div');
+      time.className = 'time';
+      time.textContent = rec.timeLabel;
+      row.appendChild(val);
+      row.appendChild(time);
+      el.appendChild(row);
+    });
+  }
+
+  async function addSlotHistory(text){
+    const key = slotModes[slotMode].historyKey;
+    const now = new Date();
+    const timeLabel = `${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    if(!slotHistoryCache[slotMode]) slotHistoryCache[slotMode] = [];
+    slotHistoryCache[slotMode].unshift({ text, timeLabel });
+    await saveSlotHistory(key, slotHistoryCache[slotMode]);
+    renderSlotHistory();
+  }
+
+  function playSlotWhoosh(duration){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(320, now);
+    osc.frequency.linearRampToValueAtTime(680, now + duration/1000);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.05, now + 0.15);
+    gain.gain.linearRampToValueAtTime(0.025, now + duration/1000 - 0.2);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration/1000);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + duration/1000);
+  }
+
+  function playSlotBell(freq){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.15, now + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.55);
+  }
+
+  function playSlotChime(){
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5 E5 G5 C6, gentle major arpeggio
+    notes.forEach((f, i) => {
+      const t = now + i*0.09;
+      const osc = ctx.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.value = f;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.16, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.55);
+    });
+  }
+
+  const slotLandNotes = [659.25, 783.99, 1046.50]; // E5, G5, C6 — pleasant ascending per reel
+
+  function spinReel(reelEl, finalText, duration, landFreq){
+    return new Promise(resolve => {
+      const cfg = slotModes[slotMode];
+      const interval = setInterval(() => {
+        reelEl.textContent = cfg.randomSpinText();
+      }, 60);
+      setTimeout(() => {
+        clearInterval(interval);
+        reelEl.classList.remove('spinning');
+        reelEl.textContent = finalText;
+        reelEl.classList.remove('landed');
+        void reelEl.offsetWidth;
+        reelEl.classList.add('landed');
+        playSlotBell(landFreq);
+        resolve();
+      }, duration);
+    });
+  }
+
+  async function spinSlotMachine(){
+    if(slotSpinning) return;
+    slotSpinning = true;
+    document.getElementById('btn-spin').disabled = true;
+
+    const lever = document.getElementById('slot-lever');
+    lever.classList.add('pulled');
+    setTimeout(() => lever.classList.remove('pulled'), 300);
+
+    const cfg = slotModes[slotMode];
+    const values = cfg.genValues();
+    const reels = [0,1,2].map(i => document.getElementById('slot-reel-' + i));
+    reels.forEach(r => r.classList.add('spinning'));
+
+    playSlotWhoosh(1400);
+
+    await Promise.all(reels.map((r, i) =>
+      spinReel(r, cfg.reelText(values[i]), 800 + i*350, slotLandNotes[i])
+    ));
+
+    playSlotChime();
+
+    const text = cfg.display(values);
+    const resultEl = document.getElementById('slot-result');
+    resultEl.textContent = text;
+    resultEl.classList.remove('pop');
+    void resultEl.offsetWidth;
+    resultEl.classList.add('pop');
+
+    await addSlotHistory(text);
+
+    slotSpinning = false;
+    document.getElementById('btn-spin').disabled = false;
+  }
+
+  document.getElementById('btn-spin').addEventListener('click', spinSlotMachine);
+  document.getElementById('slot-machine').addEventListener('click', (e) => {
+    if(e.target.closest('#slot-lever')) spinSlotMachine();
+  });
+
+  renderSlotHistory();
+
+  /* ================= cute background music (synthesized, loops, one per page) ================= */
+  // Each note: f = frequency (null = rest), d = relative duration (in beats)
+  const bgMusicSets = {
+    'view-scratch': {
+      // 跟骰子同一種柔和圓滑的風格，換一組音符
+      waveform: 'sine',
+      articulation: 0.93,
+      baseBeatMs: 240,
+      bassWave: 'sine',
+      bass: 130.81, // C3
+      bassEvery: 3,
+      pattern: [
+        { f: 523.25, d: 2 }, { f: 659.25, d: 1 },
+        { f: 783.99, d: 2 }, { f: 659.25, d: 1 },
+        { f: 587.33, d: 1.5 }, { f: 523.25, d: 0.5 }, { f: 440.00, d: 1 },
+        { f: 523.25, d: 3 },
+      ],
+    },
+    'view-lottery': {
+      // 同樣柔和圓滑，音域稍微高一點做出區隔
+      waveform: 'sine',
+      articulation: 0.93,
+      baseBeatMs: 250,
+      bassWave: 'sine',
+      bass: 164.81, // E3
+      bassEvery: 3,
+      pattern: [
+        { f: 659.25, d: 2 }, { f: 783.99, d: 1 },
+        { f: 987.77, d: 2 }, { f: 783.99, d: 1 },
+        { f: 659.25, d: 1.5 }, { f: 587.33, d: 0.5 }, { f: 523.25, d: 1 },
+        { f: 659.25, d: 3 },
+      ],
+    },
+    'view-dice': {
+      // 3拍圓舞曲感、速度慢、音拉得比較長，浪漫一點
+      waveform: 'sine',
+      articulation: 0.95, // very legato / sustained
+      baseBeatMs: 230,
+      bassWave: 'triangle',
+      bass: 110.00, // A2
+      bassEvery: 3,
+      pattern: [
+        { f: 440.00, d: 2 }, { f: 523.25, d: 1 },
+        { f: 659.25, d: 2 }, { f: 880.00, d: 1 },
+        { f: 783.99, d: 1.5 }, { f: 659.25, d: 0.5 }, { f: 587.33, d: 1 },
+        { f: 523.25, d: 3 },
+      ],
+    },
+    'view-slot': {
+      // 同樣柔和圓滑，音域低一點帶點沉穩感做出區隔
+      waveform: 'sine',
+      articulation: 0.93,
+      baseBeatMs: 245,
+      bassWave: 'sine',
+      bass: 196.00, // G3
+      bassEvery: 3,
+      pattern: [
+        { f: 392.00, d: 2 }, { f: 493.88, d: 1 },
+        { f: 587.33, d: 2 }, { f: 493.88, d: 1 },
+        { f: 440.00, d: 1.5 }, { f: 392.00, d: 0.5 }, { f: 349.23, d: 1 },
+        { f: 392.00, d: 3 },
+      ],
+    },
+  };
+
+  let musicOn = false;
+  let musicStep = 0;
+  let musicTimerId = null;
+  let currentMusicView = 'view-scratch';
+
+  function playMusicStep(){
+    const ctx = getAudioCtx();
+    if(!ctx || !musicOn) return;
+    const set = bgMusicSets[currentMusicView] || bgMusicSets['view-scratch'];
+    const pattern = set.pattern;
+    const idx = musicStep % pattern.length;
+    const note = pattern[idx];
+    const now = ctx.currentTime;
+    const durSec = (note.d * set.baseBeatMs) / 1000;
+
+    if(note.f !== null){
+      const osc = ctx.createOscillator();
+      osc.type = set.waveform;
+      osc.frequency.setValueAtTime(note.f, now);
+      if(set.vibrato){
+        osc.frequency.setValueCurveAtTime(
+          [note.f, note.f*1.01, note.f, note.f*0.995, note.f],
+          now, durSec
+        );
+      }
+      const gain = ctx.createGain();
+      const sustainEnd = now + durSec * set.articulation;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.055, now + Math.min(0.02, durSec*0.2));
+      gain.gain.exponentialRampToValueAtTime(0.0001, sustainEnd);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + durSec + 0.02);
+    }
+
+    if(idx % set.bassEvery === 0){
+      const bassDur = (set.bassEvery * set.baseBeatMs) / 1000;
+      const bass = ctx.createOscillator();
+      bass.type = set.bassWave || 'sine';
+      bass.frequency.value = set.bass;
+      const bgain = ctx.createGain();
+      bgain.gain.setValueAtTime(0.0001, now);
+      bgain.gain.linearRampToValueAtTime(0.04, now + 0.05);
+      bgain.gain.exponentialRampToValueAtTime(0.0001, now + bassDur*0.95);
+      bass.connect(bgain);
+      bgain.connect(ctx.destination);
+      bass.start(now);
+      bass.stop(now + bassDur);
+    }
+
+    musicStep++;
+    if(musicOn){
+      musicTimerId = setTimeout(playMusicStep, durSec * 1000);
+    }
+  }
+
+  function switchMusicView(viewId){
+    if(!bgMusicSets[viewId] || currentMusicView === viewId) return;
+    currentMusicView = viewId;
+    if(musicOn){
+      musicStep = 0;
+      clearTimeout(musicTimerId);
+      playMusicStep();
+    }
+  }
+  // hook into the tab buttons so each page plays its own tune
+  document.querySelectorAll('.tab').forEach(tabBtn => {
+    tabBtn.addEventListener('click', () => switchMusicView(tabBtn.dataset.view));
+  });
+
+  document.getElementById('btn-music').addEventListener('click', () => {
+    musicOn = !musicOn;
+    const btn = document.getElementById('btn-music');
+    if(musicOn){
+      btn.textContent = '🎵';
+      btn.classList.add('on');
+      getAudioCtx();
+      musicStep = 0;
+      clearTimeout(musicTimerId);
+      playMusicStep();
+    } else {
+      btn.textContent = '🔇';
+      btn.classList.remove('on');
+      clearTimeout(musicTimerId);
+    }
   });
 </script>
 </body>
