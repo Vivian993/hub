@@ -1169,10 +1169,15 @@ async function saveAiImageToLibrary(idiom, imageUrl) {
 
 function printIdiom() {
     document.body.classList.add('print-mode-idiom');
+    function cleanup(){
+        document.body.classList.remove('print-mode-idiom');
+        window.removeEventListener('afterprint', cleanup);
+    }
+    window.addEventListener('afterprint', cleanup);
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             window.print();
-            document.body.classList.remove('print-mode-idiom');
+            setTimeout(cleanup, 5000);
         });
     });
 }
@@ -1180,10 +1185,15 @@ function printIdiom() {
 function printLibrary() {
     document.body.classList.add('print-mode-manage');
     document.querySelectorAll('.lib-detail-box').forEach(el => el.classList.remove('hidden'));
+    function cleanup(){
+        document.body.classList.remove('print-mode-manage');
+        window.removeEventListener('afterprint', cleanup);
+    }
+    window.addEventListener('afterprint', cleanup);
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             window.print();
-            document.body.classList.remove('print-mode-manage');
+            setTimeout(cleanup, 5000);
         });
     });
 }
@@ -1603,12 +1613,21 @@ function printQuiz(scope) {
     if(scope === 'definitions') document.body.classList.add('print-scope-definitions');
     if(scope === 'questions') document.body.classList.add('print-scope-questions');
 
+    function cleanup(){
+        document.body.classList.remove('print-mode-quiz', 'print-scope-definitions', 'print-scope-questions');
+        window.removeEventListener('afterprint', cleanup);
+    }
+    window.addEventListener('afterprint', cleanup);
+
     // 給瀏覽器一點時間先套用上面的 class／CSS 變化，再觸發列印，
     // 否則 iOS Safari 有時會抓到 class 還沒生效前的舊畫面，導致篩選失效
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             window.print();
-            document.body.classList.remove('print-mode-quiz', 'print-scope-definitions', 'print-scope-questions');
+            // window.print() 在 iOS 上不會等列印視窗關閉才往下執行，
+            // 所以不能列印一觸發就馬上清除 class（會清得太早，導致篩選失效變成全部都印）。
+            // 優先靠 afterprint 事件清除；如果手機不支援這個事件，5 秒後還是會保險清除一次。
+            setTimeout(cleanup, 5000);
         });
     });
 }
