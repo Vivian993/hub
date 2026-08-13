@@ -88,6 +88,12 @@
     body.print-mode-quiz #printQuizArea { position: absolute; left: 0; top: 0; width: 100%; }
     body.print-mode-quiz #quizAnswerSection { display: block !important; page-break-before: always; }
 
+    /* 🖨️ 依需求只印「成語解釋」或只印「測驗題目」，節省紙張版面 */
+    body.print-scope-definitions #quizQuestionsBlock,
+    body.print-scope-definitions #quizAnswerSection { display: none !important; }
+    body.print-scope-questions #quizDefinitionsBlock,
+    body.print-scope-questions #quizAnswerSection { display: none !important; }
+
     body.print-mode-idiom * { visibility: hidden; }
     body.print-mode-idiom #cardResult, body.print-mode-idiom #cardResult * { visibility: visible; }
     body.print-mode-idiom #cardResult { position: absolute; left: 0; top: 0; width: 100%; }
@@ -132,7 +138,7 @@
         <div id="idiomSuggestions" class="hidden absolute z-30 left-0 right-0 mt-1 bg-white crayon-border max-h-72 overflow-y-auto shadow-lg"></div>
       </div>
       <select id="idiomGrade" class="px-3 py-3 crayon-border bg-white focus:outline-none">
-        <option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option selected>五年級</option><option>六年級</option><option>補充</option>
+        <option selected>尚未分類</option><option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option>五年級</option><option>六年級</option><option>補充</option>
       </select>
       <select id="idiomLesson" class="px-3 py-3 crayon-border bg-white focus:outline-none"></select>
     </div>
@@ -277,19 +283,24 @@
             </div>
         </div>
 
-        <div class="mb-10">
+        <div id="quizDefinitionsBlock" class="mb-10">
             <h4 class="font-bold text-lg mb-3">📖 成語解釋</h4>
             <ol id="quizDefinitions" class="quiz-list list-none space-y-2"></ol>
         </div>
 
-        <div class="mb-6">
+        <div id="quizQuestionsBlock" class="mb-6">
             <h4 class="font-bold text-lg mb-3">✍️ 例句填空（請將成語填入空格）</h4>
             <ol id="quizQuestions" class="quiz-list list-none space-y-2"></ol>
         </div>
 
-        <div class="no-print mt-8 flex justify-center gap-3 flex-wrap">
-            <button onclick="printQuiz()" class="btn-doodle bg-[color:var(--green)] text-white px-8 py-3 text-xl font-bold">🖨️ 列印此測驗卷</button>
-            <button onclick="toggleQuizAnswers()" class="btn-doodle bg-white px-6 py-3 text-lg font-bold">👁️ 顯示／隱藏解答</button>
+        <div class="no-print mt-8 flex flex-col items-center gap-3">
+            <p class="text-xs text-[color:var(--ink)]/50">依需求選擇要列印的部分，省紙又省版面：</p>
+            <div class="flex justify-center gap-3 flex-wrap">
+                <button onclick="printQuiz('definitions')" class="btn-doodle bg-white px-5 py-2.5 text-base font-bold">🖨️ 只印成語解釋</button>
+                <button onclick="printQuiz('questions')" class="btn-doodle bg-white px-5 py-2.5 text-base font-bold">🖨️ 只印測驗題目</button>
+                <button onclick="printQuiz('all')" class="btn-doodle bg-[color:var(--green)] text-white px-5 py-2.5 text-base font-bold">🖨️ 全部列印</button>
+            </div>
+            <button onclick="toggleQuizAnswers()" class="btn-doodle bg-white px-6 py-2 text-sm font-bold mt-1">👁️ 顯示／隱藏解答</button>
         </div>
 
         <div id="quizAnswerSection" class="hidden mt-10 pt-6 border-t-2 border-dashed border-[color:var(--ink)]/30">
@@ -366,15 +377,21 @@
 
       <div class="mb-8">
         <div class="flex justify-between items-center mb-3">
-          <h4 class="display text-xl text-[color:var(--coral)]">🪎 成語百寶箱</h4>
+          <button onclick="toggleIdiomBoxCollapse()" class="flex items-center gap-2 text-left">
+            <h4 class="display text-xl text-[color:var(--coral)]">🪎 成語百寶箱</h4>
+            <span id="idiomBoxArrow" class="text-xl text-[color:var(--coral)]">▼</span>
+          </button>
           <button onclick="toggleReviewEditMode()" class="no-print btn-doodle bg-white text-sm font-bold px-3 py-1.5">✏️ 編輯複習清單</button>
         </div>
-        <div id="libraryContainerIdiom" class="flex flex-col gap-4"></div>
+        <div id="libraryContainerIdiom" class="hidden flex flex-col gap-4"></div>
       </div>
 
       <div>
-        <h4 class="display text-xl text-[color:var(--purple)] mb-3">🔤 生字寶盒</h4>
-        <div id="libraryContainerVocab" class="flex flex-col gap-4"></div>
+        <button onclick="toggleVocabBoxCollapse()" class="flex items-center gap-2 text-left mb-3">
+          <h4 class="display text-xl text-[color:var(--purple)]">🔤 生字寶盒</h4>
+          <span id="vocabBoxArrow" class="text-xl text-[color:var(--purple)]">▼</span>
+        </button>
+        <div id="libraryContainerVocab" class="hidden flex flex-col gap-4"></div>
       </div>
     </div>
   </div>
@@ -785,7 +802,7 @@ function _pickZhVoice(){
 }
 function formatGradeLesson(grade, lesson, sep){
   sep = sep || ' / ';
-  if(grade === '補充') return grade;
+  if(grade === '補充' || grade === '尚未分類') return grade;
   return `${grade}${sep}${lesson}`;
 }
 
@@ -1040,6 +1057,12 @@ async function generateIdiomContent(forceIdiom = null){
     d.grade=grade; d.lesson=lesson; d.type='idiom';
     currentIdiomData = d;
     upsertIdiomToLibrary(d); // 查過的成語直接自動收藏到百寶箱，不用再手動按收藏
+
+    // 查完之後把年級選單重設回「尚未分類」，這樣下一次單純查詢就不會不小心又被歸到剛剛選的課次
+    if(grade !== '尚未分類'){
+        document.getElementById('idiomGrade').value = '尚未分類';
+        toggleLessonVisibility('idiomGrade', 'idiomLesson');
+    }
 
     document.getElementById('cardMeta').innerText = formatGradeLesson(grade, lesson);
     document.getElementById('cardTitle').innerText = d.idiom;
@@ -1548,10 +1571,13 @@ function toggleQuizAnswers(){
     document.getElementById('quizAnswerSection').classList.toggle('hidden');
 }
 
-function printQuiz() {
+function printQuiz(scope) {
+    scope = scope || 'all';
     document.body.classList.add('print-mode-quiz');
+    if(scope === 'definitions') document.body.classList.add('print-scope-definitions');
+    if(scope === 'questions') document.body.classList.add('print-scope-questions');
     window.print();
-    document.body.classList.remove('print-mode-quiz');
+    document.body.classList.remove('print-mode-quiz', 'print-scope-definitions', 'print-scope-questions');
 }
 
 function lessonLabel(grade, i){ const c = (lessonNames[grade]||[])[i]; return c ? `第${i+1}課 ${c}` : `第${i+1}課`; }
@@ -1565,7 +1591,7 @@ function toggleLessonVisibility(gradeId, lessonId){
     const grade = document.getElementById(gradeId).value;
     const lessonEl = document.getElementById(lessonId);
     if(!lessonEl) return;
-    if(grade === '補充'){
+    if(grade === '補充' || grade === '尚未分類'){
         lessonEl.style.display = 'none';
     } else {
         lessonEl.style.display = '';
@@ -1638,7 +1664,12 @@ function renderLibrary(){
   }
 
   renderLibrarySection(containerIdiom, idiomList, 'idiom');
+  containerIdiom.classList.toggle('hidden', !window._idiomBoxExpanded);
+  document.getElementById('idiomBoxArrow').innerText = window._idiomBoxExpanded ? '▲' : '▼';
+
   renderLibrarySection(containerVocab, vocabList, 'vocab');
+  containerVocab.classList.toggle('hidden', !window._vocabBoxExpanded);
+  document.getElementById('vocabBoxArrow').innerText = window._vocabBoxExpanded ? '▲' : '▼';
 }
 
 function renderLibrarySection(container, items, type){
@@ -1749,6 +1780,18 @@ function toggleReviewListCollapse(){
     renderLibrary();
 }
 
+// 🪎 成語百寶箱／🔤 生字寶盒內容預設收合，避免項目一多就要一直往下滑
+window._idiomBoxExpanded = false;
+function toggleIdiomBoxCollapse(){
+    window._idiomBoxExpanded = !window._idiomBoxExpanded;
+    renderLibrary();
+}
+window._vocabBoxExpanded = false;
+function toggleVocabBoxCollapse(){
+    window._vocabBoxExpanded = !window._vocabBoxExpanded;
+    renderLibrary();
+}
+
 function toggleLibraryDetail(idx) {
     const box = document.getElementById(`lib-detail-${idx}`);
     if(box) {
@@ -1838,7 +1881,7 @@ window.onload = async function(){
   document.getElementById('vocabGrade').addEventListener('change', ()=>refreshLessonDropdown('vocabGrade','vocabLesson'));
   document.getElementById('quizFilterGrade').addEventListener('change', ()=>refreshLessonDropdown('quizFilterGrade','quizFilterLesson'));
 
-  const gradeOptions = ['一','二','三','四','五','六'].map(g=>`<option value="${g}年級">${g}年級</option>`).join('') + '<option value="補充">補充</option>';
+  const gradeOptions = ['一','二','三','四','五','六'].map(g=>`<option value="${g}年級">${g}年級</option>`).join('') + '<option value="補充">補充</option><option value="尚未分類">尚未分類</option>';
   document.getElementById('filterGrade').innerHTML += gradeOptions;
   document.getElementById('quizFilterGrade').innerHTML += gradeOptions;
 
