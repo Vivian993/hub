@@ -67,10 +67,24 @@
   ::-webkit-scrollbar{height:8px;width:8px;}
   ::-webkit-scrollbar-thumb{background:#d9c092;border-radius:8px;}
 
-  /* 📜 成語學習單：直式書寫在手機瀏覽器上容易疊字跑版，改用清楚易讀的橫式編排 */
+  /* 📜 成語學習單：直式排版，用雙欄 + 緊湊間距讓內容更省版面，減少列印頁數 */
   .quiz-list > li{
-    margin-bottom: 1rem;
-    line-height: 1.9;
+    margin-bottom: 0.6rem;
+    line-height: 1.6;
+  }
+  @media print{
+    .quiz-list{
+      columns: 2;
+      column-gap: 1.5rem;
+    }
+    .quiz-list > li{
+      break-inside: avoid;
+      font-size: 0.92rem;
+    }
+    #printQuizArea{ padding: 0.5rem !important; }
+    #printQuizArea h2{ font-size: 1.5rem !important; margin-bottom: 0.5rem !important; }
+    #printQuizArea h4{ font-size: 1rem !important; margin-bottom: 0.5rem !important; }
+    #quizDefinitionsBlock, #quizQuestionsBlock{ margin-bottom: 1rem !important; }
   }
 
   @page {
@@ -82,7 +96,12 @@
     .no-print{display:none!important;}
     body{background:white!important; background-image:none!important;}
     .panel{box-shadow:none!important; border:none!important;}
-    
+
+    /* 🩹 分頁按鈕列用 sticky 定位，有些手機瀏覽器列印快照時只隱藏可見度沒用，殘留背景色的殘影，改成直接整個移除 */
+    .sticky{display:none!important;}
+    /* 🩹 成語圖卡上的裝飾貼紙是絕對定位，有時候會殘留在列印快照裡、蓋住文字，任何列印模式都直接強制移除 */
+    .tape{display:none!important;}
+
     body.print-mode-quiz * { visibility: hidden; }
     body.print-mode-quiz #printQuizArea, body.print-mode-quiz #printQuizArea * { visibility: visible; }
     body.print-mode-quiz #printQuizArea { position: absolute; left: 0; top: 0; width: 100%; }
@@ -1584,20 +1603,12 @@ function printQuiz(scope) {
     if(scope === 'definitions') document.body.classList.add('print-scope-definitions');
     if(scope === 'questions') document.body.classList.add('print-scope-questions');
 
-    // 成語測驗卷改用橫式（landscape）頁面方向，只在這次列印生效，印完就移除
-    const orientationStyle = document.createElement('style');
-    orientationStyle.id = 'quizLandscapeStyle';
-    orientationStyle.textContent = '@page { size: A4 landscape; margin: 12mm; }';
-    document.head.appendChild(orientationStyle);
-
     // 給瀏覽器一點時間先套用上面的 class／CSS 變化，再觸發列印，
     // 否則 iOS Safari 有時會抓到 class 還沒生效前的舊畫面，導致篩選失效
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             window.print();
             document.body.classList.remove('print-mode-quiz', 'print-scope-definitions', 'print-scope-questions');
-            const el = document.getElementById('quizLandscapeStyle');
-            if(el) el.remove();
         });
     });
 }
