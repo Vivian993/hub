@@ -829,6 +829,43 @@ function switchTab(tab){
   if(tab==='quiz'){ renderQuizSelection(); }
 }
 
+// 📚 教育部《成語典》開放資料（CC BY-ND 3.0 TW）：語義說明跟例句都是官方審定的白話文，
+// 完全沒有文言文引用，優先於萌典使用
+window._moeIdiomMap = null;
+window._moeIdiomLoading = null;
+function loadMoeIdiomDataset(){
+    if(window._moeIdiomMap) return Promise.resolve(window._moeIdiomMap);
+    if(window._moeIdiomLoading) return window._moeIdiomLoading;
+    window._moeIdiomLoading = fetch('./idioms_moe.json')
+        .then(res => { if(!res.ok) throw new Error('無法載入成語資料檔'); return res.json(); })
+        .then(list => {
+            const map = {};
+            list.forEach(item => { map[item.idiom] = item; });
+            window._moeIdiomMap = map;
+            return map;
+        })
+        .catch(e => {
+            console.log('成語典開放資料載入失敗，將改用萌典線上查詢：', e);
+            window._moeIdiomMap = {}; // 標記為載入失敗（空物件），避免每次都重新嘗試整份下載
+            return window._moeIdiomMap;
+        });
+    return window._moeIdiomLoading;
+}
+
+function pickIdiomFieldsFromMoe(entry){
+    return {
+        idiom: entry.idiom,
+        zhuyin: entry.zhuyin || '',
+        meaning: entry.meaning || '',
+        sentence: (entry.sentences && entry.sentences[0]) || '',
+        sentenceIsAI: !!(entry.sentences && entry.sentences[0]), // 官方例句本來就是白話文，測驗題目可以直接放心使用
+        synonyms: entry.synonyms || [],
+        antonyms: entry.antonyms || [],
+        extraSentences: (entry.sentences || []).slice(1,3),
+        moeCategory: entry.category || ''
+    };
+}
+
 function pickIdiomFields(data){
   const h = (data.heteronyms||[])[0] || {};
   const defs = h.definitions || [];
@@ -886,11 +923,19 @@ async function getCharBreakdown(chars, idiomZhuyin){
 // 有圖片的優先顯示圖片版本（資訊比較完整）
 function getIdiomHistoryList(){
     const map = {};
+    // 先放入完整的教育部成語資料庫（如果已載入），這樣建議清單涵蓋所有 1664 條成語，不只是查過的
+    if(window._moeIdiomMap){
+        Object.keys(window._moeIdiomMap).forEach(idiom => {
+            const entry = window._moeIdiomMap[idiom];
+            map[idiom] = { idiom, meaning: entry.meaning || '', image: null };
+        });
+    }
     savedLibrary.filter(i => i.type === 'idiom').forEach(item => {
+        const existing = map[item.idiom] || {};
         map[item.idiom] = {
             idiom: item.idiom,
-            meaning: item.meaningSimple || item.meaning || '',
-            image: item.singleImage || null
+            meaning: item.meaningSimple || item.meaning || existing.meaning || '',
+            image: item.singleImage || existing.image || null
         };
     });
     Object.keys(userLibrary).forEach(idiom => {
@@ -905,7 +950,8 @@ function getIdiomHistoryList(){
     return Object.values(map);
 }
 
-function renderIdiomSuggestions(){
+async function renderIdiomSuggestions(){
+    loadMoeIdiomDataset(); // 第一次聚焦輸入框時就先預載入資料庫，之後打字才不會延遲
     const box = document.getElementById('idiomSuggestions');
     const inputEl = document.getElementById('idiomInput');
     const keyword = inputEl.value.trim();
@@ -979,8 +1025,15 @@ async function generateIdiomContent(forceIdiom = null){
       d = {idiom, breakdown:[], ...JSON.parse(JSON.stringify(userLibrary[idiom]))};
       if(!d.breakdown || d.breakdown.length === 0) d.breakdown = await getCharBreakdown(idiom, d.zhuyin);
     } else {
-      const moe = await fetchMoedict(idiom);
-      d = pickIdiomFields(moe);
+      const moeDataset = await loadMoeIdiomDataset();
+      if(moeDataset[idiom]){
+        // ✅ 優先使用教育部《成語典》開放資料：語義說明跟例句都是官方審定白話文，沒有文言文
+        d = pickIdiomFieldsFromMoe(moeDataset[idiom]);
+      } else {
+        // 開放資料裡沒有收錄這個成語（例如非主條成語／罕用成語），才退回萌典即時查詢
+        const moe = await fetchMoedict(idiom);
+        d = pickIdiomFields(moe);
+      }
       d.breakdown = await getCharBreakdown(idiom, d.zhuyin);
     }
     
@@ -1769,7 +1822,8 @@ function importData(event) {
 
 window.onload = async function(){
   await loadUserLibrary();
-  
+  loadMoeIdiomDataset(); // 背景預先載入教育部成語資料庫，之後查詢跟自動建議都會更快
+
   ['idiomLesson','vocabLesson', 'quizFilterLesson'].forEach(id=>{
     let gradeId = '';
     if(id==='idiomLesson') gradeId = 'idiomGrade';
