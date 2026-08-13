@@ -594,9 +594,9 @@ async function fetchWithRetry(url, options, retries = 3) {
 async function generateAiImage(idiom, meaning, apiKey) {
     const prompt = `WaterColor storybook illustration card for Chinese idiom "${idiom}". Traditional Chinese title text banner saying "${idiom}". Scene depicting the story of ${idiom}: ${meaning}. Charming children book watercolor style, warm colors, detailed background.`;
 
-    // 使用正式版 gemini-2.5-flash-image（免費額度約每天 500 張）
+    // 使用 gemini-3.1-flash-image（Google 2026 下半年 GA 版本，2.5 系列已陸續下架）
     // 注意：不要使用 -preview 版本，該版本免費額度已被 Google 設為 0
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${apiKey}`;
     const payload = {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
@@ -684,7 +684,7 @@ async function generateSimpleMeaning(idiom, meaning){
     const key = getStoredApiKeyOnly();
     if(!key) throw new Error('NO_KEY');
     const prompt = `你是一位親切有耐心的國小老師。請把成語「${idiom}」的意思，改寫成國小中年級學生聽得懂的口語化中文解釋，可以用簡單的比喻或生活情境幫助理解，30字以內。只回傳解釋本身，不要有任何前言、引號或其他文字。原本的字典解釋是：「${meaning || '無'}」`;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`;
     const payload = { contents: [{ parts: [{ text: prompt }] }] };
     const data = await fetchWithRetry(url, {
         method: 'POST',
@@ -744,7 +744,7 @@ async function generateChildSentence(idiom, meaning){
     const key = getGeminiApiKey();
     if(!key) throw new Error('NO_KEY');
     const prompt = `你是一位親切的國小國語老師。請針對成語「${idiom}」（意思：${meaning || '無'}），寫一句適合國小中高年級學生程度、貼近生活情境的中文造句，句子裡要包含「${idiom}」這個成語。只回傳造句本身，不要加任何說明、引號或其他文字。`;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`;
     const payload = { contents: [{ parts: [{ text: prompt }] }] };
     const data = await fetchWithRetry(url, {
         method: 'POST',
@@ -1419,7 +1419,7 @@ async function generateSimpleVocabDef(char, zhuyin, defsText){
 {"meaning":"用口語化中文簡單解釋這個字在這個讀音下的意思，25字以內","words":[{"word":"語詞1","explain":"這個語詞的簡單解釋，15字以內"},{"word":"語詞2","explain":"..."}],"sentence":"包含「${char}」這個字、符合這個讀音意思的簡單例句，適合國小生程度"}
 
 words 請提供2個國小生常見、會用到的詞語（必須包含「${char}」這個字，且要符合這個讀音的意思）。`;
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`;
     const payload = {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { responseMimeType: 'application/json' }
