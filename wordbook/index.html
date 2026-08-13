@@ -95,16 +95,16 @@
   @media print{
     .no-print{display:none!important;}
     body{background:white!important; background-image:none!important;}
-    .panel{box-shadow:none!important; border:none!important;}
+    .panel{box-shadow:none!important; border:none!important; background:white!important;}
 
     /* 🩹 分頁按鈕列用 sticky 定位，有些手機瀏覽器列印快照時只隱藏可見度沒用，殘留背景色的殘影，改成直接整個移除 */
     .sticky{display:none!important;}
     /* 🩹 成語圖卡上的裝飾貼紙是絕對定位，有時候會殘留在列印快照裡、蓋住文字，任何列印模式都直接強制移除 */
     .tape{display:none!important;}
 
-    body.print-mode-quiz * { visibility: hidden; }
+    body.print-mode-quiz * { visibility: hidden; background-color: transparent !important; }
     body.print-mode-quiz #printQuizArea, body.print-mode-quiz #printQuizArea * { visibility: visible; }
-    body.print-mode-quiz #printQuizArea { position: absolute; left: 0; top: 0; width: 100%; }
+    body.print-mode-quiz #printQuizArea { position: absolute; left: 0; top: 0; width: 100%; background: white !important; }
     body.print-mode-quiz #quizAnswerSection { display: block !important; page-break-before: always; }
 
     /* 🖨️ 依需求只印「成語解釋」或只印「測驗題目」，節省紙張版面 */
