@@ -1150,15 +1150,23 @@ async function saveAiImageToLibrary(idiom, imageUrl) {
 
 function printIdiom() {
     document.body.classList.add('print-mode-idiom');
-    window.print();
-    document.body.classList.remove('print-mode-idiom');
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            window.print();
+            document.body.classList.remove('print-mode-idiom');
+        });
+    });
 }
 
 function printLibrary() {
     document.body.classList.add('print-mode-manage');
     document.querySelectorAll('.lib-detail-box').forEach(el => el.classList.remove('hidden'));
-    window.print();
-    document.body.classList.remove('print-mode-manage');
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            window.print();
+            document.body.classList.remove('print-mode-manage');
+        });
+    });
 }
 
 async function fetchBatchVocab(wordOverride = null){
@@ -1549,16 +1557,15 @@ function generateQuiz() {
 
         // ✍️ 例句填空：只用「AI 造句」（已確認是白話文）；沒有的話就用淺顯解釋直接出「這是哪個成語」的題型，
         // 絕對不用字典原始例句（常常是文言文引用，小朋友看不懂）
+        const blank = '＿＿＿＿';
         let questionText;
         if(item.sentenceIsAI && item.sentence){
-            const blank = '<span class="inline-block border-b-2 border-[color:var(--ink)] w-20 text-transparent align-bottom mx-1">(　　　　)</span>';
             questionText = item.sentence.replace(new RegExp(item.idiom, 'g'), blank);
             if(questionText === item.sentence) questionText = item.sentence + '這句話最適合填入的成語是：' + blank;
         } else {
-            const blank = '<span class="inline-block border-b-2 border-[color:var(--ink)] w-20 text-transparent align-bottom mx-1">(　　　　)</span>';
             questionText = kidMeaning + '——這是哪個成語呢？' + blank;
         }
-        qList.innerHTML += `<li class="pl-2"><div class="font-medium tracking-wide">${num}、${questionText}<div class="text-xs text-[color:var(--ink)]/50 mt-1">提示：${item.zhuyin}</div></div></li>`;
+        qList.innerHTML += `<li>${num}、${questionText}（提示：${item.zhuyin}）</li>`;
 
         ansList.innerHTML += `<li>${num}、${item.idiom}</li>`;
     });
@@ -1576,8 +1583,23 @@ function printQuiz(scope) {
     document.body.classList.add('print-mode-quiz');
     if(scope === 'definitions') document.body.classList.add('print-scope-definitions');
     if(scope === 'questions') document.body.classList.add('print-scope-questions');
-    window.print();
-    document.body.classList.remove('print-mode-quiz', 'print-scope-definitions', 'print-scope-questions');
+
+    // 成語測驗卷改用橫式（landscape）頁面方向，只在這次列印生效，印完就移除
+    const orientationStyle = document.createElement('style');
+    orientationStyle.id = 'quizLandscapeStyle';
+    orientationStyle.textContent = '@page { size: A4 landscape; margin: 12mm; }';
+    document.head.appendChild(orientationStyle);
+
+    // 給瀏覽器一點時間先套用上面的 class／CSS 變化，再觸發列印，
+    // 否則 iOS Safari 有時會抓到 class 還沒生效前的舊畫面，導致篩選失效
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            window.print();
+            document.body.classList.remove('print-mode-quiz', 'print-scope-definitions', 'print-scope-questions');
+            const el = document.getElementById('quizLandscapeStyle');
+            if(el) el.remove();
+        });
+    });
 }
 
 function lessonLabel(grade, i){ const c = (lessonNames[grade]||[])[i]; return c ? `第${i+1}課 ${c}` : `第${i+1}課`; }
