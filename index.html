@@ -82,6 +82,34 @@
     --glow2: rgba(212,162,76,0.16);
     --overlay-tint: rgba(74,55,40,0.42);
   }
+  html[data-theme="sky"]{
+    --paper: #eaf4fb;
+    --paper-alt: #d8ebf7;
+    --ink: #1f3a4d;
+    --ink-soft: #7a9bb0;
+    --red: #ff8f6b;
+    --red-soft: #ffb399;
+    --blue: #6fb1e0;
+    --blue-faint: rgba(111,177,224,0.32);
+    --gold: #ffc15e;
+    --glow: rgba(111,177,224,0.18);
+    --glow2: rgba(255,143,107,0.12);
+    --overlay-tint: rgba(31,58,77,0.42);
+  }
+  html[data-theme="morandi2"]{
+    --paper: #e4dee2;
+    --paper-alt: #d8cfd6;
+    --ink: #453d47;
+    --ink-soft: #948b97;
+    --red: #a98ca0;
+    --red-soft: #c0a8b8;
+    --blue: #9ca3a8;
+    --blue-faint: rgba(156,163,168,0.32);
+    --gold: #c6a896;
+    --glow: rgba(169,140,160,0.16);
+    --glow2: rgba(156,163,168,0.16);
+    --overlay-tint: rgba(69,61,71,0.42);
+  }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;}
   html{ transition: background .25s ease; }
@@ -368,6 +396,23 @@
   .swatch.selected{ border-color:var(--ink); }
 
   .sheet-actions{ display:flex; gap:10px; margin-top:8px; }
+  .backup-section{
+    margin-top:20px;
+    padding-top:16px;
+    border-top:1px solid var(--blue-faint);
+  }
+  .backup-title{
+    font-family:'Noto Serif TC', serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--ink);
+    margin-bottom:6px;
+  }
+  .backup-hint{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    line-height:1.6;
+  }
   .btn{
     flex:1; padding:12px; border-radius:8px; border:none;
     font-family:'Noto Sans TC', sans-serif; font-weight:700; font-size:14.5px; cursor:pointer;
@@ -400,7 +445,18 @@
     <div class="sheet">
       <h2>選一個喜歡的底色</h2>
       <div class="theme-row" id="themeRow"></div>
-      <div class="sheet-actions" style="margin-top:18px;">
+
+      <div class="backup-section">
+        <div class="backup-title">備份與還原</div>
+        <div class="backup-hint">把目前所有項目匯出成一個檔案存起來，之後可以匯入還原，換手機也不怕不見</div>
+        <div class="sheet-actions" style="margin-top:10px;">
+          <button class="btn cancel" id="exportBtn" style="flex:1;">匯出備份</button>
+          <button class="btn cancel" id="importBtn" style="flex:1;">匯入備份</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json" style="display:none;">
+      </div>
+
+      <div class="sheet-actions" style="margin-top:14px;">
         <button class="btn cancel" id="themeCloseBtn" style="flex:1;">關閉</button>
       </div>
     </div>
@@ -454,8 +510,10 @@ const THEMES = [
   { id:'light', name:'淺色', swatch:['#fff8e1','#ff9f45'] },
   { id:'dark', name:'深色', swatch:['#1c1a22','#7cc4ec'] },
   { id:'morandi', name:'莫蘭迪', swatch:['#e9e2da','#b98079'] },
+  { id:'morandi2', name:'霧灰紫', swatch:['#e4dee2','#a98ca0'] },
   { id:'mint', name:'薄荷綠', swatch:['#eef7f0','#ff9d76'] },
   { id:'latte', name:'奶茶棕', swatch:['#f5ebe0','#c17a54'] },
+  { id:'sky', name:'晴空藍', swatch:['#eaf4fb','#6fb1e0'] },
 ];
 
 const GH_USER = 'Vivian993';
@@ -787,6 +845,57 @@ document.getElementById('themeCloseBtn').addEventListener('click', ()=>{
 document.getElementById('themeOverlay').addEventListener('click', (e)=>{
   if(e.target.id === 'themeOverlay') document.getElementById('themeOverlay').classList.remove('open');
 });
+
+// --- 備份匯出／匯入 ---
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const backup = {
+    app: 'my-treasure-box-backup',
+    exportedAt: new Date().toISOString(),
+    theme: document.documentElement.getAttribute('data-theme') || 'light',
+    items: items,
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  link.download = `我的百寶箱備份_${dateStr}.json`;
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+});
+
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(!data || !Array.isArray(data.items)) throw new Error('格式不對');
+      const ok = confirm(`確定要匯入這份備份嗎？\n\n裡面有 ${data.items.length} 個項目，會取代目前畫面上的內容。`);
+      if(!ok) return;
+      items = data.items;
+      saveItems();
+      if(data.theme){
+        applyTheme(data.theme);
+        saveTheme(data.theme);
+      }
+      render();
+      document.getElementById('themeOverlay').classList.remove('open');
+      alert('匯入成功！');
+    }catch(err){
+      alert('這個檔案讀不出來，確認一下是不是之前匯出的備份檔');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
 loadTheme();
 
 loadItems();
