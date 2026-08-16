@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐢 蘇卡達保母小日記</title>
+    
+    <!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
+    <link rel="apple-touch-icon" href="custom-icon.png">
+    <link rel="icon" type="image/png" href="custom-icon.png">
+
+    <!-- 引入 Tailwind CSS 進行美化 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 FontAwesome 圖示庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 Canvas Confetti 灑花特效 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f0fdf4;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .task-checkbox {
+            appearance: none;
+            width: 2.2rem;
+            height: 2.2rem;
+            border: 3px solid #4ade80;
+            border-radius: 50%;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease-in-out;
+            flex-shrink: 0;
+        }
+        .task-checkbox:checked {
+            background-color: #22c55e;
+            border-color: #22c55e;
+        }
+        .task-checkbox:checked::after {
+            content: '✔';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .task-card {
+            transition: all 0.3s ease;
+        }
+        .task-card.completed {
+            background-color: #e2e8f0;
+            opacity: 0.8;
+        }
+        .task-card.completed .task-text {
+            text-decoration: line-through;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body class="text-slate-800 pb-24">
+
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg">
+        <!-- 頂部標題區 -->
+        <header class="bg-green-500 text-white p-6 rounded-b-3xl shadow-md text-center">
+            <h1 class="text-3xl font-black mb-1 flex items-center justify-center gap-2">
+                <span>🐢 蘇卡達保母小日記</span>
+            </h1>
+            <p class="text-green-100 text-sm font-medium">記錄專屬寶貝的成長每一刻！</p>
+            
+            <!-- 保母與寵物名字自訂區 -->
+            <div class="mt-4 bg-green-600 bg-opacity-60 p-3 rounded-2xl space-y-2 text-sm">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-green-100 ml-1"><i class="fa-solid fa-child-reaching mr-1"></i> 小保母名字：</span>
+                    <input type="text" id="keeper-name" value="小寶貝" class="bg-white text-slate-800 font-bold px-3 py-1 rounded-xl w-32 text-center focus:outline-none shadow-inner" placeholder="輸入你的名字">
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-green-100 ml-1"><i class="fa-solid fa-shield-cat mr-1"></i> 寵物名字：</span>
+                    <input type="text" id="pet-name" value="蘇卡達寶寶" class="bg-white text-slate-800 font-bold px-3 py-1 rounded-xl w-32 text-center focus:outline-none shadow-inner" placeholder="輸入烏龜名字">
+                </div>
+            </div>
+        </header>
+
+        <!-- 頁籤切換按鈕 (調整為 4 個頁籤) -->
+        <div class="grid grid-cols-4 gap-1 mt-4 px-3">
+            <button id="btn-tasks" onclick="switchTab('tasks')" class="bg-green-100 text-green-700 font-bold py-2 rounded-xl shadow-sm border-2 border-green-500 transition-colors text-xs flex flex-col items-center justify-center">
+                <i class="fa-solid fa-list-check mb-0.5"></i> 每日任務
+            </button>
+            <button id="btn-guide" onclick="switchTab('guide')" class="bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center">
+                <i class="fa-solid fa-book-open mb-0.5"></i> 每月指南
+            </button>
+            <button id="btn-photo" onclick="switchTab('photo')" class="bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center">
+                <i class="fa-solid fa-camera mb-0.5"></i> 成長相簿
+            </button>
+            <button id="btn-weight" onclick="switchTab('weight')" class="bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center">
+                <i class="fa-solid fa-scale-balanced mb-0.5"></i> 體重紀錄
+            </button>
+        </div>
+
+        <!-- 內容區：每日任務 -->
+        <div id="tab-tasks" class="p-4 mt-2">
+            <div class="flex justify-between items-end mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-700"><i class="fa-regular fa-calendar-check mr-2 text-green-500"></i>照顧打卡表</h2>
+                    <p class="text-xs text-slate-400">勾選時會自動記錄時間與專屬保母喔！</p>
+                </div>
+                <button onclick="resetTasks()" class="text-xs bg-slate-200 text-slate-600 px-3 py-1.5 rounded-full hover:bg-slate-300 active:bg-slate-400 font-bold">
+                    <i class="fa-solid fa-rotate-right mr-1"></i>重置
+                </button>
+            </div>
+
+            <div id="task-container" class="space-y-6">
+                <!-- 任務由 JS 產生 -->
+            </div>
+        </div>
+
+        <!-- 內容區：每月飼養指南 -->
+        <div id="tab-guide" class="p-4 mt-2 hidden space-y-6">
+            <h2 class="text-xl font-bold text-slate-700 mb-1"><i class="fa-solid fa-graduation-cap mr-2 text-green-600"></i>蘇卡達成長月份指南</h2>
+            <p class="text-xs text-slate-500 mb-4">點擊下方按鈕，查看不同年齡階段的照顧秘訣：</p>
+
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="switchMonth(1)" id="m-btn-1" class="bg-emerald-500 text-white font-bold py-2 rounded-xl text-sm shadow-sm transition-all">1-3個月</button>
+                <button onclick="switchMonth(2)" id="m-btn-2" class="bg-slate-100 text-slate-600 font-bold py-2 rounded-xl text-sm shadow-sm transition-all">4-6個月</button>
+                <button onclick="switchMonth(3)" id="m-btn-3" class="bg-slate-100 text-slate-600 font-bold py-2 rounded-xl text-sm shadow-sm transition-all">7-12個月</button>
+                <button onclick="switchMonth(4)" id="m-btn-4" class="bg-slate-100 text-slate-600 font-bold py-2 rounded-xl text-sm shadow-sm transition-all">1-2歲(青年)</button>
+                <button onclick="switchMonth(5)" id="m-btn-5" class="bg-slate-100 text-slate-600 font-bold py-2 rounded-xl text-sm shadow-sm transition-all">2-3歲(亞成)</button>
+                <button onclick="switchMonth(6)" id="m-btn-6" class="bg-slate-100 text-slate-600 font-bold py-2 rounded-xl text-sm shadow-sm transition-all">3歲以上(成年)</button>
+            </div>
+
+            <div id="month-content-card" class="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-5 shadow-sm space-y-4">
+                <!-- 內容由 JS 動態填入 -->
+            </div>
+        </div>
+
+        <!-- 內容區：每月成長相簿 (支援拍照與自動壓縮) -->
+        <div id="tab-photo" class="p-4 mt-2 hidden space-y-4">
+            <div class="flex justify-between items-center mb-2">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-700"><i class="fa-solid fa-camera-retro mr-2 text-purple-500"></i>每月成長相簿</h2>
+                    <p class="text-xs text-slate-400">一個月拍一次照片，系統會自動幫您壓縮存檔！</p>
+                </div>
+            </div>
+
+            <!-- 拍照上傳控制區 -->
+            <div class="bg-purple-50 rounded-2xl p-4 border-2 border-purple-100 shadow-sm space-y-3">
+                <label class="block text-slate-700 font-bold text-sm">選擇記錄月份：</label>
+                <select id="photo-month-select" class="w-full rounded-xl border-2 border-purple-200 px-3 py-2 text-sm font-bold bg-white focus:outline-none focus:border-purple-500">
+                    <option value="第 1 個月">第 1 個月 (剛到家)</option>
+                    <option value="第 2 個月">第 2 個月</option>
+                    <option value="第 3 個月">第 3 個月</option>
+                    <option value="第 4 個月">第 4 個月</option>
+                    <option value="第 5 個月">第 5 個月</option>
+                    <option value="第 6 個月">第 6 個月</option>
+                    <option value="第 7 個月">第 7 個月</option>
+                    <option value="第 8 個月">第 8 個月</option>
+                    <option value="第 9 個月">第 9 個月</option>
+                    <option value="第 10 個月">第 10 個月</option>
+                    <option value="第 11 個月">第 11 個月</option>
+                    <option value="第 12 個月">第 12 個月 (滿一歲)</option>
+                </select>
+
+                <label class="block w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 rounded-xl text-center shadow-md cursor-pointer transition-transform active:scale-95">
+                    <i class="fa-solid fa-camera mr-2"></i> 點擊拍照 / 上傳照片
+                    <input type="file" accept="image/*" capture="environment" id="camera-input" class="hidden" onchange="compressAndSavePhoto(event)">
+                </label>
+            </div>
+
+            <!-- 照片展示藝廊 -->
+            <h3 class="font-bold text-slate-600 mt-6 mb-2 px-1">🖼️ 成長照片牆：</h3>
+            <div id="photo-gallery" class="grid grid-cols-2 gap-3">
+                <!-- 照片卡片由 JS 動態產生 -->
+            </div>
+        </div>
+
+        <!-- 內容區：體重紀錄 -->
+        <div id="tab-weight" class="p-4 mt-2 hidden">
+            <h2 class="text-xl font-bold text-slate-700 mb-4"><i class="fa-solid fa-scale-balanced mr-2 text-blue-500"></i>龜龜長大紀錄</h2>
+            
+            <div class="bg-blue-50 rounded-2xl p-5 border-2 border-blue-100 mb-6 shadow-sm">
+                <label class="block text-slate-700 font-bold mb-2 text-lg">今天量幾克呢？</label>
+                <div class="flex gap-2">
+                    <input type="number" id="weight-input" placeholder="例如: 120" class="flex-1 rounded-xl border-2 border-blue-200 px-4 py-3 text-lg font-bold focus:outline-none focus:border-blue-500 text-center">
+                    <span class="inline-flex items-center text-lg font-bold text-slate-600 px-2">克 (g)</span>
+                </div>
+                <button onclick="addWeight()" class="w-full mt-4 bg-blue-500 text-white font-bold py-3 rounded-xl shadow-md hover:bg-blue-600 active:scale-95 transition-transform text-lg">
+                    <i class="fa-solid fa-pen mr-2"></i> 寫進日記本
+                </button>
+            </div>
+
+            <h3 class="font-bold text-slate-600 mb-3 px-2">📝 過去的紀錄：</h3>
+            <div id="weight-list" class="space-y-3">
+                <!-- 紀錄由 JS 產生 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 詳細時間與每日任務資料 ---
+        const taskData = [
+            { id: 'm1', time: '🌞 早晨 (08:00 - 09:00)', title: '開燈與熱身', text: '開啟太陽燈（熱點維持 38-40°C）與 UVB 紫外線燈，讓龜龜醒來曬太陽。', icon: 'fa-sun', color: 'text-orange-500' },
+            { id: 'm2', time: '🌞 早晨 (08:30 - 09:30)', title: '準備精細早餐', text: '將高纖野草/菜葉切成 0.5cm 極碎，或將草餅飼料「徹底溫水泡軟搗碎」，份量約龜殼體積 80%。', icon: 'fa-leaf', color: 'text-green-500' },
+            { id: 'm3', time: '🌞 早晨 (09:00 之後)', title: '更換乾淨飲水', text: '換上極淺的陶土水盆（放置冷區，水位低於下巴，絕對不能過深防溺水）。', icon: 'fa-glass-water', color: 'text-blue-400' },
+            
+            { id: 'a1', time: '☀️ 下午 (14:00 - 16:00)', title: '溫水泡澡與排酸', text: '準備 30-35°C 溫水，讓龜龜泡澡 15-20 分鐘（水位不超過腹甲裙邊），仔細觀察有無白色排酸！', icon: 'fa-bath', color: 'text-cyan-500' },
+            { id: 'a2', time: '☀️ 下午 (泡澡後)', title: '溫柔擦乾身體', text: '泡完澡後用軟毛巾將龜殼與腹甲輕輕擦乾，避免溫差著涼感冒。', icon: 'fa-hands-bubbles', color: 'text-pink-500' },
+            
+            { id: 'e1', time: '🌙 晚上 (19:00 - 20:00)', title: '檢查環境濕度', text: '噴水保持底材微濕，確保整體濕度在 60% - 70%（防止龜殼隆背變形）。', icon: 'fa-droplet', color: 'text-blue-500' },
+            { id: 'e2', time: '🌙 晚上 (21:00)', title: '關燈就寢', text: '關閉所有發光燈具，讓龜龜安心睡覺（夜間溫度需維持 25°C 以上）。', icon: 'fa-moon', color: 'text-indigo-500' }
+        ];
+
+        let tasksState = {};
+        taskData.forEach(task => {
+            tasksState[task.id] = { completed: false, timeStr: '', keeper: '' };
+        });
+
+        // --- 每月成長指南資料 ---
+        const monthGuideData = {
+            1: {
+                title: "🐣 1 ~ 3 個月：最脆弱的黃金起步期",
+                badge: "現階段寶寶",
+                bath: "每天 1 次溫水泡澡（15-20分鐘），嚴格盯緊排酸與保濕。",
+                diet: "切成 0.5 公分極碎的高纖菜葉 + 徹底泡軟的草餅飼料 + 牧草粉，每週補鈣 2-3 次。",
+                env: "熱點 38-40°C，環境濕度保持 60%-70%（防隆背）。",
+                tip: "免疫力與保水力極差，切忌吹風或溫差過大，每天細心觀察糞便與排酸狀態！"
+            },
+            2: {
+                title: "🌱 4 ~ 6 個月：適應環境與快速發育期",
+                badge: "成長中",
+                bath: "維持每天 1 次溫水泡澡，幫助骨骼與腸胃穩定發育。",
+                diet: "菜葉可以稍微切大塊一點點，增加更多天然野草（車前草、蒲公英）。",
+                env: "隨著體型變大，可稍微擴大飼養箱活動空間，維持高溫高濕。",
+                tip: "胃口會變很好，每次餵食維持在龜殼體積 80% 即可，避免暴飲暴食。"
+            },
+            3: {
+                title: "🌿 7 ~ 12 個月：邁向一歲的打底期",
+                badge: "頭好壯壯",
+                bath: "維持每天泡澡習慣，這是一生中預防結石最關鍵的一年。",
+                diet: "逐漸增加乾牧草（提摩西草粉或草段）比例，訓練咀嚼粗纖維。",
+                env: "確保 UVB 燈管定期更換（每半年換一次，確保紫外線強度足夠）。",
+                tip: "龜殼生長速度非常快，鈣質與 UVB 絕對不能馬虎，注意觀察有無軟殼跡象。"
+            },
+            4: {
+                title: "🐢 1 ~ 2 歲：青年期（開始調整習慣）",
+                badge: "青少年期",
+                bath: "可從「每天泡澡」逐漸放寬為 **每週 2 到 3 次**。",
+                diet: "不需要再切得像細末，可以給整株地瓜葉或牧草讓牠自己啃咬。",
+                env: "體型逐漸變大，若有陽台或戶外庭院，可開始讓牠接觸安全的自然陽光。",
+                tip: "開始學會自己到水盆喝水和泡水，對環境的適應力變強韌了。"
+            },
+            5: {
+                title: "🐢 2 ~ 3 歲：亞成體期（推土機成形）",
+                badge: "亞成體",
+                bath: "每週泡澡 1-2 次，或在專屬大水盆讓牠自由進出。",
+                diet: "主食以各類乾牧草、野草為主，草餅飼料作為零食或副食。",
+                env: "需要更大的飼養空間或戶外專屬圍欄，力氣很大，佈置要固定牢固。",
+                tip: "破壞力開始展現，喜歡推動水盆或裝飾物，活動力極強。"
+            },
+            6: {
+                title: "🌳 3 歲以上：成年期（巨獸養成）",
+                badge: "成年巨獸",
+                bath: "每週隨意，提供大型水池讓牠自行泡水即可。",
+                diet: "完全的草食性動物！大量粗糙牧草、野草、仙人掌片，維持高纖低蛋白。",
+                env: "需要寬敞的戶外庭院或專屬陽台空間，耐寒與抗旱能力極佳。",
+                tip: "個性溫馴但體型龐大（可達 50 公斤以上），會陪伴您長達數十年之久！"
+            }
+        };
+
+        let weightRecords = [
+            { date: '2026-08-01', weight: 115 }
+        ];
+
+        // 成長相簿資料
+        let photoRecords = [];
+
+        // --- 拍照與自動圖片壓縮功能 ---
+        window.compressAndSavePhoto = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const monthSelect = document.getElementById('photo-month-select');
+            const selectedMonth = monthSelect.value;
+            const keeperInput = document.getElementById('keeper-name');
+            const keeperName = keeperInput.value.trim() || '保母';
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = function() {
+                    // 設定壓縮後的最大寬高 (例如寬度最大 600px，大幅減小檔案體積)
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 600;
+                    const MAX_HEIGHT = 600;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // 壓縮為 JPEG，品質為 0.7
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+                    // 儲存到紀錄中 (若該月份已有照片則覆蓋或新增)
+                    const today = new Date();
+                    const dateStr = today.getFullYear() + '/' + (today.getMonth()+1) + '/' + today.getDate();
+
+                    // 檢查是否已有該月份，有就更新，沒有就新增
+                    const existingIndex = photoRecords.findIndex(p => p.month === selectedMonth);
+                    if (existingIndex >= 0) {
+                        photoRecords[existingIndex] = { month: selectedMonth, img: compressedDataUrl, date: dateStr, keeper: keeperName };
+                    } else {
+                        photoRecords.push({ month: selectedMonth, img: compressedDataUrl, date: dateStr, keeper: keeperName });
+                    }
+
+                    renderPhotos();
+                    alert(`成功上傳並壓縮 [${selectedMonth}] 的成長照片！`);
+                    event.target.value = ''; // 清空檔案選擇
+                }
+            }
+        }
+
+        // 渲染相簿藝廊
+        function renderPhotos() {
+            const gallery = document.getElementById('photo-gallery');
+            gallery.innerHTML = '';
+
+            if (photoRecords.length === 0) {
+                gallery.innerHTML = '<div class="col-span-2 text-center text-slate-400 py-6 font-medium text-sm">還沒有上傳照片喔！趕快拍一張記錄寶貝的可愛模樣吧。</div>';
+                return;
+            }
+
+            photoRecords.forEach((record) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-2xl border-2 border-purple-100 overflow-hidden shadow-sm flex flex-col';
+                card.innerHTML = `
+                    <div class="relative bg-slate-100 h-40">
+                        <img src="${record.img}" alt="${record.month}" class="w-full h-full object-cover">
+                        <span class="absolute top-2 left-2 bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow">${record.month}</span>
+                    </div>
+                    <div class="p-3 text-xs text-slate-600 space-y-1">
+                        <p class="font-bold text-slate-800"><i class="fa-solid fa-calendar mr-1 text-purple-500"></i> ${record.date}</p>
+                        <p><i class="fa-solid fa-user mr-1 text-purple-500"></i> 攝影師：${record.keeper}</p>
+                    </div>
+                `;
+                gallery.appendChild(card);
+            });
+        }
+
+        // --- 渲染每日任務 ---
+        function renderTasks() {
+            const container = document.getElementById('task-container');
+            container.innerHTML = '';
+            let currentGroup = '';
+
+            const petInput = document.getElementById('pet-name');
+            const petName = petInput.value.trim() || '龜寶貝';
+
+            taskData.forEach(task => {
+                if (task.time !== currentGroup) {
+                    currentGroup = task.time;
+                    const groupTitle = document.createElement('h3');
+                    groupTitle.className = 'font-bold text-base text-slate-700 bg-emerald-100 rounded-xl px-4 py-2 mt-5 mb-3 flex items-center gap-2';
+                    groupTitle.innerHTML = `<i class="fa-solid fa-clock text-emerald-600"></i> ${currentGroup}`;
+                    container.appendChild(groupTitle);
+                }
+
+                const state = tasksState[task.id];
+                const card = document.createElement('label');
+                card.className = `task-card flex items-center p-4 bg-white border-2 border-slate-100 rounded-2xl shadow-sm cursor-pointer ${state.completed ? 'completed' : ''}`;
+                
+                let infoHtml = '';
+                if(state.completed) {
+                    infoHtml = `<div class="text-xs text-green-600 font-bold mt-1"><i class="fa-solid fa-circle-check mr-1"></i>保母 [${state.keeper}] 已幫 [${petName}] 完成於 ${state.timeStr}</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex-1 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shadow-inner shrink-0">
+                            <i class="fa-solid ${task.icon} text-2xl ${task.color}"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-slate-800 text-lg task-text">${task.title}</h4>
+                            <p class="text-xs text-slate-500 font-medium task-text mt-0.5 leading-relaxed">${task.text}</p>
+                            ${infoHtml}
+                        </div>
+                    </div>
+                    <input type="checkbox" class="task-checkbox ml-3" ${state.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')">
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.toggleTask = function(id) {
+            const keeperInput = document.getElementById('keeper-name');
+            const keeperName = keeperInput.value.trim() || '值日生';
+
+            if (!tasksState[id].completed) {
+                const now = new Date();
+                const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+                
+                tasksState[id] = {
+                    completed: true,
+                    timeStr: timeStr,
+                    keeper: keeperName
+                };
+            } else {
+                tasksState[id] = {
+                    completed: false,
+                    timeStr: '',
+                    keeper: ''
+                };
+            }
+            renderTasks();
+            checkAllDone();
+        };
+
+        function checkAllDone() {
+            const allDone = Object.values(tasksState).every(val => val.completed === true);
+            if (allDone) {
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 180,
+                        spread: 80,
+                        origin: { y: 0.6 },
+                        colors: ['#4ade80', '#fbbf24', '#f472b6', '#60a5fa']
+                    });
+                }, 200);
+            }
+        }
+
+        window.resetTasks = function() {
+            for (let key in tasksState) {
+                tasksState[key] = { completed: false, timeStr: '', keeper: '' };
+            }
+            renderTasks();
+        }
+
+        // --- 渲染每月指南 ---
+        window.switchMonth = function(monthNum) {
+            for(let i=1; i<=6; i++) {
+                const btn = document.getElementById(`m-btn-${i}`);
+                if(i === monthNum) {
+                    btn.className = "bg-emerald-500 text-white font-bold py-2 rounded-xl text-sm shadow-sm transition-all";
+                } else {
+                    btn.className = "bg-slate-100 text-slate-600 font-bold py-2 rounded-xl text-sm shadow-sm transition-all";
+                }
+            }
+
+            const data = monthGuideData[monthNum];
+            const card = document.getElementById('month-content-card');
+            card.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <h3 class="font-black text-lg text-emerald-900">${data.title}</h3>
+                    <span class="bg-emerald-200 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full">${data.badge}</span>
+                </div>
+                <div class="space-y-3 text-sm text-slate-700">
+                    <div class="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
+                        <p class="font-bold text-emerald-700 mb-1"><i class="fa-solid fa-bath mr-1"></i> 泡澡與水分：</p>
+                        <p>${data.bath}</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
+                        <p class="font-bold text-emerald-700 mb-1"><i class="fa-solid fa-leaf mr-1"></i> 飲食與營養：</p>
+                        <p>${data.diet}</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-emerald-100 shadow-sm">
+                        <p class="font-bold text-emerald-700 mb-1"><i class="fa-solid fa-temperature-high mr-1"></i> 環境與溫濕度：</p>
+                        <p>${data.env}</p>
+                    </div>
+                    <div class="bg-emerald-100 p-3 rounded-xl border border-emerald-200 text-emerald-900 font-medium">
+                        <p><i class="fa-solid fa-lightbulb mr-1 text-amber-500"></i> <strong>保母叮嚀：</strong>${data.tip}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- 體重紀錄功能 ---
+        function renderWeights() {
+            const list = document.getElementById('weight-list');
+            list.innerHTML = '';
+            
+            if(weightRecords.length === 0) {
+                list.innerHTML = '<div class="text-center text-slate-400 py-4 font-medium">還沒有紀錄喔！</div>';
+                return;
+            }
+
+            const sortedRecords = [...weightRecords].reverse();
+
+            sortedRecords.forEach((record, index) => {
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center bg-white border-2 border-slate-100 p-4 rounded-xl shadow-sm';
+                
+                let diffHtml = '';
+                if (index < sortedRecords.length - 1) {
+                    const diff = record.weight - sortedRecords[index + 1].weight;
+                    if (diff > 0) {
+                        diffHtml = `<span class="text-xs font-bold text-green-500 bg-green-100 px-2 py-1 rounded-full"><i class="fa-solid fa-arrow-trend-up mr-1"></i>+${diff}g</span>`;
+                    } else if (diff < 0) {
+                        diffHtml = `<span class="text-xs font-bold text-red-500 bg-red-100 px-2 py-1 rounded-full"><i class="fa-solid fa-arrow-trend-down mr-1"></i>${diff}g</span>`;
+                    } else {
+                        diffHtml = `<span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-full">- 沒變</span>`;
+                    }
+                }
+
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center font-bold">
+                            <i class="fa-regular fa-calendar"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-700">${record.date}</p>
+                            ${diffHtml}
+                        </div>
+                    </div>
+                    <div class="text-2xl font-black text-slate-800">
+                        ${record.weight} <span class="text-sm font-bold text-slate-500">g</span>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        window.addWeight = function() {
+            const input = document.getElementById('weight-input');
+            const weightVal = parseFloat(input.value);
+
+            if (isNaN(weightVal) || weightVal <= 0) {
+                alert('請輸入正確的數字喔！');
+                return;
+            }
+
+            const today = new Date();
+            const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+
+            weightRecords.push({ date: dateStr, weight: weightVal });
+            input.value = '';
+            renderWeights();
+            
+            confetti({
+                particleCount: 50,
+                spread: 50,
+                origin: { y: 0.8 }
+            });
+        }
+
+        // --- 頁籤切換邏輯 ---
+        window.switchTab = function(tabName) {
+            const tabTasks = document.getElementById('tab-tasks');
+            const tabGuide = document.getElementById('tab-guide');
+            const tabPhoto = document.getElementById('tab-photo');
+            const tabWeight = document.getElementById('tab-weight');
+            
+            const btnTasks = document.getElementById('btn-tasks');
+            const btnGuide = document.getElementById('btn-guide');
+            const btnPhoto = document.getElementById('btn-photo');
+            const btnWeight = document.getElementById('btn-weight');
+
+            tabTasks.classList.add('hidden');
+            tabGuide.classList.add('hidden');
+            tabPhoto.classList.add('hidden');
+            tabWeight.classList.add('hidden');
+            
+            btnTasks.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center';
+            btnGuide.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center';
+            btnPhoto.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center';
+            btnWeight.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center';
+
+            if (tabName === 'tasks') {
+                tabTasks.classList.remove('hidden');
+                btnTasks.className = 'bg-green-100 text-green-700 font-bold py-2 rounded-xl shadow-sm border-2 border-green-500 transition-colors text-xs flex flex-col items-center justify-center';
+            } else if (tabName === 'guide') {
+                tabGuide.classList.remove('hidden');
+                btnGuide.className = 'bg-emerald-100 text-emerald-700 font-bold py-2 rounded-xl shadow-sm border-2 border-emerald-500 transition-colors text-xs flex flex-col items-center justify-center';
+                switchMonth(1);
+            } else if (tabName === 'photo') {
+                tabPhoto.classList.remove('hidden');
+                btnPhoto.className = 'bg-purple-100 text-purple-700 font-bold py-2 rounded-xl shadow-sm border-2 border-purple-500 transition-colors text-xs flex flex-col items-center justify-center';
+                renderPhotos();
+            } else {
+                tabWeight.classList.remove('hidden');
+                btnWeight.className = 'bg-blue-100 text-blue-700 font-bold py-2 rounded-xl shadow-sm border-2 border-blue-500 transition-colors text-xs flex flex-col items-center justify-center';
+            }
+        }
+
+        renderTasks();
+        renderWeights();
+        renderPhotos();
+    </script>
+</body>
+</html>
+
