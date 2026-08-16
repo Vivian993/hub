@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>雙子油飯 叫貨單</title>
+<!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 restock-icon.png 照片 -->
+<link rel="apple-touch-icon" href="restock-icon.png">
+<link rel="icon" type="image/png" href="restock-icon.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif; margin: 0; }
+  ::-webkit-scrollbar { display: none; }
+  button { font-family: inherit; border: none; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo, useEffect } = React;
+
+const NTFY_TOPIC = "shuangzi-order-notify-8191116";
+const GOLD = "#c98a2c";
+const GOLD_TEXT = "#241a06";
+const LINE_GREEN = "#06C755";
+
+const THEMES = {
+  light: {
+    bg: "#f7f1e3", text: "#3a2f1f", card: "#ffffff", border: "#ece2cf",
+    muted: "#8a7a5c", selectBorder: "#d8c9a8", pillBg: "#ece2cf",
+    disabledBg: "#ece2cf", disabledText: "#b0a488", minusBg: "#ece2cf",
+  },
+  dark: {
+    bg: "#17140f", text: "#e9dcc3", card: "#201b13", border: "#2a251c",
+    muted: "#a99b7e", selectBorder: "#4a4232", pillBg: "#2a251c",
+    disabledBg: "#2a251c", disabledText: "#6b6252", minusBg: "#2a251c",
+  }
+};
+
+// ---- 資料 ----
+const SUPPLIERS = [
+  {
+    name: "大竹進貨",
+    subgroups: [
+      {
+        sub: "雜貨",
+        items: [
+          "四季醬油1箱4罐","萬家香醬油膏1箱4罐","甜辣醬","蝦仁","香菇","二砂糖","冰糖",
+          "油蔥酥","花椒粒","豬油","沙拉油","天賞米50斤","白醋","味霖","白胡椒",
+          "康寶雞粉(大包)","豆芽"
+        ].map(n => ({ name: n, type: "counter" }))
+      },
+      {
+        sub: "免洗餐具",
+        items: [
+          "一體小","520杯+蓋","筷子","一杯袋","二杯袋（黃）","二杯袋（白）","半斤袋（黃）",
+          "一斤袋（綠）","耐熱袋-大半斤","耐熱袋-半斤","耐熱袋-3斤","耐熱袋-5斤","耐熱袋-10斤",
+          "AO360飲料杯","PE膜","單隻裝吸管","元寶湯匙"
+        ].map(n => ({ name: n, type: "counter" }))
+      },
+      {
+        sub: "辛香料",
+        items: [
+          { name: "辣椒(小切)3斤", type: "counter" },
+          { name: "蒜末1.5斤", type: "counter" },
+          { name: "蔥花", type: "select", options: ["1斤", "2斤"] },
+          { name: "紅蔥頭末3斤", type: "counter" },
+          { name: "老薑末", type: "select", options: ["1斤", "2斤", "3斤"] },
+        ]
+      }
+    ]
+  },
+  {
+    name: "老三明星商行",
+    items: ["糯米50斤-4袋", "櫻花蝦1斤"].map(n => ({ name: n, type: "counter" }))
+  },
+  {
+    name: "豬肉攤",
+    items: ["肉絲", "控肉底", "大骨"].map(n => ({ name: n, type: "counter" }))
+  },
+  {
+    name: "商品庫存不足",
+    items: [
+      "白蛋","白胡椒","米酒","二砂糖","冰糖","蝦仁","香菇","黑麻油","豬油","肉絲","白醋","味霖","花椒粒"
+    ].map(n => ({ name: n, type: "counter" }))
+  },
+  {
+    name: "麵食廠商",
+    items: ["油麵", "米粉", "魚丸", "赤肉"].map(n => ({ name: n, type: "counter" }))
+  }
+];
+
+function flattenGroups() {
+  const groups = [];
+  SUPPLIERS.forEach((s, si) => {
+    if (s.subgroups) {
+      s.subgroups.forEach((sg, gi) => {
+        const groupKey = `${si}-${gi}`;
+        const items = sg.items.map((it, ii) => ({ ...it, id: `${groupKey}-${ii}` }));
+        groups.push({ key: groupKey, supplier: s.name, label: `${s.name}－${sg.sub}`, items });
+      });
+    } else {
+      const groupKey = `${si}`;
+      const items = s.items.map((it, ii) => ({ ...it, id: `${groupKey}-${ii}` }));
+      groups.push({ key: groupKey, supplier: s.name, label: s.name, items });
+    }
+  });
+  return groups;
+}
+
+const GROUPS = flattenGroups();
+
+// 送出後複製/傳LINE用：同一間廠商合併成一份，不管底下分幾個子分類
+function flattenBySupplier() {
+  return SUPPLIERS.map((s, si) => {
+    let items = [];
+    if (s.subgroups) {
+      s.subgroups.forEach((sg, gi) => {
+        sg.items.forEach((it, ii) => items.push({ ...it, id: `${si}-${gi}-${ii}` }));
+      });
+    } else {
+      s.items.forEach((it, ii) => items.push({ ...it, id: `${si}-${ii}` }));
+    }
+    return { key: `sup-${si}`, label: s.name, items };
+  });
+}
+
+const SUPPLIER_GROUPS = flattenBySupplier();
+
+function Stepper({ value, onChange, T }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <button
+        onClick={() => onChange(Math.max(0, value - 1))}
+        style={{ width: 42, height: 42, borderRadius: 999, background: T.minusBg, color: T.text, fontSize: 24, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}
+      >－</button>
+      <span style={{ width: 24, textAlign: "center", color: T.text, fontWeight: 600, fontSize: 17 }}>{value}</span>
+      <button
+        onClick={() => onChange(value + 1)}
+        style={{ width: 42, height: 42, borderRadius: 999, background: GOLD, color: GOLD_TEXT, fontSize: 24, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}
+      >＋</button>
+    </div>
+  );
+}
+
+function SelectPicker({ value, options, onChange, T }) {
+  const pillStyle = (active) => ({
+    padding: "8px 14px", borderRadius: 999, fontSize: 15,
+    border: `1px solid ${active ? GOLD : T.selectBorder}`,
+    background: active ? GOLD : "transparent",
+    color: active ? GOLD_TEXT : T.muted,
+  });
+  return (
+    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+      <button onClick={() => onChange("")} style={pillStyle(value === "")}>不叫</button>
+      {options.map(op => (
+        <button key={op} onClick={() => onChange(op)} style={pillStyle(value === op)}>{op}</button>
+      ))}
+    </div>
+  );
+}
+
+function App() {
+  const [dark, setDark] = useState(() => {
+    try { return localStorage.getItem("restock-theme") === "dark"; } catch (e) { return false; }
+  });
+  const T = dark ? THEMES.dark : THEMES.light;
+
+  useEffect(() => {
+    try { localStorage.setItem("restock-theme", dark ? "dark" : "light"); } catch (e) {}
+    document.body.style.background = T.bg;
+  }, [dark]);
+
+  const [state, setState] = useState({});
+  const [openGroups, setOpenGroups] = useState({});
+  const [screen, setScreen] = useState("select");
+  const [copiedKey, setCopiedKey] = useState(null);
+  const [ntfyStatus, setNtfyStatus] = useState(null);
+
+  const toggleGroup = (key) => setOpenGroups(p => ({ ...p, [key]: !p[key] }));
+  const setItemValue = (id, val) => setState(p => ({ ...p, [id]: val }));
+
+  const isSelected = (item) => {
+    const v = state[item.id];
+    if (item.type === "select") return !!v;
+    return (v || 0) > 0;
+  };
+
+  const groupSelectedCount = (group) => group.items.filter(isSelected).length;
+
+  const totalSelectedCount = useMemo(
+    () => GROUPS.reduce((sum, g) => sum + groupSelectedCount(g), 0),
+    [state]
+  );
+
+  function groupText(group) {
+    const lines = group.items
+      .filter(isSelected)
+      .map(it => it.type === "select" ? `${it.name} ${state[it.id]}` : `${it.name} x${state[it.id]}`);
+    if (lines.length === 0) return "";
+    return `【${group.label}】\n` + lines.join("\n");
+  }
+
+  const selectedGroups = SUPPLIER_GROUPS.filter(g => groupSelectedCount(g) > 0);
+  const fullText = selectedGroups.map(groupText).join("\n\n");
+
+  async function copyText(text, key) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 1500);
+  }
+
+  function sendToLine(text) {
+    window.open("https://line.me/R/msg/text/?" + encodeURIComponent(text), "_blank");
+  }
+
+  async function sendNtfy() {
+    setNtfyStatus("sending");
+    try {
+      await fetch(`https://ntfy.sh/${NTFY_TOPIC}`, {
+        method: "POST",
+        headers: { "Title": "雙子油飯 叫貨單", "Tags": "package", "Priority": "default" },
+        body: fullText || "（本次沒有勾選任何品項）",
+      });
+      setNtfyStatus("ok");
+    } catch (e) {
+      setNtfyStatus("fail");
+    }
+  }
+
+  function handleSubmit() {
+    setScreen("confirm");
+    sendNtfy();
+  }
+
+  function resetAll() {
+    setState({});
+    setScreen("select");
+    setNtfyStatus(null);
+  }
+
+  const ThemeToggle = () => (
+    <button
+      onClick={() => setDark(d => !d)}
+      style={{ width: 40, height: 40, borderRadius: 999, background: T.pillBg, color: T.text, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+      aria-label="切換深淺色"
+    >{dark ? "☀️" : "🌙"}</button>
+  );
+
+  if (screen === "confirm") {
+    return (
+      <div style={{ minHeight: "100vh", background: T.bg, color: T.text, paddingBottom: 40 }}>
+        <div style={{ padding: "24px 16px 16px", borderBottom: `1px solid ${T.border}`, position: "sticky", top: 0, background: T.bg, zIndex: 10, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>✅ 叫貨單已送出</h1>
+            <p style={{ fontSize: 15, color: T.muted, marginTop: 4 }}>
+              {ntfyStatus === "sending" && "推播通知傳送中..."}
+              {ntfyStatus === "ok" && "已推播通知到手機"}
+              {ntfyStatus === "fail" && "推播失敗，但下面內容還是可以複製或傳LINE"}
+            </p>
+          </div>
+          <ThemeToggle />
+        </div>
+
+        {selectedGroups.length === 0 ? (
+          <p style={{ textAlign: "center", color: T.muted, marginTop: 40 }}>沒有勾選任何品項</p>
+        ) : (
+          <div style={{ padding: "0 16px", marginTop: 16, display: "flex", flexDirection: "column", gap: 16 }}>
+            {selectedGroups.map(g => {
+              const text = groupText(g);
+              return (
+                <div key={g.key} style={{ background: T.card, borderRadius: 12, padding: 16, border: `1px solid ${T.border}` }}>
+                  <div style={{ fontWeight: 600, color: GOLD, marginBottom: 8 }}>{g.label}</div>
+                  <pre style={{ whiteSpace: "pre-wrap", fontSize: 16, color: T.text, fontFamily: "inherit", marginBottom: 12 }}>{text}</pre>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => copyText(text, g.key)} style={{ flex: 1, padding: "8px 0", borderRadius: 8, background: T.pillBg, color: T.text, fontSize: 16, fontWeight: 500 }}>
+                      {copiedKey === g.key ? "已複製 ✓" : "複製內容"}
+                    </button>
+                    <button onClick={() => sendToLine(text)} style={{ flex: 1, padding: "8px 0", borderRadius: 8, background: LINE_GREEN, color: "#fff", fontSize: 16, fontWeight: 500 }}>
+                      傳送LINE
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+
+            <div style={{ background: T.card, borderRadius: 12, padding: 16, border: `1px solid ${T.border}` }}>
+              <div style={{ fontWeight: 600, color: GOLD, marginBottom: 8 }}>全部內容</div>
+              <button onClick={() => copyText(fullText, "__all__")} style={{ width: "100%", padding: "8px 0", borderRadius: 8, background: T.pillBg, color: T.text, fontSize: 16, fontWeight: 500 }}>
+                {copiedKey === "__all__" ? "已複製 ✓" : "複製全部"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div style={{ padding: "0 16px", marginTop: 24 }}>
+          <button onClick={resetAll} style={{ width: "100%", padding: "12px 0", borderRadius: 12, background: GOLD, color: GOLD_TEXT, fontWeight: 700, fontSize: 17 }}>
+            重新叫貨
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", background: T.bg, color: T.text, paddingBottom: 112 }}>
+      <div style={{ padding: "24px 16px 16px", borderBottom: `1px solid ${T.border}`, position: "sticky", top: 0, background: T.bg, zIndex: 10, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>🛒 雙子油飯 叫貨單</h1>
+          <p style={{ fontSize: 15, color: T.muted, marginTop: 4 }}>點品項旁的按鈕選數量，選好按下方送出</p>
+        </div>
+        <ThemeToggle />
+      </div>
+
+      <div style={{ padding: "0 16px", marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+        {GROUPS.map(g => {
+          const count = groupSelectedCount(g);
+          const open = !!openGroups[g.key];
+          return (
+            <div key={g.key} style={{ background: T.card, borderRadius: 12, border: `1px solid ${T.border}`, overflow: "hidden" }}>
+              <button
+                onClick={() => toggleGroup(g.key)}
+                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "transparent", color: T.text }}
+              >
+                <span style={{ fontWeight: 600, fontSize: 18 }}>{g.label}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  {count > 0 && (
+                    <span style={{ fontSize: 13, background: GOLD, color: GOLD_TEXT, borderRadius: 999, padding: "3px 10px", fontWeight: 700 }}>
+                      已選{count}
+                    </span>
+                  )}
+                  <span style={{ color: T.muted }}>{open ? "▲" : "▼"}</span>
+                </span>
+              </button>
+              {open && (
+                <div style={{ padding: "0 16px 12px" }}>
+                  {g.items.map((it, idx) => (
+                    <div key={it.id} style={{ padding: "12px 0", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderTop: idx === 0 ? "none" : `1px solid ${T.border}` }}>
+                      <span style={{ fontSize: 17 }}>{it.name}</span>
+                      {it.type === "select" ? (
+                        <SelectPicker value={state[it.id] || ""} options={it.options} onChange={(v) => setItemValue(it.id, v)} T={T} />
+                      ) : (
+                        <Stepper value={state[it.id] || 0} onChange={(v) => setItemValue(it.id, v)} T={T} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: T.bg, borderTop: `1px solid ${T.border}`, padding: "12px 16px" }}>
+        <button
+          disabled={totalSelectedCount === 0}
+          onClick={handleSubmit}
+          style={{
+            width: "100%", padding: "12px 0", borderRadius: 12, fontWeight: 700, fontSize: 17,
+            background: totalSelectedCount === 0 ? T.disabledBg : GOLD,
+            color: totalSelectedCount === 0 ? T.disabledText : GOLD_TEXT,
+          }}
+        >
+          {totalSelectedCount === 0 ? "尚未選擇品項" : `送出叫貨單（已選 ${totalSelectedCount} 項）`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
