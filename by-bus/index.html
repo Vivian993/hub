@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>打勾勾</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<style>
+body{background-color:#f9f6f0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-tap-highlight-color:transparent;}
+::-webkit-scrollbar{display:none;}
+.glass-header{background:rgba(249,246,240,0.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}
+.active-scale:active{transform:scale(0.96);transition:transform .1s;}
+.modal-bg{transition:opacity .2s ease;}
+.modal-content{transition:transform .3s cubic-bezier(.175,.885,.32,1.275);}
+.edit-mode-active{border:2px dashed #e5a999;background-color:#fff9f8;}
+.loader{border:4px solid #f3f3f3;border-top:4px solid #e5a999;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;}
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+.stepper-wrap{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+.stepper-wrap.open{max-height:400px;}
+.locked-card{opacity:.5;filter:grayscale(.4);}
+</style>
+</head>
+<body class="text-gray-800 antialiased h-screen flex flex-col overflow-hidden relative">
+
+<div id="loading-screen" class="absolute inset-0 bg-[#f9f6f0] z-[100] flex flex-col items-center justify-center transition-opacity duration-500">
+    <i class="ph-fill ph-handshake text-[#e5a999] text-6xl mb-4 animate-bounce"></i>
+    <div class="loader mb-4"></div>
+    <p class="text-gray-500 font-medium tracking-widest animate-pulse">同步中...</p>
+</div>
+
+<header class="glass-header z-10 pt-12 pb-4 px-6 border-b border-gray-200/50 flex-shrink-0" id="header-area">
+    <div class="flex justify-between items-center mb-5">
+        <h1 class="text-2xl font-bold tracking-wider flex items-center gap-2">
+            <i class="ph-fill ph-handshake text-[#e5a999]"></i> 打勾勾
+        </h1>
+        <div class="flex gap-2">
+            <button onclick="window.toggleEditMode()" id="edit-btn" class="px-3 py-1.5 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 active-scale shadow-sm text-sm font-medium">
+                <i class="ph ph-pencil-simple mr-1"></i> 編輯任務
+            </button>
+        </div>
+    </div>
+    <div class="flex gap-3 overflow-x-auto pb-1" id="user-list-container"></div>
+</header>
+
+<main class="flex-1 overflow-y-auto px-4 pb-8 flex flex-col pt-4">
+    <div id="empty-state" class="hidden flex-col items-center text-center mt-16 gap-3">
+        <i class="ph-fill ph-users-three text-5xl text-gray-300"></i>
+        <p class="text-gray-500 font-medium">還沒有人加入，先新增你的名字吧！</p>
+        <button onclick="window.askAddUser()" class="mt-2 px-6 py-3 rounded-2xl bg-[#e5a999] text-white font-medium active-scale shadow">
+            <i class="ph ph-plus-circle mr-1"></i> 新增我的名字
+        </button>
+    </div>
+
+    <div id="cards-container" class="flex flex-col gap-4"></div>
+
+    <div id="tasks-section" class="mt-6"></div>
+    <div class="h-10"></div>
+</main>
+
+<!-- 任務確認彈窗 -->
+<div id="action-modal" class="fixed inset-0 z-[50] hidden flex-col items-center justify-end sm:justify-center px-4 pb-8 sm:pb-0">
+    <div class="absolute inset-0 bg-black/40 modal-bg opacity-0" onclick="window.closeModal('action-modal')"></div>
+    <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl relative z-10 modal-content translate-y-full sm:translate-y-10" id="action-modal-box">
+        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6 sm:hidden"></div>
+        <div class="flex flex-col items-center text-center mb-6">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4 text-3xl" id="modal-icon-bg"><i class="ph" id="modal-icon"></i></div>
+            <h3 class="text-xl font-bold text-gray-800 mb-1" id="modal-title">項目名稱</h3>
+            <p class="text-gray-500 text-sm" id="modal-desc">說明文字</p>
+        </div>
+        <div class="bg-gray-50 rounded-2xl p-4 flex justify-between items-center mb-6 border border-gray-100">
+            <span class="text-gray-600 font-medium">金額異動</span>
+            <span class="text-2xl font-bold" id="modal-points">0</span>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="window.closeModal('action-modal')" class="flex-1 py-3.5 rounded-xl font-medium text-gray-500 bg-gray-100 active-scale">取消</button>
+            <button onclick="window.confirmAction()" class="flex-1 py-3.5 rounded-xl font-medium text-white active-scale shadow-md" id="modal-confirm-btn">確認</button>
+        </div>
+    </div>
+</div>
+
+<!-- 編輯任務彈窗 -->
+<div id="edit-modal" class="fixed inset-0 z-[50] hidden flex-col items-center justify-end sm:justify-center px-4 pb-8 sm:pb-0">
+    <div class="absolute inset-0 bg-black/40 modal-bg opacity-0" onclick="window.closeModal('edit-modal')"></div>
+    <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl relative z-10 modal-content translate-y-full sm:translate-y-10 max-h-[85vh] overflow-y-auto" id="edit-modal-box">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold" id="edit-modal-title">編輯任務</h3>
+            <button onclick="window.closeModal('edit-modal')" class="text-gray-400 text-xl"><i class="ph ph-x"></i></button>
+        </div>
+        <div class="space-y-4 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">名稱</label>
+                <input type="text" id="edit-input-title" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#e5a999]" placeholder="例如：洗碗、忘記帶功課">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">金額 (負數代表扣錢，例如 -8)</label>
+                <input type="number" id="edit-input-points" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#e5a999]" placeholder="請輸入數字">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">分類</label>
+                <select id="edit-input-category" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#e5a999]">
+                    <option value="chore">🧺 家事任務</option>
+                    <option value="homework">📚 功課</option>
+                    <option value="infraction">⚠️ 常見疏失</option>
+                    <option value="good">🌟 好行為</option>
+                </select>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="window.deleteItemBtnClick()" id="btn-delete-item" class="hidden px-4 py-3.5 rounded-xl font-medium text-red-500 bg-red-50 active-scale"><i class="ph ph-trash"></i></button>
+            <button onclick="window.saveItem()" class="flex-1 py-3.5 rounded-xl font-medium text-white bg-gray-800 active-scale shadow-md">儲存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 歷史紀錄彈窗 -->
+<div id="history-modal" class="fixed inset-0 z-[60] hidden flex-col items-center justify-end sm:justify-center px-4 pb-8 sm:pb-0">
+    <div class="absolute inset-0 bg-black/40 modal-bg opacity-0" onclick="window.closeModal('history-modal')"></div>
+    <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl relative z-10 modal-content translate-y-full sm:translate-y-10 max-h-[75vh] flex flex-col" id="history-modal-box">
+        <div class="flex justify-between items-center mb-2">
+            <h3 class="text-xl font-bold" id="history-title">歷史紀錄</h3>
+            <button onclick="window.closeModal('history-modal')" class="text-gray-400 text-xl"><i class="ph ph-x"></i></button>
+        </div>
+        <p class="text-xs text-gray-400 mb-4">由新到舊列出每一次增加與使用</p>
+        <div id="history-list" class="overflow-y-auto flex-1 space-y-3 pr-1"></div>
+    </div>
+</div>
+
+<!-- 系統對話框 -->
+<div id="sys-dialog" class="fixed inset-0 z-[70] hidden flex-col items-center justify-center px-4">
+    <div class="absolute inset-0 bg-black/50 opacity-0 transition-opacity" id="sys-dialog-bg"></div>
+    <div class="bg-white rounded-3xl w-full max-w-[320px] p-6 shadow-2xl relative z-10 transform scale-95 opacity-0 transition-all text-center" id="sys-dialog-box">
+        <h3 class="text-xl font-bold text-gray-800 mb-2" id="sys-dialog-title">系統提示</h3>
+        <p class="text-gray-500 text-sm mb-5" id="sys-dialog-msg">訊息內容</p>
+        <input type="text" id="sys-dialog-input" class="hidden w-full px-4 py-3 rounded-xl border border-gray-200 mb-5 focus:outline-none focus:ring-2 focus:ring-[#e5a999] text-center" placeholder="請輸入...">
+        <div class="flex gap-3" id="sys-dialog-btns"></div>
+    </div>
+</div>
+
+<script>
+// ================== 常數 ==================
+const STORAGE_KEY = 'jjg-cards-family-data';
+const REF_MONDAY = new Date('2024-01-01T00:00:00'); // 已知的星期一
+const AVATARS = ['👦','👧','🧒','👶','🧑','👨','👩'];
+const COLORS = ['bg-[#a7c5c2]','bg-[#e5a999]','bg-[#98b8e6]','bg-[#c9a7e6]','bg-[#e6c98a]'];
+
+const TASK_DEFAULTS = [
+    { id:'t1', title:'倒垃圾', points:3, category:'chore' },
+    { id:'t2', title:'晾衣服', points:5, category:'chore' },
+    { id:'t3', title:'收書包/房間整理', points:5, category:'chore' },
+    { id:'t4', title:'洗碗', points:8, category:'chore' },
+    { id:'t5', title:'拖地', points:10, category:'chore' },
+    { id:'t6', title:'主動幫忙做家事', points:12, category:'chore' },
+    { id:'t7', title:'幫忙準備/收拾餐桌', points:4, category:'chore' },
+    { id:'t8', title:'如期完成功課', points:5, category:'homework' },
+    { id:'t9', title:'聯絡簿沒帶回來簽名', points:-8, category:'homework' },
+    { id:'t10', title:'功課忘記帶去學校', points:-8, category:'homework' },
+    { id:'t11', title:'東西亂丟不歸位', points:-3, category:'infraction' },
+    { id:'t12', title:'房間/桌面沒整理', points:-3, category:'infraction' },
+    { id:'t13', title:'沒刷牙就睡覺', points:-3, category:'infraction' },
+    { id:'t14', title:'忘記關燈/浪費水電', points:-3, category:'infraction' },
+    { id:'t15', title:'對家人沒禮貌/頂嘴', points:-5, category:'infraction' },
+    { id:'t16', title:'說謊/隱瞞做錯的事', points:-10, category:'infraction' },
+    { id:'t17', title:'主動說謝謝/有禮貌', points:2, category:'good' },
+    { id:'t18', title:'主動閱讀課外書', points:5, category:'good' },
+    { id:'t19', title:'考試/作業表現進步', points:10, category:'good' },
+    { id:'t20', title:'連續一週全勤獎', points:20, category:'good' }
+];
+
+// ================== 狀態 ==================
+let appData = null;
+let currentUserId = null;
+let isEditMode = false;
+let selectedItem = null;
+let editingItemId = null;
+let dialogCallback = null;
+let openStepperKey = null;
+
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function isMonday(d){ return d.getDay()===1; }
+function isRedeemWeek(d){ const diffDays=Math.floor((d-REF_MONDAY)/86400000); const weekNum=Math.floor(diffDays/7); return weekNum%2===0; }
+function nowLabel(){ const d=new Date(); return d.getFullYear()+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
+function newCard(initial){ return { available: initial, lastCheck: todayStr(), history: [{ts:nowLabel(), delta:initial, result:initial, note:'初始值', by:'系統'}] }; }
+
+function makeDefaultMember(name){
+    const id = 'm'+Date.now()+Math.floor(Math.random()*1000);
+    return {
+        id, name, avatar: AVATARS[Math.floor(Math.random()*AVATARS.length)], color: COLORS[Math.floor(Math.random()*COLORS.length)],
+        cards: { money: newCard(0), screentime: newCard(30), fries: newCard(0), drink: newCard(0) }
+    };
+}
+
+// ================== 儲存 ==================
+async function loadData(){
+    try{
+        const res = await window.storage.get(STORAGE_KEY, true);
+        appData = res ? JSON.parse(res.value) : null;
+    }catch(e){ appData = null; }
+    if(!appData){ appData = { members: [], tasks: JSON.parse(JSON.stringify(TASK_DEFAULTS)) }; await syncToCloud(); }
+    if(!appData.tasks) appData.tasks = JSON.parse(JSON.stringify(TASK_DEFAULTS));
+    if(appData.members.length>0 && !appData.members.find(m=>m.id===currentUserId)) currentUserId = appData.members[0].id;
+    rolloverAll();
+    renderApp();
+    hideLoading();
+}
+async function syncToCloud(){ try{ await window.storage.set(STORAGE_KEY, JSON.stringify(appData), true); }catch(e){ console.error(e); } }
+function hideLoading(){ const l=document.getElementById('loading-screen'); if(l){ l.classList.add('opacity-0'); setTimeout(()=>l.remove(),500); } }
+
+// ================== 每日/每週自動結算 ==================
+function rolloverCard(card, kind){
+    const today = todayStr();
+    if(card.lastCheck === today) return;
+    let d = new Date(card.lastCheck + 'T00:00:00');
+    const end = new Date(today + 'T00:00:00');
+    let changed = false;
+    while(d < end){
+        d.setDate(d.getDate()+1);
+        if(kind==='money'){ card.available += 10; changed = true; }
+        else if(kind==='screentime'){ card.available = Math.min(card.available+30, 60); changed = true; }
+        else if(kind==='fries' && isMonday(d)){ card.available += 1; changed = true; }
+        else if(kind==='drink' && isMonday(d) && isRedeemWeek(d)){ card.available += 1; changed = true; }
+    }
+    if(changed){
+        card.history.unshift({ ts: nowLabel(), delta: null, result: card.available, note: '每日/每週自動發放', by: '系統' });
+    }
+    card.lastCheck = today;
+}
+function rolloverAll(){
+    appData.members.forEach(m=>{
+        rolloverCard(m.cards.money, 'money');
+        rolloverCard(m.cards.screentime, 'screentime');
+        rolloverCard(m.cards.fries, 'fries');
+        rolloverCard(m.cards.drink, 'drink');
+    });
+}
+
+// ================== 渲染：成員列 ==================
+function renderUsers(){
+    const c = document.getElementById('user-list-container');
+    c.innerHTML = '';
+    appData.members.forEach(u=>{
+        const active = u.id===currentUserId;
+        const cls = active ? 'ring-2 ring-offset-2 ring-gray-400 opacity-100' : 'opacity-60 scale-95';
+        const badge = isEditMode ? `<div class="absolute -top-1 -right-1 bg-white rounded-full p-0.5 shadow-sm text-xs text-gray-600 border border-gray-200"><i class="ph ph-pencil-simple"></i></div>` : '';
+        c.insertAdjacentHTML('beforeend', `
+            <button onclick="window.handleUserClick('${u.id}')" class="relative flex flex-col items-center gap-1 min-w-[4rem] transition-all ${cls} active-scale">
+                <div class="w-14 h-14 rounded-2xl ${u.color} flex items-center justify-center text-2xl shadow-sm text-white relative">${u.avatar}${badge}</div>
+                <span class="text-xs font-medium text-gray-600">${u.name}</span>
+            </button>`);
+    });
+    c.insertAdjacentHTML('beforeend', `
+        <button onclick="window.askAddUser()" class="flex flex-col items-center gap-1 min-w-[4rem] active-scale">
+            <div class="w-14 h-14 rounded-2xl bg-white border-2 border-dashed border-gray-300 flex items-center justify-center text-2xl text-gray-400">+</div>
+            <span class="text-xs font-medium text-gray-400">新增</span>
+        </button>`);
+}
+
+// ================== 渲染：卡片 ==================
+function renderApp(){
+    if(!appData) return;
+    renderUsers();
+    document.getElementById('empty-state').classList.toggle('hidden', appData.members.length>0);
+    document.getElementById('empty-state').classList.toggle('flex', appData.members.length===0);
+    document.getElementById('cards-container').classList.toggle('hidden', appData.members.length===0);
+    document.getElementById('tasks-section').classList.toggle('hidden', appData.members.length===0);
+    if(appData.members.length===0) return;
+    renderCards();
+    renderTasks();
+}
+
+function member(){ return appData.members.find(m=>m.id===currentUserId); }
+
+function renderCards(){
+    const m = member();
+    if(!m) return;
+    const c = document.getElementById('cards-container');
+    c.innerHTML = '';
+    c.insertAdjacentHTML('beforeend', moneyCardHTML(m));
+    c.insertAdjacentHTML('beforeend', screenCardHTML(m));
+    c.insertAdjacentHTML('beforeend', countCardHTML(m, 'fries', '薯條', 'ph-french-fries', 'text-yellow-600', 'bg-yellow-50', '每週一 +1 次', 20, true, 30));
+    c.insertAdjacentHTML('beforeend', countCardHTML(m, 'drink', '手搖飲 (都可百香雙響炮)', 'ph-cup', 'text-pink-600', 'bg-pink-50', '每2週一 +1 次', 40, false, 0));
+}
+
+function cardShell(key, title, icon, color, bg, valueHTML, autoText, bodyHTML){
+    return `
+    <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm">
+        <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center gap-2">
+                <div class="w-9 h-9 rounded-xl ${bg} ${color} flex items-center justify-center text-lg"><i class="${icon}"></i></div>
+                <h3 class="font-bold text-gray-700">${title}</h3>
+            </div>
+            <button onclick="window.showHistory('${key}')" class="text-xs text-gray-400 flex items-center gap-1 active-scale"><i class="ph ph-clock-counter-clockwise"></i> 歷史紀錄</button>
+        </div>
+        <p class="text-xs text-gray-400 mb-1">目前可用</p>
+        ${valueHTML}
+        <p class="text-[11px] text-gray-400 mb-3">${autoText}</p>
+        ${bodyHTML}
+    </div>`;
+}
+
+// ---- 零用錢卡 ----
+function moneyCardHTML(m){
+    const card = m.cards.money;
+    const open = openStepperKey==='money';
+    const value = `<div class="flex items-baseline gap-1 mb-1"><span class="text-4xl font-extrabold text-[#4a4a4a]">${card.available}</span><span class="text-gray-400 font-medium">元</span></div>`;
+    const body = `
+        <div class="flex gap-3">
+            <button onclick="window.toggleStepper('money','use')" class="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium active-scale">－ 使用</button>
+            <button onclick="window.toggleStepper('money','add')" class="flex-1 py-2.5 rounded-xl bg-[#e5a999]/20 text-[#c07a5f] text-sm font-medium active-scale">＋ 增加</button>
+        </div>
+        <div id="stepper-money" class="stepper-wrap ${open?'open':''}"></div>
+        <div class="mt-3 pt-3 border-t border-gray-50">
+            <button onclick="window.convertScreenTimeToCash()" class="w-full text-xs text-cyan-600 bg-cyan-50 rounded-xl py-2 active-scale"><i class="ph ph-arrows-left-right mr-1"></i>把剩餘3C時間換成現金 (1分鐘=2元)</button>
+        </div>`;
+    return cardShell('money','零用錢','ph-coin','text-amber-500','bg-amber-50',value,'每天自動 +10 元・做家事/功課/好行為可加錢，疏失會扣錢',body);
+}
+
+// ---- 3C 時間卡 ----
+function screenCardHTML(m){
+    const card = m.cards.screentime;
+    const open = openStepperKey==='screentime';
+    const value = `<div class="flex items-baseline gap-1 mb-1"><span class="text-4xl font-extrabold text-[#4a4a4a]">${card.available}</span><span class="text-gray-400 font-medium">分鐘</span></div>`;
+    const body = `
+        <div class="flex gap-3">
+            <button onclick="window.toggleStepper('screentime','use')" class="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium active-scale">－ 使用</button>
+            <button onclick="window.toggleStepper('screentime','add')" class="flex-1 py-2.5 rounded-xl bg-cyan-50 text-cyan-600 text-sm font-medium active-scale">＋ 增加</button>
+        </div>
+        <div id="stepper-screentime" class="stepper-wrap ${open?'open':''}"></div>
+        <div class="mt-3 pt-3 border-t border-gray-50">
+            <label class="text-xs text-gray-500 mb-1 block">今日使用時段</label>
+            <div class="flex gap-2 items-center mb-2">
+                <input type="time" id="window-start" value="${m.windowStart||''}" class="flex-1 px-2 py-1.5 rounded-lg border border-gray-200 text-xs">
+                <span class="text-gray-300 text-xs">到</span>
+                <input type="time" id="window-end" value="${m.windowEnd||''}" class="flex-1 px-2 py-1.5 rounded-lg border border-gray-200 text-xs">
+                <button onclick="window.saveScreenWindow()" class="px-3 py-1.5 rounded-lg bg-gray-800 text-white text-xs active-scale">儲存</button>
+            </div>
+            <button onclick="window.reportOvertime()" class="w-full text-xs text-red-500 bg-red-50 rounded-xl py-2 active-scale"><i class="ph ph-warning mr-1"></i>回報超時 (每超1分鐘扣$1)</button>
+        </div>`;
+    return cardShell('screentime','3C 時間','ph-game-controller','text-cyan-600','bg-cyan-50',value,'每天自動 +30 分鐘・可累積，上限60分鐘',body);
+}
+
+// ---- 次數卡 (薯條 / 手搖飲) ----
+function countCardHTML(m, key, title, icon, color, bg, autoText, redeemCost, showConvert, convertValue){
+    const card = m.cards[key];
+    const open = openStepperKey===key;
+    const value = `<div class="flex items-baseline gap-1 mb-1"><span class="text-4xl font-extrabold text-[#4a4a4a]">${card.available}</span><span class="text-gray-400 font-medium">次</span></div>`;
+    const canRedeem = card.available>0 && m.cards.money.available>=redeemCost;
+    const redeemBtn = canRedeem
+        ? `<button onclick="window.redeemCount('${key}', ${redeemCost})" class="w-full text-xs text-white bg-[#e5a999] rounded-xl py-2.5 active-scale font-medium"><i class="ph ph-gift mr-1"></i>兌換一次 (額外扣 $${redeemCost})</button>`
+        : `<button disabled class="w-full text-xs text-gray-400 bg-gray-100 rounded-xl py-2.5 font-medium">${card.available<=0?'目前沒有可用次數':'零用錢不足 $'+redeemCost}</button>`;
+    const convertBtn = showConvert
+        ? `<button onclick="window.convertCountToCash('${key}', ${convertValue})" class="w-full text-xs text-gray-500 bg-gray-50 rounded-xl py-2 mt-2 active-scale ${card.available<=0?'opacity-50 pointer-events-none':''}"><i class="ph ph-arrows-left-right mr-1"></i>沒用完？換成零用錢 (1次=$${convertValue})</button>`
+        : '';
+    const body = `
+        <div class="flex gap-3 mb-2">
+            <button onclick="window.toggleStepper('${key}','use')" class="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-600 text-sm font-medium active-scale">－ 手動調整</button>
+            <button onclick="window.toggleStepper('${key}','add')" class="flex-1 py-2.5 rounded-xl ${bg} ${color} text-sm font-medium active-scale">＋ 手動調整</button>
+        </div>
+        <div id="stepper-${key}" class="stepper-wrap ${open?'open':''}"></div>
+        <div class="mt-3 pt-3 border-t border-gray-50">
+            ${redeemBtn}
+            ${convertBtn}
+        </div>`;
+    return cardShell(key, title, icon, color, bg, value, autoText, body);
+}
+
+// ================== 拉桿 (使用/增加) ==================
+window.toggleStepper = function(key, mode){
+    if(openStepperKey===key){ openStepperKey=null; renderCards(); return; }
+    openStepperKey = key;
+    renderCards();
+    const wrap = document.getElementById('stepper-'+key);
+    if(!wrap) return;
+    wrap.classList.add('open');
+    wrap.innerHTML = `
+        <div class="bg-gray-50 rounded-2xl p-4 mt-1">
+            <p class="text-xs text-gray-500 mb-2">這次${mode==='use'?'使用':'增加'}</p>
+            <div class="flex items-center gap-3 mb-2">
+                <button onclick="window.stepAmount(-1)" class="w-9 h-9 rounded-full bg-white border border-gray-200 active-scale">－</button>
+                <input type="number" id="stepper-amount" value="${key==='money'?10:(key==='screentime'?10:1)}" class="flex-1 text-center text-xl font-bold py-2 rounded-xl border border-gray-200">
+                <button onclick="window.stepAmount(1)" class="w-9 h-9 rounded-full bg-white border border-gray-200 active-scale">＋</button>
+            </div>
+            <input type="text" id="stepper-note" placeholder="+ 新增備註 (例如：買文具)" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm mb-2">
+            <p class="text-xs text-gray-400 mb-3" id="stepper-calc"></p>
+            <button onclick="window.submitStepper('${key}','${mode}')" class="w-full py-3 rounded-xl bg-gray-800 text-white font-medium active-scale">送出${mode==='use'?'使用':'增加'}紀錄</button>
+        </div>`;
+    updateStepperCalc(key, mode);
+    document.getElementById('stepper-amount').addEventListener('input', ()=>updateStepperCalc(key, mode));
+};
+window.stepAmount = function(dir){
+    const input = document.getElementById('stepper-amount');
+    let v = parseInt(input.value)||0;
+    v = Math.max(0, v+dir);
+    input.value = v;
+    input.dispatchEvent(new Event('input'));
+};
+function updateStepperCalc(key, mode){
+    const card = member().cards[key];
+    const amt = parseInt(document.getElementById('stepper-amount').value)||0;
+    const result = mode==='use' ? Math.max(0,card.available-amt) : card.available+amt;
+    const sign = mode==='use' ? '－' : '＋';
+    document.getElementById('stepper-calc').innerText = `${card.available} ${sign} ${amt} = ${result}`;
+}
+window.submitStepper = function(key, mode){
+    const m = member();
+    const card = m.cards[key];
+    const amt = parseInt(document.getElementById('stepper-amount').value)||0;
+    const note = document.getElementById('stepper-note').value.trim();
+    if(amt<=0){ sysAlert('請輸入數字','數量需大於0'); return; }
+    if(mode==='use'){ card.available = Math.max(0, card.available-amt); }
+    else{ card.available += amt; }
+    card.history.unshift({ ts: nowLabel(), delta: mode==='use'?-amt:amt, result: card.available, note: note || (mode==='use'?'手動使用':'手動增加'), by: m.name });
+    openStepperKey = null;
+    syncToCloud();
+    renderApp();
+};
+
+// ================== 特殊兌換 ==================
+window.redeemCount = function(key, cost){
+    const m = member();
+    const card = m.cards[key];
+    const money = m.cards.money;
+    if(card.available<=0 || money.available<cost) return;
+    card.available -= 1;
+    money.available -= cost;
+    const label = key==='fries' ? '薯條' : '手搖飲';
+    card.history.unshift({ ts: nowLabel(), delta:-1, result: card.available, note:`兌換${label}`, by: m.name });
+    money.history.unshift({ ts: nowLabel(), delta:-cost, result: money.available, note:`兌換${label}成本`, by: m.name });
+    syncToCloud();
+    renderApp();
+    sysAlert('兌換成功', `已兌換一次${label}，扣除 $${cost}`);
+};
+window.convertCountToCash = function(key, value){
+    const m = member();
+    const card = m.cards[key];
+    const money = m.cards.money;
+    if(card.available<=0) return;
+    sysPrompt('換成零用錢', `目前有 ${card.available} 次，要換多少次成現金？(1次=$${value})`, card.available.toString(), (val)=>{
+        const n = parseInt(val);
+        if(isNaN(n)||n<=0||n>card.available){ sysAlert('輸入錯誤','數量不正確'); return; }
+        card.available -= n;
+        money.available += n*value;
+        card.history.unshift({ ts: nowLabel(), delta:-n, result: card.available, note:'換成零用錢', by: m.name });
+        money.history.unshift({ ts: nowLabel(), delta:n*value, result: money.available, note:'次數卡兌現', by: m.name });
+        syncToCloud();
+        renderApp();
+    });
+};
+window.convertScreenTimeToCash = function(){
+    const m = member();
+    const st = m.cards.screentime;
+    const money = m.cards.money;
+    if(st.available<=0){ sysAlert('沒有可兌換的時間','目前3C時間為0分鐘'); return; }
+    sysPrompt('把時間換成現金', `目前有 ${st.available} 分鐘，要換多少分鐘？(1分鐘=$2)`, st.available.toString(), (val)=>{
+        const n = parseInt(val);
+        if(isNaN(n)||n<=0||n>st.available){ sysAlert('輸入錯誤','分鐘數不正確'); return; }
+        st.available -= n;
+        money.available += n*2;
+        st.history.unshift({ ts: nowLabel(), delta:-n, result: st.available, note:'換成零用錢', by: m.name });
+        money.history.unshift({ ts: nowLabel(), delta:n*2, result: money.available, note:'3C時間兌現', by: m.name });
+        syncToCloud();
+        renderApp();
+    });
+};
+window.saveScreenWindow = function(){
+    const m = member();
+    m.windowStart = document.getElementById('window-start').value;
+    m.windowEnd = document.getElementById('window-end').value;
+    syncToCloud();
+    sysAlert('已儲存', `今天的3C時段設定為 ${m.windowStart||'未設定'} - ${m.windowEnd||'未設定'}`);
+};
+window.reportOvertime = function(){
+    sysPrompt('回報超時', '超過約定時間幾分鐘？', '', (val)=>{
+        const minutes = parseInt(val);
+        if(isNaN(minutes)||minutes<=0){ sysAlert('輸入錯誤','請輸入有效的超時分鐘數'); return; }
+        const m = member();
+        const money = m.cards.money;
+        money.available -= minutes;
+        money.history.unshift({ ts: nowLabel(), delta:-minutes, result: money.available, note:'3C超時扣款', by: m.name });
+        syncToCloud();
+        renderApp();
+        sysAlert('已記錄', `超時 ${minutes} 分鐘，已扣除 $${minutes}`);
+    });
+};
+
+// ================== 歷史紀錄 ==================
+window.showHistory = function(key){
+    const m = member();
+    const card = m.cards[key];
+    const titles = { money:'零用錢', screentime:'3C 時間', fries:'薯條', drink:'手搖飲' };
+    document.getElementById('history-title').innerText = titles[key] + '・歷史紀錄';
+    const list = document.getElementById('history-list');
+    list.innerHTML = '';
+    if(card.history.length===0){ list.innerHTML = '<p class="text-sm text-gray-400 text-center py-8">還沒有紀錄</p>'; }
+    card.history.forEach(h=>{
+        const deltaText = h.delta===null ? '' : (h.delta>=0 ? `+${h.delta}` : `${h.delta}`);
+        list.insertAdjacentHTML('beforeend', `
+            <div class="border-b border-gray-50 pb-2">
+                <p class="font-bold text-gray-700">${deltaText? deltaText+' → ' : ''}${h.result}</p>
+                <p class="text-xs text-gray-400">${h.ts}・${h.by}${h.note?'・'+h.note:''}</p>
+            </div>`);
+    });
+    showModalUI('history-modal');
+};
+
+// ================== 任務清單 ==================
+function categoryLabel(cat){ return { chore:'🧺 家事任務', homework:'📚 功課', infraction:'⚠️ 常見疏失', good:'🌟 好行為' }[cat]||cat; }
+function renderTasks(){
+    const wrap = document.getElementById('tasks-section');
+    wrap.innerHTML = `<h3 class="text-sm font-bold text-gray-500 mb-3 px-1">任務清單 (點擊直接異動零用錢)</h3>`;
+    const listEl = document.createElement('div');
+    listEl.className = 'flex flex-col gap-2';
+    ['chore','homework','infraction','good'].forEach(cat=>{
+        const items = appData.tasks.filter(t=>t.category===cat);
+        if(items.length===0) return;
+        const h = document.createElement('h4');
+        h.className = 'text-xs font-bold text-gray-400 mt-2 mb-[-2px] px-1';
+        h.innerText = categoryLabel(cat);
+        listEl.appendChild(h);
+        items.forEach(item=>{
+            const isNeg = item.points<0;
+            const div = document.createElement('div');
+            div.className = 'bg-white rounded-2xl p-3.5 flex items-center justify-between border border-gray-100 ' + (isEditMode?'':'active-scale cursor-pointer');
+            div.innerHTML = `
+                <span class="font-medium text-gray-700 text-sm">${item.title}</span>
+                ${isEditMode
+                    ? `<button class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"><i class="ph ph-pencil-simple"></i></button>`
+                    : `<span class="font-black text-sm ${isNeg?'text-red-500':'text-[#a7c5c2]'} bg-gray-50 px-2.5 py-1 rounded-lg">${isNeg?'':'+'}${item.points}</span>`}
+            `;
+            if(isEditMode){ div.querySelector('button').onclick = (e)=>window.openEditModal(item.id, e); }
+            else{ div.onclick = ()=>window.openActionModal(item.id); }
+            listEl.appendChild(div);
+        });
+    });
+    wrap.appendChild(listEl);
+    const addBtn = document.createElement('button');
+    addBtn.className = 'w-full py-4 mt-3 rounded-2xl border-2 border-dashed border-gray-300 text-gray-500 font-medium flex items-center justify-center gap-2 active-scale ' + (isEditMode?'':'hidden');
+    addBtn.innerHTML = '<i class="ph ph-plus-circle text-xl"></i> 新增任務';
+    addBtn.onclick = (e)=>window.openEditModal(null, e);
+    wrap.appendChild(addBtn);
+}
+
+// ================== 互動：成員 ==================
+window.toggleEditMode = function(){
+    isEditMode = !isEditMode;
+    const btn = document.getElementById('edit-btn');
+    if(isEditMode){ btn.classList.add('bg-[#e5a999]','text-white','border-transparent'); btn.classList.remove('bg-white','text-gray-500'); btn.innerHTML='<i class="ph ph-check mr-1"></i> 完成'; }
+    else{ btn.classList.remove('bg-[#e5a999]','text-white','border-transparent'); btn.classList.add('bg-white','text-gray-500'); btn.innerHTML='<i class="ph ph-pencil-simple mr-1"></i> 編輯任務'; }
+    renderApp();
+};
+window.handleUserClick = function(id){
+    if(isEditMode){
+        const u = appData.members.find(m=>m.id===id);
+        sysPrompt('重新命名', '請輸入新的名字：', u.name, (name)=>{
+            if(name && name.trim()!==''){ u.name = name.trim(); syncToCloud(); renderApp(); }
+        });
+    } else {
+        currentUserId = id;
+        openStepperKey = null;
+        rolloverAll();
+        renderApp();
+    }
+};
+window.askAddUser = function(){
+    sysPrompt('新增你的名字', '輸入你的名字，加入這個空間：', '', (name)=>{
+        if(name && name.trim()!==''){
+            const u = makeDefaultMember(name.trim());
+            appData.members.push(u);
+            currentUserId = u.id;
+            syncToCloud();
+            renderApp();
+        }
+    });
+};
+
+// ================== 互動：任務動作 ==================
+window.openActionModal = function(itemId){
+    selectedItem = appData.tasks.find(t=>t.id===itemId);
+    const m = member();
+    const isNeg = selectedItem.points<0;
+    document.getElementById('modal-icon-bg').className = `w-16 h-16 rounded-full flex items-center justify-center mb-4 text-3xl ${isNeg?'bg-red-50 text-red-500':'bg-green-50 text-green-600'}`;
+    document.getElementById('modal-icon').className = isNeg ? 'ph ph-warning' : 'ph ph-star';
+    document.getElementById('modal-title').innerText = selectedItem.title;
+    document.getElementById('modal-desc').innerText = `確定要幫 ${m.name} 記錄這筆嗎？`;
+    const pointsEl = document.getElementById('modal-points');
+    pointsEl.innerText = (isNeg?'':'+') + selectedItem.points;
+    pointsEl.className = `text-2xl font-bold ${isNeg?'text-red-500':'text-[#a7c5c2]'}`;
+    const confirmBtn = document.getElementById('modal-confirm-btn');
+    confirmBtn.innerText = '確認';
+    confirmBtn.className = `flex-1 py-3.5 rounded-xl font-medium text-white active-scale shadow-md ${isNeg?'bg-red-400':'bg-[#a7c5c2]'}`;
+    showModalUI('action-modal');
+};
+window.confirmAction = function(){
+    const m = member();
+    if(m && selectedItem){
+        const money = m.cards.money;
+        money.available += selectedItem.points;
+        money.history.unshift({ ts: nowLabel(), delta: selectedItem.points, result: money.available, note: selectedItem.title, by: m.name });
+        syncToCloud();
+        renderApp();
+    }
+    window.closeModal('action-modal');
+};
+
+// ================== 互動：任務編輯 ==================
+window.openEditModal = function(itemId, event){
+    if(event) event.stopPropagation();
+    editingItemId = itemId;
+    const titleInput = document.getElementById('edit-input-title');
+    const pointsInput = document.getElementById('edit-input-points');
+    const catInput = document.getElementById('edit-input-category');
+    const delBtn = document.getElementById('btn-delete-item');
+    if(itemId){
+        document.getElementById('edit-modal-title').innerText = '編輯任務';
+        const item = appData.tasks.find(t=>t.id===itemId);
+        titleInput.value = item.title; pointsInput.value = item.points; catInput.value = item.category;
+        delBtn.classList.remove('hidden');
+    } else {
+        document.getElementById('edit-modal-title').innerText = '新增任務';
+        titleInput.value=''; pointsInput.value=''; catInput.value='chore';
+        delBtn.classList.add('hidden');
+    }
+    showModalUI('edit-modal');
+};
+window.saveItem = function(){
+    const title = document.getElementById('edit-input-title').value.trim();
+    const points = parseInt(document.getElementById('edit-input-points').value);
+    const category = document.getElementById('edit-input-category').value;
+    if(!title || isNaN(points) || points===0){ sysAlert('資料不完整','請填寫完整的名稱與有效的點數(不可為0)！'); return; }
+    if(editingItemId){
+        const idx = appData.tasks.findIndex(i=>i.id===editingItemId);
+        if(idx>-1) Object.assign(appData.tasks[idx], { title, points, category });
+    } else {
+        appData.tasks.push({ id:'t'+Date.now(), title, points, category });
+    }
+    syncToCloud();
+    renderApp();
+    window.closeModal('edit-modal');
+};
+window.deleteItemBtnClick = function(){
+    sysConfirm('刪除確認', '確定要刪除這個項目嗎？', ()=>{
+        appData.tasks = appData.tasks.filter(t=>t.id!==editingItemId);
+        syncToCloud();
+        renderApp();
+        window.closeModal('edit-modal');
+    });
+};
+
+// ================== Modal utils ==================
+function showModalUI(modalId){
+    const modal = document.getElementById(modalId);
+    const box = document.getElementById(modalId+'-box');
+    modal.classList.remove('hidden'); modal.classList.add('flex');
+    void modal.offsetWidth;
+    modal.querySelector('.modal-bg').classList.remove('opacity-0');
+    box.classList.remove('translate-y-full','sm:translate-y-10');
+    box.classList.add('translate-y-0');
+}
+window.closeModal = function(modalId){
+    const modal = document.getElementById(modalId);
+    const box = document.getElementById(modalId+'-box');
+    modal.querySelector('.modal-bg').classList.add('opacity-0');
+    box.classList.remove('translate-y-0');
+    box.classList.add('translate-y-full','sm:translate-y-10');
+    setTimeout(()=>{ modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+};
+function showSysDialog(title,msg,type,defaultValue,onConfirm){
+    document.getElementById('sys-dialog-title').innerText = title;
+    document.getElementById('sys-dialog-msg').innerText = msg;
+    const input = document.getElementById('sys-dialog-input');
+    const btns = document.getElementById('sys-dialog-btns');
+    input.value = defaultValue||''; btns.innerHTML=''; dialogCallback = onConfirm;
+    if(type==='prompt'){
+        input.classList.remove('hidden'); input.type='text';
+        btns.innerHTML = `<button onclick="window.closeSysDialog()" class="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 font-medium active-scale">取消</button><button onclick="window.confirmSysDialog('prompt')" class="flex-1 py-3 rounded-xl bg-[#e5a999] text-white font-medium shadow active-scale">確認</button>`;
+    } else if(type==='confirm'){
+        input.classList.add('hidden');
+        btns.innerHTML = `<button onclick="window.closeSysDialog()" class="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600 font-medium active-scale">取消</button><button onclick="window.confirmSysDialog('confirm')" class="flex-1 py-3 rounded-xl bg-red-500 text-white font-medium shadow active-scale">確定</button>`;
+    } else {
+        input.classList.add('hidden');
+        btns.innerHTML = `<button onclick="window.closeSysDialog()" class="flex-1 py-3 rounded-xl bg-gray-800 text-white font-medium shadow active-scale">我知道了</button>`;
+    }
+    const dialog=document.getElementById('sys-dialog'), bg=document.getElementById('sys-dialog-bg'), box=document.getElementById('sys-dialog-box');
+    dialog.classList.remove('hidden'); dialog.classList.add('flex');
+    void dialog.offsetWidth;
+    bg.classList.remove('opacity-0'); box.classList.remove('scale-95','opacity-0'); box.classList.add('scale-100','opacity-100');
+    if(type==='prompt') input.focus();
+}
+window.closeSysDialog = function(){
+    const dialog=document.getElementById('sys-dialog'), bg=document.getElementById('sys-dialog-bg'), box=document.getElementById('sys-dialog-box');
+    bg.classList.add('opacity-0'); box.classList.remove('scale-100','opacity-100'); box.classList.add('scale-95','opacity-0');
+    setTimeout(()=>{ dialog.classList.add('hidden'); dialog.classList.remove('flex'); }, 200);
+};
+window.confirmSysDialog = function(type){
+    if(dialogCallback){ if(type==='prompt'){ dialogCallback(document.getElementById('sys-dialog-input').value); } else { dialogCallback(); } }
+    window.closeSysDialog();
+};
+function sysAlert(title,msg){ showSysDialog(title,msg,'alert'); }
+function sysPrompt(title,msg,defVal,cb){ showSysDialog(title,msg,'prompt',defVal,cb); }
+function sysConfirm(title,msg,cb){ showSysDialog(title,msg,'confirm',null,cb); }
+
+// ================== 啟動 ==================
+loadData();
+</script>
+</body>
+</html>
