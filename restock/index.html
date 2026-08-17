@@ -41,6 +41,9 @@ const THEMES = {
 };
 
 // ---- 資料 ----
+// counter: 一般計數，unit=顯示單位，multiplier=每按一次+1所代表的數量（預設1）
+// select: 從固定選項選一個（例如斤數區間）
+// check: 只是勾選提醒要叫貨，不需要數量
 const SUPPLIERS = [
   {
     name: "大竹進貨",
@@ -48,26 +51,54 @@ const SUPPLIERS = [
       {
         sub: "雜貨",
         items: [
-          "四季醬油1箱4罐","萬家香醬油膏1箱4罐","甜辣醬","蝦仁","香菇","二砂糖","冰糖",
-          "油蔥酥","花椒粒","豬油","沙拉油","天賞米50斤","白醋","味霖","白胡椒",
-          "康寶雞粉(大包)","豆芽"
-        ].map(n => ({ name: n, type: "counter" }))
+          { name: "四季醬油", type: "counter", unit: "箱", multiplier: 1 },
+          { name: "萬家香醬油膏", type: "counter", unit: "箱", multiplier: 1 },
+          { name: "甜辣醬", type: "counter", unit: "箱", multiplier: 1 },
+          { name: "蝦仁", type: "counter", unit: "斤", multiplier: 3 },
+          { name: "香菇", type: "counter", unit: "斤", multiplier: 2 },
+          { name: "二砂糖", type: "counter", unit: "斤", multiplier: 10 },
+          { name: "冰糖(大包)", type: "counter", unit: "包", multiplier: 1 },
+          { name: "油蔥酥(大包)", type: "counter", unit: "包", multiplier: 1 },
+          { name: "花椒粒(大包)", type: "counter", unit: "包", multiplier: 1 },
+          { name: "豬油", type: "counter", unit: "桶", multiplier: 1 },
+          { name: "沙拉油18L", type: "counter", unit: "箱", multiplier: 1 },
+          { name: "天賞米", type: "counter", unit: "袋", multiplier: 1 },
+          { name: "白醋(大罐)", type: "counter", unit: "罐", multiplier: 1 },
+          { name: "味霖(大罐)", type: "counter", unit: "罐", multiplier: 1 },
+          { name: "白胡椒", type: "counter", unit: "盒", multiplier: 1 },
+          { name: "康寶雞粉", type: "counter", unit: "包", multiplier: 1 },
+          { name: "豆芽", type: "counter", unit: "斤", multiplier: 10 },
+        ]
       },
       {
         sub: "免洗餐具",
         items: [
-          "一體小","520杯+蓋","筷子","一杯袋","二杯袋（黃）","二杯袋（白）","半斤袋（黃）",
-          "一斤袋（綠）","耐熱袋-大半斤","耐熱袋-半斤","耐熱袋-3斤","耐熱袋-5斤","耐熱袋-10斤",
-          "AO360飲料杯","PE膜","單隻裝吸管","元寶湯匙"
-        ].map(n => ({ name: n, type: "counter" }))
+          { name: "一體小", type: "counter", unit: "箱", multiplier: 1 },
+          { name: "520杯+蓋", type: "counter", unit: "箱", multiplier: 1 },
+          { name: "筷子", type: "counter", unit: "件", multiplier: 1 },
+          { name: "一杯袋", type: "counter", unit: "包", multiplier: 1 },
+          { name: "二杯袋（黃）", type: "counter", unit: "包", multiplier: 1 },
+          { name: "二杯袋（白）", type: "counter", unit: "包", multiplier: 1 },
+          { name: "半斤袋（黃）", type: "counter", unit: "包", multiplier: 1 },
+          { name: "一斤袋（綠）", type: "counter", unit: "包", multiplier: 1 },
+          { name: "耐熱袋-大半斤", type: "counter", unit: "包", multiplier: 1 },
+          { name: "耐熱袋-半斤", type: "counter", unit: "包", multiplier: 1 },
+          { name: "耐熱袋-3斤", type: "counter", unit: "包", multiplier: 1 },
+          { name: "耐熱袋-5斤", type: "counter", unit: "包", multiplier: 1 },
+          { name: "耐熱袋-10斤", type: "counter", unit: "包", multiplier: 1 },
+          { name: "AO360飲料杯", type: "counter", unit: "箱", multiplier: 1 },
+          { name: "PE膜", type: "counter", unit: "個", multiplier: 1 },
+          { name: "單隻裝吸管", type: "counter", unit: "件", multiplier: 1 },
+          { name: "元寶湯匙", type: "counter", unit: "件", multiplier: 1 },
+        ]
       },
       {
         sub: "辛香料",
         items: [
-          { name: "辣椒(小切)3斤", type: "counter" },
-          { name: "蒜末1.5斤", type: "counter" },
+          { name: "辣椒(小切)", type: "counter", unit: "斤", multiplier: 3 },
+          { name: "蒜末", type: "counter", unit: "斤", multiplier: 1.5 },
           { name: "蔥花", type: "select", options: ["1斤", "2斤"] },
-          { name: "紅蔥頭末3斤", type: "counter" },
+          { name: "紅蔥頭末", type: "counter", unit: "斤", multiplier: 3 },
           { name: "老薑末", type: "select", options: ["1斤", "2斤", "3斤"] },
         ]
       }
@@ -75,21 +106,33 @@ const SUPPLIERS = [
   },
   {
     name: "老三明星商行",
-    items: ["糯米50斤-4袋", "櫻花蝦1斤"].map(n => ({ name: n, type: "counter" }))
+    items: [
+      { name: "糯米", type: "counter", unit: "斤", multiplier: 50 },
+      { name: "櫻花蝦", type: "counter", unit: "斤", multiplier: 1 },
+    ]
   },
   {
     name: "豬肉攤",
-    items: ["肉絲", "控肉底", "大骨"].map(n => ({ name: n, type: "counter" }))
+    items: [
+      { name: "肉絲", type: "counter", unit: "斤", multiplier: 4 },
+      { name: "控肉底", type: "counter", unit: "斤", multiplier: 8 },
+      { name: "大骨", type: "counter", unit: "隻", multiplier: 4 },
+    ]
   },
   {
     name: "商品庫存不足",
     items: [
       "白蛋","白胡椒","米酒","二砂糖","冰糖","蝦仁","香菇","黑麻油","豬油","肉絲","白醋","味霖","花椒粒"
-    ].map(n => ({ name: n, type: "counter" }))
+    ].map(n => ({ name: n, type: "check" }))
   },
   {
     name: "麵食廠商",
-    items: ["油麵", "米粉", "魚丸", "赤肉"].map(n => ({ name: n, type: "counter" }))
+    items: [
+      { name: "油麵", type: "counter", unit: "包", multiplier: 1 },
+      { name: "米粉", type: "counter", unit: "包", multiplier: 1 },
+      { name: "魚丸", type: "counter", unit: "包", multiplier: 1 },
+      { name: "赤肉", type: "counter", unit: "包", multiplier: 1 },
+    ]
   }
 ];
 
@@ -163,6 +206,25 @@ function SelectPicker({ value, options, onChange, T }) {
   );
 }
 
+function CheckToggle({ checked, onChange, T }) {
+  return (
+    <button
+      onClick={() => onChange(!checked)}
+      style={{
+        padding: "8px 16px", borderRadius: 999, fontSize: 15, fontWeight: 600,
+        border: `1px solid ${checked ? GOLD : T.selectBorder}`,
+        background: checked ? GOLD : "transparent",
+        color: checked ? GOLD_TEXT : T.muted,
+      }}
+    >{checked ? "✓ 要叫貨" : "要叫貨"}</button>
+  );
+}
+
+function fmtQty(n) {
+  if (Number.isInteger(n)) return String(n);
+  return String(Math.round(n * 10) / 10);
+}
+
 function App() {
   const [dark, setDark] = useState(() => {
     try { return localStorage.getItem("restock-theme") === "dark"; } catch (e) { return false; }
@@ -186,6 +248,7 @@ function App() {
   const isSelected = (item) => {
     const v = state[item.id];
     if (item.type === "select") return !!v;
+    if (item.type === "check") return v === true;
     return (v || 0) > 0;
   };
 
@@ -199,7 +262,12 @@ function App() {
   function groupText(group) {
     const lines = group.items
       .filter(isSelected)
-      .map(it => it.type === "select" ? `${it.name} ${state[it.id]}` : `${it.name} x${state[it.id]}`);
+      .map(it => {
+        if (it.type === "select") return `${it.name} ${state[it.id]}`;
+        if (it.type === "check") return it.name;
+        const qty = fmtQty((state[it.id] || 0) * (it.multiplier || 1));
+        return `${it.name} ${qty}${it.unit || ""}`;
+      });
     if (lines.length === 0) return "";
     return `【${group.label}】\n` + lines.join("\n");
   }
@@ -348,9 +416,18 @@ function App() {
                 <div style={{ padding: "0 16px 12px" }}>
                   {g.items.map((it, idx) => (
                     <div key={it.id} style={{ padding: "12px 0", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderTop: idx === 0 ? "none" : `1px solid ${T.border}` }}>
-                      <span style={{ fontSize: 17 }}>{it.name}</span>
+                      <div>
+                        <div style={{ fontSize: 17 }}>{it.name}</div>
+                        {it.type === "counter" && (
+                          <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>
+                            每次＋1＝{fmtQty(it.multiplier || 1)}{it.unit || ""}
+                          </div>
+                        )}
+                      </div>
                       {it.type === "select" ? (
                         <SelectPicker value={state[it.id] || ""} options={it.options} onChange={(v) => setItemValue(it.id, v)} T={T} />
+                      ) : it.type === "check" ? (
+                        <CheckToggle checked={state[it.id] === true} onChange={(v) => setItemValue(it.id, v)} T={T} />
                       ) : (
                         <Stepper value={state[it.id] || 0} onChange={(v) => setItemValue(it.id, v)} T={T} />
                       )}
