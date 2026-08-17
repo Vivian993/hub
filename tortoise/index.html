@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🐢 蘇卡達保母小日記</title>
     
-    <!-- 📌 iPhone 桌面 App 圖示 -->
+    <!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
     <link rel="apple-touch-icon" href="custom-icon.png">
     <link rel="icon" type="image/png" href="custom-icon.png">
 
@@ -138,7 +138,7 @@
                 <h3 class="font-bold text-amber-800 mb-2 flex items-center gap-2">
                     <i class="fa-solid fa-star text-amber-500"></i> 保母教養與觀察方針
                 </h3>
-                <textarea id="principles-input" rows="4" class="w-full bg-white p-3 rounded-xl border border-amber-200 focus:outline-none focus:border-amber-400 text-sm font-medium text-slate-700 leading-relaxed" placeholder="例如：&#10;1. 每天都要溫柔對待牠&#10;2. 泡澡時要觀察便便&#10;3. 多給牠吃新鮮菜菜..." onchange="saveData()"></textarea>
+                <textarea id="principles-input" rows="4" class="w-full bg-white p-3 rounded-xl border border-amber-200 focus:outline-none focus:border-amber-400 text-sm font-medium text-slate-700 leading-relaxed" placeholder="例如：&#10;1. 每天都要溫柔對待牠&#10;2. 泡澡時要觀察便便與排酸&#10;3. 多給牠吃新鮮菜菜..." onchange="saveData()"></textarea>
                 <p class="text-[10px] text-amber-600 mt-1">打完字會自動存檔喔！</p>
             </div>
 
@@ -157,7 +157,7 @@
             </div>
         </div>
 
-        <!-- ================= 內容區：每日任務 (支援自訂編輯) ================= -->
+        <!-- ================= 內容區：每日任務 (支援排序與歸檔) ================= -->
         <div id="tab-tasks" class="p-4 hidden">
             <div class="flex justify-between items-end mb-4">
                 <h2 class="text-lg font-bold text-slate-700"><i class="fa-regular fa-calendar-check mr-2 text-green-500"></i>打卡任務表</h2>
@@ -174,17 +174,16 @@
             <!-- 自訂任務新增面板 (編輯模式時顯示) -->
             <div id="task-edit-panel" class="hidden mb-4 p-4 bg-amber-50 rounded-2xl border-2 border-amber-200 shadow-sm space-y-3">
                 <h3 class="font-bold text-amber-800 text-sm"><i class="fa-solid fa-plus mr-1"></i> 新增專屬任務</h3>
-                <input type="text" id="nt-time" placeholder="設定時段 (例: 🌞 早上 08:30)" class="w-full p-2.5 rounded-xl border border-amber-200 focus:border-amber-400 focus:outline-none text-sm bg-white font-bold">
-                <input type="text" id="nt-title" placeholder="任務名稱 (例: 餵食營養菜葉)" class="w-full p-2.5 rounded-xl border border-amber-200 focus:border-amber-400 focus:outline-none text-sm bg-white font-bold">
-                <input type="text" id="nt-desc" placeholder="詳細說明 (例: 撒上少許鈣粉)" class="w-full p-2.5 rounded-xl border border-amber-200 focus:border-amber-400 focus:outline-none text-sm bg-white">
+                <input type="text" id="nt-title" placeholder="任務主項目 (例: 吃飯 / 排酸)" class="w-full p-2.5 rounded-xl border border-amber-200 focus:border-amber-400 focus:outline-none text-sm bg-white font-bold">
+                <input type="text" id="nt-desc" placeholder="詳細說明 (例: 切碎菜葉與軟飼料)" class="w-full p-2.5 rounded-xl border border-amber-200 focus:border-amber-400 focus:outline-none text-sm bg-white">
                 <div class="flex gap-2">
                     <select id="nt-icon" class="p-2.5 rounded-xl border border-amber-200 focus:outline-none text-sm bg-white flex-1 font-bold">
-                        <option value="fa-leaf,text-green-500">🥬 葉子 (餵食)</option>
-                        <option value="fa-sun,text-orange-500">🌞 太陽 (開燈/保暖)</option>
-                        <option value="fa-bath,text-cyan-500">🛁 浴缸 (泡澡)</option>
-                        <option value="fa-glass-water,text-blue-400">💧 水滴 (保濕/換水)</option>
-                        <option value="fa-moon,text-indigo-500">🌙 月亮 (睡覺/關燈)</option>
-                        <option value="fa-star,text-amber-400">⭐ 星星 (其他任務)</option>
+                        <option value="fa-utensils,text-green-500">🍽️ 吃飯</option>
+                        <option value="fa-bath,text-cyan-500">🛁 泡澡</option>
+                        <option value="fa-droplet,text-blue-500">💧 排酸 / 換水</option>
+                        <option value="fa-sun,text-orange-500">🌞 開燈 / 曬太陽</option>
+                        <option value="fa-moon,text-indigo-500">🌙 關燈 / 睡覺</option>
+                        <option value="fa-star,text-amber-400">⭐ 其他</option>
                     </select>
                     <button onclick="addTask()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl shadow transition-colors">
                         新增
@@ -192,7 +191,14 @@
                 </div>
             </div>
 
-            <div id="task-container" class="space-y-4"></div>
+            <!-- 封存今日紀錄到細節簿的按鈕 (當有任務完成時顯示) -->
+            <div id="archive-today-box" class="hidden mb-4 p-3 bg-green-50 rounded-2xl border border-green-200 text-center">
+                <button onclick="archiveTodayTasks()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl shadow text-xs">
+                    <i class="fa-solid fa-box-archive mr-1"></i> 📦 將打卡紀錄存入「細節簿」並準備明天
+                </button>
+            </div>
+
+            <div id="task-container" class="space-y-3"></div>
         </div>
 
         <!-- ================= 內容區：細節紀錄 ================= -->
@@ -207,6 +213,7 @@
                 <select id="detail-category" class="w-full rounded-xl border-2 border-amber-200 px-3 py-2 text-sm font-bold bg-white">
                     <option value="🥬 餵食">🥬 餵食 (食物/份量)</option>
                     <option value="🛁 泡澡">🛁 泡澡 (溫度/時長)</option>
+                    <option value="💧 排酸">💧 排酸 (質地/狀態)</option>
                     <option value="☀️ 活動">☀️ 曬背與活動</option>
                     <option value="💡 其他">💡 其他精進觀察</option>
                 </select>
@@ -288,7 +295,7 @@
             petName: '',
             profilePic: '',
             principles: '',
-            customTasks: [], // 新增：用來儲存自訂任務列表
+            customTasks: [],
             tasksState: {},
             detailRecords: [],
             weightRecords: [],
@@ -298,15 +305,14 @@
 
         const STORAGE_KEY = 'tortoise_diary_data';
 
-        // 預設的基礎任務 (如果使用者還沒有自訂任務，就載入這些)
+        // 預設主項目任務列表
         const defaultTasks = [
-            { id: 't_m1', time: '🌞 早晨 (08-09)', title: '開燈熱身', text: '開太陽燈與UVB燈', icon: 'fa-sun', color: 'text-orange-500' },
-            { id: 't_m2', time: '🌞 早晨 (08-09)', title: '精細早餐', text: '菜葉切極碎或徹底泡軟草餅', icon: 'fa-leaf', color: 'text-green-500' },
-            { id: 't_m3', time: '🌞 早晨 (09後)', title: '乾淨飲水', text: '極淺水盆放冷區防溺', icon: 'fa-glass-water', color: 'text-blue-400' },
-            { id: 't_a1', time: '☀️ 下午 (14-16)', title: '溫水泡澡', text: '泡30-35度溫水15分，看排酸', icon: 'fa-bath', color: 'text-cyan-500' },
-            { id: 't_a2', time: '☀️ 下午 (泡後)', title: '擦乾身體', text: '用軟毛巾擦乾防感冒', icon: 'fa-hands-bubbles', color: 'text-pink-500' },
-            { id: 't_e1', time: '🌙 晚上 (19-20)', title: '保濕噴水', text: '濕度保持60-70%防隆背', icon: 'fa-droplet', color: 'text-blue-500' },
-            { id: 't_e2', time: '🌙 晚上 (21後)', title: '關燈睡覺', text: '關發光燈，維持25度以上', icon: 'fa-moon', color: 'text-indigo-500' }
+            { id: 't_1', title: '開燈', text: '開啟太陽燈與UVB燈保暖', icon: 'fa-sun', color: 'text-orange-500' },
+            { id: 't_2', title: '吃飯', text: '切碎菜葉或浸泡軟化草餅', icon: 'fa-utensils', color: 'text-green-500' },
+            { id: 't_3', title: '換水', text: '更換淺水盆乾淨飲水', icon: 'fa-glass-water', color: 'text-blue-400' },
+            { id: 't_4', title: '泡澡', text: '溫水泡澡 15-20 分鐘', icon: 'fa-bath', color: 'text-cyan-500' },
+            { id: 't_5', title: '排酸', text: '觀察有無白色軟尿酸排泄', icon: 'fa-droplet', color: 'text-blue-500' },
+            { id: 't_6', title: '關燈', text: '晚上關閉發光燈具就寢', icon: 'fa-moon', color: 'text-indigo-500' }
         ];
 
         const monthGuideData = {
@@ -338,12 +344,10 @@
                 appData = JSON.parse(saved);
             }
             
-            // 如果沒有 customTasks (舊版資料或初次使用)，載入預設值
             if (!appData.customTasks || appData.customTasks.length === 0) {
                 appData.customTasks = JSON.parse(JSON.stringify(defaultTasks));
             }
 
-            // 確保所有任務在 tasksState 中都有預設狀態
             appData.customTasks.forEach(t => {
                 if (!appData.tasksState[t.id]) {
                     appData.tasksState[t.id] = { completed: false, time: '', keeper: '' };
@@ -446,7 +450,7 @@
             }
         }
 
-        // ================= 功能：任務打卡 (支援自訂與編輯) =================
+        // ================= 功能：任務打卡 (支援排序、編輯、轉移至細節簿) =================
         let isTaskEditMode = false;
 
         window.toggleTaskEditMode = function() {
@@ -466,18 +470,32 @@
             renderTasks();
         }
 
+        // 上下移動任務位置
+        window.moveTask = function(index, direction, event) {
+            event.stopPropagation();
+            if (direction === 'up' && index > 0) {
+                const temp = appData.customTasks[index];
+                appData.customTasks[index] = appData.customTasks[index - 1];
+                appData.customTasks[index - 1] = temp;
+            } else if (direction === 'down' && index < appData.customTasks.length - 1) {
+                const temp = appData.customTasks[index];
+                appData.customTasks[index] = appData.customTasks[index + 1];
+                appData.customTasks[index + 1] = temp;
+            }
+            saveData();
+            renderTasks();
+        }
+
         window.addTask = function() {
-            const time = document.getElementById('nt-time').value.trim();
             const title = document.getElementById('nt-title').value.trim();
             const desc = document.getElementById('nt-desc').value.trim();
-            const iconData = document.getElementById('nt-icon').value.split(','); // "fa-leaf,text-green-500"
+            const iconData = document.getElementById('nt-icon').value.split(',');
 
-            if(!time || !title) return alert("請輸入「時段」與「任務名稱」！");
+            if(!title) return alert("請輸入「任務名稱」！");
 
             const newId = 't_' + Date.now();
             appData.customTasks.push({
                 id: newId,
-                time: time,
                 title: title,
                 text: desc,
                 icon: iconData[0],
@@ -485,7 +503,6 @@
             });
             appData.tasksState[newId] = { completed: false, time: '', keeper: '' };
             
-            document.getElementById('nt-time').value = '';
             document.getElementById('nt-title').value = '';
             document.getElementById('nt-desc').value = '';
             
@@ -494,7 +511,7 @@
         }
 
         window.removeTask = function(id, event) {
-            event.stopPropagation(); // 防止觸發打卡勾選
+            event.stopPropagation();
             if(confirm("確定要刪除這個任務嗎？")) {
                 appData.customTasks = appData.customTasks.filter(t => t.id !== id);
                 delete appData.tasksState[id];
@@ -503,49 +520,82 @@
             }
         }
 
+        // 將今日已完成的打卡紀錄轉移封存到「細節紀錄」簿子裡
+        window.archiveTodayTasks = function() {
+            const completedItems = appData.customTasks.filter(t => appData.tasksState[t.id] && appData.tasksState[t.id].completed);
+            if (completedItems.length === 0) return alert("今天還沒有打卡紀錄喔！");
+
+            if (confirm("要將今天的打卡紀錄保存到「細節紀錄」簿子裡，並重置打卡表準備明天嗎？")) {
+                const now = new Date();
+                const dateStr = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
+                
+                let summaryText = completedItems.map(t => {
+                    const st = appData.tasksState[t.id];
+                    return `• ${t.title} (${st.time} 由保母[${st.keeper}]完成)`;
+                }).join('\n');
+
+                appData.detailRecords.push({
+                    id: Date.now(),
+                    date: dateStr,
+                    time: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
+                    cat: '✅ 每日打卡總結',
+                    content: `今日完成 ${completedItems.length} 項任務：\n` + summaryText,
+                    keeper: appData.keeperName || '保母'
+                });
+
+                resetTasks();
+                alert("成功記錄到細節紀錄簿！可在「細節」頁籤查看歷史總結。");
+            }
+        }
+
         function renderTasks() {
             const c = document.getElementById('task-container');
+            const archiveBox = document.getElementById('archive-today-box');
             c.innerHTML = '';
             
             if (!appData.customTasks || appData.customTasks.length === 0) {
                 c.innerHTML = '<div class="text-center text-slate-400 py-6 text-sm font-bold">還沒有任務喔，請點擊上方「編輯」來新增！</div>';
+                archiveBox.classList.add('hidden');
                 return;
             }
 
-            let cur = '';
             const pName = appData.petName || '龜寶貝';
+            let hasAnyCompleted = false;
             
-            appData.customTasks.forEach(t => {
-                // 如果時段與上一個不同，加上時段標題
-                if (t.time !== cur) {
-                    cur = t.time;
-                    c.innerHTML += `<h3 class="font-bold text-sm text-slate-700 bg-emerald-100 rounded-xl px-3 py-1.5 mt-5 mb-2"><i class="fa-solid fa-clock text-emerald-600 mr-1"></i> ${cur}</h3>`;
-                }
-                
+            appData.customTasks.forEach((t, index) => {
                 const st = appData.tasksState[t.id] || { completed: false };
-                let info = st.completed ? `<div class="text-[10px] text-green-600 mt-1 font-bold"><i class="fa-solid fa-check"></i> [${st.keeper}] 幫 [${pName}] 完成於 ${st.time}</div>` : '';
+                if (st.completed) hasAnyCompleted = true;
+
+                let info = st.completed ? `<div class="text-[10px] text-green-600 mt-0.5 font-bold"><i class="fa-solid fa-check"></i> [${st.keeper}] 幫 [${pName}] 完成於 ${st.time}</div>` : '';
                 
-                // 編輯模式顯示刪除按鈕，非編輯模式顯示核取方塊
                 let actionHtml = '';
                 if (isTaskEditMode) {
+                    // 編輯模式：顯示上下移按鈕與刪除按鈕
                     actionHtml = `
-                        <button onclick="removeTask('${t.id}', event)" class="w-8 h-8 flex items-center justify-center bg-red-100 text-red-500 rounded-full hover:bg-red-200">
-                            <i class="fa-solid fa-trash text-sm"></i>
-                        </button>
+                        <div class="flex items-center gap-1">
+                            <button onclick="moveTask(${index}, 'up', event)" class="w-7 h-7 flex items-center justify-center bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 text-xs font-bold ${index === 0 ? 'opacity-30 cursor-not-allowed' : ''}">
+                                ▲
+                            </button>
+                            <button onclick="moveTask(${index}, 'down', event)" class="w-7 h-7 flex items-center justify-center bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 text-xs font-bold ${index === appData.customTasks.length - 1 ? 'opacity-30 cursor-not-allowed' : ''}">
+                                ▼
+                            </button>
+                            <button onclick="removeTask('${t.id}', event)" class="w-7 h-7 flex items-center justify-center bg-red-100 text-red-500 rounded-lg hover:bg-red-200 text-xs ml-1">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     `;
                 } else {
                     actionHtml = `<input type="checkbox" class="task-checkbox ml-2" ${st.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')">`;
                 }
 
-                // 任務卡片本體
                 c.innerHTML += `
-                    <div class="flex items-center p-3 bg-white border border-slate-200 rounded-xl shadow-sm ${st.completed && !isTaskEditMode ? 'opacity-70 bg-slate-50' : ''} ${!isTaskEditMode ? 'cursor-pointer' : ''}" ${!isTaskEditMode ? `onclick="toggleTask('${t.id}')"` : ''}>
-                        <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border shrink-0">
+                    <div class="flex items-center p-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm ${st.completed && !isTaskEditMode ? 'opacity-75 bg-slate-50' : ''} ${!isTaskEditMode ? 'cursor-pointer' : ''}" ${!isTaskEditMode ? `onclick="toggleTask('${t.id}')"` : ''}>
+                        <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border shrink-0 shadow-inner">
                             <i class="fa-solid ${t.icon} text-xl ${t.color}"></i>
                         </div>
                         <div class="flex-1 ml-3 pr-2 pointer-events-none">
-                            <h4 class="font-bold text-sm text-slate-800 ${st.completed && !isTaskEditMode ? 'line-through' : ''}">${t.title}</h4>
-                            <p class="text-xs text-slate-500">${t.text}</p>
+                            <h4 class="font-bold text-base text-slate-800 ${st.completed && !isTaskEditMode ? 'line-through' : ''}">${t.title}</h4>
+                            ${t.text ? `<p class="text-xs text-slate-500 leading-tight">${t.text}</p>` : ''}
                             ${!isTaskEditMode ? info : ''}
                         </div>
                         <div class="shrink-0" onclick="event.stopPropagation()">
@@ -554,10 +604,17 @@
                     </div>
                 `;
             });
+
+            // 如果有完成的項目且不在編輯模式，顯示歸檔到細節簿按鈕
+            if (hasAnyCompleted && !isTaskEditMode) {
+                archiveBox.classList.remove('hidden');
+            } else {
+                archiveBox.classList.add('hidden');
+            }
         }
 
         window.toggleTask = function(id) {
-            if(isTaskEditMode) return; // 編輯模式下不能打卡
+            if(isTaskEditMode) return;
 
             const k = appData.keeperName || '保母';
             const st = appData.tasksState[id] || {};
@@ -571,7 +628,6 @@
             saveData();
             renderTasks();
             
-            // 檢查是否全部完成
             if (Object.values(appData.tasksState).every(v => v.completed) && appData.customTasks.length > 0) {
                 confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
             }
@@ -616,7 +672,7 @@
                             <span class="text-xs font-bold text-amber-700 bg-amber-100 px-2 rounded">${r.cat}</span>
                             <span class="text-[10px] font-bold text-slate-400">${r.date} ${r.time}</span>
                         </div>
-                        <p class="text-sm mt-2 text-slate-700 font-medium">${r.content}</p>
+                        <p class="text-sm mt-2 text-slate-700 font-medium whitespace-pre-line leading-relaxed">${r.content}</p>
                         <div class="text-[10px] text-slate-400 mt-2 font-bold border-t border-slate-50 pt-1">記錄保母: ${r.keeper}</div>
                     </div>
                 `;
@@ -816,5 +872,4 @@
     </script>
 </body>
 </html>
-
 
