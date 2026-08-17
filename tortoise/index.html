@@ -85,18 +85,21 @@
             </div>
         </header>
 
-        <!-- 頁籤切換按鈕 (調整為 4 個頁籤) -->
-        <div class="grid grid-cols-4 gap-1 mt-4 px-3">
-            <button id="btn-tasks" onclick="switchTab('tasks')" class="bg-green-100 text-green-700 font-bold py-2 rounded-xl shadow-sm border-2 border-green-500 transition-colors text-xs flex flex-col items-center justify-center">
+        <!-- 頁籤切換按鈕 (調整為 5 個頁籤) -->
+        <div class="grid grid-cols-5 gap-1 mt-4 px-2">
+            <button id="btn-tasks" onclick="switchTab('tasks')" class="bg-green-100 text-green-700 font-bold py-2 rounded-xl shadow-sm border-2 border-green-500 transition-colors text-[11px] flex flex-col items-center justify-center">
                 <i class="fa-solid fa-list-check mb-0.5"></i> 每日任務
             </button>
-            <button id="btn-guide" onclick="switchTab('guide')" class="bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center">
+            <button id="btn-detail" onclick="switchTab('detail')" class="bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-[11px] flex flex-col items-center justify-center">
+                <i class="fa-solid fa-file-pen mb-0.5"></i> 細節紀錄
+            </button>
+            <button id="btn-guide" onclick="switchTab('guide')" class="bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-[11px] flex flex-col items-center justify-center">
                 <i class="fa-solid fa-book-open mb-0.5"></i> 每月指南
             </button>
-            <button id="btn-photo" onclick="switchTab('photo')" class="bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center">
+            <button id="btn-photo" onclick="switchTab('photo')" class="bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-[11px] flex flex-col items-center justify-center">
                 <i class="fa-solid fa-camera mb-0.5"></i> 成長相簿
             </button>
-            <button id="btn-weight" onclick="switchTab('weight')" class="bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center">
+            <button id="btn-weight" onclick="switchTab('weight')" class="bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-[11px] flex flex-col items-center justify-center">
                 <i class="fa-solid fa-scale-balanced mb-0.5"></i> 體重紀錄
             </button>
         </div>
@@ -115,6 +118,62 @@
 
             <div id="task-container" class="space-y-6">
                 <!-- 任務由 JS 產生 -->
+            </div>
+        </div>
+
+        <!-- 內容區：細節紀錄 (新增自訂餵食、泡澡時間與精進事項) -->
+        <div id="tab-detail" class="p-4 mt-2 hidden space-y-4">
+            <div class="flex justify-between items-center mb-2">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-700"><i class="fa-solid fa-clipboard-list mr-2 text-amber-500"></i>每日細節記錄表</h2>
+                    <p class="text-xs text-slate-400">記錄今天幾點餵食、吃什麼、泡澡時間與其他精進事項！</p>
+                </div>
+            </div>
+
+            <!-- 新增細節表單卡片 -->
+            <div class="bg-amber-50 rounded-2xl p-4 border-2 border-amber-200 shadow-sm space-y-3">
+                <h3 class="font-bold text-amber-800 text-sm"><i class="fa-solid fa-pen-to-square mr-1"></i> 填寫今日照顧細節</h3>
+                
+                <!-- 時間選擇：小時與分鐘下拉選單 -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">執行時間點：</label>
+                    <div class="flex gap-2">
+                        <select id="detail-hour" class="flex-1 rounded-xl border-2 border-amber-200 px-3 py-2 text-sm font-bold bg-white focus:outline-none focus:border-amber-500 text-center">
+                            <!-- 動態填入 00-23 小時 -->
+                        </select>
+                        <span class="flex items-center font-bold text-slate-500">:</span>
+                        <select id="detail-minute" class="flex-1 rounded-xl border-2 border-amber-200 px-3 py-2 text-sm font-bold bg-white focus:outline-none focus:border-amber-500 text-center">
+                            <!-- 動態填入 00-55 分鐘 -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 項目選擇 -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">照顧項目類型：</label>
+                    <select id="detail-category" class="w-full rounded-xl border-2 border-amber-200 px-3 py-2 text-sm font-bold bg-white focus:outline-none focus:border-amber-500">
+                        <option value="🥬 餵食紀錄">🥬 餵食紀錄 (食物種類/份量)</option>
+                        <option value="🛁 泡澡紀錄">🛁 泡澡紀錄 (水溫/泡澡時長)</option>
+                        <option value="☀️ 晒背/活動">☀️ 晒背/活動紀錄</option>
+                        <option value="💡 其他精進事項">💡 其他精進事項 (環境調整/排酸觀察)</option>
+                    </select>
+                </div>
+
+                <!-- 細節文字輸入 -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">詳細內容說明：</label>
+                    <textarea id="detail-content" rows="2" placeholder="例如：吃了地瓜葉碎末加泡軟草餅 5 顆，泡溫水 20 分鐘，排酸正常。" class="w-full rounded-xl border-2 border-amber-200 p-3 text-sm bg-white focus:outline-none focus:border-amber-500"></textarea>
+                </div>
+
+                <button onclick="addDetailRecord()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl shadow-md transition-transform active:scale-95 text-sm">
+                    <i class="fa-solid fa-plus mr-1"></i> 新增這筆細節紀錄
+                </button>
+            </div>
+
+            <!-- 細節紀錄列表 -->
+            <h3 class="font-bold text-slate-600 mt-6 mb-2 px-1">📋 今天的照顧日誌：</h3>
+            <div id="detail-list" class="space-y-3">
+                <!-- 紀錄由 JS 產生 -->
             </div>
         </div>
 
@@ -137,7 +196,7 @@
             </div>
         </div>
 
-        <!-- 內容區：每月成長相簿 (支援拍照與自動壓縮) -->
+        <!-- 內容區：每月成長相簿 -->
         <div id="tab-photo" class="p-4 mt-2 hidden space-y-4">
             <div class="flex justify-between items-center mb-2">
                 <div>
@@ -146,7 +205,6 @@
                 </div>
             </div>
 
-            <!-- 拍照上傳控制區 -->
             <div class="bg-purple-50 rounded-2xl p-4 border-2 border-purple-100 shadow-sm space-y-3">
                 <label class="block text-slate-700 font-bold text-sm">選擇記錄月份：</label>
                 <select id="photo-month-select" class="w-full rounded-xl border-2 border-purple-200 px-3 py-2 text-sm font-bold bg-white focus:outline-none focus:border-purple-500">
@@ -170,7 +228,6 @@
                 </label>
             </div>
 
-            <!-- 照片展示藝廊 -->
             <h3 class="font-bold text-slate-600 mt-6 mb-2 px-1">🖼️ 成長照片牆：</h3>
             <div id="photo-gallery" class="grid grid-cols-2 gap-3">
                 <!-- 照片卡片由 JS 動態產生 -->
@@ -200,6 +257,34 @@
     </div>
 
     <script>
+        // 初始化時間下拉選單 (小時 00-23，分鐘 00-55 間隔 5 分鐘)
+        function initTimeSelectors() {
+            const hourSelect = document.getElementById('detail-hour');
+            const minuteSelect = document.getElementById('detail-minute');
+            
+            if (!hourSelect || !minuteSelect) return;
+
+            hourSelect.innerHTML = '';
+            minuteSelect.innerHTML = '';
+
+            for (let i = 0; i < 24; i++) {
+                const hourStr = String(i).padStart(2, '0');
+                hourSelect.innerHTML += `<option value="${hourStr}">${hourStr} 時</option>`;
+            }
+
+            for (let i = 0; i < 60; i += 5) {
+                const minStr = String(i).padStart(2, '0');
+                minuteSelect.innerHTML += `<option value="${minStr}">${minStr} 分</option>`;
+            }
+
+            // 預設選中當前時間
+            const now = new Date();
+            hourSelect.value = String(now.getHours()).padStart(2, '0');
+            // 接近的 5 分鐘倍數
+            const roundedMin = Math.round(now.getMinutes() / 5) * 5;
+            minuteSelect.value = String(roundedMin === 60 ? 0 : roundedMin).padStart(2, '0');
+        }
+
         // --- 詳細時間與每日任務資料 ---
         const taskData = [
             { id: 'm1', time: '🌞 早晨 (08:00 - 09:00)', title: '開燈與熱身', text: '開啟太陽燈（熱點維持 38-40°C）與 UVB 紫外線燈，讓龜龜醒來曬太陽。', icon: 'fa-sun', color: 'text-orange-500' },
@@ -218,7 +303,7 @@
             tasksState[task.id] = { completed: false, timeStr: '', keeper: '' };
         });
 
-        // --- 每月成長指南資料 ---
+        // 每月飼養指南資料
         const monthGuideData = {
             1: {
                 title: "🐣 1 ~ 3 個月：最脆弱的黃金起步期",
@@ -247,7 +332,7 @@
             4: {
                 title: "🐢 1 ~ 2 歲：青年期（開始調整習慣）",
                 badge: "青少年期",
-                bath: "可從「每天泡澡」逐漸放寬為 **每週 2 到 3 次**。",
+                bath: "可從每天泡澡逐漸放寬為 **每週 2 到 3 次**。",
                 diet: "不需要再切得像細末，可以給整株地瓜葉或牧草讓牠自己啃咬。",
                 env: "體型逐漸變大，若有陽台或戶外庭院，可開始讓牠接觸安全的自然陽光。",
                 tip: "開始學會自己到水盆喝水和泡水，對環境的適應力變強韌了。"
@@ -270,12 +355,84 @@
             }
         };
 
-        let weightRecords = [
-            { date: '2026-08-01', weight: 115 }
-        ];
-
-        // 成長相簿資料
+        let weightRecords = [];
         let photoRecords = [];
+        let detailRecords = []; // 自訂照顧細節紀錄
+
+        // --- 新增自訂照顧細節紀錄 ---
+        window.addDetailRecord = function() {
+            const hour = document.getElementById('detail-hour').value;
+            const minute = document.getElementById('detail-minute').value;
+            const category = document.getElementById('detail-category').value;
+            const content = document.getElementById('detail-content').value.trim();
+            const keeperInput = document.getElementById('keeper-name');
+            const keeperName = keeperInput.value.trim() || '保母';
+            const petInput = document.getElementById('pet-name');
+            const petName = petInput.value.trim() || '龜寶貝';
+
+            if (!content) {
+                alert('請填寫詳細內容說明喔！');
+                return;
+            }
+
+            const timeStr = `${hour}:${minute}`;
+            const today = new Date();
+            const dateStr = today.getFullYear() + '/' + (today.getMonth()+1) + '/' + today.getDate();
+
+            detailRecords.push({
+                date: dateStr,
+                time: timeStr,
+                category: category,
+                content: content,
+                keeper: keeperName,
+                pet: petName
+            });
+
+            document.getElementById('detail-content').value = '';
+            renderDetails();
+            alert('成功新增一筆照顧細節紀錄！');
+        }
+
+        // 渲染細節紀錄清單
+        function renderDetails() {
+            const list = document.getElementById('detail-list');
+            list.innerHTML = '';
+
+            if (detailRecords.length === 0) {
+                list.innerHTML = '<div class="text-center text-slate-400 py-6 font-medium text-sm">還沒有新增照顧細節，趕快紀錄今天寶貝吃了什麼吧！</div>';
+                return;
+            }
+
+            const sortedDetails = [...detailRecords].reverse();
+
+            sortedDetails.forEach((record, index) => {
+                const originalIndex = detailRecords.indexOf(record);
+                const card = document.createElement('div');
+                card.className = 'bg-white border-2 border-amber-100 p-4 rounded-2xl shadow-sm space-y-2 relative';
+                card.innerHTML = `
+                    <button onclick="deleteDetail(${originalIndex})" class="absolute top-3 right-3 text-red-400 hover:text-red-600 text-xs font-bold" title="刪除">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                    <div class="flex items-center justify-between pr-6">
+                        <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full">${record.category}</span>
+                        <span class="text-xs font-bold text-slate-500"><i class="fa-regular fa-clock mr-1"></i>${record.time} (${record.date})</span>
+                    </div>
+                    <p class="text-sm text-slate-700 font-medium leading-relaxed">${record.content}</p>
+                    <div class="text-[11px] text-slate-400 font-bold flex justify-between pt-1 border-t border-slate-100">
+                        <span>寵物：${record.pet}</span>
+                        <span>記錄保母：${record.keeper}</span>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        window.deleteDetail = function(index) {
+            if (confirm('確定要刪除這筆細節紀錄嗎？')) {
+                detailRecords.splice(index, 1);
+                renderDetails();
+            }
+        }
 
         // --- 拍照與自動圖片壓縮功能 ---
         window.compressAndSavePhoto = function(event) {
@@ -293,7 +450,6 @@
                 const img = new Image();
                 img.src = e.target.result;
                 img.onload = function() {
-                    // 設定壓縮後的最大寬高 (例如寬度最大 600px，大幅減小檔案體積)
                     const canvas = document.createElement('canvas');
                     const MAX_WIDTH = 600;
                     const MAX_HEIGHT = 600;
@@ -317,14 +473,10 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // 壓縮為 JPEG，品質為 0.7
                     const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
-
-                    // 儲存到紀錄中 (若該月份已有照片則覆蓋或新增)
                     const today = new Date();
                     const dateStr = today.getFullYear() + '/' + (today.getMonth()+1) + '/' + today.getDate();
 
-                    // 檢查是否已有該月份，有就更新，沒有就新增
                     const existingIndex = photoRecords.findIndex(p => p.month === selectedMonth);
                     if (existingIndex >= 0) {
                         photoRecords[existingIndex] = { month: selectedMonth, img: compressedDataUrl, date: dateStr, keeper: keeperName };
@@ -334,12 +486,11 @@
 
                     renderPhotos();
                     alert(`成功上傳並壓縮 [${selectedMonth}] 的成長照片！`);
-                    event.target.value = ''; // 清空檔案選擇
+                    event.target.value = '';
                 }
             }
         }
 
-        // 渲染相簿藝廊
         function renderPhotos() {
             const gallery = document.getElementById('photo-gallery');
             gallery.innerHTML = '';
@@ -349,10 +500,13 @@
                 return;
             }
 
-            photoRecords.forEach((record) => {
+            photoRecords.forEach((record, index) => {
                 const card = document.createElement('div');
-                card.className = 'bg-white rounded-2xl border-2 border-purple-100 overflow-hidden shadow-sm flex flex-col';
+                card.className = 'bg-white rounded-2xl border-2 border-purple-100 overflow-hidden shadow-sm flex flex-col relative';
                 card.innerHTML = `
+                    <button onclick="deletePhoto(${index})" class="absolute top-2 right-2 bg-red-500 text-white w-7 h-7 rounded-full flex items-center justify-center shadow hover:bg-red-600 text-xs z-10" title="刪除照片">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
                     <div class="relative bg-slate-100 h-40">
                         <img src="${record.img}" alt="${record.month}" class="w-full h-full object-cover">
                         <span class="absolute top-2 left-2 bg-purple-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow">${record.month}</span>
@@ -364,6 +518,13 @@
                 `;
                 gallery.appendChild(card);
             });
+        }
+
+        window.deletePhoto = function(index) {
+            if (confirm('確定要刪除這張成長照片嗎？')) {
+                photoRecords.splice(index, 1);
+                renderPhotos();
+            }
         }
 
         // --- 渲染每日任務 ---
@@ -499,40 +660,39 @@
             list.innerHTML = '';
             
             if(weightRecords.length === 0) {
-                list.innerHTML = '<div class="text-center text-slate-400 py-4 font-medium">還沒有紀錄喔！</div>';
+                list.innerHTML = '<div class="text-center text-slate-400 py-4 font-medium text-sm">還沒有體重紀錄喔！趕快輸入第一筆資料吧。</div>';
                 return;
             }
 
-            const sortedRecords = [...weightRecords].reverse();
+            const sortedRecords = [...weightRecords].sort((a,b) => new Date(b.date) - new Date(a.date));
 
             sortedRecords.forEach((record, index) => {
+                const originalIndex = weightRecords.indexOf(record);
                 const item = document.createElement('div');
                 item.className = 'flex justify-between items-center bg-white border-2 border-slate-100 p-4 rounded-xl shadow-sm';
                 
-                let diffHtml = '';
-                if (index < sortedRecords.length - 1) {
-                    const diff = record.weight - sortedRecords[index + 1].weight;
-                    if (diff > 0) {
-                        diffHtml = `<span class="text-xs font-bold text-green-500 bg-green-100 px-2 py-1 rounded-full"><i class="fa-solid fa-arrow-trend-up mr-1"></i>+${diff}g</span>`;
-                    } else if (diff < 0) {
-                        diffHtml = `<span class="text-xs font-bold text-red-500 bg-red-100 px-2 py-1 rounded-full"><i class="fa-solid fa-arrow-trend-down mr-1"></i>${diff}g</span>`;
-                    } else {
-                        diffHtml = `<span class="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-full">- 沒變</span>`;
-                    }
-                }
-
                 item.innerHTML = `
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center font-bold">
                             <i class="fa-regular fa-calendar"></i>
                         </div>
                         <div>
-                            <p class="font-bold text-slate-700">${record.date}</p>
-                            ${diffHtml}
+                            <p class="font-bold text-slate-700 text-sm">${record.date}</p>
+                            <p class="text-xs text-slate-400">保母紀錄</p>
                         </div>
                     </div>
-                    <div class="text-2xl font-black text-slate-800">
-                        ${record.weight} <span class="text-sm font-bold text-slate-500">g</span>
+                    <div class="flex items-center gap-3">
+                        <div class="text-xl font-black text-slate-800">
+                            ${record.weight} <span class="text-sm font-bold text-slate-500">g</span>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="editWeight(${originalIndex})" class="bg-amber-100 text-amber-600 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-amber-200 text-xs" title="修改">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteWeight(${originalIndex})" class="bg-red-100 text-red-600 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-red-200 text-xs" title="刪除">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
                 list.appendChild(item);
@@ -562,48 +722,83 @@
             });
         }
 
+        window.deleteWeight = function(index) {
+            if (confirm('確定要刪除這筆體重紀錄嗎？')) {
+                weightRecords.splice(index, 1);
+                renderWeights();
+            }
+        }
+
+        window.editWeight = function(index) {
+            const currentWeight = weightRecords[index].weight;
+            const newWeightStr = prompt('請修改這筆紀錄的體重 (克 g)：', currentWeight);
+            
+            if (newWeightStr === null) return;
+
+            const newWeight = parseFloat(newWeightStr);
+            if (isNaN(newWeight) || newWeight <= 0) {
+                alert('請輸入有效的數字！');
+                return;
+            }
+
+            weightRecords[index].weight = newWeight;
+            renderWeights();
+            alert('體重紀錄修改成功！');
+        }
+
         // --- 頁籤切換邏輯 ---
         window.switchTab = function(tabName) {
             const tabTasks = document.getElementById('tab-tasks');
+            const tabDetail = document.getElementById('tab-detail');
             const tabGuide = document.getElementById('tab-guide');
             const tabPhoto = document.getElementById('tab-photo');
             const tabWeight = document.getElementById('tab-weight');
             
             const btnTasks = document.getElementById('btn-tasks');
+            const btnDetail = document.getElementById('btn-detail');
             const btnGuide = document.getElementById('btn-guide');
             const btnPhoto = document.getElementById('btn-photo');
             const btnWeight = document.getElementById('btn-weight');
 
             tabTasks.classList.add('hidden');
+            tabDetail.classList.add('hidden');
             tabGuide.classList.add('hidden');
             tabPhoto.classList.add('hidden');
             tabWeight.classList.add('hidden');
             
-            btnTasks.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center';
-            btnGuide.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center';
-            btnPhoto.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center';
-            btnWeight.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-xs flex flex-col items-center justify-center';
+            btnTasks.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-[11px] flex flex-col items-center justify-center';
+            btnDetail.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-[11px] flex flex-col items-center justify-center';
+            btnGuide.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-[11px] flex flex-col items-center justify-center';
+            btnPhoto.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-[11px] flex flex-col items-center justify-center';
+            btnWeight.className = 'bg-slate-100 text-slate-500 font-bold py-2 rounded-xl shadow-sm border-2 border-transparent transition-colors text-[11px] flex flex-col items-center justify-center';
 
             if (tabName === 'tasks') {
                 tabTasks.classList.remove('hidden');
-                btnTasks.className = 'bg-green-100 text-green-700 font-bold py-2 rounded-xl shadow-sm border-2 border-green-500 transition-colors text-xs flex flex-col items-center justify-center';
+                btnTasks.className = 'bg-green-100 text-green-700 font-bold py-2 rounded-xl shadow-sm border-2 border-green-500 transition-colors text-[11px] flex flex-col items-center justify-center';
+            } else if (tabName === 'detail') {
+                tabDetail.classList.remove('hidden');
+                btnDetail.className = 'bg-amber-100 text-amber-700 font-bold py-2 rounded-xl shadow-sm border-2 border-amber-500 transition-colors text-[11px] flex flex-col items-center justify-center';
+                renderDetails();
             } else if (tabName === 'guide') {
                 tabGuide.classList.remove('hidden');
-                btnGuide.className = 'bg-emerald-100 text-emerald-700 font-bold py-2 rounded-xl shadow-sm border-2 border-emerald-500 transition-colors text-xs flex flex-col items-center justify-center';
+                btnGuide.className = 'bg-emerald-100 text-emerald-700 font-bold py-2 rounded-xl shadow-sm border-2 border-emerald-500 transition-colors text-[11px] flex flex-col items-center justify-center';
                 switchMonth(1);
             } else if (tabName === 'photo') {
                 tabPhoto.classList.remove('hidden');
-                btnPhoto.className = 'bg-purple-100 text-purple-700 font-bold py-2 rounded-xl shadow-sm border-2 border-purple-500 transition-colors text-xs flex flex-col items-center justify-center';
+                btnPhoto.className = 'bg-purple-100 text-purple-700 font-bold py-2 rounded-xl shadow-sm border-2 border-purple-500 transition-colors text-[11px] flex flex-col items-center justify-center';
                 renderPhotos();
             } else {
                 tabWeight.classList.remove('hidden');
-                btnWeight.className = 'bg-blue-100 text-blue-700 font-bold py-2 rounded-xl shadow-sm border-2 border-blue-500 transition-colors text-xs flex flex-col items-center justify-center';
+                btnWeight.className = 'bg-blue-100 text-blue-700 font-bold py-2 rounded-xl shadow-sm border-2 border-blue-500 transition-colors text-[11px] flex flex-col items-center justify-center';
+                renderWeights();
             }
         }
 
+        initTimeSelectors();
         renderTasks();
         renderWeights();
         renderPhotos();
+        renderDetails();
     </script>
 </body>
 </html>
