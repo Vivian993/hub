@@ -127,11 +127,12 @@
                     <div id="profile-pic-placeholder" class="w-full h-full flex items-center justify-center text-slate-400 text-4xl">
                         <i class="fa-solid fa-camera"></i>
                     </div>
+                    <!-- 支援開啟相簿或拍照 -->
                     <label class="absolute inset-0 cursor-pointer w-full h-full opacity-0">
                         <input type="file" accept="image/*" class="hidden" onchange="uploadProfilePic(event)">
                     </label>
                 </div>
-                <p class="text-xs text-green-600 mt-2">點擊照片可更換</p>
+                <p class="text-xs text-green-600 mt-2">點擊照片可選擇相簿或拍照</p>
             </div>
 
             <div class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-100 shadow-sm">
@@ -157,7 +158,7 @@
             </div>
         </div>
 
-        <!-- ================= 內容區：每日任務 (支援一鍵按壓打卡與下拉式時間補登) ================= -->
+        <!-- ================= 內容區：每日任務 ================= -->
         <div id="tab-tasks" class="p-4 hidden">
             <div class="flex justify-between items-end mb-4">
                 <h2 class="text-lg font-bold text-slate-700"><i class="fa-regular fa-calendar-check mr-2 text-green-500"></i>打卡任務表</h2>
@@ -171,7 +172,6 @@
                 </div>
             </div>
 
-            <!-- 時間模式選擇開關 (可選擇：按壓當下時間 OR 下拉選單補登時間) -->
             <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-200 mb-4 flex items-center justify-between text-xs font-bold text-emerald-800">
                 <span class="flex items-center"><i class="fa-solid fa-clock mr-1 text-emerald-600"></i> 打卡時間模式：</span>
                 <div class="flex gap-1 bg-white p-1 rounded-xl border border-emerald-200">
@@ -180,7 +180,6 @@
                 </div>
             </div>
 
-            <!-- 全局下拉時間選單區 (僅在選擇「下拉選單補登」模式時展開) -->
             <div id="manual-time-picker-card" class="hidden mb-4 p-3 bg-amber-50 rounded-2xl border-2 border-amber-200 shadow-sm space-y-2">
                 <label class="block text-xs font-bold text-amber-800"><i class="fa-solid fa-calendar-day mr-1"></i> 選擇要補登的日期與時間：</label>
                 <div class="flex gap-2">
@@ -191,7 +190,6 @@
                 </div>
             </div>
 
-            <!-- 自訂任務新增面板 (編輯模式時顯示) -->
             <div id="task-edit-panel" class="hidden mb-4 p-4 bg-amber-50 rounded-2xl border-2 border-amber-200 shadow-sm space-y-3">
                 <h3 class="font-bold text-amber-800 text-sm"><i class="fa-solid fa-plus mr-1"></i> 新增專屬任務</h3>
                 <input type="text" id="nt-title" placeholder="任務主項目 (例: 吃飯 / 排酸)" class="w-full p-2.5 rounded-xl border border-amber-200 focus:border-amber-400 focus:outline-none text-sm bg-white font-bold">
@@ -211,7 +209,6 @@
                 </div>
             </div>
 
-            <!-- 封存今日紀錄到細節簿按鈕 -->
             <div id="archive-today-box" class="hidden mb-4 p-3 bg-green-50 rounded-2xl border border-green-200 text-center">
                 <button onclick="archiveTodayTasks()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl shadow text-xs">
                     <i class="fa-solid fa-box-archive mr-1"></i> 📦 將打卡紀錄存入「細節簿」並準備明天
@@ -259,7 +256,7 @@
             </div>
         </div>
 
-        <!-- ================= 內容區：成長相簿 ================= -->
+        <!-- ================= 內容區：成長相簿 (已移除相機限制，支援開啟手機照片與檔案) ================= -->
         <div id="tab-photo" class="p-4 hidden space-y-4">
             <h2 class="text-lg font-bold text-slate-700 mb-2"><i class="fa-solid fa-camera-retro mr-2 text-purple-500"></i>相簿收藏區</h2>
             
@@ -272,9 +269,10 @@
                 <select id="photo-month-select" class="w-full rounded-xl border-2 border-purple-200 px-3 py-2 text-sm font-bold bg-white"></select>
                 <input type="text" id="photo-daily-desc" placeholder="簡單描述 (如：可愛睡姿)" class="w-full rounded-xl border-2 border-purple-200 px-3 py-2 text-sm font-bold bg-white hidden">
 
-                <label class="block w-full bg-purple-600 text-white font-bold py-3 rounded-xl text-center shadow-md cursor-pointer text-sm">
-                    <i class="fa-solid fa-camera mr-1"></i> 拍照 / 上傳照片
-                    <input type="file" accept="image/*" capture="environment" class="hidden" onchange="compressAndSavePhoto(event)">
+                <!-- 允許使用者選擇：相簿、拍照、或手機檔案 -->
+                <label class="block w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl text-center shadow-md cursor-pointer text-sm transition-colors">
+                    <i class="fa-solid fa-image mr-1"></i> 上傳照片 / 選擇相簿檔案
+                    <input type="file" accept="image/*" class="hidden" onchange="compressAndSavePhoto(event)">
                 </label>
             </div>
 
@@ -348,7 +346,6 @@
             8: { title: "3歲以上", text: "成年巨獸。提供大空間與水池，完全草食低蛋白。" }
         };
 
-        // 時間打卡模式全域變數 ('now' 或 'manual')
         let taskTimeMode = 'now';
 
         window.setTimeMode = function(mode) {
@@ -435,10 +432,8 @@
 
         // ================= 初始化 UI 元素 =================
         function initSelectors() {
-            // 細節簿下拉時間選擇器
             const hSel = document.getElementById('detail-hour');
             const mSel = document.getElementById('detail-minute');
-            // 補登任務下拉時間選擇器
             const thSel = document.getElementById('task-manual-hour');
             const tmSel = document.getElementById('task-manual-minute');
 
@@ -511,7 +506,7 @@
             }
         }
 
-        // ================= 功能：任務打卡 (支援時間補登與一鍵切換) =================
+        // ================= 功能：任務打卡 =================
         let isTaskEditMode = false;
 
         window.toggleTaskEditMode = function() {
@@ -679,7 +674,6 @@
             if (!st.completed) {
                 let timeString = '';
                 
-                // 判斷是以當下時間打卡，還是取下拉選單補登的時間
                 if (taskTimeMode === 'now') {
                     const now = new Date();
                     timeString = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -710,7 +704,7 @@
             renderTasks();
         }
 
-        // ================= 功能：細節紀錄 (支援自訂日期與下拉時間) =================
+        // ================= 功能：細節紀錄 =================
         window.addDetailRecord = function() {
             const d = document.getElementById('detail-date').value;
             const h = document.getElementById('detail-hour').value;
@@ -763,7 +757,7 @@
             if(type==='photo') renderPhotos();
         }
 
-        // ================= 功能：自訂指南 =================
+        // ================= 功能：自訂指南與心得存檔 =================
         window.renderGuide = function(monthKey) {
             for(let i=1; i<=8; i++) {
                 let b = document.getElementById(`gbtn-${i}`);
@@ -786,6 +780,7 @@
         }
 
         window.saveCustomGuide = function(monthKey) {
+            if(!appData.customGuides) appData.customGuides = {};
             appData.customGuides[monthKey] = document.getElementById('custom-guide-input').value;
             saveData();
             alert("心得已儲存！");
@@ -842,7 +837,7 @@
         function renderPhotos() {
             const c = document.getElementById('photo-gallery');
             c.innerHTML = '';
-            if(appData.photoRecords.length===0) c.innerHTML = '<div class="col-span-2 text-center text-xs font-bold text-slate-400 py-4">尚無照片，快拍一張吧！</div>';
+            if(appData.photoRecords.length===0) c.innerHTML = '<div class="col-span-2 text-center text-xs font-bold text-slate-400 py-4">尚無照片，快選擇照片或拍一張吧！</div>';
             
             [...appData.photoRecords].reverse().forEach(r => {
                 const frameClass = r.type === 'monthly' ? 'cute-frame' : 'polaroid-frame';
