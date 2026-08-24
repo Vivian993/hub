@@ -89,31 +89,45 @@
     details.batch-details { background: #fff; border: 1.5px solid var(--m-blue); border-radius: 14px; padding: 0.5rem 1rem; margin-bottom: 1rem; }
     details.batch-details summary { font-weight: 700; color: var(--text-main); cursor: pointer; outline: none; padding: 0.5rem 0; }
 
-    .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; }
-    .swipe-container { position: relative; overflow: hidden; border-radius: 16px; box-shadow: var(--shadow-soft); background: #B9694A; }
-    .delete-bg { position: absolute; right: 0; top: 0; bottom: 0; width: 80px; display: flex; align-items: center; justify-content: center; background: #B9694A; color: white; font-size: 1.8rem; font-weight: bold; border-radius: 0 16px 16px 0; cursor: pointer; }
-    .char-card { position: relative; background: #fff; padding: 1.2rem; border-radius: 16px; z-index: 2; transition: transform 0.3s ease; border: 1px solid var(--border-color); }
-    .char-card.swiped { transform: translateX(-80px); }
+    .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.85rem; margin-top: 1rem; }
+    .char-card { position: relative; background: #fff; padding: 1rem; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-soft); }
+    .char-delete-btn {
+      position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%;
+      background: #F5EDE3; color: #B9694A; border: none; font-size: 0.85rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; z-index: 3;
+    }
+    .char-delete-btn:active { background: #EAD9C4; }
 
-    .char-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.8rem; }
-    .char-big { font-size: 2.1rem; font-weight: 700; color: var(--accent-deep); background: #F5E9DC; width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1.5px solid #EAD9C4; font-family: 'DFKai-SB', 'BiauKai', serif; cursor: pointer; transition: 0.15s; }
+    .char-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.7rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.7rem; padding-right: 26px; }
+    .char-big { font-size: 1.7rem; font-weight: 700; color: var(--accent-deep); background: #F5E9DC; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 1.5px solid #EAD9C4; font-family: 'DFKai-SB', 'BiauKai', serif; cursor: pointer; transition: 0.15s; flex-shrink: 0; }
     .char-big:active { transform: scale(0.92); background: #EDDCC8; }
 
-    .terms-chips { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
-    .term-chip { display: inline-block; background: #fff; color: var(--accent-deep); font-weight: 700; padding: 4px 10px; border-radius: 10px; font-size: 0.85rem; cursor: pointer; border: 1.3px solid #E3C9AE; }
+    .terms-chips { margin-top: 5px; display: flex; flex-wrap: wrap; gap: 5px; }
+    .term-chip { display: inline-block; background: #fff; color: var(--accent-deep); font-weight: 700; padding: 3px 9px; border-radius: 10px; font-size: 0.78rem; cursor: pointer; border: 1.3px solid #E3C9AE; }
     .term-chip:active { transform: scale(0.93); background: #FBF1E6; }
 
     .def-popup-overlay { position: fixed; inset: 0; background: rgba(58, 49, 38, 0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
     .def-popup-overlay.hidden { display: none !important; }
     .def-popup-card { background: #fff; border-radius: 16px; max-width: 420px; width: 100%; max-height: 75vh; overflow-y: auto; padding: 1.2rem; box-shadow: 0 12px 32px rgba(58, 49, 38, 0.22); border-top: 4px solid var(--m-blue); }
     .def-popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.6rem; margin-bottom: 0.6rem; }
-    #def-popup-title { font-size: 1.4rem; font-weight: 800; color: var(--accent-deep); font-family: 'DFKai-SB', 'BiauKai', serif; }
+    #def-popup-title { font-size: 1.3rem; font-weight: 800; color: var(--accent-deep); font-family: 'DFKai-SB', 'BiauKai', serif; }
     .def-popup-close { background: var(--m-pink); color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; cursor: pointer; flex-shrink: 0; }
-    .def-popup-body { font-size: 1.05rem; line-height: 1.7; font-family: 'DFKai-SB', 'BiauKai', serif; color: #333; }
+    .def-popup-body { font-size: 1rem; line-height: 1.7; font-family: 'DFKai-SB', 'BiauKai', serif; color: #333; }
     .def-popup-body ul { padding-left: 1.3rem; margin: 4px 0 10px; }
     .char-info { flex-grow: 1; }
-    .char-pinyin { font-size: 1.1rem; font-weight: 700; }
-    .char-radical { font-size: 0.8rem; color: #fff; background: var(--m-blue); padding: 2px 6px; border-radius: 8px; margin-left: 5px; }
+    .char-pinyin { font-size: 1rem; font-weight: 700; }
+    .char-radical { font-size: 0.75rem; color: #fff; background: var(--m-blue); padding: 2px 6px; border-radius: 8px; margin-left: 5px; }
+
+    /* 課文大意／造句造詞成語：改成點擊查看的按鈕與彈窗 */
+    .lesson-quicklink-row { display: flex; gap: 8px; margin: 0.6rem 0 1rem; flex-wrap: wrap; }
+    .lesson-quicklink-btn {
+      flex: 1; min-width: 140px; text-align: left; background: #fff; border: 1.5px solid var(--border-color);
+      border-radius: 12px; padding: 0.6rem 0.8rem; cursor: pointer; font-size: 0.85rem; font-weight: 700; color: var(--text-main);
+    }
+    .lesson-quicklink-btn .lq-label { color: var(--accent-deep); font-weight: 800; display: block; margin-bottom: 2px; }
+    .lesson-quicklink-btn .lq-preview { color: #999; font-weight: 500; font-size: 0.8rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #lesson-note-popup-textarea { min-height: 160px; }
+    .lesson-note-print-area { display: none; }
 
     /* === 直式聽寫田字格（由右至左、點狀格線，仿傳統生字練習單） === */
     .test-panel { background: #fff; padding: 1.5rem; border-radius: 16px; box-shadow: var(--shadow-soft); margin-bottom: 1rem; }
@@ -216,6 +230,12 @@
       .tian-page-wrapper.correct-mode .tian-zy-box { background: transparent !important; }
       .tian-page-wrapper.correct-mode .tian-zy-box::after { content: none !important; }
       .text-hidden { color: transparent !important; }
+      body.printing-lesson-note > *:not(#lesson-note-print-area) { display: none !important; }
+      body.printing-lesson-note #lesson-note-print-area {
+        display: block !important; padding: 10mm; font-size: 1.1rem; line-height: 2;
+      }
+      body.printing-lesson-note #lesson-note-print-area h2 { color: #A15C3E; margin-bottom: 12px; }
+      body.printing-lesson-note #lesson-note-print-area p { white-space: pre-wrap; }
       .mistake-card { page-break-inside: avoid; border: 1px solid #ccc; background: #fff !important; }
     }
   </style>
@@ -416,6 +436,24 @@
     </div>
   </div>
 
+  <!-- 📖 課文大意／✏️ 造句・造詞・成語 的查看與編輯彈窗 -->
+  <div id="lesson-note-popup-overlay" class="def-popup-overlay hidden no-print" onclick="if(event.target===this) closeLessonNotePopup()">
+    <div class="def-popup-card">
+      <div class="def-popup-header">
+        <span id="lesson-note-popup-title"></span>
+        <button class="def-popup-close" onclick="closeLessonNotePopup()">✕</button>
+      </div>
+      <textarea id="lesson-note-popup-textarea" class="textarea-box" rows="8" style="font-size:1rem; line-height:1.7;" onblur="saveLessonNotePopup()"></textarea>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="btn btn-blue" style="flex:1;" onclick="printLessonNotePopup()">🖨️ 列印</button>
+        <button class="btn btn-green" style="flex:1;" onclick="closeLessonNotePopup()">✅ 完成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 列印課文大意／造句造詞成語時使用的專用區域 -->
+  <div id="lesson-note-print-area" class="lesson-note-print-area no-print"></div>
+
   <script>
     // === 資料庫 ===
     // 通用課別名稱（純「第X課」，不含特定課本課名），避免還沒輸入內容的課別誤顯示成別的年級/學期借來的課名
@@ -437,6 +475,7 @@
         summary: "",
         batchText: "",
         extraTerms: "",
+        sentences: "",
         chars: []
       }));
     }
@@ -454,7 +493,7 @@
     }
 
     function createExtraLesson() {
-      return { id: 'extra', title: '📎 補充教材（自訂語詞・成語）', summary: '', batchText: '', extraTerms: '', chars: [] };
+      return { id: 'extra', title: '📎 補充教材（自訂語詞・成語）', summary: '', batchText: '', extraTerms: '', sentences: '', chars: [] };
     }
 
     const DEFAULT_PROFILE_KEY = "五_上_康軒";
@@ -556,7 +595,8 @@
         });
       });
 
-      lessons().forEach(l => { if (typeof l.extraTerms === 'undefined') l.extraTerms = ""; });
+      lessons().forEach(l => { if (typeof l.extraTerms === 'undefined') l.extraTerms = ""; if (typeof l.sentences === 'undefined') l.sentences = ""; });
+      if (appData.extraLesson && typeof appData.extraLesson.sentences === 'undefined') appData.extraLesson.sentences = "";
 
       if (lessons()[0].chars.length <= 2 && lessons()[0].batchText.length > 50) {
           parseBatchText(1, lessons()[0].batchText);
@@ -627,10 +667,23 @@
       const colorClass = lesson.id === 'extra' ? 'color-5' : `color-${((lesson.id - 1) % 5) + 1}`;
       const isExtra = lesson.id === 'extra';
 
+      const summaryPreview = lesson.summary ? previewText(lesson.summary, 14) : '尚未輸入，點擊新增';
+      const sentencesPreview = lesson.sentences ? previewText(lesson.sentences, 14) : '尚未輸入，點擊新增';
+
       let html = `
         <div class="lesson-title-display ${colorClass}" contenteditable="${!isExtra}" onblur="updateLessonTitle('${lesson.id}', this.innerText)">${lesson.title}</div>
         ${isExtra ? `<p style="font-size:0.85rem; color:#888; margin-bottom:0.6rem;">這裡放額外想加強的語詞、成語或補充生字，不會因為切換年級／學期／版本而改變。</p>` : ''}
-        <textarea class="textarea-box" rows="2" placeholder="在此輸入課文大意 (點擊外側自動存檔)..." onblur="saveLessonData('${lesson.id}', 'summary', this.value)">${lesson.summary}</textarea>
+
+        <div class="lesson-quicklink-row no-print">
+          <button class="lesson-quicklink-btn" onclick="openLessonNotePopup('${lesson.id}', 'summary')">
+            <span class="lq-label">📖 課文大意</span>
+            <span class="lq-preview">${summaryPreview}</span>
+          </button>
+          <button class="lesson-quicklink-btn" onclick="openLessonNotePopup('${lesson.id}', 'sentences')">
+            <span class="lq-label">✏️ 造句・造詞・成語</span>
+            <span class="lq-preview">${sentencesPreview}</span>
+          </button>
+        </div>
 
         <details class="batch-details no-print" style="margin-top: 1rem;">
           <summary>➕ 展開批次匯入生字 (完整格式：生字,注音,部首,圈詞／簡易格式：只打生字，注音部首自動查)</summary>
@@ -640,28 +693,70 @@
 
         <div class="char-grid">
           ${lesson.chars.map((c, i) => `
-            <div class="swipe-container" ontouchstart="ts(event)" ontouchend="te(event, this, '${lesson.id}', ${i})">
-              <div class="delete-bg" onclick="deleteChar('${lesson.id}', ${i})">🗑️</div>
-              <div class="char-card">
-                <div class="char-header">
-                  <div class="char-big" data-word="${c.char}" title="點一下聽發音、看字義">${c.char}</div>
-                  <div class="char-info">
-                    <div class="char-pinyin">${c.zhuyin} <span class="char-radical">${c.rad}</span></div>
-                    <div style="font-size:0.72rem; color:#bbb; margin-top:2px;">👆 點字聽發音＋看意思</div>
-                  </div>
-                  <button class="btn btn-blue" style="padding: 0.3rem;" onclick="speak('${c.char}')">🔊</button>
+            <div class="char-card">
+              <button class="char-delete-btn no-print" onclick="deleteChar('${lesson.id}', ${i})" title="刪除這個生字">🗑</button>
+              <div class="char-header">
+                <div class="char-big" data-word="${c.char}" title="點一下聽發音、看字義">${c.char}</div>
+                <div class="char-info">
+                  <div class="char-pinyin">${c.zhuyin} <span class="char-radical">${c.rad}</span></div>
+                  <div style="font-size:0.68rem; color:#bbb; margin-top:2px;">👆 點字聽發音＋看意思</div>
                 </div>
-                <div style="font-size:0.85rem; color:var(--m-purple); font-weight:800; margin-bottom:5px;">圈詞聽寫 (可修改，點下方詞語可發音＋看語詞意思)：</div>
-                <input type="text" class="input-box" style="padding:0.4rem; font-size:0.95rem; font-weight:bold;" value="${c.terms}" onblur="saveCharData('${lesson.id}', ${i}, 'terms', this.value); updateTermsChips('${lesson.id}', ${i}, this.value)">
-                <div class="terms-chips" id="chips-${lesson.id}-${i}">${buildTermsChipsHtml(c.terms)}</div>
-                <input type="text" class="input-box" style="padding:0.4rem; font-size:0.9rem; margin-top:5px; background:#FBF3DE; border-color:#E3B15E;" placeholder="⚠️ 易錯提醒或造句備註..." value="${c.note}" onblur="saveCharData('${lesson.id}', ${i}, 'note', this.value)">
+                <button class="btn btn-blue" style="padding: 0.3rem;" onclick="speak('${c.char}')">🔊</button>
               </div>
+              <div style="font-size:0.8rem; color:var(--m-purple); font-weight:800; margin-bottom:5px;">圈詞聽寫 (可修改，點下方詞語可發音＋看語詞意思)：</div>
+              <input type="text" class="input-box" style="padding:0.4rem; font-size:0.88rem; font-weight:bold;" value="${c.terms}" onblur="saveCharData('${lesson.id}', ${i}, 'terms', this.value); updateTermsChips('${lesson.id}', ${i}, this.value)">
+              <div class="terms-chips" id="chips-${lesson.id}-${i}">${buildTermsChipsHtml(c.terms)}</div>
+              <input type="text" class="input-box" style="padding:0.4rem; font-size:0.85rem; margin-top:5px; background:#FBF3DE; border-color:#E3B15E;" placeholder="⚠️ 易錯提醒或造句備註..." value="${c.note}" onblur="saveCharData('${lesson.id}', ${i}, 'note', this.value)">
             </div>
           `).join('')}
         </div>
       `;
       container.innerHTML = html;
       document.getElementById('test-lesson-select').value = currentLessonId;
+    }
+
+    function previewText(str, maxLen) {
+      const clean = (str || '').replace(/\s+/g, ' ').trim();
+      return clean.length > maxLen ? clean.slice(0, maxLen) + '…' : clean;
+    }
+
+    // === 📖 課文大意／✏️ 造句・造詞・成語：點擊查看＋編輯＋列印的彈窗 ===
+    let lessonNotePopupState = { lessonId: null, field: null };
+
+    function openLessonNotePopup(lId, field) {
+      const l = getLessonById(lId);
+      if (!l) return;
+      lessonNotePopupState = { lessonId: lId, field: field };
+      const label = field === 'summary' ? '📖 課文大意' : '✏️ 造句・造詞・成語';
+      document.getElementById('lesson-note-popup-title').innerText = `${label}－${l.title}`;
+      document.getElementById('lesson-note-popup-textarea').value = l[field] || '';
+      document.getElementById('lesson-note-popup-overlay').classList.remove('hidden');
+      playClickSound();
+    }
+
+    function saveLessonNotePopup() {
+      const { lessonId, field } = lessonNotePopupState;
+      if (!lessonId || !field) return;
+      const val = document.getElementById('lesson-note-popup-textarea').value;
+      saveLessonData(lessonId, field, val);
+    }
+
+    function closeLessonNotePopup() {
+      saveLessonNotePopup();
+      document.getElementById('lesson-note-popup-overlay').classList.add('hidden');
+      renderLessonView();
+    }
+
+    function printLessonNotePopup() {
+      saveLessonNotePopup();
+      const title = document.getElementById('lesson-note-popup-title').innerText;
+      const content = document.getElementById('lesson-note-popup-textarea').value;
+      const escaped = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const area = document.getElementById('lesson-note-print-area');
+      area.innerHTML = `<h2>${title}</h2><p>${escaped || '（尚未輸入內容）'}</p>`;
+      document.body.classList.add('printing-lesson-note');
+      window.print();
+      setTimeout(() => document.body.classList.remove('printing-lesson-note'), 300);
     }
 
     function buildTermsChipsHtml(terms) {
@@ -701,15 +796,6 @@
         const l = getLessonById(lId);
         if(l) { l.chars.splice(cIdx, 1); saveData(); renderLessonView(); }
       }
-    }
-
-    function ts(e) { e.currentTarget.dataset.x = e.touches[0].clientX; }
-    function te(e, el, lId, cIdx) {
-      let stX = parseFloat(el.dataset.x);
-      let enX = e.changedTouches[0].clientX;
-      let card = el.querySelector('.char-card');
-      if (stX - enX > 40) { card.classList.add('swiped'); }
-      else { card.classList.remove('swiped'); }
     }
 
     function applyBatch(lId) {
@@ -1520,7 +1606,7 @@
     }
 
     document.addEventListener('click', function (e) {
-      const target = e.target.closest('.btn, .nav-btn, .tian-char-box, .tian-zy-box, .lesson-title-display, .delete-bg, select');
+      const target = e.target.closest('.btn, .nav-btn, .tian-char-box, .tian-zy-box, .lesson-title-display, .char-delete-btn, select');
       if (target) playClickSound();
     }, true);
 
