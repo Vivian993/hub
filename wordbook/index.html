@@ -1594,7 +1594,7 @@ function generateQuiz() {
         } else {
             questionText = kidMeaning + '——這是哪個成語呢？' + blank;
         }
-        qList.innerHTML += `<li>${num}、${questionText}（提示：${item.zhuyin}）</li>`;
+        qList.innerHTML += `<li>${num}、${questionText}</li>`;
 
         ansList.innerHTML += `<li>${num}、${item.idiom}</li>`;
     });
