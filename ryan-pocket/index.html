@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-mode="day">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#eaf6ff">
+<title>Ryan 的四次元百寶袋</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky1:#eaf6ff; --sky2:#bfe6fb;
+    --blue:#2fa8de; --blue-deep:#0e6fa0;
+    --red:#e85b45; --yellow:#ffc93c;
+    --pocket:#fffdf6; --pocket-edge:#ffffff;
+    --ink:#123047; --ink-soft:#5c87a0;
+    --tile-border: rgba(14,111,160,0.12);
+    --shadow: 0 6px 16px rgba(14,111,160,0.16);
+  }
+  html[data-mode="night"]{
+    --sky1:#0b1e33; --sky2:#16324d;
+    --blue:#4bb8ea; --blue-deep:#8fd4f5;
+    --red:#ff8a75; --yellow:#ffd76a;
+    --pocket:#1e3b57; --pocket-edge:#274969;
+    --ink:#eaf4ff; --ink-soft:#7fa5c2;
+    --tile-border: rgba(234,244,255,0.1);
+    --shadow: 0 6px 18px rgba(0,0,0,0.35);
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; }
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(255,255,255,0.5), transparent 55%),
+      linear-gradient(180deg, var(--sky1), var(--sky2) 70%);
+    font-family:'Noto Sans TC', sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    padding: max(30px, env(safe-area-inset-top) + 20px) 18px 70px;
+    user-select:none;
+    transition: background .3s ease, color .3s ease;
+    overflow-x:hidden;
+  }
+  .accent{ font-family:'Baloo 2', 'Noto Sans TC', sans-serif; }
+  .wrap{ max-width:520px; margin:0 auto; position:relative; }
+
+  /* floating cloud dots for day / stars for night, purely decorative */
+  .sky-deco{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+  .dot{ position:absolute; border-radius:50%; }
+  html[data-mode="day"] .dot{ background:rgba(255,255,255,0.65); }
+  html[data-mode="night"] .dot{ background:rgba(255,255,255,0.75); }
+
+  header{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:6px;
+  }
+  .head-text .hi{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    color:var(--blue-deep);
+    letter-spacing:0.5px;
+    display:block;
+    margin-bottom:4px;
+  }
+  h1{
+    margin:0 0 6px;
+    font-size:25px;
+    font-weight:900;
+    line-height:1.3;
+  }
+  h1 .name{ font-family:'Baloo 2', sans-serif; color:var(--red); }
+  header p{
+    margin:0;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    line-height:1.7;
+    max-width:320px;
+  }
+
+  /* bell toggle */
+  .bell-btn{
+    flex-shrink:0;
+    width:52px; height:52px;
+    border:none;
+    cursor:pointer;
+    background:transparent;
+    position:relative;
+    margin-top:2px;
+  }
+  .bell-strap{
+    position:absolute; left:50%; top:2px;
+    transform:translateX(-50%);
+    width:22px; height:5px;
+    background:var(--red);
+    border-radius:3px;
+  }
+  .bell-body{
+    position:absolute; left:50%; top:9px;
+    transform:translateX(-50%);
+    width:40px; height:36px;
+    background:var(--yellow);
+    border-radius:50% 50% 46% 46%;
+    box-shadow: inset 0 -6px 0 rgba(0,0,0,0.06), var(--shadow);
+  }
+  .bell-line{
+    position:absolute; left:50%; top:22px;
+    transform:translateX(-50%);
+    width:34px; height:2px;
+    background:rgba(0,0,0,0.15);
+  }
+  .bell-clap{
+    position:absolute; left:50%; bottom:5px;
+    transform:translateX(-50%);
+    width:7px; height:7px;
+    border-radius:50%;
+    background:var(--blue-deep);
+    opacity:0.55;
+  }
+  .bell-btn:active .bell-body{ transform:translateX(-50%) scale(0.92) rotate(-6deg); }
+
+  /* pocket panel */
+  .pocket{
+    position:relative;
+    z-index:1;
+    background:var(--pocket);
+    border:1.5px solid var(--pocket-edge);
+    border-radius:28px;
+    margin-top:30px;
+    padding:38px 16px 22px;
+    box-shadow: var(--shadow);
+  }
+  .pocket-tab{
+    position:absolute;
+    top:-14px; left:50%;
+    transform:translateX(-50%);
+    width:64px; height:26px;
+    background:var(--blue);
+    border-radius:14px;
+    box-shadow: 0 3px 8px rgba(14,111,160,0.3);
+  }
+  .pocket-seam{
+    position:absolute;
+    top:16px; left:22px; right:22px;
+    height:0;
+    border-top:2px dashed rgba(14,111,160,0.18);
+  }
+  html[data-mode="night"] .pocket-seam{ border-top-color:rgba(234,244,255,0.14); }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:30px 12px;
+  }
+  .tile-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:7px;
+    position:relative;
+  }
+  .tile{
+    width:100%;
+    aspect-ratio:1/1;
+    border-radius:24%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:26px;
+    cursor:pointer;
+    border:1.5px solid var(--tile-border);
+    box-shadow:0 3px 8px rgba(14,111,160,0.14);
+    transition:transform .12s ease;
+    position:relative;
+  }
+  .tile:active{ transform:scale(0.9); }
+  .tile.door{
+    background:transparent;
+    box-shadow:none;
+    border:2px dashed var(--red);
+    color:var(--red);
+    font-size:20px;
+  }
+  .tile.door .knob{
+    position:absolute;
+    right:16%; top:50%;
+    width:6px; height:6px;
+    border-radius:50%;
+    background:var(--red);
+    transform:translateY(-50%);
+  }
+  .label{
+    font-size:11px;
+    text-align:center;
+    color:var(--ink);
+    line-height:1.35;
+    max-width:100%;
+    min-height:29.5px;
+    overflow:hidden;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+  }
+  .label.door-label{ color:var(--red); font-weight:700; }
+
+  .badge{
+    position:absolute;
+    top:-6px; left:-6px;
+    width:20px; height:20px;
+    border-radius:50%;
+    background:var(--red);
+    color:#fff;
+    font-size:13px;
+    line-height:20px;
+    text-align:center;
+    box-shadow:0 2px 6px rgba(0,0,0,0.25);
+    display:none;
+    z-index:2;
+  }
+  .jiggling .badge{ display:block; }
+  .jiggling .tile{ animation:jiggle .28s infinite; }
+  @keyframes jiggle{
+    0%{ transform:rotate(-1.3deg); }
+    50%{ transform:rotate(1.3deg); }
+    100%{ transform:rotate(-1.3deg); }
+  }
+
+  .hint{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:22px;
+    line-height:1.8;
+    position:relative; z-index:1;
+  }
+  .settings-link{
+    display:block;
+    text-align:center;
+    margin-top:14px;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    text-decoration:underline;
+    text-decoration-style:dotted;
+    position:relative; z-index:1;
+  }
+
+  .done-bar{
+    display:none;
+    justify-content:flex-end;
+    margin-bottom:10px;
+    position:relative; z-index:1;
+  }
+  .done-bar.show{ display:flex; }
+  .done-btn{
+    background:var(--blue);
+    color:#fff;
+    border:none;
+    padding:8px 18px;
+    border-radius:20px;
+    font-weight:700;
+    font-size:13px;
+  }
+
+  /* modal */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(14,58,80,0.4);
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:50;
+  }
+  .overlay.open{ display:flex; }
+  .sheet{
+    width:100%;
+    max-width:520px;
+    background:var(--pocket);
+    border-radius:20px 20px 0 0;
+    padding:22px 20px 26px;
+    box-shadow:0 -8px 30px rgba(0,0,0,0.25);
+    animation:rise .22s ease;
+    max-height:88vh;
+    overflow-y:auto;
+  }
+  @keyframes rise{ from{ transform:translateY(16px); opacity:0;} to{ transform:translateY(0); opacity:1; } }
+  .sheet h2{
+    font-size:18px;
+    margin:0 0 16px;
+    font-weight:900;
+  }
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:5px;
+  }
+  .field input{
+    width:100%;
+    padding:11px 12px;
+    border-radius:10px;
+    border:1.5px solid var(--tile-border);
+    background:var(--sky1);
+    font-size:14.5px;
+    font-family:'Noto Sans TC', sans-serif;
+    color:var(--ink);
+  }
+  .field input:focus{ outline:none; border-color:var(--blue); }
+  .image-picker-row{ display:flex; align-items:center; gap:14px; margin-top:8px; }
+  .image-preview{
+    width:56px; height:56px;
+    border-radius:24%;
+    border:1.5px dashed var(--tile-border);
+    background:var(--sky1);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--ink-soft);
+    font-size:20px;
+    flex-shrink:0;
+    overflow:hidden;
+    background-size:cover;
+    background-position:center;
+  }
+  .image-picker-actions{ display:flex; flex-direction:column; gap:8px; }
+  .btn.pick-img{
+    display:inline-block;
+    padding:9px 14px;
+    border-radius:10px;
+    border:1.5px solid var(--tile-border);
+    background:var(--sky1);
+    color:var(--ink);
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    text-align:center;
+  }
+  .btn.clear-img{
+    padding:8px 14px;
+    border-radius:10px;
+    border:1.5px solid var(--red);
+    background:transparent;
+    color:var(--red);
+    font-size:12.5px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .emoji-row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .emoji-opt{
+    width:38px; height:38px;
+    border-radius:10px;
+    border:1.5px solid var(--tile-border);
+    background:var(--sky1);
+    font-size:19px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .emoji-opt.selected{ border-color:var(--blue); background:rgba(47,168,222,0.15); }
+  .swatch-row{ display:flex; gap:8px; margin-top:8px; }
+  .swatch{
+    width:30px; height:30px; border-radius:50%;
+    cursor:pointer; border:2px solid transparent;
+  }
+  .swatch.selected{ border-color:var(--ink); }
+
+  .sheet-actions{ display:flex; gap:10px; margin-top:8px; }
+  .backup-section{ margin-top:18px; padding-top:16px; border-top:1px solid var(--tile-border); }
+  .backup-title{ font-weight:900; font-size:14px; margin-bottom:6px; }
+  .backup-hint{ font-size:11.5px; color:var(--ink-soft); line-height:1.6; }
+  .btn{
+    flex:1; padding:12px; border-radius:10px; border:none;
+    font-weight:700; font-size:14.5px; cursor:pointer;
+  }
+  .btn.cancel{ background:transparent; color:var(--ink-soft); border:1.5px solid var(--tile-border); }
+  .btn.save{ background:var(--blue); color:#fff; }
+  .btn.delete{ background:transparent; color:var(--red); border:1.5px solid var(--red); flex:0 0 auto; padding:12px 16px; }
+
+  :focus-visible{ outline:2px solid var(--blue); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+  <div class="sky-deco" id="skyDeco"></div>
+  <div class="wrap">
+    <header>
+      <div class="head-text">
+        <span class="hi accent">Hi, RYAN</span>
+        <h1><span class="name accent">Ryan</span> 的四次元百寶袋</h1>
+        <p>需要什麼道具，打開這個袋子就找得到。輕點就直接用；長按可以換道具。</p>
+      </div>
+      <button class="bell-btn" id="bellBtn" aria-label="切換白天／夜晚">
+        <div class="bell-strap"></div>
+        <div class="bell-body">
+          <div class="bell-line"></div>
+          <div class="bell-clap"></div>
+        </div>
+      </button>
+    </header>
+
+    <div class="done-bar" id="doneBar"><button class="done-btn" id="doneBtn">收好了</button></div>
+
+    <div class="pocket">
+      <div class="pocket-tab"></div>
+      <div class="pocket-seam"></div>
+      <div class="grid" id="grid"></div>
+    </div>
+
+    <div class="hint">輕點道具＝馬上使用　・　長按道具＝換裝備　・　點虛線的門＝拿新道具</div>
+    <a class="settings-link" id="settingsLink" href="javascript:void(0)">📦 備份與還原（給爸爸媽媽用）</a>
+  </div>
+
+  <div class="overlay" id="settingsOverlay">
+    <div class="sheet">
+      <h2>備份與還原</h2>
+      <div class="backup-section" style="margin-top:0;border-top:none;padding-top:0;">
+        <div class="backup-hint">把 Ryan 目前所有的道具匯出成一個檔案存起來，之後可以匯入還原，換手機也不怕不見。</div>
+        <div class="sheet-actions" style="margin-top:12px;">
+          <button class="btn cancel" id="exportBtn" style="flex:1;">匯出備份</button>
+          <button class="btn cancel" id="importBtn" style="flex:1;">匯入備份</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json" style="display:none;">
+      </div>
+      <div class="sheet-actions" style="margin-top:16px;">
+        <button class="btn cancel" id="settingsCloseBtn" style="flex:1;">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="sheet">
+      <h2 id="sheetTitle">拿一個新道具</h2>
+      <div class="field">
+        <label>道具圖片（可選，從相簿或檔案選一張）</label>
+        <div class="image-picker-row">
+          <div class="image-preview" id="imagePreview">＋</div>
+          <div class="image-picker-actions">
+            <label class="btn pick-img" for="fImage">選擇圖片</label>
+            <input type="file" id="fImage" accept="image/*" style="display:none;">
+            <button type="button" class="btn clear-img" id="clearImg" style="display:none;">改用 emoji</button>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>或選一個 emoji 圖示</label>
+        <div class="emoji-row" id="emojiRow"></div>
+      </div>
+      <div class="field">
+        <label>顏色</label>
+        <div class="swatch-row" id="swatchRow"></div>
+      </div>
+      <div class="field">
+        <label for="fName">道具名稱</label>
+        <input id="fName" placeholder="例如：國語字典聽寫簿學習系統">
+      </div>
+      <div class="field">
+        <label for="fUrl">網址連結</label>
+        <input id="fUrl" placeholder="https://...">
+      </div>
+      <div class="sheet-actions">
+        <button class="btn delete" id="deleteBtn" style="display:none;">丟掉</button>
+        <button class="btn cancel" id="cancelBtn">取消</button>
+        <button class="btn save" id="saveBtn">收進袋子</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const STORAGE_KEY = 'ryan-pocket-items';
+const MODE_KEY = 'ryan-pocket-mode';
+const EMOJI_CHOICES = ['📖','📐','🎮','🚀','⚽','🦖','🎨','🧮','📚','🎯','🧩','🔤','⏰','📌','🐾','🔔'];
+const COLOR_CHOICES = ['#2fa8de','#e85b45','#ffc93c','#6ecb8f','#a985e0','#ff9d5c'];
+
+const GH_USER = 'Vivian993';
+const GH_REPO = 'hub';
+const ghUrl = (folder) => `https://${GH_USER}.github.io/${GH_REPO}/${folder}/`;
+
+const defaultItems = [
+  { id:'r1', emoji:'📖', color:COLOR_CHOICES[0], name:'全能國語線上字典聽寫系統', url: ghUrl('ryan-libra') },
+];
+
+let items = [];
+let editingId = null;
+let selectedEmoji = EMOJI_CHOICES[0];
+let selectedColor = COLOR_CHOICES[0];
+let selectedImage = null;
+let jiggleMode = false;
+
+function resizeImageFile(file, maxSize=240, quality=0.85){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        const scale = Math.min(1, maxSize / Math.max(w, h));
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function updateImagePreview(){
+  const preview = document.getElementById('imagePreview');
+  const clearBtn = document.getElementById('clearImg');
+  if(selectedImage){
+    preview.style.backgroundImage = `url('${selectedImage}')`;
+    preview.textContent = '';
+    clearBtn.style.display = 'inline-block';
+  } else {
+    preview.style.backgroundImage = '';
+    preview.textContent = '＋';
+    clearBtn.style.display = 'none';
+  }
+}
+
+document.getElementById('fImage').addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  try{
+    selectedImage = await resizeImageFile(file);
+    updateImagePreview();
+  }catch(err){
+    alert('圖片讀取失敗，換一張試試看');
+  }
+  e.target.value = '';
+});
+
+document.getElementById('clearImg').addEventListener('click', () => {
+  selectedImage = null;
+  updateImagePreview();
+});
+
+const gridEl = document.getElementById('grid');
+const overlay = document.getElementById('overlay');
+const doneBar = document.getElementById('doneBar');
+
+function loadItems(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    items = raw ? JSON.parse(raw) : defaultItems;
+    if(!raw) saveItems();
+  }catch(e){
+    items = defaultItems;
+  }
+  render();
+}
+function saveItems(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }catch(e){}
+}
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+function render(){
+  gridEl.innerHTML = '';
+  gridEl.classList.toggle('jiggling', jiggleMode);
+  doneBar.classList.toggle('show', jiggleMode);
+
+  items.forEach(item => {
+    const tw = document.createElement('div');
+    tw.className = 'tile-wrap';
+    const tileStyle = item.image
+      ? `background-image:url('${item.image}'); background-size:cover; background-position:center;`
+      : `background:${item.color || COLOR_CHOICES[0]}; color:#fff;`;
+    tw.innerHTML = `
+      <div class="tile" style="${tileStyle}">
+        ${item.image ? '' : escapeHtml(item.emoji || '📌')}
+        <div class="badge" data-id="${item.id}">✕</div>
+      </div>
+      <div class="label">${escapeHtml(item.name || '未命名道具')}</div>
+    `;
+    const tile = tw.querySelector('.tile');
+    attachPress(tile, item);
+    tw.querySelector('.badge').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteItem(item.id);
+    });
+    gridEl.appendChild(tw);
+  });
+
+  const doorWrap = document.createElement('div');
+  doorWrap.className = 'tile-wrap';
+  doorWrap.innerHTML = `
+    <div class="tile door">🚪<div class="knob"></div></div>
+    <div class="label door-label">新道具</div>
+  `;
+  doorWrap.querySelector('.tile').addEventListener('click', () => openSheet(null));
+  gridEl.appendChild(doorWrap);
+}
+
+function attachPress(el, item){
+  let timer = null;
+  let longPressed = false;
+  const start = () => {
+    longPressed = false;
+    timer = setTimeout(() => {
+      longPressed = true;
+      if(navigator.vibrate) navigator.vibrate(12);
+      jiggleMode = true;
+      render();
+    }, 480);
+  };
+  const cancel = () => { if(timer) clearTimeout(timer); };
+  const end = () => {
+    cancel();
+    if(longPressed) return;
+    if(jiggleMode){
+      openSheet(item);
+    } else if(item.url){
+      window.open(item.url, '_blank', 'noopener');
+    } else {
+      openSheet(item);
+    }
+  };
+  el.addEventListener('pointerdown', start);
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointerleave', cancel);
+  el.addEventListener('pointercancel', cancel);
+  el.addEventListener('contextmenu', (e) => { e.preventDefault(); jiggleMode = true; render(); });
+}
+
+document.getElementById('doneBtn').addEventListener('click', () => {
+  jiggleMode = false;
+  render();
+});
+
+function buildEmojiRow(){
+  const row = document.getElementById('emojiRow');
+  row.innerHTML = '';
+  EMOJI_CHOICES.forEach(em => {
+    const b = document.createElement('div');
+    b.className = 'emoji-opt' + (em === selectedEmoji ? ' selected' : '');
+    b.textContent = em;
+    b.addEventListener('click', () => { selectedEmoji = em; buildEmojiRow(); });
+    row.appendChild(b);
+  });
+}
+function buildSwatchRow(){
+  const row = document.getElementById('swatchRow');
+  row.innerHTML = '';
+  COLOR_CHOICES.forEach(c => {
+    const s = document.createElement('div');
+    s.className = 'swatch' + (c === selectedColor ? ' selected' : '');
+    s.style.background = c;
+    s.addEventListener('click', () => { selectedColor = c; buildSwatchRow(); });
+    row.appendChild(s);
+  });
+}
+
+function openSheet(item){
+  editingId = item ? item.id : null;
+  document.getElementById('sheetTitle').textContent = item ? '換裝備' : '拿一個新道具';
+  document.getElementById('fName').value = item ? item.name : '';
+  document.getElementById('fUrl').value = item ? item.url : '';
+  selectedEmoji = item ? (item.emoji || EMOJI_CHOICES[0]) : EMOJI_CHOICES[0];
+  selectedColor = item ? (item.color || COLOR_CHOICES[0]) : COLOR_CHOICES[0];
+  selectedImage = item ? (item.image || null) : null;
+  document.getElementById('deleteBtn').style.display = item ? 'block' : 'none';
+  buildEmojiRow();
+  buildSwatchRow();
+  updateImagePreview();
+  overlay.classList.add('open');
+}
+document.getElementById('cancelBtn').addEventListener('click', () => overlay.classList.remove('open'));
+overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.classList.remove('open'); });
+
+document.getElementById('saveBtn').addEventListener('click', () => {
+  const name = document.getElementById('fName').value.trim();
+  if(!name){ document.getElementById('fName').focus(); return; }
+  let url = document.getElementById('fUrl').value.trim();
+  if(url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  if(editingId){
+    const idx = items.findIndex(i => i.id === editingId);
+    if(idx > -1){
+      items[idx] = { ...items[idx], name, url, emoji:selectedEmoji, color:selectedColor, image:selectedImage };
+    }
+  } else {
+    items.push({ id:'i'+Date.now(), name, url, emoji:selectedEmoji, color:selectedColor, image:selectedImage });
+  }
+  overlay.classList.remove('open');
+  render();
+  saveItems();
+});
+
+document.getElementById('deleteBtn').addEventListener('click', () => {
+  if(editingId){
+    items = items.filter(i => i.id !== editingId);
+    overlay.classList.remove('open');
+    render();
+    saveItems();
+  }
+});
+function deleteItem(id){
+  items = items.filter(i => i.id !== id);
+  render();
+  saveItems();
+}
+
+// --- 鈴聲 + 按鍵音效 ---
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ return null; }
+  }
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function playTone(freq, dur, delay=0, vol=0.12){
+  const ctx = ensureAudio();
+  if(!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  const t0 = ctx.currentTime + delay;
+  gain.gain.setValueAtTime(vol, t0);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(t0);
+  osc.stop(t0 + dur);
+}
+function playTick(){ playTone(760, 0.045); }
+function playBell(){ playTone(1046, 0.1); playTone(1568, 0.14, 0.06); }
+
+document.body.addEventListener('pointerdown', (e) => {
+  if(e.target.closest('.tile, .btn, .swatch, .emoji-opt, .badge, .done-btn')){
+    playTick();
+  }
+}, true);
+
+// --- 白天／夜晚切換 ---
+function applyMode(mode){
+  document.documentElement.setAttribute('data-mode', mode);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', mode === 'night' ? '#0b1e33' : '#eaf6ff');
+}
+function loadMode(){
+  let mode = 'day';
+  try{ const saved = localStorage.getItem(MODE_KEY); if(saved) mode = saved; }catch(e){}
+  applyMode(mode);
+  buildSkyDeco(mode);
+}
+document.getElementById('bellBtn').addEventListener('click', () => {
+  playBell();
+  const current = document.documentElement.getAttribute('data-mode');
+  const next = current === 'night' ? 'day' : 'night';
+  applyMode(next);
+  try{ localStorage.setItem(MODE_KEY, next); }catch(e){}
+  buildSkyDeco(next);
+});
+
+function buildSkyDeco(mode){
+  const deco = document.getElementById('skyDeco');
+  deco.innerHTML = '';
+  const count = mode === 'night' ? 34 : 10;
+  for(let i=0;i<count;i++){
+    const d = document.createElement('div');
+    d.className = 'dot';
+    const size = mode === 'night' ? (Math.random()*2+1) : (Math.random()*10+6);
+    d.style.width = size+'px';
+    d.style.height = size+'px';
+    d.style.left = (Math.random()*100)+'%';
+    d.style.top = (Math.random()* (mode==='night'?100:35))+'%';
+    d.style.opacity = mode === 'night' ? (Math.random()*0.6+0.3) : (Math.random()*0.4+0.2);
+    deco.appendChild(d);
+  }
+}
+
+// --- 備份匯出／匯入 ---
+document.getElementById('settingsLink').addEventListener('click', () => {
+  document.getElementById('settingsOverlay').classList.add('open');
+});
+document.getElementById('settingsCloseBtn').addEventListener('click', () => {
+  document.getElementById('settingsOverlay').classList.remove('open');
+});
+document.getElementById('settingsOverlay').addEventListener('click', (e) => {
+  if(e.target.id === 'settingsOverlay') document.getElementById('settingsOverlay').classList.remove('open');
+});
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const backup = {
+    app: 'ryan-pocket-backup',
+    exportedAt: new Date().toISOString(),
+    mode: document.documentElement.getAttribute('data-mode') || 'day',
+    items: items,
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  const dateStr = new Date().toISOString().slice(0,10);
+  link.download = `Ryan的百寶袋備份_${dateStr}.json`;
+  link.href = url;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+});
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(!data || !Array.isArray(data.items)) throw new Error('格式不對');
+      const ok = confirm(`確定要匯入這份備份嗎？\n\n裡面有 ${data.items.length} 個道具，會取代目前袋子裡的東西。`);
+      if(!ok) return;
+      items = data.items;
+      saveItems();
+      if(data.mode){
+        applyMode(data.mode);
+        try{ localStorage.setItem(MODE_KEY, data.mode); }catch(e){}
+        buildSkyDeco(data.mode);
+      }
+      render();
+      document.getElementById('settingsOverlay').classList.remove('open');
+      alert('匯入成功！');
+    }catch(err){
+      alert('這個檔案讀不出來，確認一下是不是之前匯出的備份檔');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+loadMode();
+loadItems();
+</script>
+</body>
+</html>
