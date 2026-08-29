@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>國語字典聽寫簿學習系統</title>
+
+  <link rel="apple-touch-icon" href="data:image/png;base64,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">
+  <link rel="icon" type="image/png" href="data:image/png;base64,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">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;800;900&display=swap');
+
+    :root {
+      --bg-color: #F5F0E4;
+      --card-bg: #FFFFFF;
+      --m-pink: #C9764F;
+      --m-blue: #7FA695;
+      --m-green: #D9E1C3;
+      --m-yellow: #E3B15E;
+      --m-purple: #8C7B6B;
+      --text-main: #5A4F42;
+      --border-color: #E6DCC6;
+      --accent-deep: #A15C3E;
+      --shadow-soft: 0 6px 18px rgba(90, 79, 66, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; letter-spacing: 0.2px; }
+
+    header {
+      background: linear-gradient(160deg, #FBF8EF 0%, #F0E6D2 100%);
+      padding: 1.3rem 1rem 1.1rem; border-bottom: 1px solid var(--border-color); text-align: center;
+      position: relative;
+    }
+    header::after {
+      content: ''; position: absolute; left: 50%; bottom: -1px; transform: translateX(-50%);
+      width: 56px; height: 3px; border-radius: 3px; background: var(--m-blue); opacity: 0.55;
+    }
+    .subtitle { font-size: 0.85rem; font-weight: 700; color: var(--accent-deep); margin-bottom: 0.6rem; display: inline-block; padding: 4px 14px; border-radius: 10px; background: #fff; border: 1px solid var(--border-color); }
+
+    .header-title-group { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px; font-size: 1.35rem; font-weight: 800; color: var(--m-purple); }
+    .header-title-group select { appearance: none; background: transparent; border: none; font-size: 1.35rem; font-weight: 800; color: var(--m-purple); cursor: pointer; outline: none; padding: 0 4px; text-align: center; border-bottom: 2px solid rgba(140, 123, 107, 0.35); }
+    .header-title-group select:hover { border-bottom-color: var(--m-pink); color: var(--m-pink); }
+    .header-title-group select option { font-size: 1rem; color: #333; background: #fff; }
+
+    .header-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .speed-select { appearance: none; background: #fff; border: 1.5px solid var(--m-blue); border-radius: 10px; padding: 4px 12px; font-size: 0.85rem; font-weight: 700; color: #555; outline: none; cursor: pointer; }
+    .sound-toggle-btn { appearance: none; background: #fff; border: 1.5px solid var(--m-yellow); border-radius: 10px; padding: 4px 14px; font-size: 0.85rem; font-weight: 700; color: #555; outline: none; cursor: pointer; }
+
+    nav { background-color: #FFFDF8; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 999; box-shadow: 0 2px 10px rgba(90, 79, 66, 0.05); }
+    .nav-container { display: flex; overflow-x: auto; white-space: nowrap; scrollbar-width: none; max-width: 1000px; margin: 0 auto; padding: 6px 6px; gap: 4px; }
+    .nav-container::-webkit-scrollbar { display: none; }
+    .nav-btn {
+      flex: 1; padding: 0.65rem 0.9rem; font-size: 0.92rem; font-weight: 700; background: none; border: none;
+      border-radius: 12px; color: #A79C8C; cursor: pointer; transition: 0.25s;
+    }
+    .nav-btn.active { color: #fff; background: var(--m-purple); }
+
+    main { max-width: 1000px; margin: 0 auto; padding: 1rem; flex-grow: 1; width: 100%; }
+
+    .btn {
+      padding: 0.55rem 1.05rem; font-size: 0.9rem; font-weight: 700; border-radius: 12px; border: none;
+      cursor: pointer; transition: 0.2s; box-shadow: var(--shadow-soft); display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-pink { background-color: var(--m-pink); color: #fff; }
+    .btn-blue { background-color: var(--m-blue); color: #fff; }
+    .btn-green { background-color: var(--m-green); color: #4B5237; }
+    .btn-yellow { background-color: var(--m-yellow); color: #4a3410; }
+    .btn-purple { background-color: var(--m-purple); color: #fff; }
+
+    .input-box, .textarea-box { width: 100%; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 0.6rem; font-size: 1rem; outline: none; background: #fff; font-family: inherit; }
+    .input-box:focus, .textarea-box:focus { border-color: var(--m-pink); }
+    .hidden { display: none !important; }
+
+    /* 課文生字區 */
+    .lesson-selector-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; background: #fff; padding: 10px 15px; border-radius: 14px; box-shadow: var(--shadow-soft); }
+
+    .lesson-title-display { font-size: 1.25rem; font-weight: 800; padding: 0.6rem 1rem; border-radius: 12px; text-align: center; margin-bottom: 0.5rem; outline: none; cursor: text; }
+    .lesson-title-display:hover { background-color: rgba(90, 79, 66, 0.04); border: 1px solid var(--m-pink); }
+
+    .color-1 { background: var(--m-pink); color: #fff; }
+    .color-2 { background: var(--m-blue); color: #fff; }
+    .color-3 { background: var(--m-green); color: #4B5237; }
+    .color-4 { background: var(--m-yellow); color: #4a3410; }
+    .color-5 { background: var(--m-purple); color: #fff; }
+
+    details.batch-details { background: #fff; border: 1.5px solid var(--m-blue); border-radius: 14px; padding: 0.5rem 1rem; margin-bottom: 1rem; }
+    details.batch-details summary { font-weight: 700; color: var(--text-main); cursor: pointer; outline: none; padding: 0.5rem 0; }
+
+    .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.85rem; margin-top: 1rem; }
+    .char-card { position: relative; background: #fff; padding: 1rem; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-soft); }
+    .char-delete-btn {
+      position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%;
+      background: #F5EDE3; color: #B9694A; border: none; font-size: 0.85rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; z-index: 3;
+    }
+    .char-delete-btn:active { background: #EAD9C4; }
+
+    .char-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.7rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.7rem; padding-right: 26px; }
+    .char-big { font-size: 1.7rem; font-weight: 700; color: var(--accent-deep); background: #F5E9DC; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 1.5px solid #EAD9C4; font-family: 'DFKai-SB', 'BiauKai', serif; cursor: pointer; transition: 0.15s; flex-shrink: 0; }
+    .char-big:active { transform: scale(0.92); background: #EDDCC8; }
+
+    .terms-chips { margin-top: 5px; display: flex; flex-wrap: wrap; gap: 5px; }
+    .term-chip { display: inline-block; background: #fff; color: var(--accent-deep); font-weight: 700; padding: 3px 9px; border-radius: 10px; font-size: 0.78rem; cursor: pointer; border: 1.3px solid #E3C9AE; }
+    .term-chip:active { transform: scale(0.93); background: #FBF1E6; }
+
+    .def-popup-overlay { position: fixed; inset: 0; background: rgba(58, 49, 38, 0.5); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+    .def-popup-overlay.hidden { display: none !important; }
+    .def-popup-card { background: #fff; border-radius: 16px; max-width: 420px; width: 100%; max-height: 75vh; overflow-y: auto; padding: 1.2rem; box-shadow: 0 12px 32px rgba(58, 49, 38, 0.22); border-top: 4px solid var(--m-blue); }
+    .def-popup-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.6rem; margin-bottom: 0.6rem; }
+    #def-popup-title { font-size: 1.3rem; font-weight: 800; color: var(--accent-deep); font-family: 'DFKai-SB', 'BiauKai', serif; }
+    .def-popup-close { background: var(--m-pink); color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; cursor: pointer; flex-shrink: 0; }
+    .def-popup-body { font-size: 1rem; line-height: 1.7; font-family: 'DFKai-SB', 'BiauKai', serif; color: #333; }
+    .def-popup-body ul { padding-left: 1.3rem; margin: 4px 0 10px; }
+    .char-info { flex-grow: 1; }
+    .char-pinyin { font-size: 1rem; font-weight: 700; }
+    .char-radical { font-size: 0.75rem; color: #fff; background: var(--m-blue); padding: 2px 6px; border-radius: 8px; margin-left: 5px; }
+
+    /* 課文大意／造句造詞成語：改成點擊查看的按鈕與彈窗 */
+    .lesson-quicklink-row { display: flex; gap: 8px; margin: 0.6rem 0 1rem; flex-wrap: wrap; }
+    .lesson-quicklink-btn {
+      flex: 1; min-width: 140px; text-align: left; background: #fff; border: 1.5px solid var(--border-color);
+      border-radius: 12px; padding: 0.6rem 0.8rem; cursor: pointer; font-size: 0.85rem; font-weight: 700; color: var(--text-main);
+    }
+    .lesson-quicklink-btn .lq-label { color: var(--accent-deep); font-weight: 800; display: block; margin-bottom: 2px; }
+    .lesson-quicklink-btn .lq-preview { color: #999; font-weight: 500; font-size: 0.8rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #lesson-note-popup-textarea { min-height: 160px; }
+    .lesson-note-print-area { display: none; }
+
+    /* === 直式聽寫田字格（由右至左、點狀格線，仿傳統生字練習單） === */
+    .test-panel { background: #fff; padding: 1.5rem; border-radius: 16px; box-shadow: var(--shadow-soft); margin-bottom: 1rem; }
+
+    .tian-page-wrapper {
+      --tian-cell: 76px;
+      background: #fff; padding: 15px; border-radius: 16px; box-shadow: var(--shadow-soft);
+      display: flex; flex-direction: row-reverse; justify-content: flex-start; align-items: flex-start; gap: 0;
+      overflow-x: auto;
+    }
+
+    .tian-sidebar {
+      writing-mode: vertical-rl; text-orientation: upright; white-space: nowrap;
+      padding: 4px 8px 4px 4px; margin-left: 8px; flex-shrink: 0;
+    }
+    .tian-sidebar div { color: var(--accent-deep); font-weight: 800; line-height: 1.5; }
+    .tian-sidebar div.sb-small { font-size: 0.7rem; font-weight: 700; }
+    .tian-sidebar div.sb-big { font-size: 1.05rem; }
+    .tian-sidebar div::before { content: '・'; }
+
+    /* 使用 CSS Grid 明確指定每格的欄/列位置，格子大小固定，內容絕不會影響格線位置 */
+    .tian-grid {
+      display: grid; flex-shrink: 0;
+      border-top: 1.2px dotted #8a7f6f; border-left: 1.2px dotted #8a7f6f;
+    }
+
+    .tian-cell-wrap {
+      box-sizing: border-box; width: var(--tian-cell); height: var(--tian-cell);
+      display: flex; flex-direction: row; align-items: stretch;
+      border-right: 1.2px dotted #8a7f6f; border-bottom: 1.2px dotted #8a7f6f;
+      cursor: default; user-select: none; background: #fff; overflow: hidden;
+    }
+    .tian-cell-wrap.tian-sep { justify-content: center; align-items: center; }
+    .tian-sep-dot { color: #c2b8a5; font-size: 0.7rem; }
+
+    .tian-char-box {
+      width: 68%; height: 100%; position: relative; border-right: 1px dotted #b5aa96;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+    }
+    .tian-char-box::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dotted #cfc5b3; z-index: 1; }
+    .tian-char-box::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px dotted #cfc5b3; z-index: 1; }
+    .tian-char-text {
+      position: relative; z-index: 2; font-size: calc(var(--tian-cell) * 0.42); font-weight: normal; color: #000;
+      font-family: 'DFKai-SB', 'BiauKai', serif; transition: 0.2s;
+    }
+
+    /* 注音欄：符號由上到下排列，聲調符號改附標在最後一個符號右上角，更緊湊、更接近課本排版 */
+    .tian-zy-box {
+      flex: 1; height: 100%; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; min-width: 0;
+    }
+    .tian-page-wrapper.correct-mode .tian-zy-box { background: #F2E3B8; }
+    .tian-page-wrapper.correct-mode .tian-zy-box::after { content: '✏️'; position: absolute; top: 1px; right: 1px; font-size: 0.5rem; opacity: 0.6; }
+    .tian-zy-text {
+      position: relative; z-index: 2; color: #000; font-family: 'DFKai-SB', 'BiauKai', serif;
+      display: flex; flex-direction: column; align-items: center; line-height: 1.15;
+    }
+    .tian-zy-text .zy-line { display: block; font-size: calc(var(--tian-cell) * 0.16); }
+    .tian-zy-text .zy-tone-wrap { position: relative; }
+    .tian-zy-text .zy-tone { position: absolute; top: -3px; right: -9px; font-size: 0.6rem; }
+
+    .text-hidden { color: transparent !important; }
+
+    /* 字典區 */
+    .dict-result { background: #fff; padding: 1.5rem; border-radius: 16px; border: 1.5px solid var(--m-blue); margin-top: 1rem; min-height: 150px; }
+    .dict-result-text { font-size: 1.2rem; line-height: 1.8; color: #333; margin-top: 1rem; font-family: 'DFKai-SB', 'BiauKai', serif; }
+    .dict-result-text ul { padding-left: 1.4rem; margin: 4px 0 10px; }
+    .dict-result-text h4 { color: var(--m-purple); margin-bottom: 5px; }
+
+    .mistake-card { background: #FBF3DE; border-left: 4px solid var(--m-yellow); padding: 1rem; border-radius: 10px; margin-bottom: 10px; }
+    .mistake-char { font-size: 1.8rem; font-weight: 800; color: var(--accent-deep); font-family: 'DFKai-SB', 'BiauKai', serif; }
+
+
+    /* 資源連結區 */
+    .link-card { background: #fff; padding: 1.2rem; border-radius: 16px; border: 1.5px solid var(--border-color); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;}
+    .link-desc { font-size: 0.95rem; color: var(--text-main); margin-top: 8px; padding: 10px; border-radius: 10px; font-weight: 700; line-height: 1.4; }
+    .desc-color-0 { background: #D9E1C3; }
+    .desc-color-1 { background: #F0D9A8; }
+    .desc-color-2 { background: #C7DED2; }
+
+    /* 列印設定：直式文字、橫向紙張，欄數才能排得多 */
+    @media print {
+      @page { size: A4 landscape; margin: 8mm; }
+      body { background: #fff !important; }
+      header, nav, .lesson-selector-bar, .no-print { display: none !important; }
+      main { max-width: 100%; padding: 0; }
+      .test-panel { display: none !important; }
+      .tian-page-wrapper {
+        --tian-cell: 58px; box-shadow: none; padding: 0; overflow: visible;
+        width: 100%; transform-origin: top right;
+      }
+      .tian-sidebar { padding: 2px 6px 2px 2px; margin-left: 6px; }
+      .tian-sidebar div.sb-small { font-size: 0.6rem; }
+      .tian-sidebar div.sb-big { font-size: 0.85rem; }
+      .tian-grid { border-top: 1.2px dotted #000; border-left: 1.2px dotted #000; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .tian-cell-wrap { border-color: #000 !important; }
+      .tian-char-box { border-color: #333 !important; }
+      .tian-char-box::before, .tian-char-box::after { border-color: #555 !important; }
+      .tian-sidebar div { color: #000 !important; }
+      .tian-page-wrapper.correct-mode .tian-zy-box { background: transparent !important; }
+      .tian-page-wrapper.correct-mode .tian-zy-box::after { content: none !important; }
+      .text-hidden { color: transparent !important; }
+      body.printing-lesson-note > *:not(#lesson-note-print-area) { display: none !important; }
+      body.printing-lesson-note #lesson-note-print-area {
+        display: block !important; padding: 10mm; font-size: 1.1rem; line-height: 2;
+      }
+      body.printing-lesson-note #lesson-note-print-area h2 { color: #A15C3E; margin-bottom: 12px; }
+      body.printing-lesson-note #lesson-note-print-area p { white-space: pre-wrap; }
+      .mistake-card { page-break-inside: avoid; border: 1px solid #ccc; background: #fff !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 標題與選單 -->
+  <header class="no-print">
+    <div class="subtitle">國語線上字典學習系統：詳細生字.成語圈詞.真人朗讀</div>
+    <div>
+      <div class="header-title-group">
+        <select id="sel-grade" onchange="onProfileSelectorChange()">
+          <option value="一">一年級</option><option value="二">二年級</option><option value="三">三年級</option>
+          <option value="四">四年級</option><option value="五" selected>五年級</option><option value="六">六年級</option>
+        </select>
+        <span>(</span>
+        <select id="sel-semester" onchange="onProfileSelectorChange()">
+          <option value="上">上</option><option value="下">下</option>
+        </select>
+        <span>)</span>
+        <select id="sel-publisher" onchange="onProfileSelectorChange()">
+          <option value="康軒">康軒版</option><option value="翰林">翰林版</option><option value="南一">南一版</option>
+        </select>
+        <span>國語生字</span>
+      </div>
+      <div style="font-size: 0.72rem; color: #A79C8C; margin-top: 2px;">💡 切換上方年級／學期／版本，會自動切換到那一組專屬的生字資料，彼此不會互相覆蓋</div>
+    </div>
+    <div class="header-controls">
+      <select id="speech-speed" class="speed-select" onchange="saveData()">
+        <option value="0.5">🐢 語速慢 (0.5x)</option>
+        <option value="0.75" selected>🚶 語速中 (0.75x)</option>
+        <option value="1.0">🏃 語速快 (1.0x)</option>
+        <option value="1.25">🐇 語速極快 (1.25x)</option>
+      </select>
+      <button id="sound-toggle" class="sound-toggle-btn" onclick="toggleSound()">🔊 按鍵音效：開</button>
+    </div>
+  </header>
+
+  <!-- 固定導覽列 -->
+  <nav class="no-print">
+    <div class="nav-container">
+      <button class="nav-btn active" onclick="switchTab('view-lessons')">📖 課文生字</button>
+      <button class="nav-btn" onclick="switchTab('view-test')">✍️ 聽寫田字格</button>
+      <button class="nav-btn" onclick="switchTab('view-dict')">🔍 線上字典</button>
+      <button class="nav-btn" onclick="switchTab('view-mistakes')">⚠️ 易錯字本</button>
+      <button class="nav-btn" onclick="switchTab('view-links')">🔗 資源連結</button>
+      <button class="nav-btn" onclick="switchTab('view-backup')">⚙️ 備份還原</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- 📖 視圖 1: 課文生字 -->
+    <div id="view-lessons" class="tab-content">
+      <div class="lesson-selector-bar no-print">
+        <span style="font-weight: 800; color: var(--m-purple); white-space: nowrap;">跳轉單元：</span>
+        <select id="lesson-select" class="input-box" style="padding:0.4rem; cursor:pointer;" onchange="renderLessonView()"></select>
+      </div>
+
+      <details class="batch-details no-print" style="margin-bottom: 1rem;">
+        <summary>📥 一次匯入全部 12 課（含課名＋生字，最省時間）</summary>
+        <p style="font-size: 0.85rem; color: #888; margin: 8px 0; line-height: 1.6;">
+          先貼上「課名」一行（例如：<b>第一課：智救小鴨</b>）。<br>
+          如果有<b>課文大意</b>，可以接著貼一行「<b>【課文大意】...</b>」或「<b>大意：...</b>」開頭的文字，系統會自動存到課文大意欄位。<br>
+          再來貼生字，兩種寫法都可以：<br>
+          ① <b>完整格式</b>：生字,注音,部首,圈詞（例：鴨,ㄧㄚ,鳥部,鴨子，烤鴨）<br>
+          ② <b>簡易格式</b>：<b>只打生字就好</b>，一行一個字或整串貼上都可以（例：鴨溝渠枝板），<b>注音和部首系統會自動連線查詢補上</b>，圈詞欄位會先帶入生字本身，之後可再自行修改。<br>
+          接下來換下一課，一樣先打課名、（可選）大意、再接生字，依序往下貼即可，系統會依課名出現的順序自動對應到第 1～12 課。
+        </p>
+        <textarea id="bulk-import-input" class="textarea-box" rows="10" placeholder="第一課：智救小鴨&#10;【課文大意】敘述主角冷靜救出掉入深溝的小鴨...&#10;鴨溝渠枝板&#10;&#10;第二課：智慧的開端&#10;端,ㄉㄨㄢ,立部,開端，端正&#10;啟發"></textarea>
+        <div style="margin-top: 8px; font-size: 0.85rem; background: #FBF3DE; border: 1.5px solid var(--m-yellow); border-radius: 10px; padding: 8px 12px; color: #6b5a2e;">⚠️ 會直接覆蓋第 1～12 課（或您貼上的課數）原本的課名與生字內容，請先確認內容沒問題再匯入；自動查詢注音／部首需要連線網路。</div>
+        <button class="btn btn-green" style="margin-top: 0.5rem; width: 100%;" onclick="applyBulkImport()">✅ 一鍵匯入全部課程</button>
+      </details>
+
+      <div id="lesson-content-area"></div>
+    </div>
+
+    <!-- ✍️ 視圖 2: 聽寫與直式田字格 -->
+    <div id="view-test" class="tab-content hidden">
+      <div class="test-panel no-print">
+        <h2 style="color: var(--m-pink); margin-bottom: 0.5rem;">自動聽寫與直式田字格</h2>
+        <p style="font-size: 0.95rem; color: var(--text-light); margin-bottom: 1rem; line-height: 1.5;">
+          下方自動帶入本課圈詞，可自由修改；預設國字與注音都會顯示，列印時採直書、橫向紙張排版（由右至左），格線為點狀田字格。<br>
+          👉 <b>點擊格子中的國字或右側注音，可以把不想要的部分變不見，自訂聽寫考卷內容！</b><br>
+          ✏️ <b>注音查錯了？（例如破音字）</b>點一下「校正注音模式」按鈕打開後，再點格子裡的注音就能手動修改；改好的內容會記住，之後都會用您校正過的讀音。
+        </p>
+
+        <select id="test-lesson-select" class="input-box" style="margin-bottom: 10px; font-weight: bold; cursor:pointer;" onchange="loadTestTerms()"></select>
+
+        <label style="font-weight: 800; color: var(--m-purple); font-size: 0.9rem; display:block; margin-bottom:4px;">📘 本課圈詞（自動帶入，可修改）：</label>
+        <textarea id="test-terms-input" class="textarea-box" rows="3" placeholder="請輸入要考試的詞語..." onblur="generateGrid()"></textarea>
+
+        <label style="font-weight: 800; color: var(--m-purple); font-size: 0.9rem; display:block; margin: 10px 0 4px;">➕ 加強聽寫（自訂加強字詞，會加在本課圈詞後面）：</label>
+        <textarea id="test-extra-input" class="textarea-box" rows="2" placeholder="輸入需要額外加強練習的字詞..." onblur="saveExtraTerms(); generateGrid();"></textarea>
+
+        <label style="font-weight: 800; color: var(--m-purple); font-size: 0.9rem; display:block; margin: 10px 0 4px;">🔁 同一詞語念兩次的中間間隔：</label>
+        <select id="repeat-gap" class="input-box" style="padding:0.4rem; font-weight:bold; cursor:pointer;" onchange="saveData()">
+          <option value="1">間隔 1 秒</option>
+          <option value="1.5" selected>間隔 1.5 秒</option>
+          <option value="2">間隔 2 秒</option>
+          <option value="3">間隔 3 秒</option>
+          <option value="4">間隔 4 秒</option>
+        </select>
+
+        <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-green" onclick="generateGrid()">✅ 更新下方田字格</button>
+          <button class="btn btn-yellow" id="btn-correct-mode" onclick="toggleCorrectMode()">✏️ 校正注音模式：關</button>
+          <button class="btn btn-blue" onclick="window.print()">🖨️ 列印直式田字格（橫向紙張）</button>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 10px; justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-pink" id="btn-play" onclick="startDictation()">▶️ 播放聽寫</button>
+          <button class="btn btn-yellow hidden" id="btn-pause" onclick="togglePauseDictation()">⏸️ 暫停</button>
+          <button class="btn btn-blue hidden" id="btn-replay" onclick="replayCurrentTerm()">🔁 重播這題</button>
+          <button class="btn btn-pink hidden" id="btn-stop" onclick="stopDictation()">⏹️ 停止測驗</button>
+        </div>
+        <div id="dictation-status" style="text-align:center; font-weight:800; color:var(--m-purple); min-height:1.4em; margin-top:6px;"></div>
+      </div>
+
+      <div id="grid-render-area" class="tian-page-wrapper"></div>
+    </div>
+
+    <!-- 🔍 視圖 3: 線上查字典 -->
+    <div id="view-dict" class="tab-content hidden">
+      <div class="test-panel no-print">
+        <h2 style="color: var(--m-purple); margin-bottom: 1rem;">線上國語字典 (萌典直接顯示)</h2>
+        <p style="font-size: 0.9rem; color: #888; margin-bottom: 1rem;">輸入單字或成語，直接在下方顯示注音與詳細釋義。</p>
+        <div style="display: flex; gap: 10px;">
+          <input type="text" id="dict-input" class="input-box" placeholder="輸入字詞，例如：蚊" onkeypress="if(event.key==='Enter') searchMoedictRobust()">
+          <button class="btn btn-purple" style="white-space: nowrap; font-size:1rem;" onclick="searchMoedictRobust()">線上查字</button>
+        </div>
+      </div>
+
+      <div class="dict-result print-show">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;" class="no-print">
+          <h3 style="color: var(--m-green);">📖 查詢結果</h3>
+          <button class="btn btn-blue" id="btn-copy" onclick="copyDictText()">📋 複製</button>
+        </div>
+        <div id="dict-output" class="dict-result-text">
+          請在上方的輸入框輸入字詞開始查詢。
+        </div>
+      </div>
+    </div>
+
+    <!-- ⚠️ 視圖 4: 易錯字本 -->
+    <div id="view-mistakes" class="tab-content hidden">
+      <div class="test-panel no-print" style="margin-bottom: 1rem;">
+        <h2 style="color: var(--danger); margin-bottom: 0.5rem;">⚠️ 易錯字與備註收集區</h2>
+        <p style="font-size: 0.9rem; color: #888;">系統自動收集您在生字卡中填寫的「備註與易錯提醒」，方便考前列印複習。</p>
+        <button class="btn btn-pink" onclick="window.print()" style="margin-top:10px;">🖨️ 列印易錯字本</button>
+      </div>
+      <div id="mistakes-container" class="print-show"></div>
+    </div>
+
+    <!-- 🔗 視圖 5: 資源連結 -->
+    <div id="view-links" class="tab-content hidden">
+      <div class="test-panel no-print" style="margin-bottom: 1rem;">
+        <h2 style="color: var(--m-blue); margin-bottom: 1rem;">新增實用連結與說明</h2>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <select id="link-subj" class="input-box" style="width: 100px; border-radius: 20px;">
+            <option>國語</option><option>數學</option><option>社會</option><option>自然</option><option>英文</option><option>其它</option>
+          </select>
+          <input type="text" id="link-title" class="input-box" placeholder="網站標題" style="flex: 1; border-radius: 20px;">
+          <input type="text" id="link-url" class="input-box" placeholder="網址 (https://...)" style="flex: 2; border-radius: 20px;">
+        </div>
+        <input type="text" id="link-desc" class="input-box" placeholder="輸入關於這個網站的說明描述..." style="margin-top: 8px; border-radius: 20px;">
+        <button class="btn btn-blue" style="margin-top: 8px; width: 100%;" onclick="addLink()">➕ 儲存新增連結</button>
+      </div>
+      <div id="links-container"></div>
+    </div>
+
+    <!-- ⚙️ 視圖 6: 備份與還原 -->
+    <div id="view-backup" class="tab-content hidden no-print">
+      <div class="test-panel" style="text-align: center;">
+        <h2 style="color: var(--m-green); margin-bottom: 1rem;">資料備份與還原</h2>
+        <p style="margin-bottom: 1.5rem; color: #888;">
+          您的修改都會自動保存在此設備中。<br>若要分享給別人或換設備，請點擊「匯出備份檔」。
+        </p>
+        <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 2rem;">
+          <button class="btn btn-blue" onclick="exportJSON()">📤 匯出備份檔</button>
+          <button class="btn btn-pink" onclick="document.getElementById('file-import').click()">📥 匯入備份檔</button>
+          <input type="file" id="file-import" accept=".json" style="display:none" onchange="importJSON(event)">
+        </div>
+        <hr style="border: 0; border-top: 1px dashed #ccc; margin-bottom: 1rem;">
+        <button class="btn btn-yellow" onclick="resetData()">⚠️ 恢復原始範例資料 (會清除修改)</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 👆 點生字/語詞看解釋的彈窗 -->
+  <div id="def-popup-overlay" class="def-popup-overlay hidden no-print" onclick="if(event.target===this) closeDefPopup()">
+    <div class="def-popup-card">
+      <div class="def-popup-header">
+        <span id="def-popup-title"></span>
+        <button class="def-popup-close" onclick="closeDefPopup()">✕</button>
+      </div>
+      <div id="def-popup-body" class="def-popup-body">請點生字或語詞查看意思。</div>
+    </div>
+  </div>
+
+  <!-- 📖 課文大意／✏️ 造句・造詞・成語 的查看與編輯彈窗 -->
+  <div id="lesson-note-popup-overlay" class="def-popup-overlay hidden no-print" onclick="if(event.target===this) closeLessonNotePopup()">
+    <div class="def-popup-card">
+      <div class="def-popup-header">
+        <span id="lesson-note-popup-title"></span>
+        <button class="def-popup-close" onclick="closeLessonNotePopup()">✕</button>
+      </div>
+      <textarea id="lesson-note-popup-textarea" class="textarea-box" rows="8" style="font-size:1rem; line-height:1.7;" onblur="saveLessonNotePopup()"></textarea>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="btn btn-blue" style="flex:1;" onclick="printLessonNotePopup()">🖨️ 列印</button>
+        <button class="btn btn-green" style="flex:1;" onclick="closeLessonNotePopup()">✅ 完成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 列印課文大意／造句造詞成語時使用的專用區域 -->
+  <div id="lesson-note-print-area" class="lesson-note-print-area no-print"></div>
+
+  <script>
+    // === 資料庫 ===
+    // 通用課別名稱（純「第X課」，不含特定課本課名），避免還沒輸入內容的課別誤顯示成別的年級/學期借來的課名
+    const lessonNames = [
+      "第一課", "第二課", "第三課", "第四課",
+      "第五課", "第六課", "第七課", "第八課",
+      "第九課", "第十課", "第十一課", "第十二課"
+    ];
+
+    // 每個「年級＋學期＋版本」都是獨立的一份生字資料，彼此不會互相覆蓋
+    function profileKey(grade, semester, publisher) {
+      return `${grade}_${semester}_${publisher}`;
+    }
+
+    function createEmptyLessons() {
+      return Array.from({ length: 12 }, (_, i) => ({
+        id: i + 1,
+        title: lessonNames[i],
+        summary: "",
+        batchText: "",
+        extraTerms: "",
+        sentences: "",
+        chars: []
+      }));
+    }
+
+    function createDemoLessons() {
+      const lessons = createEmptyLessons();
+      lessons[0].title = "第一課：蚊帳大使";
+      lessons[0].summary = "這是一篇關於非洲瘧疾與蚊帳的故事，提醒我們要懂得感恩與助人。";
+      lessons[0].batchText = "蚊,ㄨㄣˊ,虫部,蚊子，蚊帳\n帳,ㄓㄤˋ,巾部,蚊帳，帳篷\n洲,ㄓㄡ,水部,非洲，亞洲\n瘧,ㄋㄩㄝˋ,疒部,瘧疾，瘧蚊\n疾,ㄐㄧˊ,疒部,疾病，疾走\n死,ㄙˇ,歹部,死亡，死板\n叮,ㄉㄧㄥ,口部,叮咬，叮嚀\n鼓,ㄍㄨˇ,鼓部,鼓起，鼓勵\n募,ㄇㄨˋ,力部,募集，募款\n集,ㄐㄧˊ,隹部,聚集，集中\n寄,ㄐㄧˋ,宀部,寄信，寄託\n贈,ㄗㄥˋ,貝部,贈送，捐贈\n賣,ㄇㄞˋ,貝部,買賣，拍賣\n獎,ㄐㄧㄤˇ,大部,獎狀，獎金\n狀,ㄓㄨㄤˋ,犬部,狀態，獎狀\n誌,ㄓˋ,言部,雜誌，日誌\n基,ㄐㄧ,土部,基金會，基礎\n潛,ㄑㄧㄢˊ,水部,潛力，潛水";
+      lessons[0].chars = [
+        { char: "蚊", zhuyin: "ㄨㄣˊ", rad: "虫部", terms: "蚊子，蚊帳", note: "右邊是文，不要多一撇" },
+        { char: "帳", zhuyin: "ㄓㄤˋ", rad: "巾部", terms: "蚊帳，帳篷", note: "" }
+      ];
+      return lessons;
+    }
+
+    function createExtraLesson() {
+      return { id: 'extra', title: '📎 補充教材（自訂語詞・成語）', summary: '', batchText: '', extraTerms: '', sentences: '', chars: [] };
+    }
+
+    const DEFAULT_PROFILE_KEY = "五_上_康軒";
+
+    const defaultData = {
+      grade: "五", semester: "上", publisher: "康軒", speed: "0.75", soundEnabled: true, zhuyinCache: {}, definitionCache: {}, zhuyinOverride: {}, radicalCache: {},
+      profiles: {
+        [DEFAULT_PROFILE_KEY]: { lessons: createDemoLessons() }
+      },
+      extraLesson: createExtraLesson(),
+      links: [
+        { id: 1, subj: "國語", title: "波波注音", desc: "參考田字格樣式，提供多種直式列印功能，幫助孩子把字寫端正。", url: "https://bopodoc.com/worksheets/" },
+        { id: 2, subj: "社會", title: "康軒學習網", desc: "提供各科目的線上影音教學與補充資料，適合課後複習。", url: "https://www.kanghsuan.com.tw/" }
+      ]
+    };
+
+    let appData = null;
+    let currentLessonId = 1;
+
+    // 取得（必要時建立）目前年級/學期/版本對應的那一份生字資料
+    function ensureProfile(key) {
+      if (!appData.profiles) appData.profiles = {};
+      if (!appData.profiles[key]) {
+        appData.profiles[key] = { lessons: createEmptyLessons() };
+      }
+      return appData.profiles[key];
+    }
+
+    function currentProfile() {
+      return ensureProfile(profileKey(appData.grade, appData.semester, appData.publisher));
+    }
+
+    // 取代舊版 appData.lessons：永遠回傳「目前這組年級/學期/版本」對應的生字陣列
+    function lessons() {
+      return currentProfile().lessons;
+    }
+
+    // 依課別 id 取得課程物件；'extra' 會回傳全域共用的「補充教材」，其餘走目前這組年級/學期/版本的12課
+    function getLessonById(id) {
+      if (id === 'extra') {
+        if (!appData.extraLesson) appData.extraLesson = createExtraLesson();
+        return appData.extraLesson;
+      }
+      return lessons().find(x => x.id == id);
+    }
+
+    // 將下拉選單的字串值轉成課別 id（'extra' 維持字串，其餘轉成數字）
+    function parseLessonId(val) {
+      return val === 'extra' ? 'extra' : parseInt(val);
+    }
+
+    // 切換年級／學期／版本時：存檔、切回第一課、重新渲染所有畫面
+    function onProfileSelectorChange() {
+      saveData();
+      currentLessonId = 1;
+      initSelectors();
+      renderLessonView();
+      renderMistakes();
+      loadTestTerms();
+      playClickSound();
+    }
+
+    // === 核心初始化 ===
+    window.onload = () => {
+      const stored = localStorage.getItem('MandarinAppV9');
+      if (stored) {
+        try { appData = JSON.parse(stored); } catch(e) { appData = JSON.parse(JSON.stringify(defaultData)); }
+      } else {
+        appData = JSON.parse(JSON.stringify(defaultData));
+      }
+
+      if (typeof appData.soundEnabled === 'undefined') appData.soundEnabled = true;
+      if (!appData.zhuyinCache) appData.zhuyinCache = {};
+      if (!appData.radicalCache) appData.radicalCache = {};
+      if (!appData.extraLesson) appData.extraLesson = createExtraLesson();
+      if (!appData.zhuyinOverride) appData.zhuyinOverride = {};
+      if (!appData.definitionCache) appData.definitionCache = {};
+
+      // 舊版資料只有單一 appData.lessons，遷移成「目前年級/學期/版本」專屬的一份資料，不會遺失原本內容
+      if (appData.lessons && !appData.profiles) {
+        const key = profileKey(appData.grade, appData.semester, appData.publisher);
+        appData.profiles = { [key]: { lessons: appData.lessons } };
+        delete appData.lessons;
+      }
+      if (!appData.profiles) appData.profiles = {};
+
+      // 舊版每個空白課別會借用固定的課本課名（例如「蚊帳大使」），造成不同年級混淆；
+      // 這裡把「還沒有輸入任何生字、標題又是舊版預設課名」的課別，改回通用的「第X課」
+      const OLD_DEFAULT_TITLES = [
+        "第一課：蚊帳大使", "第二課：走過大地傷痕", "第三課：迎向光的植物", "第四課：智救羊群",
+        "第五課：送愛到南非", "第六課：表演藝術饗宴", "第七課：珍珠試煉", "第八課：戰火下的溫情",
+        "第九課：探索植物的秘密", "第十課：古詩選", "第十一課：被遺忘的奇蹟", "第十二課：魯賓遜漂流記"
+      ];
+      Object.values(appData.profiles).forEach(profile => {
+        (profile.lessons || []).forEach((l, idx) => {
+          if (l.chars.length === 0 && OLD_DEFAULT_TITLES.includes(l.title)) {
+            l.title = lessonNames[idx];
+          }
+        });
+      });
+
+      lessons().forEach(l => { if (typeof l.extraTerms === 'undefined') l.extraTerms = ""; if (typeof l.sentences === 'undefined') l.sentences = ""; });
+      if (appData.extraLesson && typeof appData.extraLesson.sentences === 'undefined') appData.extraLesson.sentences = "";
+
+      if (lessons()[0].chars.length <= 2 && lessons()[0].batchText.length > 50) {
+          parseBatchText(1, lessons()[0].batchText);
+      }
+
+      initHeader();
+      initSelectors();
+      renderLessonView();
+      renderLinks();
+      renderMistakes();
+      loadTestTerms();
+    };
+
+    function saveData() {
+      appData.grade = document.getElementById('sel-grade').value;
+      appData.semester = document.getElementById('sel-semester').value;
+      appData.publisher = document.getElementById('sel-publisher').value;
+      appData.speed = document.getElementById('speech-speed').value;
+      const gapEl = document.getElementById('repeat-gap');
+      if (gapEl) appData.repeatGap = gapEl.value;
+      localStorage.setItem('MandarinAppV9', JSON.stringify(appData));
+    }
+
+    function initHeader() {
+      document.getElementById('sel-grade').value = appData.grade;
+      document.getElementById('sel-semester').value = appData.semester;
+      document.getElementById('sel-publisher').value = appData.publisher;
+      document.getElementById('speech-speed').value = appData.speed || "0.75";
+      const gapEl = document.getElementById('repeat-gap');
+      if (gapEl) gapEl.value = appData.repeatGap || "1.5";
+      updateSoundToggleLabel();
+    }
+
+    function initSelectors() {
+      const selLesson = document.getElementById('lesson-select');
+      const selTest = document.getElementById('test-lesson-select');
+      selLesson.innerHTML = ''; selTest.innerHTML = '';
+
+      lessons().forEach(l => {
+        let opt = `<option value="${l.id}">${l.title}</option>`;
+        selLesson.innerHTML += opt;
+        selTest.innerHTML += opt;
+      });
+      const extraOpt = `<option value="extra">${appData.extraLesson.title}</option>`;
+      selLesson.innerHTML += extraOpt;
+      selTest.innerHTML += extraOpt;
+
+      selLesson.value = currentLessonId;
+      selTest.value = currentLessonId;
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.remove('hidden');
+      event.target.classList.add('active');
+      if(tabId === 'view-mistakes') renderMistakes();
+      if(tabId === 'view-test') loadTestTerms();
+      window.scrollTo(0, 0);
+    }
+
+    // === 📖 課文生字渲染 (標題可直接修改) ===
+    function renderLessonView() {
+      currentLessonId = parseLessonId(document.getElementById('lesson-select').value);
+      const lesson = getLessonById(currentLessonId);
+      const container = document.getElementById('lesson-content-area');
+
+      const colorClass = lesson.id === 'extra' ? 'color-5' : `color-${((lesson.id - 1) % 5) + 1}`;
+      const isExtra = lesson.id === 'extra';
+
+      const summaryPreview = lesson.summary ? previewText(lesson.summary, 14) : '尚未輸入，點擊新增';
+      const sentencesPreview = lesson.sentences ? previewText(lesson.sentences, 14) : '尚未輸入，點擊新增';
+
+      let html = `
+        <div class="lesson-title-display ${colorClass}" contenteditable="${!isExtra}" onblur="updateLessonTitle('${lesson.id}', this.innerText)">${lesson.title}</div>
+        ${isExtra ? `<p style="font-size:0.85rem; color:#888; margin-bottom:0.6rem;">這裡放額外想加強的語詞、成語或補充生字，不會因為切換年級／學期／版本而改變。</p>` : ''}
+
+        <div class="lesson-quicklink-row no-print">
+          <button class="lesson-quicklink-btn" onclick="openLessonNotePopup('${lesson.id}', 'summary')">
+            <span class="lq-label">📖 課文大意</span>
+            <span class="lq-preview">${summaryPreview}</span>
+          </button>
+          <button class="lesson-quicklink-btn" onclick="openLessonNotePopup('${lesson.id}', 'sentences')">
+            <span class="lq-label">✏️ 造句・造詞・成語</span>
+            <span class="lq-preview">${sentencesPreview}</span>
+          </button>
+        </div>
+
+        <details class="batch-details no-print" style="margin-top: 1rem;">
+          <summary>➕ 展開批次匯入生字 (完整格式：生字,注音,部首,圈詞／簡易格式：只打生字，注音部首自動查)</summary>
+          <textarea id="batch-${lesson.id}" class="textarea-box" rows="4" style="margin-top:0.5rem;">${lesson.batchText}</textarea>
+          <button class="btn btn-green" style="margin-top:0.5rem;" onclick="applyBatch('${lesson.id}')">一鍵覆蓋匯入</button>
+        </details>
+
+        <div class="char-grid">
+          ${lesson.chars.map((c, i) => `
+            <div class="char-card">
+              <button class="char-delete-btn no-print" onclick="deleteChar('${lesson.id}', ${i})" title="刪除這個生字">🗑</button>
+              <div class="char-header">
+                <div class="char-big" data-word="${c.char}" title="點一下聽發音、看字義">${c.char}</div>
+                <div class="char-info">
+                  <div class="char-pinyin">${c.zhuyin} <span class="char-radical">${c.rad}</span></div>
+                  <div style="font-size:0.68rem; color:#bbb; margin-top:2px;">👆 點字聽發音＋看意思</div>
+                </div>
+                <button class="btn btn-blue" style="padding: 0.3rem;" onclick="speak('${c.char}')">🔊</button>
+              </div>
+              <div style="font-size:0.8rem; color:var(--m-purple); font-weight:800; margin-bottom:5px;">圈詞聽寫 (可修改，點下方詞語可發音＋看語詞意思)：</div>
+              <input type="text" class="input-box" style="padding:0.4rem; font-size:0.88rem; font-weight:bold;" value="${c.terms}" onblur="saveCharData('${lesson.id}', ${i}, 'terms', this.value); updateTermsChips('${lesson.id}', ${i}, this.value)">
+              <div class="terms-chips" id="chips-${lesson.id}-${i}">${buildTermsChipsHtml(c.terms)}</div>
+              <input type="text" class="input-box" style="padding:0.4rem; font-size:0.85rem; margin-top:5px; background:#FBF3DE; border-color:#E3B15E;" placeholder="⚠️ 易錯提醒或造句備註..." value="${c.note}" onblur="saveCharData('${lesson.id}', ${i}, 'note', this.value)">
+            </div>
+          `).join('')}
+        </div>
+      `;
+      container.innerHTML = html;
+      document.getElementById('test-lesson-select').value = currentLessonId;
+    }
+
+    function previewText(str, maxLen) {
+      const clean = (str || '').replace(/\s+/g, ' ').trim();
+      return clean.length > maxLen ? clean.slice(0, maxLen) + '…' : clean;
+    }
+
+    // === 📖 課文大意／✏️ 造句・造詞・成語：點擊查看＋編輯＋列印的彈窗 ===
+    let lessonNotePopupState = { lessonId: null, field: null };
+
+    function openLessonNotePopup(lId, field) {
+      const l = getLessonById(lId);
+      if (!l) return;
+      lessonNotePopupState = { lessonId: lId, field: field };
+      const label = field === 'summary' ? '📖 課文大意' : '✏️ 造句・造詞・成語';
+      document.getElementById('lesson-note-popup-title').innerText = `${label}－${l.title}`;
+      document.getElementById('lesson-note-popup-textarea').value = l[field] || '';
+      document.getElementById('lesson-note-popup-overlay').classList.remove('hidden');
+      playClickSound();
+    }
+
+    function saveLessonNotePopup() {
+      const { lessonId, field } = lessonNotePopupState;
+      if (!lessonId || !field) return;
+      const val = document.getElementById('lesson-note-popup-textarea').value;
+      saveLessonData(lessonId, field, val);
+    }
+
+    function closeLessonNotePopup() {
+      saveLessonNotePopup();
+      document.getElementById('lesson-note-popup-overlay').classList.add('hidden');
+      renderLessonView();
+    }
+
+    function printLessonNotePopup() {
+      saveLessonNotePopup();
+      const title = document.getElementById('lesson-note-popup-title').innerText;
+      const content = document.getElementById('lesson-note-popup-textarea').value;
+      const escaped = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const area = document.getElementById('lesson-note-print-area');
+      area.innerHTML = `<h2>${title}</h2><p>${escaped || '（尚未輸入內容）'}</p>`;
+      document.body.classList.add('printing-lesson-note');
+      window.print();
+      setTimeout(() => document.body.classList.remove('printing-lesson-note'), 300);
+    }
+
+    function buildTermsChipsHtml(terms) {
+      const words = (terms || '').split(/[,，、\s]+/).filter(Boolean);
+      return words.map(w => `<span class="term-chip" data-word="${w}">🔊 ${w}</span>`).join('');
+    }
+
+    function updateTermsChips(lId, cIdx, val) {
+      const container = document.getElementById(`chips-${lId}-${cIdx}`);
+      if (container) container.innerHTML = buildTermsChipsHtml(val);
+    }
+
+    function updateLessonTitle(lId, newTitle) {
+      const l = getLessonById(lId);
+      if(l) {
+        l.title = newTitle.trim();
+        saveData();
+        initSelectors();
+      }
+    }
+
+    function saveLessonData(lId, key, val) {
+      const l = getLessonById(lId);
+      if(l) { l[key] = val; saveData(); }
+    }
+
+    function saveCharData(lId, cIdx, key, val) {
+      const l = getLessonById(lId);
+      if(l && l.chars[cIdx]) {
+        l.chars[cIdx][key] = val;
+        saveData();
+      }
+    }
+
+    function deleteChar(lId, cIdx) {
+      if(confirm("刪除此字？")) {
+        const l = getLessonById(lId);
+        if(l) { l.chars.splice(cIdx, 1); saveData(); renderLessonView(); }
+      }
+    }
+
+    function applyBatch(lId) {
+      const text = document.getElementById(`batch-${lId}`).value.trim();
+      parseBatchText(lId, text);
+      renderLessonView();
+      autoFillMissingCharInfo([lId]);
+    }
+
+    // 一次貼上多課內容：用「第X課：課名」這種標題行切分成好幾個區塊，依序對應到第1~12課
+    function applyBulkImport() {
+      const raw = document.getElementById('bulk-import-input').value;
+      if (!raw.trim()) return alert('請先貼上內容！');
+
+      const headerRegex = /^第.+課[：:]/;
+      const summaryRegex = /^【?課文大意】?[:：]?\s*|^大意[:：]\s*/;
+      const blocks = [];
+      let current = null;
+
+      raw.split('\n').forEach(rawLine => {
+        const line = rawLine.trim();
+        if (!line) return;
+        if (headerRegex.test(line)) {
+          current = { title: line, summary: '', bodyLines: [] };
+          blocks.push(current);
+        } else if (current) {
+          if (summaryRegex.test(line)) {
+            // 課文大意行：例如「【課文大意】...」或「大意：...」，取標記後面的文字存成課文大意
+            current.summary = (current.summary ? current.summary + ' ' : '') + line.replace(summaryRegex, '').trim();
+          } else {
+            current.bodyLines.push(line);
+          }
+        }
+      });
+
+      if (blocks.length === 0) {
+        return alert('沒有偵測到課名喔！請確認每一課最前面有一行像「第一課：智救小鴨」這樣的課名標題。');
+      }
+
+      const ls = lessons();
+      const count = Math.min(blocks.length, ls.length);
+      for (let i = 0; i < count; i++) {
+        const block = blocks[i];
+        ls[i].title = block.title;
+        if (block.summary) ls[i].summary = block.summary;
+        parseBatchText(ls[i].id, block.bodyLines.join('\n'));
+      }
+      saveData();
+      currentLessonId = ls[0].id;
+      initSelectors();
+      renderLessonView();
+      document.getElementById('bulk-import-input').value = '';
+      autoFillMissingCharInfo(ls.slice(0, count).map(l => l.id));
+      alert(`匯入完成！已更新第 1～${count} 課的課名、課文大意與生字，缺少的注音／部首會自動連線查詢補上。`);
+    }
+
+    function parseBatchText(lId, text) {
+      const l = getLessonById(lId);
+      if(!l) return;
+      l.batchText = text;
+      l.chars = [];
+      text.split('\n').forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+
+        if (trimmed.includes(',')) {
+          const p = trimmed.split(',');
+          const zyCandidate = (p[1] || '').trim();
+          const isValidZhuyin = zyCandidate.length > 0 && [...zyCandidate].every(c => /[\u3105-\u3129ˊˇˋ˙]/.test(c));
+
+          if (isValidZhuyin) {
+            // 完整格式：生字,注音,部首,圈詞
+            if (p[0] && p[0].trim() !== '') {
+              l.chars.push({
+                char: p[0].trim(),
+                zhuyin: zyCandidate,
+                rad: p[2] ? p[2].trim() : "",
+                terms: p.slice(3).join('，').trim() || p[0].trim(),
+                note: ""
+              });
+            }
+          } else {
+            // 第二欄不是有效注音，判斷使用者只是用逗號隔開好幾個生字，整行逐字拆開
+            [...trimmed].forEach(ch => {
+              if (/[\u4e00-\u9fff]/.test(ch)) {
+                l.chars.push({ char: ch, zhuyin: "", rad: "", terms: ch, note: "" });
+              }
+            });
+          }
+        } else {
+          // 簡易格式：只打生字（一行一個字或一行貼一整串都可以），注音、部首會自動查詢帶入
+          [...trimmed].forEach(ch => {
+            if (/[\u4e00-\u9fff]/.test(ch)) {
+              l.chars.push({ char: ch, zhuyin: "", rad: "", terms: ch, note: "" });
+            }
+          });
+        }
+      });
+      saveData();
+    }
+
+    // 針對缺少注音或部首的生字，自動向萌典查詢並補上（用於「只打生字」的簡易匯入）
+    async function fetchCharInfo(ch) {
+      try {
+        const res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(ch)}.json`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        const het = data.heteronyms || data.h;
+        const zy = het && het[0] ? (het[0].bopomofo || het[0].b || '') : '';
+        const rad = data.radical ? `${data.radical}部` : '';
+        return { zy, rad };
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function autoFillMissingCharInfo(lessonIds) {
+      const targets = [];
+      lessonIds.forEach(lid => {
+        const l = getLessonById(lid);
+        if (!l) return;
+        l.chars.forEach((c, idx) => {
+          if (!c.zhuyin || !c.rad) targets.push({ lessonId: lid, idx, char: c.char });
+        });
+      });
+      if (targets.length === 0) return;
+
+      const uniqueChars = [...new Set(targets.map(t => t.char))];
+      const infoMap = {};
+      await Promise.all(uniqueChars.map(async (ch) => {
+        const cachedZy = appData.zhuyinCache && appData.zhuyinCache[ch];
+        const cachedRad = appData.radicalCache && appData.radicalCache[ch];
+        if (cachedZy && cachedRad) {
+          infoMap[ch] = { zy: cachedZy, rad: cachedRad };
+          return;
+        }
+        const info = await fetchCharInfo(ch);
+        if (info) {
+          if (info.zy) { appData.zhuyinCache = appData.zhuyinCache || {}; appData.zhuyinCache[ch] = info.zy; }
+          if (info.rad) { appData.radicalCache = appData.radicalCache || {}; appData.radicalCache[ch] = info.rad; }
+          infoMap[ch] = {
+            zy: info.zy || cachedZy || '',
+            rad: info.rad || cachedRad || ''
+          };
+        } else if (cachedZy || cachedRad) {
+          infoMap[ch] = { zy: cachedZy || '', rad: cachedRad || '' };
+        }
+      }));
+
+      let changed = false;
+      targets.forEach(t => {
+        const l = getLessonById(t.lessonId);
+        const c = l && l.chars[t.idx];
+        const info = infoMap[t.char];
+        if (!c || !info) return;
+        if (!c.zhuyin && info.zy) { c.zhuyin = info.zy; changed = true; }
+        if (!c.rad && info.rad) { c.rad = info.rad; changed = true; }
+      });
+
+      if (changed) {
+        saveData();
+        renderLessonView();
+      }
+    }
+
+    // === ⚠️ 易錯字本 ===
+    function renderMistakes() {
+      const container = document.getElementById('mistakes-container');
+      container.innerHTML = '';
+      const allLessons = appData.extraLesson ? [...lessons(), appData.extraLesson] : lessons();
+      allLessons.forEach(l => {
+        l.chars.forEach(c => {
+          if(c.note && c.note.trim() !== '') {
+            container.innerHTML += `
+              <div class="mistake-card">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <div class="mistake-char">${c.char}</div>
+                  <div style="font-weight:700;">[${c.zhuyin}] <span style="color:#aaa; font-size:0.8rem;">(${l.title})</span></div>
+                </div>
+                <div style="margin-top:5px; color:#555; font-size:0.95rem; font-weight:bold;">⚠️ 備註：${c.note}</div>
+              </div>
+            `;
+          }
+        });
+      });
+      if(container.innerHTML === '') {
+        container.innerHTML = '<p style="color:#888;">目前沒有任何易錯字紀錄喔！請在生字卡中填寫備註。</p>';
+      }
+    }
+
+    // === ✍️ 聽寫與橫式田字格 ===
+    function loadTestTerms() {
+      const tId = parseLessonId(document.getElementById('test-lesson-select').value);
+      const l = getLessonById(tId);
+      let termsArray = [];
+      if(l) {
+        l.chars.forEach(c => {
+          if(c.terms) termsArray.push(...c.terms.split(/[,，、\s]+/).filter(Boolean));
+        });
+      }
+      document.getElementById('test-terms-input').value = termsArray.join(' ');
+      document.getElementById('test-extra-input').value = (l && l.extraTerms) || '';
+      generateGrid();
+    }
+
+    function saveExtraTerms() {
+      const tId = parseLessonId(document.getElementById('test-lesson-select').value);
+      const l = getLessonById(tId);
+      if(l) {
+        l.extraTerms = document.getElementById('test-extra-input').value;
+        saveData();
+      }
+    }
+
+    function combineAllTerms() {
+      const main = document.getElementById('test-terms-input').value || '';
+      const extra = document.getElementById('test-extra-input').value || '';
+      return (main + ' ' + extra).trim();
+    }
+
+    function splitWords(text) {
+      return text.replace(/[,，、]/g, ' ').split(/\s+/).filter(Boolean);
+    }
+
+    function findZhuyin(ch, preferredLessonId) {
+      if (appData.zhuyinOverride && appData.zhuyinOverride[ch]) return appData.zhuyinOverride[ch];
+      if (preferredLessonId) {
+        const pl = getLessonById(preferredLessonId);
+        if (pl) {
+          const found = pl.chars.find(c => c.char === ch);
+          if (found && found.zhuyin) return found.zhuyin;
+        }
+      }
+      for (const l of lessons()) {
+        const found = l.chars.find(c => c.char === ch);
+        if (found && found.zhuyin) return found.zhuyin;
+      }
+      if (appData.extraLesson) {
+        const found = appData.extraLesson.chars.find(c => c.char === ch);
+        if (found && found.zhuyin) return found.zhuyin;
+      }
+      if (appData.zhuyinCache && appData.zhuyinCache[ch]) return appData.zhuyinCache[ch];
+      return '';
+    }
+
+    // 針對本機資料庫查不到注音的字，自動向萌典線上查詢並快取起來，之後不用重查
+    async function fetchZhuyinForChar(ch) {
+      try {
+        const res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(ch)}.json`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        const het = data.heteronyms || data.h;
+        if (het && het[0]) return het[0].bopomofo || het[0].b || null;
+      } catch (e) { /* 查無網路或查無資料，略過 */ }
+      return null;
+    }
+
+    async function fetchMissingZhuyin(cells) {
+      const missing = [...new Set(
+        cells.filter(c => c.type === 'char' && !c.zhuyin).map(c => c.char)
+      )];
+      if (missing.length === 0) return;
+
+      await Promise.all(missing.map(async (ch) => {
+        if (appData.zhuyinCache[ch]) return;
+        const zy = await fetchZhuyinForChar(ch);
+        if (zy) {
+          appData.zhuyinCache[ch] = zy;
+          document.querySelectorAll(`.tian-cell-wrap[data-char="${cssEscape(ch)}"] .tian-zy-text`).forEach(el => {
+            if (!el.innerHTML.trim()) el.innerHTML = formatZhuyinVertical(zy);
+          });
+        }
+      }));
+      saveData();
+    }
+
+    function cssEscape(s) {
+      return (window.CSS && CSS.escape) ? CSS.escape(s) : s.replace(/["\\]/g, '\\$&');
+    }
+
+    function formatZhuyinVertical(zy) {
+      if (!zy) return "";
+      const toneChars = "ˊˇˋ˙";
+      let tone = "";
+      let base = zy;
+      if (base.length && toneChars.includes(base[base.length - 1])) {
+        tone = base[base.length - 1];
+        base = base.slice(0, -1);
+      }
+      let html = "";
+      if (base.length === 0 && tone) {
+        return `<span class="zy-line">${tone}</span>`;
+      }
+      for (let i = 0; i < base.length; i++) {
+        const isLast = i === base.length - 1;
+        if (isLast && tone) {
+          html += `<span class="zy-line zy-tone-wrap">${base[i]}<span class="zy-tone">${tone}</span></span>`;
+        } else {
+          html += `<span class="zy-line">${base[i]}</span>`;
+        }
+      }
+      return html;
+    }
+
+    function buildSidebar() {
+      const tId = parseLessonId(document.getElementById('test-lesson-select').value);
+      const l = getLessonById(tId);
+      if (!l) return '';
+      const parts = l.title.split('：');
+      const lessonNo = parts[0] || l.title;
+      const lessonName = parts[1] || '';
+
+      // 最多只排 2 排：第 1 排（外側，靠近頁緣）放版本/年級/單張標題，第 2 排（靠近格子）放課別/課名
+      const col1 = [`${appData.publisher}版`, `${appData.grade}${appData.semester}國語`, `生字聽寫練習單`].join('<br>');
+      const col2 = lessonName ? `${lessonNo}<br>${lessonName}` : lessonNo;
+
+      return `<div class="tian-sidebar">
+        <div class="sb-small">${col1}</div>
+        <div class="sb-big">${col2}</div>
+      </div>`;
+    }
+
+    function generateGrid() {
+      const words = splitWords(combineAllTerms());
+      const area = document.getElementById('grid-render-area');
+      area.innerHTML = '';
+
+      if (words.length === 0) {
+        area.innerHTML = '<p style="color:#aaa; padding:1rem;">請於上方輸入圈詞或加強字詞，再點擊「更新下方田字格」。</p>';
+        return;
+      }
+
+      // 組成一整串「格子」資料：字詞之間插入小圓點分隔格
+      const currentLessonForZy = parseLessonId(document.getElementById('test-lesson-select').value);
+      let cells = [];
+      words.forEach((word, wIdx) => {
+        for (const ch of word) {
+          cells.push({ type: 'char', char: ch, zhuyin: findZhuyin(ch, currentLessonForZy) });
+        }
+        if (wIdx < words.length - 1) cells.push({ type: 'sep' });
+      });
+
+      const rowsPerCol = 10;
+      const totalCols = Math.max(8, Math.ceil(cells.length / rowsPerCol));
+      const totalCellsNeeded = rowsPerCol * totalCols;
+      while (cells.length < totalCellsNeeded) cells.push({ type: 'empty' });
+
+      area.insertAdjacentHTML('beforeend', buildSidebar());
+
+      // 用 CSS Grid 明確指定每一格的欄、列座標，內容多寡完全不影響格線位置，杜絕錯位問題
+      const gridDiv = document.createElement('div');
+      gridDiv.className = 'tian-grid';
+      gridDiv.style.gridTemplateColumns = `repeat(${totalCols}, var(--tian-cell))`;
+      gridDiv.style.gridTemplateRows = `repeat(${rowsPerCol}, var(--tian-cell))`;
+
+      cells.forEach((data, idx) => {
+        const dataCol = Math.floor(idx / rowsPerCol);
+        const row = idx % rowsPerCol;
+        const gridCol = totalCols - dataCol;
+
+        const cellEl = document.createElement('div');
+        cellEl.style.gridColumn = String(gridCol);
+        cellEl.style.gridRow = String(row + 1);
+
+        if (data.type === 'sep') {
+          cellEl.className = 'tian-cell-wrap tian-sep';
+          cellEl.innerHTML = `<span class="tian-sep-dot">○</span>`;
+        } else if (data.type === 'empty') {
+          cellEl.className = 'tian-cell-wrap';
+        } else {
+          cellEl.className = 'tian-cell-wrap';
+          const ch = data.char || '';
+          const zy = data.zhuyin || '';
+          cellEl.setAttribute('data-char', ch);
+          cellEl.innerHTML = `
+            <div class="tian-char-box">
+              <span class="tian-char-text">${ch}</span>
+            </div>
+            <div class="tian-zy-box">
+              <span class="tian-zy-text">${formatZhuyinVertical(zy)}</span>
+            </div>
+          `;
+        }
+        gridDiv.appendChild(cellEl);
+      });
+
+      area.appendChild(gridDiv);
+      fetchMissingZhuyin(cells);
+    }
+
+    let isPlaying = false;
+    let isPaused = false;
+    let currentTermIndex = 0;
+    let currentTermsList = [];
+
+    function updateDictationButtons() {
+      const playBtn = document.getElementById('btn-play');
+      const pauseBtn = document.getElementById('btn-pause');
+      const replayBtn = document.getElementById('btn-replay');
+      const stopBtn = document.getElementById('btn-stop');
+      if (isPlaying) {
+        playBtn.classList.add('hidden');
+        pauseBtn.classList.remove('hidden');
+        replayBtn.classList.remove('hidden');
+        stopBtn.classList.remove('hidden');
+        pauseBtn.innerText = isPaused ? '▶️ 繼續（重播這題）' : '⏸️ 暫停';
+      } else {
+        playBtn.classList.remove('hidden');
+        pauseBtn.classList.add('hidden');
+        replayBtn.classList.add('hidden');
+        stopBtn.classList.add('hidden');
+        document.getElementById('dictation-status').innerText = '';
+      }
+    }
+
+    function setDictationStatus(text) {
+      const el = document.getElementById('dictation-status');
+      if (el) el.innerText = text;
+    }
+
+    function waitWhilePaused() {
+      return new Promise(resolve => {
+        const check = () => {
+          if (!isPlaying || !isPaused) return resolve();
+          setTimeout(check, 200);
+        };
+        check();
+      });
+    }
+
+    async function startDictation() {
+      currentTermsList = splitWords(combineAllTerms());
+      if (currentTermsList.length === 0) return alert("請先輸入詞語！");
+      isPlaying = true;
+      isPaused = false;
+      currentTermIndex = 0;
+      updateDictationButtons();
+      await runDictationLoop();
+    }
+
+    function togglePauseDictation() {
+      if (!isPlaying) return;
+      isPaused = !isPaused;
+      if (isPaused) {
+        window.speechSynthesis.cancel();
+        setDictationStatus('⏸️ 已暫停，按「繼續」會重播剛才的詞語再接續播放');
+      }
+      updateDictationButtons();
+      if (!isPaused) {
+        playSpeech(currentTermsList[currentTermIndex]);
+      }
+    }
+
+    function replayCurrentTerm() {
+      if (!isPlaying || !currentTermsList[currentTermIndex]) return;
+      window.speechSynthesis.cancel();
+      playSpeech(currentTermsList[currentTermIndex]);
+    }
+
+    function stopDictation() {
+      isPlaying = false;
+      isPaused = false;
+      window.speechSynthesis.cancel();
+      updateDictationButtons();
+    }
+
+    async function runDictationLoop() {
+      const terms = currentTermsList;
+      const gapMs = Math.round((parseFloat(document.getElementById('repeat-gap').value) || 1.5) * 1000);
+
+      for (let i = currentTermIndex; i < terms.length; i++) {
+        currentTermIndex = i;
+        if (!isPlaying) return;
+        await waitWhilePaused();
+        if (!isPlaying) return;
+
+        setDictationStatus(`第 ${i + 1} / ${terms.length} 題`);
+        await playSpeech(terms[i]);
+        if (!isPlaying) return;
+        await waitWhilePaused();
+        if (!isPlaying) return;
+
+        await sleep(gapMs);
+        if (!isPlaying) return;
+        await waitWhilePaused();
+        if (!isPlaying) return;
+
+        await playSpeech(terms[i]);
+        if (!isPlaying) return;
+
+        for (let s = 5; s > 0; s--) {
+          if (!isPlaying) return;
+          await waitWhilePaused();
+          if (!isPlaying) return;
+          setDictationStatus(`第 ${i + 1} / ${terms.length} 題．倒數 ${s} 秒`);
+          await sleep(1000);
+        }
+      }
+
+      if (isPlaying) {
+        setDictationStatus('測驗結束，大家辛苦了！');
+        await playSpeech("測驗結束，大家辛苦了！");
+        stopDictation();
+      }
+    }
+
+    let cachedVoices = [];
+    let lastUtterance = null;
+
+    function loadVoices() {
+      cachedVoices = window.speechSynthesis.getVoices() || [];
+    }
+    loadVoices();
+    if (window.speechSynthesis && 'onvoiceschanged' in window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function pickZhVoice() {
+      if (!cachedVoices.length) loadVoices();
+      return (
+        cachedVoices.find(v => v.lang === 'zh-TW') ||
+        cachedVoices.find(v => v.lang && v.lang.toLowerCase().startsWith('zh-tw')) ||
+        cachedVoices.find(v => v.lang && v.lang.toLowerCase().startsWith('zh')) ||
+        null
+      );
+    }
+
+    function buildUtterance(text) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-TW';
+      const voice = pickZhVoice();
+      if (voice) u.voice = voice;
+      u.rate = parseFloat(document.getElementById('speech-speed').value) || 0.75;
+      lastUtterance = u;
+      return u;
+    }
+
+    function playSpeech(text) {
+      return new Promise(resolve => {
+        window.speechSynthesis.cancel();
+        setTimeout(() => {
+          const u = buildUtterance(text);
+          u.onend = resolve; u.onerror = resolve;
+          window.speechSynthesis.speak(u);
+        }, 30);
+      });
+    }
+
+    function speak(text) {
+      window.speechSynthesis.cancel();
+      setTimeout(() => {
+        const u = buildUtterance(text);
+        window.speechSynthesis.speak(u);
+      }, 30);
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    async function searchMoedictRobust() {
+      const q = document.getElementById('dict-input').value.trim();
+      const out = document.getElementById('dict-output');
+      if (!q) return;
+      out.innerHTML = `<span style="color:var(--m-purple); font-weight:bold;">🔍 正在查詢中...</span>`;
+      out.innerHTML = await fetchDefinitionHtml(q);
+    }
+
+    async function fetchDefinitionHtml(q) {
+      const endpoints = [
+        `https://www.moedict.tw/uni/${encodeURIComponent(q)}.json`,
+        `https://www.moedict.tw/a/${encodeURIComponent(q)}.json`
+      ];
+      for (const url of endpoints) {
+        try {
+          const res = await fetch(url);
+          if (!res.ok) continue;
+          const data = await res.json();
+          const heteronyms = data.heteronyms || data.h;
+          if (!data || !heteronyms || !Array.isArray(heteronyms) || heteronyms.length === 0) continue;
+          return buildDictHtml(data, q);
+        } catch (e) {
+          // 嘗試下一個端點
+        }
+      }
+      return fallbackHtml(q);
+    }
+
+    function buildDictHtml(data, q) {
+      let html = `<strong>【${data.title || q}】</strong><br>`;
+      if (data.radical) html += `<span style="font-size:1rem; color:#888;">部首：${data.radical}部${data.stroke_count ? (' | 筆畫：' + data.stroke_count + '畫') : ''}</span><br><br>`;
+
+      const heteronyms = data.heteronyms || data.h;
+      heteronyms.forEach(h => {
+        const bopomofo = h.bopomofo || h.b;
+        const definitions = h.definitions || h.d;
+        if (bopomofo) html += `<span style="color:var(--m-pink); font-weight:800; font-size:1.2rem;">[${bopomofo}]</span><br>`;
+        if (definitions && Array.isArray(definitions)) {
+          html += `<ul>`;
+          definitions.forEach(d => {
+            const def = (d && (d.def || d.f)) || '';
+            if (def) html += `<li>${def.replace(/`|~/g, '')}</li>`;
+          });
+          html += `</ul>`;
+        }
+      });
+
+      return html || fallbackHtml(q);
+    }
+
+    function fallbackHtml(q) {
+      return `
+        <span style="color:#B5533E; font-weight:bold;">⚠️ 查無完整線上資料，請直接前往教育部官方辭典查詢。</span><br><br>
+        請點擊下方按鈕直接查詢「${q}」：<br><br>
+        <a href="https://dict.revised.moe.edu.tw/search.jsp?md=1&word=${encodeURIComponent(q)}" target="_blank" class="btn btn-pink" style="text-decoration:none; font-size:1.1rem; padding: 0.8rem 1.5rem;">🔗 前往教育部國語辭典查「${q}」</a>
+      `;
+    }
+
+    async function showDefPopup(word) {
+      if (!word) return;
+      playClickSound();
+      const overlay = document.getElementById('def-popup-overlay');
+      const title = document.getElementById('def-popup-title');
+      const body = document.getElementById('def-popup-body');
+      title.innerText = word;
+      overlay.classList.remove('hidden');
+
+      if (!appData.definitionCache) appData.definitionCache = {};
+      if (appData.definitionCache[word]) {
+        body.innerHTML = appData.definitionCache[word];
+        return;
+      }
+
+      body.innerHTML = `<span style="color:var(--m-purple); font-weight:bold;">🔍 查詢中...</span>`;
+      const html = await fetchDefinitionHtml(word);
+      appData.definitionCache[word] = html;
+      saveData();
+      if (title.innerText === word) body.innerHTML = html;
+    }
+
+    function closeDefPopup() {
+      document.getElementById('def-popup-overlay').classList.add('hidden');
+    }
+
+    function copyDictText() {
+      const text = document.getElementById('dict-output').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const b = document.getElementById('btn-copy');
+        b.innerText = "✅ 已複製";
+        setTimeout(() => b.innerText = "📋 複製", 2000);
+      });
+    }
+
+    function renderLinks() {
+      const container = document.getElementById('links-container');
+      container.innerHTML = '';
+      appData.links.forEach((l, i) => {
+        let colorClass = `desc-color-${i % 3}`;
+        container.innerHTML += `
+          <div class="link-card">
+            <div style="flex-grow:1; margin-right:10px;">
+              <span style="font-size:0.8rem; background:var(--m-purple); color:#fff; padding:4px 10px; border-radius:12px; font-weight:800;">${l.subj}</span>
+              <h3 style="color:#A15C3E; margin:8px 0; font-size:1.2rem;">${l.title}</h3>
+              <div class="link-desc ${colorClass}">${l.desc}</div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;" class="no-print">
+              <a href="${l.url}" target="_blank" class="btn btn-pink" style="text-decoration:none; padding:0.8rem 1.5rem;">🔗 前往</a>
+              <button class="btn" style="font-size:0.75rem; padding:0.4rem 0.8rem;" onclick="deleteLink(${i})">刪除</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function addLink() {
+      const s = document.getElementById('link-subj').value;
+      const t = document.getElementById('link-title').value.trim();
+      const u = document.getElementById('link-url').value.trim();
+      const d = document.getElementById('link-desc').value.trim();
+      if(!t || !u) return alert('網站標題與網址必填！');
+      appData.links.push({ id: Date.now(), subj: s, title: t, desc: d || "推薦學習好網站", url: u });
+      saveData();
+      document.getElementById('link-title').value = '';
+      document.getElementById('link-url').value = '';
+      document.getElementById('link-desc').value = '';
+      renderLinks();
+    }
+
+    function deleteLink(idx) {
+      if(confirm('確定刪除此連結？')) {
+        appData.links.splice(idx, 1);
+        saveData(); renderLinks();
+      }
+    }
+
+    function exportJSON() {
+      saveData();
+      const blob = new Blob([JSON.stringify(appData, null, 2)], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "國語聽寫簿系統備份.json";
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 0);
+    }
+
+    function importJSON(e) {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          appData = JSON.parse(evt.target.result);
+          saveData();
+          alert("資料還原成功！");
+          location.reload();
+        } catch(err) { alert("檔案格式錯誤！"); }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetData() {
+      if(confirm("警告：將清除您所有的修改內容，恢復為系統預設值。確定繼續嗎？")) {
+        localStorage.removeItem('MandarinAppV9');
+        location.reload();
+      }
+    }
+
+    let audioCtx = null;
+    function ensureAudioCtx() {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) audioCtx = new AC();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playClickSound() {
+      if (!appData || !appData.soundEnabled) return;
+      const ctx = ensureAudioCtx();
+      if (!ctx) return;
+      try {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.16, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.13);
+      } catch (e) { /* 忽略音效錯誤 */ }
+    }
+
+    function toggleSound() {
+      appData.soundEnabled = !appData.soundEnabled;
+      saveData();
+      updateSoundToggleLabel();
+      playClickSound();
+    }
+
+    function updateSoundToggleLabel() {
+      const btn = document.getElementById('sound-toggle');
+      if (!btn) return;
+      btn.innerText = appData.soundEnabled ? "🔊 按鍵音效：開" : "🔇 按鍵音效：關";
+    }
+
+    let correctMode = false;
+
+    function toggleCorrectMode() {
+      correctMode = !correctMode;
+      const btn = document.getElementById('btn-correct-mode');
+      const area = document.getElementById('grid-render-area');
+      if (btn) btn.innerText = correctMode ? '✏️ 校正注音模式：開（點注音修改）' : '✏️ 校正注音模式：關';
+      if (area) area.classList.toggle('correct-mode', correctMode);
+      playClickSound();
+    }
+
+    function editZhuyinForChar(ch) {
+      if (!ch) return;
+      const current = findZhuyin(ch) || '';
+      const input = prompt(`請輸入「${ch}」正確的注音符號（例如：ㄊㄡˊ）\n清空後按確定 = 取消手動校正，改回系統預設讀音`, current);
+      if (input === null) return;
+      const trimmed = input.trim();
+      if (!appData.zhuyinOverride) appData.zhuyinOverride = {};
+      if (trimmed) {
+        appData.zhuyinOverride[ch] = trimmed;
+      } else {
+        delete appData.zhuyinOverride[ch];
+      }
+      saveData();
+      generateGrid();
+    }
+
+    document.addEventListener('click', function (e) {
+      const target = e.target.closest('.btn, .nav-btn, .tian-char-box, .tian-zy-box, .lesson-title-display, .char-delete-btn, select');
+      if (target) playClickSound();
+    }, true);
+
+    document.addEventListener('click', function (e) {
+      const zyBox = e.target.closest('.tian-zy-box');
+      if (zyBox) {
+        const cell = zyBox.closest('.tian-cell-wrap');
+        const ch = cell ? cell.dataset.char : '';
+        if (correctMode && ch) {
+          editZhuyinForChar(ch);
+        } else {
+          const span = zyBox.querySelector('.tian-zy-text');
+          if (span) span.classList.toggle('text-hidden');
+        }
+        return;
+      }
+      const charBox = e.target.closest('.tian-char-box');
+      if (charBox) {
+        const span = charBox.querySelector('.tian-char-text');
+        if (span) span.classList.toggle('text-hidden');
+      }
+    });
+
+    document.addEventListener('click', function (e) {
+      const wordEl = e.target.closest('.char-big, .term-chip');
+      if (wordEl && wordEl.dataset.word) {
+        speak(wordEl.dataset.word);
+        showDefPopup(wordEl.dataset.word);
+      }
+    });
+  </script>
+</body>
+</html>
