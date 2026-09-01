@@ -153,12 +153,12 @@
   }
   .card-author{ font-size: 13px; font-weight: 700; color: var(--ink-soft); }
 
-  /* 標題與連結加上 -webkit-touch-callout 防止選單，並加上游標提示 */
   .card-title{
     margin: 0; font-size: 19px; line-height: 1.4; font-weight: 800; cursor: text;
     -webkit-touch-callout: none;
   }
   
+  /* 移除 a 標籤，改用 div 防止點擊跳轉，專心作為長按區塊 */
   .card-image-link{
     display: block; width: 100%; border-radius: 12px; overflow: hidden;
     position: relative; aspect-ratio: 16/9; background: var(--bg);
@@ -298,7 +298,7 @@
     </div>
   </div>
   <div class="header-actions">
-    <!-- 🔥 新增的超快捷按鈕 -->
+    <!-- 🔥 超快捷按鈕 -->
     <button class="btn-primary" id="openAddGlobal" style="font-size: 15px; padding: 10px 18px;">＋ 新增收藏</button>
     <button class="btn-manage" id="openManage">⚙️ 管理分類／設定</button>
     <select class="btn-manage" id="fontSelect" style="cursor:pointer;">
@@ -319,7 +319,7 @@
 
 <footer>共 <span id="totalCount"></span> 個教學工具・長按卡片即可極速編輯</footer>
 
-<!-- 🌟 獨立的「快速新增/編輯」面板 (不會干擾到管理分類) -->
+<!-- 🌟 獨立的「快速新增/編輯」面板 -->
 <div class="overlay" id="addOverlay">
   <div class="panel">
     <button class="close-x" id="closeAdd">✕</button>
@@ -394,7 +394,17 @@
 </div>
 
 <script>
-// --- Data Setup (莫蘭迪亮色系) ---
+// --- URL 防呆修復工具：自動補上 https:// 避免發生 404 錯誤 ---
+function ensureHttps(url) {
+  if (!url) return '';
+  let trimmedUrl = url.trim();
+  if (trimmedUrl !== '' && !trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
+    return 'https://' + trimmedUrl;
+  }
+  return trimmedUrl;
+}
+
+// --- Data Setup ---
 const defaultCategories = [
   {name:"閱讀寫作", bg:"#E0F2E9", dot:"#2D6A4F"}, 
   {name:"識字生字", bg:"#FFE5D9", dot:"#D08C60"}, 
@@ -428,7 +438,6 @@ function getCatMeta(name){
   return categoriesData.find(c=>c.name===name) || {name, bg:"#F1F5F9", dot:"#64748B"};
 }
 
-// ⚠️ 無痛載入舊資料 (沿用原本的 key)
 async function storageGet(key){
   try{ const res = await window.storage.get(key); return res ? res.value : null; }
   catch(e){ try{ return localStorage.getItem(key); }catch(e2){ return null; } }
@@ -459,11 +468,13 @@ const boardEl = document.getElementById('board');
 const gridEl = document.getElementById('grid');
 const emptyEl = document.getElementById('empty');
 
-// Generate Card HTML (加入 data-index 給長按識別)
 function cardHTML(x, absoluteIndex){
   const col = getCatMeta(x.c);
   const accent = col.dot;
   const initial = x.c.charAt(0);
+  
+  // URL 防呆：取出時也確保有 https://
+  const validUrl = ensureHttps(x.u);
   
   let mediaHtml = x.i 
     ? `<img src="${x.i}" alt="${x.t}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -477,18 +488,17 @@ function cardHTML(x, absoluteIndex){
         <span class="card-author">${x.c}</span>
       </div>
       
-      <!-- 標題：加入 data-index 供長按編輯 -->
       <h3 class="card-title" data-index="${absoluteIndex}" title="長按修改標題">${x.t}</h3>
       
-      <!-- 圖片：加入 data-index 供長按上傳 -->
-      <a href="${x.u}" target="_blank" rel="noopener" class="card-image-link" data-index="${absoluteIndex}" title="點擊前往，長按換圖">
+      <!-- ⚠️ 圖片區塊改成 <div> 而不是 <a>，避免點擊跳轉到 404，專門做為長按編輯區塊 -->
+      <div class="card-image-link" data-index="${absoluteIndex}" title="長按更換圖片">
         ${mediaHtml}
-      </a>
+      </div>
       
       ${x.d ? `<p class="card-desc">${x.d}</p>` : ''}
       
-      <!-- 網址：加入 data-index 供長按編輯 -->
-      <a href="${x.u}" target="_blank" rel="noopener" class="card-url" data-index="${absoluteIndex}" title="點擊前往，長按改網址">
+      <!-- 只有這顆按鈕負責點擊跳轉 -->
+      <a href="${validUrl}" target="_blank" rel="noopener" class="card-url" data-index="${absoluteIndex}" title="點擊前往，長按改網址">
         🔗 點擊前往連結
       </a>
     </div>`;
@@ -502,7 +512,6 @@ function renderBoard(){
         <div class="col-head" style="background:${cat.bg};">
           <span class="col-title" style="color:${cat.dot};">${cat.name}</span>
           <span class="col-count" style="background:rgba(255,255,255,0.6); color:${cat.dot};">${items.length}</span>
-          <!-- 🔥 每個分類專屬的新增按鈕 -->
           <button class="col-add-btn" data-cat="${cat.name}" style="color:${cat.dot};" title="快速新增至此分類">＋</button>
         </div>
         <div class="col-list">
@@ -512,7 +521,6 @@ function renderBoard(){
   }).join('');
   document.getElementById('totalCount').textContent = toolsData.length;
   
-  // 綁定各分類的「＋」按鈕
   document.querySelectorAll('.col-add-btn').forEach(btn => {
     btn.addEventListener('click', () => openAddModal(btn.dataset.cat));
   });
@@ -533,7 +541,7 @@ document.getElementById('searchInput').addEventListener('input', (e)=>{
 });
 
 
-// 🚀 --- 長按全能修改功能 (圖片 / 網址 / 標題) ---
+// 🚀 --- 長按全能修改功能 ---
 let pressTimer;
 let isLongPress = false;
 let pressIndex = null;
@@ -570,17 +578,14 @@ function handlePressStart(e) {
   pressTimer = setTimeout(() => {
     isLongPress = true;
     if (target.classList.contains('card-image-link')) {
-      // 1. 長按圖片 -> 換圖
       globalImgUploader.click();
     } else if (target.classList.contains('card-url')) {
-      // 2. 長按網址 -> 換網址
       const newUrl = prompt("🔗 請輸入新的連結網址：", toolsData[pressIndex].u);
       if (newUrl !== null && newUrl.trim() !== "") {
-        toolsData[pressIndex].u = newUrl.trim();
+        toolsData[pressIndex].u = ensureHttps(newUrl); // 防呆自動補齊 HTTPS
         saveAndRefresh();
       }
     } else if (target.classList.contains('card-title')) {
-      // 3. 長按標題 -> 換標題
       const newTitle = prompt("📝 請輸入新的卡片標題：", toolsData[pressIndex].t);
       if (newTitle !== null && newTitle.trim() !== "") {
         toolsData[pressIndex].t = newTitle.trim();
@@ -611,7 +616,6 @@ mainArea.addEventListener('mousedown', handlePressStart);
 mainArea.addEventListener('mouseup', handlePressCancel);
 mainArea.addEventListener('mouseleave', handlePressCancel);
 
-// 防止長按時觸發點擊連結
 mainArea.addEventListener('click', (e) => {
   if (isLongPress) { e.preventDefault(); e.stopPropagation(); isLongPress = false; }
 }, true);
@@ -639,7 +643,6 @@ function populateCatSelect(){
   catSelect.innerHTML = categoriesData.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
 }
 
-// 開啟「新增/編輯卡片」視窗
 function openAddModal(preselectCat = null, editIdx = null){
   populateCatSelect();
   editingIndex = editIdx;
@@ -647,7 +650,6 @@ function openAddModal(preselectCat = null, editIdx = null){
   document.getElementById('addStatus').textContent = '';
 
   if (editIdx !== null) {
-    // Edit mode (透過後台清單點擊進來)
     const x = toolsData[editIdx];
     document.getElementById('f-title').value = x.t;
     catSelect.value = x.c;
@@ -656,7 +658,6 @@ function openAddModal(preselectCat = null, editIdx = null){
     document.getElementById('f-desc').value = x.d || '';
     document.getElementById('formTitle').innerHTML = `✏️ 編輯卡片：<span style="color:var(--link-color)">${x.t}</span>`;
   } else {
-    // Add mode
     document.getElementById('f-title').value = '';
     document.getElementById('f-url').value = '';
     document.getElementById('f-img').value = '';
@@ -664,18 +665,13 @@ function openAddModal(preselectCat = null, editIdx = null){
     document.getElementById('formTitle').innerHTML = `✨ 新增卡片`;
     if(preselectCat) catSelect.value = preselectCat;
   }
-  
   manageOverlay.classList.remove('active');
   addOverlay.classList.add('active');
 }
 
-// 關閉新增視窗
 document.getElementById('closeAdd').addEventListener('click', () => addOverlay.classList.remove('active'));
-
-// 全域「+ 新增收藏」按鈕
 document.getElementById('openAddGlobal').addEventListener('click', () => openAddModal());
 
-// 新增視窗內的照片上傳
 document.getElementById('f-img-file').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if(!file) return;
@@ -690,12 +686,16 @@ document.getElementById('f-img-file').addEventListener('change', (e) => {
 document.getElementById('saveTool').addEventListener('click', async ()=>{
   const t = document.getElementById('f-title').value.trim();
   const c = catSelect.value;
-  const u = document.getElementById('f-url').value.trim();
+  let u = document.getElementById('f-url').value.trim();
   let imgUrl = document.getElementById('f-img').value.trim();
   const d = document.getElementById('f-desc').value.trim();
   const status = document.getElementById('addStatus');
 
   if(!t || !u){ status.textContent = '❌ 請填寫名稱與網址'; status.style.color = '#EF4444'; return; }
+  
+  // 防呆：自動加上 HTTPS
+  u = ensureHttps(u);
+  
   if(imgUrl.includes('(已選取相片')) imgUrl = tempManageBase64Img;
   
   const toolObj = {t, c, u};
@@ -712,14 +712,12 @@ document.getElementById('saveTool').addEventListener('click', async ()=>{
   addOverlay.classList.remove('active');
 });
 
-// 開啟系統管理視窗
 document.getElementById('openManage').addEventListener('click', ()=>{
   renderColorPicker(); renderCatChips(); renderManageList();
   manageOverlay.classList.add('active');
 });
 document.getElementById('closeManage').addEventListener('click', () => manageOverlay.classList.remove('active'));
 
-// 點擊空白處關閉視窗
 window.addEventListener('click', (e)=>{
   if(e.target === addOverlay) addOverlay.classList.remove('active');
   if(e.target === manageOverlay) manageOverlay.classList.remove('active');
@@ -763,7 +761,6 @@ document.getElementById('addCatBtn').addEventListener('click', async ()=>{
   await saveAndRefresh(); input.value=''; renderCatChips();
 });
 
-// 後台全列表管理
 function renderManageList(){
   const list = document.getElementById('manageList');
   list.innerHTML = toolsData.map((x,i)=>`
@@ -788,7 +785,6 @@ function renderManageList(){
   });
 }
 
-// IO
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const blob = new Blob([JSON.stringify({categories:categoriesData, tools:toolsData}, null, 2)], {type:'application/json'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -812,7 +808,6 @@ document.getElementById('resetBtn').addEventListener('click', async ()=>{
   await saveAndRefresh(); renderCatChips(); renderManageList();
 });
 
-// Prefs
 const fonts = { sans: "'Noto Sans TC', sans-serif", serif: "'Noto Serif TC', serif", rounded: "'Huninn', 'Noto Sans TC', sans-serif", kai: "'LXGW WenKai TC', 'Noto Serif TC', serif" };
 let prefs = { font:'sans', theme:'light' };
 async function loadPrefs(){ const raw = await storageGet('padlet-prefs-v2'); if(raw){ try{ prefs = JSON.parse(raw); }catch(e){} } applyPrefs(); }
@@ -821,7 +816,29 @@ function applyPrefs(){ document.body.style.fontFamily = fonts[prefs.font] || fon
 document.getElementById('fontSelect').addEventListener('change', async (e)=>{ prefs.font = e.target.value; applyPrefs(); await savePrefs(); });
 document.getElementById('themeToggle').addEventListener('click', async ()=>{ prefs.theme = prefs.theme === 'dark' ? 'light' : 'dark'; applyPrefs(); await savePrefs(); });
 
-// Init
+let audioCtx;
+function playClickSound(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(680, now);
+    osc.frequency.exponentialRampToValueAtTime(420, now + 0.07);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(now); osc.stop(now + 0.1);
+  }catch(e){}
+}
+document.addEventListener('click', (e)=>{
+  if(e.target.closest('.card-url, .btn-manage, .btn-primary, .btn-secondary, .btn-danger, .btn-ghost, .mi-del, .cat-del, .close-x, .mi-body, .cat-chip button')){
+    playClickSound();
+  }
+}, true);
+
 (async function init(){ await loadData(); renderBoard(); await loadPrefs(); })();
 </script>
 </body>
