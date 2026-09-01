@@ -46,7 +46,7 @@
     margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
     font-family:'Noto Sans TC', sans-serif; font-size:16px;
     -webkit-font-smoothing:antialiased;
-    /* 避免長按時選取文字 */
+    /* 避免連點兩下時選取到文字而出現藍色反白 */
     -webkit-user-select: none; user-select: none;
   }
   input, textarea, select { -webkit-user-select: auto; user-select: auto; }
@@ -138,7 +138,7 @@
   /* ---- Card Design ---- */
   .card{
     background: var(--card-bg); border-radius: 16px; padding: 16px;
-    display: flex; flex-direction: column; gap: 12px;
+    display: flex; flex-direction: column; gap: 12px; position: relative;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--line);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     text-decoration: none; color: var(--ink);
@@ -152,23 +152,35 @@
     font-size: 14px; font-weight: 800; color: white;
   }
   .card-author{ font-size: 13px; font-weight: 700; color: var(--ink-soft); }
-
-  .card-title{
-    margin: 0; font-size: 19px; line-height: 1.4; font-weight: 800; cursor: text;
-    -webkit-touch-callout: none;
-  }
   
-  /* 移除 a 標籤，改用 div 防止點擊跳轉，專心作為長按區塊 */
+  /* 🔥 卡片專屬快速編輯按鈕 */
+  .card-edit-btn {
+    margin-left: auto; background: var(--bg); border: 1px solid var(--line); 
+    border-radius: 8px; padding: 4px 8px; font-size: 13px; font-weight: 700;
+    cursor: pointer; color: var(--ink-soft); transition: all 0.2s;
+  }
+  .card-edit-btn:hover { background: var(--hover-bg); color: var(--ink); border-color: var(--ink-soft); }
+
+  .card-title{ margin: 0; font-size: 19px; line-height: 1.4; font-weight: 800; }
+  
+  /* 圖片區塊：加入「點兩下」提示 */
   .card-image-link{
     display: block; width: 100%; border-radius: 12px; overflow: hidden;
-    position: relative; aspect-ratio: 16/9; background: var(--bg);
-    -webkit-touch-callout: none; cursor: pointer;
+    position: relative; aspect-ratio: 16/9; background: var(--bg); cursor: pointer;
   }
   .card-image-link img{
     width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s ease;
   }
   .card:hover .card-image-link img{ transform: scale(1.03); }
   
+  .card-image-link::after {
+    content: "點兩下換圖"; position: absolute; bottom: 8px; right: 8px;
+    background: rgba(0,0,0,0.6); color: white;
+    font-size: 11px; padding: 4px 8px; border-radius: 20px;
+    opacity: 0; transition: opacity 0.2s; pointer-events: none;
+  }
+  .card-image-link:hover::after { opacity: 1; }
+
   .card-fallback{
     width: 100%; height: 100%; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
@@ -188,7 +200,6 @@
     color: var(--link-color); text-decoration: none;
     display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     padding: 8px 12px; background: var(--hover-bg); border-radius: 8px;
-    -webkit-touch-callout: none; cursor: pointer;
   }
   .card-url:hover{ text-decoration: underline; background: rgba(59, 130, 246, 0.1); }
 
@@ -272,7 +283,7 @@
 </head>
 <body>
 
-<!-- 隱藏的上傳器 (供長按換圖使用) -->
+<!-- 隱藏的上傳器 (供點兩下換圖使用) -->
 <input type="file" id="globalImageUploader" accept="image/*" style="display:none;">
 
 <header>
@@ -288,7 +299,7 @@
     </div>
     <div class="header-text">
       <h1>我的收藏庫</h1>
-      <p class="sub">✨長按卡片的「標題」、「圖片」或「網址」即可快速修改！</p>
+      <p class="sub">✨ 圖片「點兩下」即可更換；點擊卡片右上角「✏️」秒速修改分類與內容！</p>
     </div>
   </div>
   <div class="search-wrap">
@@ -298,7 +309,6 @@
     </div>
   </div>
   <div class="header-actions">
-    <!-- 🔥 超快捷按鈕 -->
     <button class="btn-primary" id="openAddGlobal" style="font-size: 15px; padding: 10px 18px;">＋ 新增收藏</button>
     <button class="btn-manage" id="openManage">⚙️ 管理分類／設定</button>
     <select class="btn-manage" id="fontSelect" style="cursor:pointer;">
@@ -317,7 +327,7 @@
   <div class="empty" id="empty">找不到符合的工具，換個關鍵字或分類試試看。</div>
 </main>
 
-<footer>共 <span id="totalCount"></span> 個教學工具・長按卡片即可極速編輯</footer>
+<footer>共 <span id="totalCount"></span> 個教學工具・為老師打造的專屬靈感庫</footer>
 
 <!-- 🌟 獨立的「快速新增/編輯」面板 -->
 <div class="overlay" id="addOverlay">
@@ -330,7 +340,7 @@
       <input type="text" id="f-title" placeholder="請輸入名稱">
     </div>
     <div class="form-group">
-      <label>選擇分類</label>
+      <label>選擇分類 (隨時可移轉)</label>
       <select id="f-cat"></select>
     </div>
     <div class="form-group">
@@ -355,6 +365,10 @@
     <div class="btn-row">
       <button class="btn-primary" id="saveTool" style="width:100%;">✓ 儲存並發布</button>
     </div>
+    <!-- 若是編輯狀態，會多一顆刪除按鈕供快速操作 -->
+    <div class="btn-row" id="quickDeleteRow" style="display:none; margin-top:8px;">
+      <button class="btn-danger" id="quickDeleteBtn" style="width:100%; background:transparent; color:#EF4444; border:1px solid #EF4444;">🗑️ 刪除此卡片</button>
+    </div>
     <div class="status-msg" id="addStatus"></div>
   </div>
 </div>
@@ -376,7 +390,7 @@
     </div>
     
     <hr class="hr">
-    <h3>📝 所有卡片清單 (點擊可編輯)</h3>
+    <h3>📝 所有卡片清單</h3>
     <div class="manage-list" id="manageList"></div>
 
     <hr class="hr">
@@ -394,7 +408,7 @@
 </div>
 
 <script>
-// --- URL 防呆修復工具：自動補上 https:// 避免發生 404 錯誤 ---
+// --- URL 防呆修復工具 ---
 function ensureHttps(url) {
   if (!url) return '';
   let trimmedUrl = url.trim();
@@ -472,8 +486,6 @@ function cardHTML(x, absoluteIndex){
   const col = getCatMeta(x.c);
   const accent = col.dot;
   const initial = x.c.charAt(0);
-  
-  // URL 防呆：取出時也確保有 https://
   const validUrl = ensureHttps(x.u);
   
   let mediaHtml = x.i 
@@ -486,19 +498,21 @@ function cardHTML(x, absoluteIndex){
       <div class="card-header">
         <div class="card-avatar" style="background:${accent};">${initial}</div>
         <span class="card-author">${x.c}</span>
+        <!-- 🔥 一鍵編輯 / 移動分類按鈕 -->
+        <button class="card-edit-btn" data-index="${absoluteIndex}" title="編輯或移動分類">✏️</button>
       </div>
       
-      <h3 class="card-title" data-index="${absoluteIndex}" title="長按修改標題">${x.t}</h3>
+      <h3 class="card-title">${x.t}</h3>
       
-      <!-- ⚠️ 圖片區塊改成 <div> 而不是 <a>，避免點擊跳轉到 404，專門做為長按編輯區塊 -->
-      <div class="card-image-link" data-index="${absoluteIndex}" title="長按更換圖片">
+      <!-- 🖼️ 圖片區塊：現已改為「點兩下」換圖 -->
+      <div class="card-image-link" data-index="${absoluteIndex}" title="點兩下換圖">
         ${mediaHtml}
       </div>
       
       ${x.d ? `<p class="card-desc">${x.d}</p>` : ''}
       
-      <!-- 只有這顆按鈕負責點擊跳轉 -->
-      <a href="${validUrl}" target="_blank" rel="noopener" class="card-url" data-index="${absoluteIndex}" title="點擊前往，長按改網址">
+      <!-- 🔗 網址區塊：點擊跳轉 -->
+      <a href="${validUrl}" target="_blank" rel="noopener" class="card-url" title="點擊前往連結">
         🔗 點擊前往連結
       </a>
     </div>`;
@@ -541,13 +555,12 @@ document.getElementById('searchInput').addEventListener('input', (e)=>{
 });
 
 
-// 🚀 --- 長按全能修改功能 ---
-let pressTimer;
-let isLongPress = false;
-let pressIndex = null;
-let startX = 0, startY = 0;
+// 🚀 --- 全新：點兩下換圖 (Double Tap) ＆ 卡片快捷編輯 ---
 const globalImgUploader = document.getElementById('globalImageUploader');
 const mainArea = document.getElementById('mainArea');
+let lastTapTime = 0;
+let tapIndex = null;
+let currentUploadIndex = null; // 記錄目前要上傳圖片的卡片 index
 
 function compressImage(file, callback) {
   const reader = new FileReader();
@@ -566,77 +579,56 @@ function compressImage(file, callback) {
   reader.readAsDataURL(file);
 }
 
-function handlePressStart(e) {
-  const target = e.target.closest('.card-image-link, .card-url, .card-title');
-  if (!target) return;
-  
-  pressIndex = target.dataset.index;
-  isLongPress = false;
-  const touch = e.touches ? e.touches[0] : e;
-  startX = touch.clientX; startY = touch.clientY;
-  
-  pressTimer = setTimeout(() => {
-    isLongPress = true;
-    if (target.classList.contains('card-image-link')) {
-      globalImgUploader.click();
-    } else if (target.classList.contains('card-url')) {
-      const newUrl = prompt("🔗 請輸入新的連結網址：", toolsData[pressIndex].u);
-      if (newUrl !== null && newUrl.trim() !== "") {
-        toolsData[pressIndex].u = ensureHttps(newUrl); // 防呆自動補齊 HTTPS
-        saveAndRefresh();
-      }
-    } else if (target.classList.contains('card-title')) {
-      const newTitle = prompt("📝 請輸入新的卡片標題：", toolsData[pressIndex].t);
-      if (newTitle !== null && newTitle.trim() !== "") {
-        toolsData[pressIndex].t = newTitle.trim();
-        saveAndRefresh();
-      }
-    }
-  }, 600);
-}
-
-function handlePressCancel(e) {
-  if (e.type === 'touchmove') {
-    const touch = e.touches[0];
-    if (Math.abs(touch.clientX - startX) < 15 && Math.abs(touch.clientY - startY) < 15) return;
-  }
-  clearTimeout(pressTimer);
-}
-
-async function saveAndRefresh() {
-  await saveData();
-  const term = document.getElementById('searchInput').value.trim().toLowerCase();
-  if(term) renderSearch(term); else renderBoard();
-}
-
-mainArea.addEventListener('touchstart', handlePressStart, {passive: true});
-mainArea.addEventListener('touchend', handlePressCancel);
-mainArea.addEventListener('touchmove', handlePressCancel, {passive: true});
-mainArea.addEventListener('mousedown', handlePressStart);
-mainArea.addEventListener('mouseup', handlePressCancel);
-mainArea.addEventListener('mouseleave', handlePressCancel);
-
+// 統一用 click 事件處理，因為是點兩下
 mainArea.addEventListener('click', (e) => {
-  if (isLongPress) { e.preventDefault(); e.stopPropagation(); isLongPress = false; }
-}, true);
-mainArea.addEventListener('contextmenu', (e) => { if(isLongPress) e.preventDefault(); });
+  // 1. 偵測是否點擊了「✏️ 編輯按鈕」
+  const editBtn = e.target.closest('.card-edit-btn');
+  if (editBtn) {
+    e.preventDefault();
+    openAddModal(null, parseInt(editBtn.dataset.index));
+    return;
+  }
 
+  // 2. 偵測「點兩下」圖片區域
+  const imgTarget = e.target.closest('.card-image-link');
+  if (imgTarget) {
+    const now = Date.now();
+    const idx = imgTarget.dataset.index;
+    // 若在 400 毫秒內連續點擊同一個區域，就判定為「雙擊 (Double Tap)」
+    if (now - lastTapTime < 400 && tapIndex === idx) {
+      currentUploadIndex = idx;
+      globalImgUploader.click(); // 呼叫相簿/相機
+      lastTapTime = 0; // 重置計時
+    } else {
+      lastTapTime = now;
+      tapIndex = idx;
+    }
+  }
+});
+
+// 處理選擇完相片後的儲存動作
 globalImgUploader.addEventListener('change', (e) => {
   const file = e.target.files[0];
-  if(!file || pressIndex === null) return;
+  if(!file || currentUploadIndex === null) return;
   compressImage(file, async (base64) => {
-    toolsData[pressIndex].i = base64;
-    await saveAndRefresh();
-    pressIndex = null;
+    toolsData[currentUploadIndex].i = base64; // 更新指定卡片的圖片
+    await saveData();
+    
+    // 重整畫面
+    const term = document.getElementById('searchInput').value.trim().toLowerCase();
+    if(term) renderSearch(term); else renderBoard();
+    
+    currentUploadIndex = null;
   });
   e.target.value = '';
 });
 
 
-// --- Modals (Add & Manage) ---
+// --- Modals (Add & Edit Card) ---
 const addOverlay = document.getElementById('addOverlay');
 const manageOverlay = document.getElementById('manageOverlay');
 const catSelect = document.getElementById('f-cat');
+const quickDeleteRow = document.getElementById('quickDeleteRow');
 let tempManageBase64Img = ''; 
 
 function populateCatSelect(){
@@ -650,24 +642,41 @@ function openAddModal(preselectCat = null, editIdx = null){
   document.getElementById('addStatus').textContent = '';
 
   if (editIdx !== null) {
+    // 進入【編輯/移轉模式】
     const x = toolsData[editIdx];
     document.getElementById('f-title').value = x.t;
-    catSelect.value = x.c;
+    catSelect.value = x.c; // 自動選中原本的分類，老師可以在這裡切換分類！
     document.getElementById('f-url').value = x.u;
     document.getElementById('f-img').value = x.i || '';
     document.getElementById('f-desc').value = x.d || '';
-    document.getElementById('formTitle').innerHTML = `✏️ 編輯卡片：<span style="color:var(--link-color)">${x.t}</span>`;
+    document.getElementById('formTitle').innerHTML = `✏️ 編輯或移動卡片`;
+    quickDeleteRow.style.display = 'block'; // 顯示快速刪除按鈕
   } else {
+    // 進入【新增模式】
     document.getElementById('f-title').value = '';
     document.getElementById('f-url').value = '';
     document.getElementById('f-img').value = '';
     document.getElementById('f-desc').value = '';
     document.getElementById('formTitle').innerHTML = `✨ 新增卡片`;
     if(preselectCat) catSelect.value = preselectCat;
+    quickDeleteRow.style.display = 'none'; // 新增時隱藏刪除按鈕
   }
   manageOverlay.classList.remove('active');
   addOverlay.classList.add('active');
 }
+
+// 快速刪除按鈕邏輯
+document.getElementById('quickDeleteBtn').addEventListener('click', async () => {
+  if(editingIndex !== null) {
+    if(confirm(`確定要刪除「${toolsData[editingIndex].t}」嗎？`)){
+      toolsData.splice(editingIndex, 1);
+      await saveData();
+      const term = document.getElementById('searchInput').value.trim().toLowerCase();
+      if(term) renderSearch(term); else renderBoard();
+      addOverlay.classList.remove('active');
+    }
+  }
+});
 
 document.getElementById('closeAdd').addEventListener('click', () => addOverlay.classList.remove('active'));
 document.getElementById('openAddGlobal').addEventListener('click', () => openAddModal());
@@ -682,7 +691,7 @@ document.getElementById('f-img-file').addEventListener('change', (e) => {
   e.target.value = '';
 });
 
-// 儲存卡片
+// 儲存卡片 (新增 或 編輯/移轉)
 document.getElementById('saveTool').addEventListener('click', async ()=>{
   const t = document.getElementById('f-title').value.trim();
   const c = catSelect.value;
@@ -693,9 +702,7 @@ document.getElementById('saveTool').addEventListener('click', async ()=>{
 
   if(!t || !u){ status.textContent = '❌ 請填寫名稱與網址'; status.style.color = '#EF4444'; return; }
   
-  // 防呆：自動加上 HTTPS
   u = ensureHttps(u);
-  
   if(imgUrl.includes('(已選取相片')) imgUrl = tempManageBase64Img;
   
   const toolObj = {t, c, u};
@@ -703,15 +710,21 @@ document.getElementById('saveTool').addEventListener('click', async ()=>{
   if(d) toolObj.d = d;
 
   if(editingIndex !== null){
+    // 更新舊資料 (如果 c 分類變了，這裡儲存後就會自動移轉到新分類)
     toolsData[editingIndex] = {...toolsData[editingIndex], ...toolObj};
   } else {
     toolsData.unshift(toolObj);
   }
   
-  await saveAndRefresh();
+  await saveData();
+  const term = document.getElementById('searchInput').value.trim().toLowerCase();
+  if(term) renderSearch(term); else renderBoard();
+  
   addOverlay.classList.remove('active');
 });
 
+
+// --- 後台系統管理 (分類 / 備份) ---
 document.getElementById('openManage').addEventListener('click', ()=>{
   renderColorPicker(); renderCatChips(); renderManageList();
   manageOverlay.classList.add('active');
@@ -723,7 +736,7 @@ window.addEventListener('click', (e)=>{
   if(e.target === manageOverlay) manageOverlay.classList.remove('active');
 });
 
-// --- Category Management ---
+// Category Management
 function renderColorPicker(){
   const picker = document.getElementById('colorPicker');
   picker.innerHTML = colorPool.map((c, i) => `
@@ -749,7 +762,12 @@ function renderCatChips(){
       if(inUse > 0 && !confirm(`「${cat.name}」還有 ${inUse} 個工具，刪除主題會一併刪除，確定嗎？`)) return;
       if(inUse > 0) toolsData = toolsData.filter(x=>x.c!==cat.name);
       categoriesData.splice(i,1);
-      await saveAndRefresh(); renderCatChips(); renderManageList();
+      
+      await saveData(); 
+      const term = document.getElementById('searchInput').value.trim().toLowerCase();
+      if(term) renderSearch(term); else renderBoard();
+      
+      renderCatChips(); renderManageList();
     });
   });
 }
@@ -758,7 +776,12 @@ document.getElementById('addCatBtn').addEventListener('click', async ()=>{
   const input = document.getElementById('newCatName'); const name = input.value.trim();
   if(!name || categoriesData.some(c=>c.name===name)) return alert("請輸入有效且不重複的分類名稱");
   categoriesData.push({name, bg: selectedCatColor.bg, dot: selectedCatColor.dot});
-  await saveAndRefresh(); input.value=''; renderCatChips();
+  
+  await saveData(); 
+  const term = document.getElementById('searchInput').value.trim().toLowerCase();
+  if(term) renderSearch(term); else renderBoard();
+  
+  input.value=''; renderCatChips();
 });
 
 function renderManageList(){
@@ -779,7 +802,11 @@ function renderManageList(){
       e.stopPropagation();
       const i = parseInt(btn.dataset.i);
       if(confirm(`確定刪除「${toolsData[i].t}」？`)){
-        toolsData.splice(i,1); await saveAndRefresh(); renderManageList();
+        toolsData.splice(i,1); 
+        await saveData(); 
+        const term = document.getElementById('searchInput').value.trim().toLowerCase();
+        if(term) renderSearch(term); else renderBoard();
+        renderManageList();
       }
     });
   });
@@ -798,14 +825,20 @@ document.getElementById('importFile').addEventListener('change', async (e)=>{
     const parsed = JSON.parse(await file.text());
     if(!parsed.tools) throw new Error('格式錯誤');
     toolsData = parsed.tools; categoriesData = parsed.categories || categoriesData;
-    await saveAndRefresh(); renderCatChips(); renderManageList(); alert('還原成功！');
+    await saveData(); 
+    const term = document.getElementById('searchInput').value.trim().toLowerCase();
+    if(term) renderSearch(term); else renderBoard();
+    renderCatChips(); renderManageList(); alert('還原成功！');
   }catch(err){ alert('備份檔案錯誤'); } e.target.value = '';
 });
 
 document.getElementById('resetBtn').addEventListener('click', async ()=>{
   if(!confirm('確定重置為預設範例？')) return;
   const d = cloneDefault(); categoriesData = d.categories; toolsData = d.tools;
-  await saveAndRefresh(); renderCatChips(); renderManageList();
+  await saveData(); 
+  const term = document.getElementById('searchInput').value.trim().toLowerCase();
+  if(term) renderSearch(term); else renderBoard();
+  renderCatChips(); renderManageList();
 });
 
 const fonts = { sans: "'Noto Sans TC', sans-serif", serif: "'Noto Serif TC', serif", rounded: "'Huninn', 'Noto Sans TC', sans-serif", kai: "'LXGW WenKai TC', 'Noto Serif TC', serif" };
@@ -834,7 +867,7 @@ function playClickSound(){
   }catch(e){}
 }
 document.addEventListener('click', (e)=>{
-  if(e.target.closest('.card-url, .btn-manage, .btn-primary, .btn-secondary, .btn-danger, .btn-ghost, .mi-del, .cat-del, .close-x, .mi-body, .cat-chip button')){
+  if(e.target.closest('.card-url, .btn-manage, .btn-primary, .btn-secondary, .btn-danger, .btn-ghost, .mi-del, .cat-del, .close-x, .mi-body, .cat-chip button, .col-add-btn, .card-edit-btn')){
     playClickSound();
   }
 }, true);
