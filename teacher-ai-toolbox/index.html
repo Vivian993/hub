@@ -46,35 +46,29 @@
     margin:0; min-height:100vh; background:var(--bg); color:var(--ink);
     font-family:'Noto Sans TC', sans-serif; font-size:16px;
     -webkit-font-smoothing:antialiased;
-    /* 避免連點兩下時選取到文字而出現藍色反白 */
     -webkit-user-select: none; user-select: none;
   }
   input, textarea, select { -webkit-user-select: auto; user-select: auto; }
 
-  /* ---- Header ---- */
+  /* ---- Header 重新排版 ---- */
   header{
     background:linear-gradient(135deg, var(--header-bg1), var(--header-bg2));
     padding:16px 20px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     position: sticky; top: 0; z-index: 10;
   }
-  .header-top{
-    display:flex; align-items:center; gap:14px; max-width:1400px; margin:0 auto;
+  .header-main{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:14px;
+    max-width:1400px; margin:0 auto; flex-wrap:wrap;
   }
+  .logo-title{ display:flex; align-items:center; gap:12px; flex:1; min-width:240px; }
   .logo{ flex:none; }
-  .header-text{ flex:1; min-width:0; }
-  h1{
+  .header-text h1{
     font-family:'ZCOOL KuaiLe', 'Noto Sans TC', sans-serif;
-    font-size:clamp(22px,4vw,28px); margin:0 0 4px; line-height:1.2; color:var(--title-color);
+    font-size:clamp(22px,4vw,28px); margin:0; line-height:1.2; color:var(--title-color);
   }
-  header p.sub{
-    margin:0; color:var(--ink-soft); font-size:14px; max-width:640px;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .header-actions{
-    max-width:1400px; margin:12px auto 0;
-    display:flex; gap:8px; flex-wrap:wrap; align-items: center;
-  }
+  .header-actions{ display:flex; gap:8px; align-items:center; flex:none; }
   
+  /* 按鈕設計 */
   .btn-primary, .btn-manage, .btn-secondary, .btn-danger, .btn-ghost{
     font-family:'Noto Sans TC', sans-serif; font-size:14px; font-weight:700;
     border-radius:12px; border:none; cursor:pointer; padding:8px 14px;
@@ -82,7 +76,7 @@
   }
   .btn-primary{ background:var(--link-color); color:#fff; }
   .btn-primary:hover{ filter: brightness(1.1); transform: translateY(-1px); }
-  .btn-manage{ background:var(--panel); color:var(--ink); border:1px solid var(--line); }
+  .btn-manage{ background:var(--panel); color:var(--ink); border:1px solid var(--line); padding:8px 12px;}
   .btn-manage:hover{ background:var(--hover-bg); transform: translateY(-1px); }
   .btn-secondary{ background:var(--line); color:var(--ink); }
   .btn-secondary:hover{ filter: brightness(0.95); }
@@ -91,7 +85,23 @@
   .btn-ghost{ background:transparent; color:var(--ink-soft); border:1px solid var(--line); }
   .btn-ghost:hover{ background:var(--hover-bg); }
 
-  .search-wrap{ max-width:1400px; margin:12px auto 0; }
+  /* 🔥 快速跳轉導覽列 */
+  .quick-nav-wrap{
+    max-width:1400px; margin:14px auto 0;
+    display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;
+    scrollbar-width: none; /* Firefox */
+    -webkit-overflow-scrolling: touch;
+  }
+  .quick-nav-wrap::-webkit-scrollbar { display: none; }
+  
+  .nav-chip{
+    white-space: nowrap; padding: 6px 14px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 20px; font-size: 14px; font-weight: 800; cursor: pointer; color: var(--ink);
+    transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.03); flex:none;
+  }
+  .nav-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.06); }
+
+  .search-wrap{ max-width:1400px; margin:10px auto 0; }
   .search-box{
     display:flex; align-items:center; gap:10px;
     background:var(--panel); border-radius:12px; padding:10px 16px;
@@ -110,6 +120,7 @@
   .board{
     display:flex; gap:24px; overflow-x:auto; padding:4px 24px 24px;
     scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
+    position: relative;
   }
   .board::-webkit-scrollbar{ height:10px; }
   .board::-webkit-scrollbar-thumb{ background:var(--ink-soft); border-radius:8px; opacity: 0.5;}
@@ -153,7 +164,6 @@
   }
   .card-author{ font-size: 13px; font-weight: 700; color: var(--ink-soft); }
   
-  /* 🔥 卡片專屬快速編輯按鈕 */
   .card-edit-btn {
     margin-left: auto; background: var(--bg); border: 1px solid var(--line); 
     border-radius: 8px; padding: 4px 8px; font-size: 13px; font-weight: 700;
@@ -163,10 +173,10 @@
 
   .card-title{ margin: 0; font-size: 19px; line-height: 1.4; font-weight: 800; }
   
-  /* 圖片區塊：加入「點兩下」提示 */
   .card-image-link{
     display: block; width: 100%; border-radius: 12px; overflow: hidden;
     position: relative; aspect-ratio: 16/9; background: var(--bg); cursor: pointer;
+    -webkit-touch-callout: none;
   }
   .card-image-link img{
     width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s ease;
@@ -200,6 +210,7 @@
     color: var(--link-color); text-decoration: none;
     display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     padding: 8px 12px; background: var(--hover-bg); border-radius: 8px;
+    -webkit-touch-callout: none;
   }
   .card-url:hover{ text-decoration: underline; background: rgba(59, 130, 246, 0.1); }
 
@@ -209,6 +220,16 @@
 
   .empty{ display:none; text-align:center; padding:60px 20px; color:var(--ink-soft); font-size:18px; font-weight:700;}
   footer{ text-align:center; color:var(--ink-soft); font-size:14px; padding:20px 20px 40px; }
+
+  /* ⬆️ 回到最前懸浮按鈕 */
+  .fab-top {
+    position: fixed; bottom: 24px; right: 24px; width: 48px; height: 48px;
+    border-radius: 50%; background: var(--link-color); color: white;
+    border: none; font-size: 20px; cursor: pointer; display: none;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25); z-index: 40; transition: transform 0.2s, opacity 0.2s;
+  }
+  .fab-top.show { display: flex; align-items: center; justify-content: center; }
+  .fab-top:hover { transform: scale(1.1); }
 
   /* ---- Overlays (Add & Manage) ---- */
   .overlay{
@@ -283,41 +304,40 @@
 </head>
 <body>
 
-<!-- 隱藏的上傳器 (供點兩下換圖使用) -->
+<!-- 隱藏的上傳器 -->
 <input type="file" id="globalImageUploader" accept="image/*" style="display:none;">
 
 <header>
-  <div class="header-top">
-    <div class="logo">
-      <svg width="42" height="42" viewBox="0 0 64 64" fill="none">
-        <rect x="2" y="2" width="60" height="60" rx="16" fill="var(--link-color)" opacity="0.1" />
-        <path d="M17 24c5-5 25-5 30 0v18c-5-4-25-4-30 0V24z" fill="var(--link-color)"/>
-        <path d="M32 24v18" stroke="#FFFFFF" stroke-width="2"/>
-        <circle cx="45" cy="18" r="4" fill="#F59E0B"/>
-        <circle cx="20" cy="16" r="3" fill="#10B981"/>
-      </svg>
+  <div class="header-main">
+    <div class="logo-title">
+      <div class="logo">
+        <svg width="38" height="38" viewBox="0 0 64 64" fill="none">
+          <rect x="2" y="2" width="60" height="60" rx="14" fill="var(--link-color)" opacity="0.1" />
+          <path d="M17 24c5-5 25-5 30 0v18c-5-4-25-4-30 0V24z" fill="var(--link-color)"/>
+          <path d="M32 24v18" stroke="#FFFFFF" stroke-width="2"/>
+          <circle cx="45" cy="18" r="4" fill="#F59E0B"/>
+          <circle cx="20" cy="16" r="3" fill="#10B981"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h1>我的收藏庫</h1>
+      </div>
     </div>
-    <div class="header-text">
-      <h1>我的收藏庫</h1>
-      <p class="sub">✨ 圖片「點兩下」即可更換；點擊卡片右上角「✏️」秒速修改分類與內容！</p>
+    <div class="header-actions">
+      <!-- 快捷按鈕區 -->
+      <button class="btn-primary" id="openAddGlobal">＋ 新增收藏</button>
+      <button class="btn-manage" id="openManage">⚙️ 設定</button>
     </div>
   </div>
+  
+  <!-- 🎯 全新：快速跳轉導覽列 -->
+  <div class="quick-nav-wrap" id="quickNav"></div>
+
   <div class="search-wrap">
     <div class="search-box">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       <input id="searchInput" type="text" placeholder="搜尋名稱或內容...">
     </div>
-  </div>
-  <div class="header-actions">
-    <button class="btn-primary" id="openAddGlobal" style="font-size: 15px; padding: 10px 18px;">＋ 新增收藏</button>
-    <button class="btn-manage" id="openManage">⚙️ 管理分類／設定</button>
-    <select class="btn-manage" id="fontSelect" style="cursor:pointer;">
-      <option value="sans">黑體 (清晰)</option>
-      <option value="serif">宋體 (閱讀)</option>
-      <option value="rounded">圓體 (可愛)</option>
-      <option value="kai">楷體 (手寫)</option>
-    </select>
-    <button class="btn-manage" id="themeToggle">🌙 深色</button>
   </div>
 </header>
 
@@ -328,6 +348,9 @@
 </main>
 
 <footer>共 <span id="totalCount"></span> 個教學工具・為老師打造的專屬靈感庫</footer>
+
+<!-- ⬆️ 回到最前懸浮按鈕 -->
+<button class="fab-top" id="fabTop" title="回到最前面">⬆️</button>
 
 <!-- 🌟 獨立的「快速新增/編輯」面板 -->
 <div class="overlay" id="addOverlay">
@@ -365,7 +388,6 @@
     <div class="btn-row">
       <button class="btn-primary" id="saveTool" style="width:100%;">✓ 儲存並發布</button>
     </div>
-    <!-- 若是編輯狀態，會多一顆刪除按鈕供快速操作 -->
     <div class="btn-row" id="quickDeleteRow" style="display:none; margin-top:8px;">
       <button class="btn-danger" id="quickDeleteBtn" style="width:100%; background:transparent; color:#EF4444; border:1px solid #EF4444;">🗑️ 刪除此卡片</button>
     </div>
@@ -379,7 +401,19 @@
     <button class="close-x" id="closeManage">✕</button>
     <h2>⚙️ 系統設定</h2>
     
-    <h3 style="margin-top:20px;">📂 主題分類管理 (可自選顏色)</h3>
+    <h3 style="margin-top:10px;">🎨 外觀與版面</h3>
+    <div style="display:flex; gap:10px; margin-bottom:20px;">
+      <select class="btn-manage" id="fontSelect" style="flex:1;">
+        <option value="sans">字體：黑體</option>
+        <option value="serif">字體：宋體</option>
+        <option value="rounded">字體：圓體</option>
+        <option value="kai">字體：手寫風</option>
+      </select>
+      <button class="btn-manage" id="themeToggle" style="flex:1;">🌙 切換深淺色</button>
+    </div>
+
+    <hr class="hr">
+    <h3>📂 主題分類管理 (可自選顏色)</h3>
     <div class="cat-chip-list" id="catChips"></div>
     <div style="display:flex; gap:10px; margin-top:14px; align-items:flex-start;">
       <div style="flex:1;">
@@ -432,12 +466,9 @@ const colorPool = [
   {bg:"#EAE4E9", dot:"#715C87"}, {bg:"#FDE2E4", dot:"#D5898F"}, 
   {bg:"#E2ECE9", dot:"#668780"}, {bg:"#DFE7FD", dot:"#6B80B5"}
 ];
-
 const defaultTools = [
   { t: "語音伴讀小幫手", c: "閱讀寫作", u: "https://padlet.com/", d: "幫助孩子練習發音與閱讀。", i: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=800" },
-  { t: "造句作文小老師", c: "閱讀寫作", u: "https://gemini.google.com/", d: "提供引導寫作、挑戰加長等功能。", i: "https://images.unsplash.com/photo-1455390582262-044cdead27d8?auto=format&fit=crop&q=80&w=800" },
-  { t: "生字筆順與部首", c: "識字生字", u: "https://example.com", d: "自動產生生字練習簿，包含動畫。", i: "" },
-  { t: "分數披薩工廠", c: "數學天地", u: "https://example.com", d: "用披薩遊戲輕鬆理解分數概念。", i: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&q=80&w=800" }
+  { t: "造句作文小老師", c: "閱讀寫作", u: "https://gemini.google.com/", d: "提供引導寫作、挑戰加長等功能。", i: "https://images.unsplash.com/photo-1455390582262-044cdead27d8?auto=format&fit=crop&q=80&w=800" }
 ];
 
 let categoriesData = [];
@@ -456,9 +487,19 @@ async function storageGet(key){
   try{ const res = await window.storage.get(key); return res ? res.value : null; }
   catch(e){ try{ return localStorage.getItem(key); }catch(e2){ return null; } }
 }
+
+// ⚠️ 強化存檔與除錯防呆機制
 async function storageSet(key, value){
-  try{ await window.storage.set(key, value); return; }
-  catch(e){ try{ localStorage.setItem(key, value); }catch(e2){} }
+  try{ await window.storage.set(key, value); return true; }
+  catch(e){
+    try{ 
+      localStorage.setItem(key, value); return true; 
+    }catch(e2){
+      // 如果存檔失敗 (例如QuotaExceededError 空間滿了)，跳出警告！
+      alert("⚠️ 儲存空間已滿！照片無法儲存，建議減少圖片或改填寫「圖片網址」。");
+      return false;
+    }
+  }
 }
 
 async function loadData(){
@@ -474,6 +515,7 @@ async function loadData(){
   const d = cloneDefault();
   categoriesData = d.categories; toolsData = d.tools;
 }
+
 async function saveData(){
   await storageSet('toolbox-tools-v6', JSON.stringify({categories:categoriesData, tools:toolsData}));
 }
@@ -481,6 +523,35 @@ async function saveData(){
 const boardEl = document.getElementById('board');
 const gridEl = document.getElementById('grid');
 const emptyEl = document.getElementById('empty');
+const quickNav = document.getElementById('quickNav');
+
+// 渲染「快速跳轉導覽列」
+function renderQuickNav(){
+  quickNav.innerHTML = categoriesData.map((c, i) => `
+    <button class="nav-chip" style="color:${c.dot}; border-color: ${c.dot}33;" data-idx="${i}">
+      ${c.name}
+    </button>
+  `).join('');
+
+  quickNav.querySelectorAll('.nav-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      const targetCol = boardEl.children[idx];
+      if(targetCol) {
+        // 如果在搜尋模式下點擊導覽，先清空搜尋退出
+        if (gridEl.classList.contains('active')) {
+          document.getElementById('searchInput').value = '';
+          boardEl.style.display = '';
+          gridEl.classList.remove('active');
+          emptyEl.style.display = 'none';
+        }
+        // 平滑捲動至該分類的最上方
+        window.scrollTo({top: 0, behavior: 'smooth'});
+        boardEl.scrollTo({ left: targetCol.offsetLeft - 24, behavior: 'smooth' });
+      }
+    });
+  });
+}
 
 function cardHTML(x, absoluteIndex){
   const col = getCatMeta(x.c);
@@ -498,20 +569,18 @@ function cardHTML(x, absoluteIndex){
       <div class="card-header">
         <div class="card-avatar" style="background:${accent};">${initial}</div>
         <span class="card-author">${x.c}</span>
-        <!-- 🔥 一鍵編輯 / 移動分類按鈕 -->
         <button class="card-edit-btn" data-index="${absoluteIndex}" title="編輯或移動分類">✏️</button>
       </div>
       
       <h3 class="card-title">${x.t}</h3>
       
       <!-- 🖼️ 圖片區塊：現已改為「點兩下」換圖 -->
-      <div class="card-image-link" data-index="${absoluteIndex}" title="點兩下換圖">
+      <div class="card-image-link" data-index="${absoluteIndex}" title="點兩下快速換圖">
         ${mediaHtml}
       </div>
       
       ${x.d ? `<p class="card-desc">${x.d}</p>` : ''}
       
-      <!-- 🔗 網址區塊：點擊跳轉 -->
       <a href="${validUrl}" target="_blank" rel="noopener" class="card-url" title="點擊前往連結">
         🔗 點擊前往連結
       </a>
@@ -538,6 +607,9 @@ function renderBoard(){
   document.querySelectorAll('.col-add-btn').forEach(btn => {
     btn.addEventListener('click', () => openAddModal(btn.dataset.cat));
   });
+  
+  // 連帶更新導覽列
+  renderQuickNav();
 }
 
 function renderSearch(term){
@@ -554,34 +626,53 @@ document.getElementById('searchInput').addEventListener('input', (e)=>{
   else { boardEl.style.display = ''; gridEl.classList.remove('active'); emptyEl.style.display = 'none'; }
 });
 
+// ⬆️ --- 懸浮「回到最前」邏輯 ---
+const fabTop = document.getElementById('fabTop');
+function handleScroll() {
+  // 如果網頁往下捲動超過200，或者卡片牆往右捲動超過200，就顯示按鈕
+  if (window.scrollY > 200 || boardEl.scrollLeft > 200) {
+    fabTop.classList.add('show');
+  } else {
+    fabTop.classList.remove('show');
+  }
+}
+window.addEventListener('scroll', handleScroll);
+boardEl.addEventListener('scroll', handleScroll);
 
-// 🚀 --- 全新：點兩下換圖 (Double Tap) ＆ 卡片快捷編輯 ---
+fabTop.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  boardEl.scrollTo({ left: 0, behavior: 'smooth' });
+});
+
+
+// 🚀 --- 點兩下換圖 (Double Tap) ＆ 照片極限瘦身壓縮 ---
 const globalImgUploader = document.getElementById('globalImageUploader');
 const mainArea = document.getElementById('mainArea');
 let lastTapTime = 0;
 let tapIndex = null;
-let currentUploadIndex = null; // 記錄目前要上傳圖片的卡片 index
+let currentUploadIndex = null;
 
+// 📸 強化壓縮技術：確保不會把儲存空間塞滿
 function compressImage(file, callback) {
   const reader = new FileReader();
   reader.onload = (e) => {
     const img = new Image();
     img.onload = () => {
       const cvs = document.createElement('canvas');
-      const maxW = 800; let w = img.width, h = img.height;
+      // ⚠️ 將上限從 800px 降至 500px，畫質設為 0.6，檔案大小會劇烈縮減，完全不影響預覽
+      const maxW = 500; 
+      let w = img.width, h = img.height;
       if(w > maxW) { h = Math.round(h * (maxW / w)); w = maxW; }
       cvs.width = w; cvs.height = h;
       cvs.getContext('2d').drawImage(img, 0, 0, w, h);
-      callback(cvs.toDataURL('image/jpeg', 0.85));
+      callback(cvs.toDataURL('image/jpeg', 0.6));
     };
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-// 統一用 click 事件處理，因為是點兩下
 mainArea.addEventListener('click', (e) => {
-  // 1. 偵測是否點擊了「✏️ 編輯按鈕」
   const editBtn = e.target.closest('.card-edit-btn');
   if (editBtn) {
     e.preventDefault();
@@ -589,16 +680,14 @@ mainArea.addEventListener('click', (e) => {
     return;
   }
 
-  // 2. 偵測「點兩下」圖片區域
   const imgTarget = e.target.closest('.card-image-link');
   if (imgTarget) {
     const now = Date.now();
     const idx = imgTarget.dataset.index;
-    // 若在 400 毫秒內連續點擊同一個區域，就判定為「雙擊 (Double Tap)」
     if (now - lastTapTime < 400 && tapIndex === idx) {
       currentUploadIndex = idx;
-      globalImgUploader.click(); // 呼叫相簿/相機
-      lastTapTime = 0; // 重置計時
+      globalImgUploader.click(); 
+      lastTapTime = 0; 
     } else {
       lastTapTime = now;
       tapIndex = idx;
@@ -606,18 +695,14 @@ mainArea.addEventListener('click', (e) => {
   }
 });
 
-// 處理選擇完相片後的儲存動作
 globalImgUploader.addEventListener('change', (e) => {
   const file = e.target.files[0];
   if(!file || currentUploadIndex === null) return;
   compressImage(file, async (base64) => {
-    toolsData[currentUploadIndex].i = base64; // 更新指定卡片的圖片
-    await saveData();
-    
-    // 重整畫面
+    toolsData[currentUploadIndex].i = base64; 
+    await saveData(); // 如果存檔失敗會自動跳警告
     const term = document.getElementById('searchInput').value.trim().toLowerCase();
     if(term) renderSearch(term); else renderBoard();
-    
     currentUploadIndex = null;
   });
   e.target.value = '';
@@ -642,30 +727,27 @@ function openAddModal(preselectCat = null, editIdx = null){
   document.getElementById('addStatus').textContent = '';
 
   if (editIdx !== null) {
-    // 進入【編輯/移轉模式】
     const x = toolsData[editIdx];
     document.getElementById('f-title').value = x.t;
-    catSelect.value = x.c; // 自動選中原本的分類，老師可以在這裡切換分類！
+    catSelect.value = x.c; 
     document.getElementById('f-url').value = x.u;
     document.getElementById('f-img').value = x.i || '';
     document.getElementById('f-desc').value = x.d || '';
     document.getElementById('formTitle').innerHTML = `✏️ 編輯或移動卡片`;
-    quickDeleteRow.style.display = 'block'; // 顯示快速刪除按鈕
+    quickDeleteRow.style.display = 'block'; 
   } else {
-    // 進入【新增模式】
     document.getElementById('f-title').value = '';
     document.getElementById('f-url').value = '';
     document.getElementById('f-img').value = '';
     document.getElementById('f-desc').value = '';
     document.getElementById('formTitle').innerHTML = `✨ 新增卡片`;
     if(preselectCat) catSelect.value = preselectCat;
-    quickDeleteRow.style.display = 'none'; // 新增時隱藏刪除按鈕
+    quickDeleteRow.style.display = 'none'; 
   }
   manageOverlay.classList.remove('active');
   addOverlay.classList.add('active');
 }
 
-// 快速刪除按鈕邏輯
 document.getElementById('quickDeleteBtn').addEventListener('click', async () => {
   if(editingIndex !== null) {
     if(confirm(`確定要刪除「${toolsData[editingIndex].t}」嗎？`)){
@@ -691,7 +773,6 @@ document.getElementById('f-img-file').addEventListener('change', (e) => {
   e.target.value = '';
 });
 
-// 儲存卡片 (新增 或 編輯/移轉)
 document.getElementById('saveTool').addEventListener('click', async ()=>{
   const t = document.getElementById('f-title').value.trim();
   const c = catSelect.value;
@@ -710,7 +791,6 @@ document.getElementById('saveTool').addEventListener('click', async ()=>{
   if(d) toolObj.d = d;
 
   if(editingIndex !== null){
-    // 更新舊資料 (如果 c 分類變了，這裡儲存後就會自動移轉到新分類)
     toolsData[editingIndex] = {...toolsData[editingIndex], ...toolObj};
   } else {
     toolsData.unshift(toolObj);
@@ -724,7 +804,7 @@ document.getElementById('saveTool').addEventListener('click', async ()=>{
 });
 
 
-// --- 後台系統管理 (分類 / 備份) ---
+// --- 後台系統管理 ---
 document.getElementById('openManage').addEventListener('click', ()=>{
   renderColorPicker(); renderCatChips(); renderManageList();
   manageOverlay.classList.add('active');
@@ -736,7 +816,6 @@ window.addEventListener('click', (e)=>{
   if(e.target === manageOverlay) manageOverlay.classList.remove('active');
 });
 
-// Category Management
 function renderColorPicker(){
   const picker = document.getElementById('colorPicker');
   picker.innerHTML = colorPool.map((c, i) => `
@@ -815,7 +894,7 @@ function renderManageList(){
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const blob = new Blob([JSON.stringify({categories:categoriesData, tools:toolsData}, null, 2)], {type:'application/json'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `Padlet教具箱備份_${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `我的收藏庫_${new Date().toISOString().slice(0,10)}.json`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 });
 
@@ -867,7 +946,7 @@ function playClickSound(){
   }catch(e){}
 }
 document.addEventListener('click', (e)=>{
-  if(e.target.closest('.card-url, .btn-manage, .btn-primary, .btn-secondary, .btn-danger, .btn-ghost, .mi-del, .cat-del, .close-x, .mi-body, .cat-chip button, .col-add-btn, .card-edit-btn')){
+  if(e.target.closest('.card-url, .btn-manage, .btn-primary, .btn-secondary, .btn-danger, .btn-ghost, .mi-del, .cat-del, .close-x, .mi-body, .cat-chip button, .col-add-btn, .card-edit-btn, .nav-chip, .fab-top')){
     playClickSound();
   }
 }, true);
