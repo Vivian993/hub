@@ -1,1263 +1,1946 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>康軒五上國語隨身卡 (終極無蟲版)</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- 📌 iPhone 桌面 App 圖示 -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小樹苗國語文故事辭典</title>
+
+<!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
   <link rel="apple-touch-icon" href="custom-icon.png">
   <link rel="icon" type="image/png" href="custom-icon.png">
 
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
-      touch-action: manipulation;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .card-flip {
-      perspective: 1000px;
-    }
-    .card-inner {
-      transition: transform 0.5s;
-      transform-style: preserve-3d;
-    }
-    .card-inner.is-flipped {
-      transform: rotateY(180deg);
-    }
-    .card-front, .card-back {
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-    }
-    .card-back {
-      transform: rotateY(180deg);
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
-    }
-  </style>
-</head>
-<body class="bg-amber-50 min-h-screen text-slate-800 flex flex-col justify-between selection:bg-amber-200">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF1DD;
+    --paper:#FFFCF4;
+    --ink:#4A3728;
+    --coral:#FF6F5E;
+    --yellow:#FFC845;
+    --green:#5FAE7F;
+    --blue:#4FA3C4;
+    --purple:#9B7FD4;
+  }
+  body{
+    font-family:'Noto Sans TC',sans-serif;
+    background-color:var(--cream);
+    background-image: radial-gradient(#e9d9b6 1.5px, transparent 1.5px);
+    background-size: 22px 22px;
+    color:var(--ink);
+  }
+  .display{font-family:'ZCOOL KuaiLe',cursive;}
+  .wobble-r{transform:rotate(1.2deg);}
+  .wobble-l{transform:rotate(-1.4deg);}
+  .wobble-hover:hover{transform:rotate(2deg) scale(1.02); transition: all 0.2s;}
+  .crayon-border{
+    border:3px solid var(--ink);
+    border-radius: 255px 18px 225px 18px/18px 225px 18px 255px;
+  }
+  .tape{
+    position:absolute; width:70px; height:24px; background:rgba(255,200,69,0.55);
+    border:1px solid rgba(74,55,40,0.25);
+    z-index: 10;
+  }
+  .panel{
+    background:var(--paper);
+    border:3px solid var(--ink);
+    border-radius:16px;
+    box-shadow:5px 5px 0 rgba(74,55,40,0.18);
+  }
+  .btn-doodle{
+    border:3px solid var(--ink);
+    border-radius:14px;
+    box-shadow:3px 3px 0 var(--ink);
+    transition: transform .08s ease;
+    cursor: pointer;
+  }
+  .btn-doodle:active{ transform: translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+  .btn-doodle:disabled { opacity: 0.6; cursor: not-allowed; box-shadow:none; transform: translate(2px,2px); }
+  
+  .tab-btn{
+    border:3px solid var(--ink); border-bottom:none;
+    border-radius:16px 16px 0 0;
+  }
+  ruby rt{ font-size:0.55em; color:var(--purple); font-weight:700; }
+  
+  ::-webkit-scrollbar{height:8px;width:8px;}
+  ::-webkit-scrollbar-thumb{background:#d9c092;border-radius:8px;}
 
-  <!-- 頂部導覽列 -->
-  <header class="bg-amber-600 text-white shadow-md sticky top-0 z-50">
-    <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center space-x-2">
-        <i class="fa-solid fa-shield-halved text-2xl text-yellow-300"></i>
-        <h1 class="text-lg font-extrabold tracking-wide">康軒五上 (終極無蟲版)</h1>
-      </div>
-      <div class="flex items-center gap-2">
-        <!-- 音效開關按鈕 -->
-        <button id="sound-toggle-btn" onclick="toggleSound()" class="text-xs bg-amber-700 hover:bg-amber-800 border border-amber-400 p-2 rounded-xl text-yellow-300" title="切換音效開關">
-          <i id="sound-icon" class="fa-solid fa-volume-high text-sm"></i>
-        </button>
-        <!-- 備份管理按鈕 -->
-        <button onclick="openBackupModal()" class="text-xs bg-amber-700 hover:bg-amber-800 border border-amber-400 px-2.5 py-1.5 rounded-xl flex items-center space-x-1 font-bold">
-          <i class="fa-solid fa-floppy-disk"></i>
-          <span>管理/備份</span>
-        </button>
-      </div>
-    </div>
+  /* 📜 成語學習單：直式排版，用雙欄 + 緊湊間距讓內容更省版面，減少列印頁數 */
+  .quiz-list > li{
+    margin-bottom: 0.6rem;
+    line-height: 1.6;
+  }
+  @media print{
+    .quiz-list{
+      columns: 2;
+      column-gap: 1.5rem;
+    }
+    .quiz-list > li{
+      break-inside: avoid;
+      font-size: 0.92rem;
+    }
+    #printQuizArea{ padding: 0.5rem !important; }
+    #printQuizArea h2{ font-size: 1.5rem !important; margin-bottom: 0.5rem !important; }
+    #printQuizArea h4{ font-size: 1rem !important; margin-bottom: 0.5rem !important; }
+    #quizDefinitionsBlock, #quizQuestionsBlock{ margin-bottom: 1rem !important; }
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+
+  @media print{
+    .no-print{display:none!important;}
+    body{background:white!important; background-image:none!important;}
+    .panel{box-shadow:none!important; border:none!important; background:white!important;}
+
+    /* 🩹 分頁按鈕列用 sticky 定位，有些手機瀏覽器列印快照時只隱藏可見度沒用，殘留背景色的殘影，改成直接整個移除 */
+    .sticky{display:none!important;}
+    /* 🩹 成語圖卡上的裝飾貼紙是絕對定位，有時候會殘留在列印快照裡、蓋住文字，任何列印模式都直接強制移除 */
+    .tape{display:none!important;}
+
+    body.print-mode-quiz * { visibility: hidden; background-color: transparent !important; }
+    body.print-mode-quiz #printQuizArea, body.print-mode-quiz #printQuizArea * { visibility: visible; }
+    body.print-mode-quiz #printQuizArea { position: absolute; left: 0; top: 0; width: 100%; background: white !important; }
+    body.print-mode-quiz #quizAnswerSection { display: block !important; page-break-before: always; }
+
+    /* 🖨️ 依需求只印「成語解釋」或只印「測驗題目」，節省紙張版面 */
+    body.print-scope-definitions #quizQuestionsBlock,
+    body.print-scope-definitions #quizAnswerSection { display: none !important; }
+    body.print-scope-questions #quizDefinitionsBlock,
+    body.print-scope-questions #quizAnswerSection { display: none !important; }
+
+    body.print-mode-idiom * { visibility: hidden; }
+    body.print-mode-idiom #cardResult, body.print-mode-idiom #cardResult * { visibility: visible; }
+    body.print-mode-idiom #cardResult { position: absolute; left: 0; top: 0; width: 100%; }
+
+    body.print-mode-manage * { visibility: hidden; }
+    body.print-mode-manage #panelManage, body.print-mode-manage #panelManage * { visibility: visible; }
+    body.print-mode-manage #panelManage { position: absolute; left: 0; top: 0; width: 100%; background: white !important; }
+    body.print-mode-manage .lib-detail-box { display: block !important; }
+    body.print-mode-manage button { display: none !important; }
+    
+    .library-card-item {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+      margin-bottom: 15px !important;
+      border: 2px solid #4A3728 !important;
+    }
+  }
+</style>
+</head>
+<body class="min-h-screen p-4 sm:p-8">
+<div class="max-w-5xl mx-auto">
+
+  <header class="text-center mb-8 no-print">
+    <h1 class="display text-4xl sm:text-5xl text-[color:var(--coral)] mb-2">🌱 小樹苗國語文故事辭典</h1>
+    <p class="text-[color:var(--ink)]/70 font-medium">成語變漫畫、生字會說話！你的國語好幫手 📚</p>
   </header>
 
-  <!-- 主內容區塊 -->
-  <main class="max-w-md mx-auto w-full flex-1 px-4 py-3 flex flex-col justify-between">
+  <div class="sticky top-0 z-20 bg-[color:var(--cream)] -mx-4 px-4 sm:-mx-8 sm:px-8 pt-2 pb-1">
+  <div class="flex justify-center gap-2 flex-wrap no-print">
+    <button onclick="switchTab('idiom')" id="tabIdiom" class="tab-btn px-4 sm:px-5 py-3 font-bold display text-base sm:text-lg bg-[color:var(--coral)] text-white">📖 成語圖說</button>
+    <button onclick="switchTab('vocab')" id="tabVocab" class="tab-btn px-4 sm:px-5 py-3 font-bold display text-base sm:text-lg bg-white text-[color:var(--ink)]">🔤 生字字典</button>
+    <button onclick="switchTab('quiz')" id="tabQuiz" class="tab-btn px-4 sm:px-5 py-3 font-bold display text-base sm:text-lg bg-white text-[color:var(--ink)]">📝 測驗遊戲</button>
+    <button onclick="switchTab('manage')" id="tabManage" class="tab-btn px-4 sm:px-5 py-3 font-bold display text-base sm:text-lg bg-white text-[color:var(--ink)]">⚙️ 圖卡管理</button>
+  </div>
+  </div>
+
+  <!-- ============ 成語面板 ============ -->
+  <div id="panelIdiom" class="panel -mt-1 p-6 sm:p-8 space-y-6">
+    <div class="no-print grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <div class="sm:col-span-2 relative">
+        <input id="idiomInput" placeholder="輸入成語，例如：守株待兔" autocomplete="off" oninput="renderIdiomSuggestions()" onfocus="renderIdiomSuggestions()" class="w-full px-4 py-3 crayon-border text-lg bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--yellow)]">
+        <div id="idiomSuggestions" class="hidden absolute z-30 left-0 right-0 mt-1 bg-white crayon-border max-h-72 overflow-y-auto shadow-lg"></div>
+      </div>
+      <select id="idiomGrade" class="px-3 py-3 crayon-border bg-white focus:outline-none">
+        <option selected>尚未分類</option><option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option>五年級</option><option>六年級</option><option>補充</option>
+      </select>
+      <select id="idiomLesson" class="px-3 py-3 crayon-border bg-white focus:outline-none"></select>
+    </div>
+    <button onclick="generateIdiomContent()" class="no-print btn-doodle w-full py-3 font-bold display text-xl bg-[color:var(--yellow)] hover:bg-[#ffcf61]">🔍 查成語！</button>
     
-    <!-- 課文選擇與模式切換 -->
-    <div>
-      <div class="mb-2">
-        <select id="lesson-select" onchange="changeLesson()" class="w-full bg-white border-2 border-amber-300 text-amber-900 text-sm font-extrabold rounded-xl p-2.5 outline-none shadow-sm focus:ring-2 focus:ring-amber-500">
-          <option value="L1">第 1 課 《蚊帳大使》</option>
-          <option value="L2">第 2 課 《從空中看臺灣》</option>
-          <option value="L3">第 3 課 《攀岩高手》</option>
-          <option value="L4">第 4 課 《恆久的美》</option>
-          <option value="L5">第 5 課 《它抓得住你–商標的故事》</option>
-          <option value="L6">第 6 課 《故事動起來》</option>
-          <option value="L7">第 7 課 《為生命找出路》</option>
-          <option value="L8">第 8 課 《最勇敢的女孩》</option>
-          <option value="L9">第 9 課 《在挫折中成長》</option>
-          <option value="L10">第 10 課 《山中寄情》</option>
-          <option value="L11">第 11 課 《與達駭黑熊走入森林》</option>
-          <option value="L12">第 12 課 《荒島上的國王》</option>
-        </select>
-      </div>
-
-      <!-- 四大分類標籤 -->
-      <div class="grid grid-cols-4 gap-1 bg-amber-200/60 p-1 rounded-xl mb-3 text-[11px] sm:text-xs font-bold shadow-inner">
-        <button id="tab-vocab" onclick="setFilter('vocab')" class="py-2 rounded-lg transition-all text-center bg-white text-amber-800 shadow-sm font-black">
-          生字 (<span id="count-vocab">0</span>)
-        </button>
-        <button id="tab-sentence" onclick="setFilter('sentence')" class="py-2 rounded-lg transition-all text-center text-slate-700 hover:text-amber-800">
-          句型 (<span id="count-sentence">0</span>)
-        </button>
-        <button id="tab-star" onclick="setFilter('star')" class="py-2 rounded-lg transition-all text-center text-slate-700 hover:text-amber-800 flex justify-center items-center gap-0.5">
-          <i class="fa-solid fa-star text-amber-500"></i>星號 (<span id="count-star">0</span>)
-        </button>
-        <button id="tab-quiz" onclick="openQuizSetupModal()" class="py-2 rounded-lg transition-all text-center text-slate-700 hover:text-amber-800 flex justify-center items-center gap-0.5">
-          <i class="fa-solid fa-gamepad text-emerald-600"></i>測驗
-        </button>
-      </div>
-
-      <p id="mode-tip" class="text-xs text-amber-800/80 text-center font-bold mb-2">
-        💡 切換選項專心背！翻面會「自動朗讀」解釋與例句喔！
-      </p>
+    <div id="loadingIdiom" class="hidden text-center py-12 no-print">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[color:var(--coral)] border-t-transparent"></div>
+      <p class="mt-4 font-bold display text-xl text-[color:var(--coral)]">小樹苗正在翻閱辭典... 📖</p>
     </div>
 
-    <!-- 單字卡視圖 -->
-    <div id="flashcard-view" class="flex-1 flex flex-col justify-center my-2">
-      <div id="card-container" class="card-flip w-full min-h-[380px] cursor-pointer" onclick="flipCard()">
-        <div id="card-inner" class="card-inner relative w-full h-full min-h-[380px] bg-white rounded-3xl shadow-xl border-4 border-amber-200 flex flex-col justify-between p-6">
-          
-          <div class="card-front absolute inset-0 p-6 flex flex-col justify-between bg-white rounded-3xl">
-            <div class="flex justify-between items-center">
-              <span id="card-type-tag" class="text-xs font-black text-amber-700 bg-amber-100 px-3 py-1 rounded-full">生字學習</span>
-              <span id="card-index-tag" class="text-xs font-bold text-slate-400">1 / 20</span>
-              <button onclick="toggleStar(event)" class="text-3xl text-slate-300 hover:text-amber-400 transition-colors p-1" title="加入不熟記號">
-                <i id="star-icon" class="fa-solid fa-star"></i>
-              </button>
-            </div>
-            
-            <div class="my-auto text-center py-4 relative">
-              <div class="flex justify-center items-center gap-3 mb-2">
-                <h2 id="card-word" class="font-black text-slate-800 tracking-wider leading-snug">載入中...</h2>
-                <button onclick="playPronunciation(event, 'front')" class="text-amber-600 bg-amber-100 hover:bg-amber-200 rounded-full w-10 h-10 flex-shrink-0 flex items-center justify-center transition-colors shadow-md active:scale-95" title="點擊發音">
-                  <i class="fa-solid fa-volume-high text-lg"></i>
-                </button>
-              </div>
-              <p id="card-pinyin-front" class="text-xl font-extrabold text-amber-600 mt-2 tracking-widest"></p>
-            </div>
+    <div id="cardResult" class="hidden space-y-6 relative">
+      <div class="crayon-border bg-[color:var(--coral)]/10 p-5 flex justify-between items-start">
+        <div>
+          <div id="cardMeta" class="text-xs font-bold text-[color:var(--purple)]"></div>
+          <div class="flex items-center gap-3 flex-wrap mt-1">
+            <h2 id="cardTitle" class="display text-4xl sm:text-5xl text-[color:var(--coral)]"></h2>
+            <button onclick="speak(currentIdiomData.idiom)" class="no-print text-3xl hover:scale-110 transition-transform">🔊</button>
+          </div>
+          <p id="cardZhuyin" class="text-lg text-[color:var(--purple)] font-bold mt-1"></p>
+        </div>
+        <div class="flex gap-2 flex-col sm:flex-row">
+            <button onclick="printIdiom()" class="no-print btn-doodle bg-white text-[color:var(--ink)] px-4 py-2 font-bold shrink-0">🖨️ 列印此頁</button>
+            <button onclick="saveIdiomToLibrary()" class="no-print btn-doodle bg-[color:var(--green)] text-white px-4 py-2 font-bold shrink-0">📥 收藏</button>
+        </div>
+      </div>
 
-            <div class="text-center text-xs text-slate-400 flex items-center justify-center gap-1 font-semibold">
-              <i class="fa-solid fa-hand-pointer"></i> 點擊卡片空白處翻面，將會自動朗讀
+      <div>
+        <h4 class="display text-xl text-[color:var(--blue)] mb-3">🔍 字面拆解</h4>
+        <div id="cardBreakdown" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+      </div>
+
+      <div>
+        <h4 class="display text-xl text-[color:var(--coral)] mb-3">🎬 成語情境故事繪圖</h4>
+        <div id="cardComicGrid" class="w-full"></div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="crayon-border bg-[color:var(--green)]/10 p-4">
+          <h4 class="display text-lg text-[color:var(--green)] mb-2">👍 近義詞</h4>
+          <div id="cardSynonyms" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div class="crayon-border bg-[color:var(--blue)]/10 p-4">
+          <h4 class="display text-lg text-[color:var(--blue)] mb-2">👎 反義詞</h4>
+          <div id="cardAntonyms" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+
+      <div class="crayon-border bg-[color:var(--yellow)]/20 p-5">
+        <h4 class="display text-xl text-[color:var(--ink)] mb-2">✍️ 意思與造句</h4>
+        <p id="cardMeaning" class="font-bold text-[color:var(--ink)] mb-1 p-3 bg-white/60 rounded-xl"></p>
+        <p id="cardMeaningOriginal" class="text-xs text-[color:var(--ink)]/50 italic mb-3 px-1"></p>
+        <p id="cardSentence" class="font-medium mb-2 leading-relaxed text-lg bg-white/60 p-3 rounded-xl border border-dashed border-[color:var(--ink)]/30"></p>
+        <div class="no-print flex items-center gap-2 mb-2">
+          <button onclick="handleGenerateChildSentence()" class="btn-doodle bg-[color:var(--purple)] text-white px-3 py-1.5 text-xs font-bold">✍️ AI 幫我造一句適合小朋友的例句</button>
+        </div>
+        <div id="childSentenceResult" class="text-sm"></div>
+        <ul id="cardExtra" class="list-disc list-inside text-sm text-[color:var(--ink)]/80 space-y-1"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 生字面板 ============ -->
+  <div id="panelVocab" class="panel -mt-1 p-6 sm:p-8 space-y-6 hidden">
+    <div class="no-print grid grid-cols-1 sm:grid-cols-5 gap-3">
+      <input id="vocabInput" placeholder="輸入單字，或貼上整課生字" class="sm:col-span-2 px-4 py-3 crayon-border text-lg bg-white focus:outline-none focus:ring-2 focus:ring-[color:var(--yellow)]">
+      <select id="vocabGrade" class="px-3 py-3 crayon-border bg-white">
+        <option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option selected>五年級</option><option>六年級</option><option>補充</option>
+      </select>
+      <select id="vocabLesson" class="px-3 py-3 crayon-border bg-white"></select>
+      <button onclick="fetchBatchVocab()" class="btn-doodle bg-[color:var(--yellow)] font-bold display text-lg">🔍 查生字</button>
+    </div>
+    <p class="text-xs text-[color:var(--ink)]/60 no-print -mt-3">💡 提示：輸入多個字系統會自動過濾重複並建立「生字卡列」，點擊卡片即可檢視完整解析！</p>
+
+    <div id="loadingVocab" class="hidden text-center py-8 no-print">
+      <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-[color:var(--coral)] border-t-transparent"></div>
+      <p id="loadingVocabText" class="mt-2 text-[color:var(--coral)] font-bold">正在查詢中...</p>
+    </div>
+
+    <div id="vocabBatchArea" class="hidden no-print mb-4">
+        <div class="flex justify-between items-center mb-2">
+            <h4 class="display text-lg text-[color:var(--ink)]">📚 本次查詢生字卡列</h4>
+            <button onclick="saveAllBatchToLibrary()" class="btn-doodle bg-[color:var(--green)] text-white px-3 py-1 text-sm font-bold">💾 一鍵收藏整列生字</button>
+        </div>
+        <div id="vocabTabs" class="flex flex-wrap gap-2 bg-white/50 p-2 rounded-xl border-2 border-dashed border-[color:var(--ink)]/20"></div>
+    </div>
+
+    <div id="vocabResult" class="hidden space-y-4">
+      <div class="crayon-border bg-[color:var(--purple)]/10 p-5 flex justify-between items-center flex-wrap gap-3">
+        <div class="flex items-center gap-4">
+          <div id="vChar" class="w-20 h-20 bg-[color:var(--purple)] text-white rounded-2xl flex items-center justify-center text-5xl display shrink-0 shadow-inner"></div>
+          <div>
+            <div id="vMeta" class="text-xs font-bold text-[color:var(--purple)]"></div>
+            <div class="flex items-center gap-2 mt-1">
+              <h2 id="vZhuyin" class="text-2xl font-bold"></h2>
+              <button onclick="speak(currentVocabData.char)" class="no-print text-2xl hover:scale-110">🔊</button>
             </div>
           </div>
-
-          <div class="card-back absolute inset-0 p-5 flex flex-col justify-between bg-amber-900 text-white rounded-3xl">
-            <div class="flex justify-between items-center border-b border-amber-700 pb-2">
-              <div class="flex items-center gap-3 overflow-hidden">
-                <h3 id="card-word-back" class="text-xl sm:text-2xl font-black text-yellow-300 truncate"></h3>
-                <button onclick="playPronunciation(event, 'back')" class="text-amber-900 bg-yellow-400 hover:bg-yellow-300 rounded-full w-8 h-8 flex-shrink-0 flex items-center justify-center transition-colors shadow-sm active:scale-95" title="點擊重新朗讀全部">
-                  <i class="fa-solid fa-volume-high text-sm"></i>
-                </button>
-                <span id="card-pinyin-back" class="text-xs sm:text-sm font-bold text-amber-200 ml-1 truncate"></span>
-              </div>
-              <button onclick="toggleStar(event)" class="text-3xl text-amber-300/60 hover:text-yellow-300 transition-colors p-1 flex-shrink-0">
-                <i id="star-icon-back" class="fa-solid fa-star"></i>
-              </button>
-            </div>
-
-            <div class="my-auto overflow-y-auto max-h-[260px] py-3 pr-1 text-left">
-              <div id="card-meaning-container" class="space-y-2"></div>
-            </div>
-
-            <div class="text-center text-xs text-amber-300/80 border-t border-amber-700 pt-2 font-semibold">
-              再次點擊可回到正面
-            </div>
-          </div>
-
+        </div>
+        <div class="flex flex-col items-end gap-2 no-print">
+          <span id="vRadical" class="bg-white px-3 py-1.5 rounded-lg text-sm font-medium crayon-border"></span>
+          <button onclick="saveVocabToLibrary()" class="btn-doodle bg-white text-[color:var(--ink)] px-4 py-1.5 font-bold text-sm">單獨收藏此字</button>
         </div>
       </div>
 
-      <div class="flex justify-between items-center gap-3 mt-4">
-        <button onclick="prevCard()" class="flex-1 bg-white hover:bg-amber-50 text-amber-800 font-extrabold py-3 px-4 rounded-2xl shadow border-2 border-amber-200 active:scale-95 transition-all flex justify-center items-center gap-2 text-base">
-          <i class="fa-solid fa-chevron-left"></i> 上一個
-        </button>
-        <button onclick="nextCard()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-extrabold py-3 px-4 rounded-2xl shadow-lg active:scale-95 transition-all flex justify-center items-center gap-2 text-base">
-          下一個 <i class="fa-solid fa-chevron-right"></i>
-        </button>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="crayon-border bg-white p-5">
+          <h4 class="display text-xl text-[color:var(--blue)] mb-3">📖 詳細字義</h4>
+          <div id="vDefinitions" class="space-y-2 text-sm max-h-60 overflow-y-auto pr-2"></div>
+        </div>
+        <div class="crayon-border bg-white p-5 space-y-3">
+          <h4 class="display text-xl text-[color:var(--coral)]">✍️ 造句與範例</h4>
+          <div id="vSentences" class="space-y-2 text-sm max-h-60 overflow-y-auto pr-2"></div>
+        </div>
       </div>
     </div>
+  </div>
 
-    <!-- 測驗驗收視圖 -->
-    <div id="quiz-view" class="hidden flex-1 flex-col justify-between my-2 bg-white rounded-3xl shadow-xl p-5 border-2 border-amber-200">
-      <div id="quiz-body">
-        <div class="flex justify-between items-center mb-3 pb-2 border-b">
-          <span id="quiz-mode-tag" class="text-xs font-black text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">國語進階挑戰</span>
-          <span id="quiz-progress" class="text-xs text-slate-500 font-bold">1 / 20</span>
-        </div>
-        <div class="text-center my-3">
-          <span id="quiz-subtitle" class="text-sm text-slate-400 font-bold block mb-2">測驗載入中</span>
-          <h3 id="quiz-question" class="text-2xl sm:text-3xl font-black text-slate-800 tracking-wide leading-snug">--</h3>
-        </div>
-        <div id="quiz-options" class="space-y-3 my-4"></div>
-      </div>
-
-      <div id="quiz-result" class="hidden py-4 text-center space-y-4">
-        <h3 class="text-2xl font-black text-slate-800">🎉 測驗完成囉！</h3>
-        <div class="bg-amber-50 p-4 rounded-2xl border-2 border-amber-200 inline-block w-full">
-          <p class="text-slate-500 text-xs mb-1 font-bold">得分與答對題數</p>
-          <p id="quiz-score-num" class="text-5xl font-black text-emerald-600">100 分</p>
-          <p id="quiz-score-detail" class="text-sm text-slate-500 font-bold mt-2">答對 20 / 20 題</p>
+  <!-- ============ 測驗面板 ============ -->
+  <div id="panelQuiz" class="panel -mt-1 p-6 sm:p-8 space-y-6 hidden">
+    <div class="no-print">
+        <h3 class="display text-2xl text-[color:var(--coral)] mb-2">📝 產生成語測驗卷</h3>
+        <p class="text-sm mb-4">從收藏庫選擇要測驗的成語，我們會自動幫你挖空造句，變成超實用的複習考卷喔！</p>
+        
+        <div class="flex items-center gap-3 mb-4 p-3 bg-[color:var(--blue)]/10 rounded-xl crayon-border">
+            <label class="font-bold text-sm">快速篩選：</label>
+            <select id="quizFilterGrade" onchange="renderQuizSelection()" class="px-2 py-1 crayon-border text-sm bg-white"><option value="">全部年級</option></select>
+            <select id="quizFilterLesson" onchange="renderQuizSelection()" class="px-2 py-1 crayon-border text-sm bg-white"><option value="">全部課次</option></select>
         </div>
 
-        <div id="wrong-summary" class="hidden text-left bg-rose-50 p-3 rounded-2xl border border-rose-200 text-xs space-y-1 max-h-[160px] overflow-y-auto">
-          <p class="font-black text-rose-700 mb-2">❌ 錯題檢討紀錄：</p>
-          <ul id="wrong-list" class="list-disc list-inside text-rose-800 space-y-2 font-semibold leading-relaxed"></ul>
-        </div>
+        <div id="quizSelectionArea" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 max-h-48 overflow-y-auto p-2 bg-white/50 border-2 border-dashed border-[color:var(--ink)]/30 rounded-xl"></div>
 
-        <div class="space-y-2 pt-2">
-          <button id="btn-add-wrong-stars" onclick="addWrongToStars()" class="hidden w-full bg-amber-500 hover:bg-amber-600 text-white font-black py-3 rounded-xl text-sm shadow-md transition-colors">
-            ⭐ 將錯題字詞加入「星號加強庫」
-          </button>
-          <button onclick="openQuizSetupModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-sm shadow-md transition-colors">
-            再進行一次測驗
-          </button>
-        </div>
-      </div>
-
-      <div id="quiz-footer" class="mt-2">
-        <div id="quiz-feedback" class="text-center py-2 min-h-[3.5rem] flex flex-col justify-center font-black text-sm sm:text-base"></div>
-        <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="hidden w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl shadow active:scale-95 transition-all">
-          下一題 <i class="fa-solid fa-arrow-right"></i>
-        </button>
-      </div>
+        <button onclick="generateQuiz()" class="btn-doodle w-full py-3 font-bold display text-xl bg-[color:var(--yellow)]">✨ 產生測驗卷！</button>
     </div>
 
-    <!-- 底部功能列 -->
-    <div class="mt-2 grid grid-cols-2 gap-2">
-      <button onclick="openAddModal()" class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-black py-2.5 px-3 rounded-2xl shadow flex justify-center items-center gap-1.5 active:scale-95 transition-all">
-        <i class="fa-solid fa-circle-plus"></i> 新增補充學習
+    <div id="printQuizArea" class="hidden bg-white p-8 sm:p-12 min-h-[500px]">
+        <div class="text-center mb-8 pb-4 border-b-2 border-[color:var(--ink)]/20">
+            <h2 class="display text-3xl mb-4">🌱 成語學習單</h2>
+            <div class="flex justify-between text-lg font-bold">
+                <span>班級：_______ 座號：____</span>
+                <span>姓名：_____________</span>
+                <span>得分：_______</span>
+            </div>
+        </div>
+
+        <div id="quizDefinitionsBlock" class="mb-10">
+            <h4 class="font-bold text-lg mb-3">📖 成語解釋</h4>
+            <ol id="quizDefinitions" class="quiz-list list-none space-y-2"></ol>
+        </div>
+
+        <div id="quizQuestionsBlock" class="mb-6">
+            <h4 class="font-bold text-lg mb-3">✍️ 例句填空（請將成語填入空格）</h4>
+            <ol id="quizQuestions" class="quiz-list list-none space-y-2"></ol>
+        </div>
+
+        <div class="no-print mt-8 flex flex-col items-center gap-3">
+            <p class="text-xs text-[color:var(--ink)]/50">依需求選擇要列印的部分，省紙又省版面：</p>
+            <div class="flex justify-center gap-3 flex-wrap">
+                <button onclick="printQuiz('definitions')" class="btn-doodle bg-white px-5 py-2.5 text-base font-bold">🖨️ 只印成語解釋</button>
+                <button onclick="printQuiz('questions')" class="btn-doodle bg-white px-5 py-2.5 text-base font-bold">🖨️ 只印測驗題目</button>
+                <button onclick="printQuiz('all')" class="btn-doodle bg-[color:var(--green)] text-white px-5 py-2.5 text-base font-bold">🖨️ 全部列印</button>
+            </div>
+            <button onclick="toggleQuizAnswers()" class="btn-doodle bg-white px-6 py-2 text-sm font-bold mt-1">👁️ 顯示／隱藏解答</button>
+        </div>
+
+        <div id="quizAnswerSection" class="hidden mt-10 pt-6 border-t-2 border-dashed border-[color:var(--ink)]/30">
+            <h4 class="font-bold text-lg mb-3">✅ 參考答案</h4>
+            <ol id="quizAnswers" class="quiz-list list-none space-y-2"></ol>
+        </div>
+    </div>
+  </div>
+
+  <!-- ============ 管理與設定面板 ============ -->
+  <div id="panelManage" class="panel -mt-1 p-6 sm:p-8 space-y-8 hidden">
+    <div class="crayon-border bg-[color:var(--blue)]/10 p-5 rounded-2xl">
+      <button onclick="toggleLessonSetup()" class="w-full flex justify-between items-center text-left">
+        <div>
+          <h3 class="display text-2xl text-[color:var(--blue)]">📅 課程名稱設定</h3>
+          <p class="text-sm font-medium mt-1">幫每個年級輸入這學期實際的課名，查詢時會更直覺喔！</p>
+        </div>
+        <span id="lessonSetupArrow" class="text-3xl text-[color:var(--blue)]">▼</span>
       </button>
-      <button onclick="toggleListView()" id="btn-toggle-list" class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-black py-2.5 px-3 rounded-2xl shadow flex justify-center items-center gap-1.5 active:scale-95 transition-all">
-        <i class="fa-solid fa-list-check"></i> 總覽清單
-      </button>
-    </div>
-
-  </main>
-
-  <!-- 測驗設定 Modal -->
-  <div id="quiz-setup-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
-    <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-black text-slate-800 text-lg">設定測驗範圍與題數</h3>
-        <button onclick="closeQuizSetupModal()" class="text-slate-400 hover:text-slate-600">✕</button>
-      </div>
-      
-      <div class="space-y-4">
-        <div>
-          <label class="block text-slate-600 font-bold text-sm mb-1.5">測驗題目來源</label>
-          <select id="quiz-source-select" class="w-full border-2 border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-700 outline-none">
-            <option value="all">綜合大挑戰 (生字 + 句型造句)</option>
-            <option value="vocab">僅限【生字與語詞】測驗</option>
-            <option value="sentence">僅限【句型與造句】測驗</option>
-            <option value="star">僅限標記 ⭐ 星號的加強題</option>
+      <div id="lessonSetupBody" class="hidden mt-5 pt-4 border-t-2 border-dashed border-[color:var(--blue)]/30">
+        <div class="flex items-center gap-3 mb-4">
+          <label class="font-bold">選擇年級：</label>
+          <select id="lessonSetupGrade" onchange="loadLessonSetupForm()" class="px-3 py-2 crayon-border bg-white focus:outline-none">
+            <option>一年級</option><option>二年級</option><option>三年級</option><option>四年級</option><option selected>五年級</option><option>六年級</option><option>補充</option>
           </select>
         </div>
-
-        <div>
-          <label class="block text-slate-600 font-bold text-sm mb-1.5">測驗總題數</label>
-          <select id="quiz-count-select" class="w-full border-2 border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-700 outline-none">
-            <option value="max">全部測驗（100% 完整涵蓋）</option>
-            <option value="10">10 題速刷</option>
-            <option value="20">20 題練功</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="pt-4 flex justify-end space-x-2">
-        <button onclick="closeQuizSetupModal()" class="px-4 py-2 text-slate-500 font-bold text-sm">取消</button>
-        <button onclick="startQuizWithSetup()" class="px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-black text-sm shadow hover:bg-emerald-700">開始測驗</button>
+        <div id="lessonNameInputs" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4"></div>
+        <button onclick="saveLessonNames()" class="btn-doodle bg-[color:var(--blue)] text-white font-bold px-6 py-2.5 text-lg">💾 儲存課表</button>
       </div>
     </div>
-  </div>
 
-  <!-- 語詞清單 Modal -->
-  <div id="list-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
-    <div class="bg-white w-full max-w-md max-h-[85vh] rounded-t-3xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl">
-      <div class="p-4 bg-amber-600 text-white flex justify-between items-center">
-        <h3 class="font-black text-base flex items-center gap-2">
-          <i class="fa-solid fa-list"></i> 字詞總覽與星號管理
-        </h3>
-        <button onclick="toggleListView()" class="text-white hover:text-amber-200 text-xl px-2">✕</button>
-      </div>
-      <div id="word-list-container" class="p-4 overflow-y-auto divide-y divide-slate-100 flex-1"></div>
+    <div class="crayon-border bg-[color:var(--yellow)]/10 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div>
+            <h3 class="display text-xl text-[color:var(--ink)]">🔑 AI 畫家金鑰設定</h3>
+            <p class="text-sm mt-1">設定您專屬的 Gemini API Key，讓手機與 GitHub 都能隨時免費生圖！</p>
+        </div>
+        <button onclick="resetApiKey()" class="btn-doodle bg-[color:var(--yellow)] text-[color:var(--ink)] px-4 py-2 font-bold text-sm">設定 / 更換金鑰</button>
     </div>
-  </div>
 
-  <!-- 新增語詞 Modal -->
-  <div id="add-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
-    <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-black text-slate-800 text-lg">新增補充內容</h3>
-        <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600">✕</button>
-      </div>
-      <div class="space-y-3 text-sm">
+    <div class="crayon-border bg-[color:var(--green)]/10 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-4">
         <div>
-          <label class="block text-slate-600 font-bold mb-1">所屬課別 *</label>
-          <select id="new-lesson-code" class="w-full border border-slate-300 rounded-xl p-2.5 font-bold outline-none">
-            <option value="L1">第 1 課</option><option value="L2">第 2 課</option><option value="L3">第 3 課</option><option value="L4">第 4 課</option><option value="L5">第 5 課</option><option value="L6">第 6 課</option><option value="L7">第 7 課</option><option value="L8">第 8 課</option><option value="L9">第 9 課</option><option value="L10">第 10 課</option><option value="L11">第 11 課</option><option value="L12">第 12 課</option>
-          </select>
+            <h3 class="display text-xl text-[color:var(--green)]">📦 辭典資料備份</h3>
+            <p class="text-sm mt-1">匯出所有圖卡與生字紀錄，換電腦也不怕資料不見！</p>
         </div>
-        <div>
-          <label class="block text-slate-600 font-bold mb-1">類型 *</label>
-          <select id="new-type-code" class="w-full border border-slate-300 rounded-xl p-2.5 font-bold outline-none">
-            <option value="生字">生字與語詞</option>
-            <option value="句型練習">造句與句型</option>
-          </select>
+        <div class="flex gap-2">
+            <button onclick="exportData()" class="btn-doodle bg-[color:var(--green)] text-white px-4 py-2 font-bold text-sm">📤 匯出備份檔</button>
+            <label class="btn-doodle bg-white text-[color:var(--ink)] px-4 py-2 font-bold text-sm cursor-pointer text-center">
+                📥 匯入備份檔
+                <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
+            </label>
         </div>
-        <div>
-          <label class="block text-slate-600 font-bold mb-1">標題文字 (生字 / 句型) *</label>
-          <input type="text" id="new-word" placeholder="例如：雖然...可是..." class="w-full border border-slate-300 rounded-xl p-2.5 outline-none font-bold">
-        </div>
-        <div>
-          <label class="block text-slate-600 font-bold mb-1">注音 / 部首 (選填)</label>
-          <input type="text" id="new-pinyin" placeholder="例如：ㄖㄠˊ (食部)" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
-        </div>
-        <div>
-          <label class="block text-slate-600 font-bold mb-1">解釋與例句 *</label>
-          <textarea id="new-meaning" rows="3" placeholder="請將解釋與相關語詞或例句寫在這裡..." class="w-full border border-slate-300 rounded-xl p-2.5 outline-none"></textarea>
-        </div>
-      </div>
-      <div class="flex justify-end space-x-2 pt-2">
-        <button onclick="closeAddModal()" class="px-4 py-2 text-slate-500 font-bold">取消</button>
-        <button onclick="saveNewWord()" class="px-5 py-2 bg-amber-600 text-white rounded-xl font-black">儲存</button>
-      </div>
     </div>
-  </div>
 
-  <!-- 備份與管理 Modal -->
-  <div id="backup-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
-    <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
-      <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-black text-slate-800 text-lg">資料備份與復原</h3>
-        <button onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-600">✕</button>
+    <div class="pt-2">
+      <div class="flex flex-wrap justify-between items-end gap-3 mb-4 border-b-2 border-dashed border-[color:var(--ink)]/30 pb-3">
+        <div>
+          <h3 class="display text-2xl">🗂️ 我們的學習百寶箱</h3>
+          <p id="storageUsageText" class="text-sm font-bold text-[color:var(--purple)] mt-1"></p>
+        </div>
+        <div class="flex flex-wrap gap-2 items-center">
+          <select id="filterGrade" onchange="renderLibrary()" class="px-3 py-2 crayon-border text-sm bg-white font-bold"><option value="">全部年級</option></select>
+          <select id="filterLesson" onchange="renderLibrary()" class="px-3 py-2 crayon-border text-sm bg-white font-bold"><option value="">全部課次</option></select>
+          <button onclick="printLibrary()" class="btn-doodle bg-[color:var(--green)] text-white text-sm font-bold px-4 py-2">🖨️ 列印此頁清單</button>
+        </div>
       </div>
-      <p class="text-xs text-slate-500 leading-relaxed font-semibold">
-        您可以匯出孩子的星號標記與學習紀錄，也可以在其他設備匯入資料！
-      </p>
-      <div class="space-y-2">
-        <button onclick="exportData()" class="w-full py-3 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-2xl font-black border border-amber-200 flex justify-center items-center gap-2 text-sm">
-          <i class="fa-solid fa-download text-amber-600"></i> 下載備份 JSON 檔
+
+      <div id="reviewListSection" class="mb-8">
+        <button onclick="toggleReviewListCollapse()" class="w-full flex justify-between items-center text-left mb-3">
+          <h4 class="display text-xl text-[color:var(--yellow)] flex items-center gap-2">📌 複習清單 <span class="text-xs font-normal text-[color:var(--ink)]/50">（勾選「複習」的成語都會出現在這裡）</span></h4>
+          <span id="reviewListArrow" class="text-2xl text-[color:var(--yellow)]">▼</span>
         </button>
-        <label class="w-full py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 rounded-2xl font-black border border-emerald-200 flex justify-center items-center gap-2 text-sm cursor-pointer">
-          <i class="fa-solid fa-upload text-emerald-600"></i> 匯入 JSON 備份檔
-          <input type="file" accept=".json" onchange="importData(event)" class="hidden">
-        </label>
-        <button onclick="resetDefaultData()" class="w-full py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-2xl font-bold border border-rose-200 flex justify-center items-center gap-2 text-xs">
-          <i class="fa-solid fa-rotate-left"></i> 重置為「康軒五上預設資料庫」
-        </button>
+        <div id="libraryContainerReview" class="hidden flex flex-col gap-4"></div>
       </div>
-      <div class="pt-2 text-right">
-        <button onclick="closeBackupModal()" class="px-4 py-2 bg-slate-700 text-white rounded-xl font-bold text-xs">關閉</button>
+
+      <div class="mb-8">
+        <div class="flex justify-between items-center mb-3">
+          <button onclick="toggleIdiomBoxCollapse()" class="flex items-center gap-2 text-left">
+            <h4 class="display text-xl text-[color:var(--coral)]">🪎 成語百寶箱</h4>
+            <span id="idiomBoxArrow" class="text-xl text-[color:var(--coral)]">▼</span>
+          </button>
+          <button onclick="toggleReviewEditMode()" class="no-print btn-doodle bg-white text-sm font-bold px-3 py-1.5">✏️ 編輯複習清單</button>
+        </div>
+        <div id="libraryContainerIdiom" class="hidden flex flex-col gap-4"></div>
+      </div>
+
+      <div>
+        <button onclick="toggleVocabBoxCollapse()" class="flex items-center gap-2 text-left mb-3">
+          <h4 class="display text-xl text-[color:var(--purple)]">🔤 生字寶盒</h4>
+          <span id="vocabBoxArrow" class="text-xl text-[color:var(--purple)]">▼</span>
+        </button>
+        <div id="libraryContainerVocab" class="hidden flex flex-col gap-4"></div>
       </div>
     </div>
   </div>
+</div>
 
-  <script>
-    // 整合版資料庫
-    const rawData = `===L1===
-蚊|ㄨㄣˊ|虫部|生字「蚊」的字義與造詞|造詞(蚊子)|成語(聚蚊成雷)
-帳|ㄓㄤˋ|巾部|生字「帳」的字義與造詞|造詞(帳篷)|成語(蚊帳)
-洲|ㄓㄡ|水部|生字「洲」的字義與造詞|造詞(亞洲)|成語(非洲)
-瘧|ㄋㄩㄝˋ|疒部|生字「瘧」的字義與造詞|造詞(瘧疾)|成語(瘧蚊)
-疾|ㄐㄧˊ|疒部|生字「疾」的字義與造詞|造詞(疾病)|成語(疾言厲色)
-死|ㄙˇ|歹部|生字「死」的字義與造詞|造詞(死亡)|成語(醉生夢死)
-叮|ㄉㄧㄥ|口部|生字「叮」的字義與造詞|造詞(叮嚀)|成語(千叮萬囑)
-存|ㄘㄨㄣˊ|子部|生字「存」的字義與造詞|造詞(生存)|成語(蕩然無存)
-募|ㄇㄨˋ|力部|生字「募」的字義與造詞|造詞(募集)|成語(募款)
-集|ㄐㄧˊ|隹部|生字「集」的字義與造詞|造詞(集合)|成語(悲喜交集)
-寄|ㄐㄧˋ|宀部|生字「寄」的字義與造詞|造詞(寄託)|成語(寄人籬下)
-贈|ㄗㄥˋ|貝部|生字「贈」的字義與造詞|造詞(贈送)|成語(捐贈)
-獎|ㄐㄧㄤˇ|大部|生字「獎」的字義與造詞|造詞(獎狀)|成語(獎賞)
-狀|ㄓㄨㄤˋ|犬部|生字「狀」的字義與造詞|造詞(形狀)|成語(奇形怪狀)
-藏|ㄘㄤˊ|艸部|生字「藏」的字義與造詞|造詞(躲藏)|成語(包藏禍心)
-誌|ㄓˋ|言部|生字「誌」的字義與造詞|造詞(雜誌)|成語(永誌不忘)
-基|ㄐㄧ|土部|生字「基」的字義與造詞|造詞(基礎)|成語(基本)
-赴|ㄈㄨˋ|走部|生字「赴」的字義與造詞|造詞(奔赴)|成語(全力以赴)
-引起世人的關注||短語練習|描述對事物的影響。結構：（動詞）（名詞）的（動詞）|例句(造成房屋的倒塌)|例句(面臨人生的抉擇)
-驚慌失措|ㄐㄧㄥ ㄏㄨㄤ ㄕ ㄘㄨㄛˋ|造句練習|驚嚇慌張得不知如何應付。|例句(森林發生大火，動物們驚慌失措，紛紛四處逃竄。)|例句(弟弟在夜市和家人走散了，不知如何是好。)
-聚精會神|ㄐㄩˋ ㄐㄧㄥ ㄏㄨㄟˋ ㄕㄣˊ|造句練習|指集中精神，專心一意。|例句(他們正聚精會神的下棋，完全不受周圍事物的影響。)|例句(同學們正聚精會神的聆聽老師解題。)
-一筆一畫|ㄧˋ ㄅㄧˇ ㄧˊ ㄏㄨㄚˋ|造句練習|每一個筆畫。|例句(想寫出端正工整的字，得靜下心來一筆一畫慢慢的書寫。)|例句(這張手繪地圖是他一筆一畫勾勒出來的。)
-喜不自禁|ㄒㄧˇ ㄅㄨˋ ㄗˋ ㄐㄧㄣ|造句練習|高興得不得了。|例句(他一聽到要去露營，就喜不自禁的大聲歡呼。)|例句(多年不見的好朋友在路上不期而遇，令我喜不自禁。)
-夢想成真|ㄇㄥˋ ㄒㄧㄤˇ ㄔㄥˊ ㄓㄣ|造句練習|心中所欲想的已在生活中實現。|例句(只有透過不懈的努力耕耘，才能夢想成真。)|例句(這趟旅行是我計畫很久的事，能夠實現真是夢想成真。)
-全力以赴|ㄑㄩㄢˊ ㄌㄧˋ ㄧˇ ㄈㄨˋ|造句練習|投入全部的心力以達成目的。|例句(他做事十分認真盡責，交代給他的任務必定全力以赴。)|例句(面對實力強勁的敵隊，每個隊員都全力以赴。)
-雖然……可是……||句型練習|轉折複句。語意做了一個轉折，使意思形成相反或相對。|例句(弟弟練習騎腳踏車時，雖然一再跌倒，可是一滴眼淚都沒有流下來。)|例句(淨灘雖然能暫時清除環境中的垃圾，可是要杜絕海洋垃圾還是得從源頭著手。)
-只要……就……||句型練習|條件複句。前句提出條件，後句說明滿足條件後產生的結果。|例句(只要我們彼此信任，就能建立穩固的合作關係。)|例句(生活中難免遇到挫折，只要積極勇敢的面對，就能活出精采人生。)
-不但……還……||句型練習|遞進複句。後句的意思比前句更進一層。|例句(落實垃圾分類，不但可以減少垃圾量，還可以使資源循環再利用。)|例句(多多種植樹木，不但可以美化環境，還可以吸收大氣中的二氧化碳。)
-不僅……更……||句型練習|遞進複句。後句的意思比前句更進一層。|例句(他不僅完成了這次的馬拉松挑戰，更超越極限，創下了新的紀錄。)|例句()
-===L2===
-德|ㄉㄜˊ|彳部|生字「德」的字義與造詞|造詞(品德)|成語(感恩戴德)
-乎|ㄏㄨ|丿部|生字「乎」的字義與造詞|造詞(似乎)|成語(出乎意料)
-血|ㄒㄧㄝˇ|血部|生字「血」的字義與造詞|造詞(流血)|成語(血口噴人)
-攝|ㄕㄜˋ|手部|生字「攝」的字義與造詞|造詞(拍攝)|成語(攝取)
-颱|ㄊㄞˊ|風部|生字「颱」的字義與造詞|造詞(颱風)|成語(防颱)
-錄|ㄌㄨˋ|金部|生字「錄」的字義與造詞|造詞(記錄)|成語(錄音)
-哀|ㄞ|口部|生字「哀」的字義與造詞|造詞(悲哀)|成語(哀鴻遍野)
-巒|ㄌㄨㄢˊ|山部|生字「巒」的字義與造詞|造詞(山巒)|成語(層巒疊嶂)
-縱|ㄗㄨㄥˋ|糸部|生字「縱」的字義與造詞|造詞(操縱)|成語(欲擒故縱)
-臍|ㄑㄧˊ|肉部|生字「臍」的字義與造詞|造詞(肚臍)|成語(噬臍莫及)
-禍|ㄏㄨㄛˋ|示部|生字「禍」的字義與造詞|造詞(車禍)|成語(幸災樂禍)
-殘|ㄘㄢˊ|歹部|生字「殘」的字義與造詞|造詞(殘留)|成語(風捲殘雲)
-檳|ㄅㄧㄣ|木部|生字「檳」的字義與造詞|造詞(檳榔)|成語(檳榔樹)
-榔|ㄌㄤˊ|木部|生字「榔」的字義與造詞|造詞(檳榔)|成語(榔頭)
-降|ㄐㄧㄤˋ|阜部|生字「降」的字義與造詞|造詞(降落)|成語(從天而降)
-鏟|ㄔㄢˇ|金部|生字「鏟」的字義與造詞|造詞(鏟子)|成語(鐵鏟)
-汙|ㄨ|水部|生字「汙」的字義與造詞|造詞(汙染)|成語(同流合汙)
-斷|ㄉㄨㄢˋ|斤部|生字「斷」的字義與造詞|造詞(中斷)|成語(當機立斷)
-深深的哀愁||短語練習|結構：（疊字詞）的（名詞）|例句(淡淡的哀傷)|例句(甜甜的微笑)
-這是個昂貴而困難的計畫||短語練習|以兩個詞語說明某件事。結構：這是（量詞）（形容詞）而（形容詞）的（名詞）。|例句(這是個溫馨而難忘的聚會。)|例句(這是場豐富而精采的演講。)
-無聲無息|ㄨˊ ㄕㄥ ㄨˊ ㄒㄧˊ|造句練習|沉寂沒有聲音。比喻人沒有名氣或對事情不發生影響。|例句(葉子從翠綠到枯黃，季節無聲無息的交替著。)|例句(光陰總是無聲無息的從我們身邊溜走。)
-林立|ㄌㄧㄣˊ ㄌㄧˋ|造句練習|像林木般密集的聳立著。比喻眾多。|例句(這裡工廠林立，每天排放許多廢氣。)|例句(熱鬧的城市裡到處高樓林立，車水馬龍。)
-子子孫孫|ㄗˇ ㄗˇ ㄙㄨㄣ ㄙㄨㄣ|造句練習|世代綿延不絕的後裔。|例句(唯有現在做好環保，後世的子子孫孫才能享有美好的環境。)|例句(這個家族世代相傳，期望子子孫孫能夠幸福安康。)
-腳踏實地|ㄐㄧㄠˇ ㄊㄚˋ ㄕˊ ㄉㄧˋ|造句練習|比喻做事務實穩健。|例句(做人要腳踏實地，不要妄想一夜致富。)|例句(他腳踏實地，勤勉不懈，終於開創了一番事業。)
-原本……但……||句型練習|轉折複句。後面句子接續前面句子時，語意做了一個轉折。|例句(原本這是件小事，但他借題發揮，現在已弄得滿城風雨。)|例句(原本以為比賽能順利進行，但突然下起大雨，比賽只好延期。)
-為了……||句型練習|目的複句。一個句子提出要達到某種目的，另一個說明必須採取的行動。|例句(為了成為瑜伽教練，他決定報名培訓課程。)|例句(為了打造美觀的市容，市長決定加強綠化。)
-只有……才……||句型練習|條件複句。前一個分句提出一個條件，後一個分句說明產生的結果。|例句(只有抱持堅定的信念，勇於面對問題，才能克服困難。)|例句(只有不斷的努力與練習，我們才有機會獲得最後的勝利。)
-……所以……||句型練習|因果複句。前句表示原因，後句表示結果。|例句(他的小狗走失了，所以他四處張貼尋狗啟示。)|例句()
-由於……||句型練習|因果複句。表示原因。|例句(由於一場大雷雨，迫使運動會突然中斷。)|例句()
-===L3===
-峭|ㄑㄧㄠˋ|山部|生字「峭」的字義與造詞|造詞(陡峭)|成語(懸崖峭壁)
-勁|ㄐㄧㄥˋ|力部|生字「勁」的字義與造詞|造詞(幹勁)|成語(蒼勁有力)
-聳|ㄙㄨㄥˇ|耳部|生字「聳」的字義與造詞|造詞(高聳)|成語(聳人聽聞)
-飢|ㄐㄧ|食部|生字「飢」的字義與造詞|造詞(飢餓)|成語(飢寒交迫)
-隱|ㄧㄣˇ|阜部|生字「隱」的字義與造詞|造詞(隱藏)|成語(若隱若現)
-扯|ㄘㄜˇ|手部|生字「扯」的字義與造詞|造詞(拉扯)|成語(牽扯)
-銳|ㄖㄨㄟˋ|金部|生字「銳」的字義與造詞|造詞(尖銳)|成語(銳不可擋)
-箭|ㄐㄧㄢˋ|竹部|生字「箭」的字義與造詞|造詞(弓箭)|成語(光陰似箭)
-韌|ㄖㄣˋ|韋部|生字「韌」的字義與造詞|造詞(堅韌)|成語(堅韌不拔)
-虯|ㄑㄧㄡˊ|虫部|生字「虯」的字義與造詞|造詞(虯髯)|成語(虯龍)
-鬚|ㄒㄩ|髟部|生字「鬚」的字義與造詞|造詞(鬍鬚)|成語(溜鬚拍馬)
-茂|ㄇㄠˋ|艸部|生字「茂」的字義與造詞|造詞(茂盛)|成語(圖文並茂)
-止|ㄓˇ|止部|生字「止」的字義與造詞|造詞(停止)|成語(嘆為觀止)
-蔓|ㄇㄢˋ|艸部|生字「蔓」的字義與造詞|造詞(藤蔓)|成語(蔓延)
-藉|ㄐㄧㄝˋ|艸部|生字「藉」的字義與造詞|造詞(慰藉)|成語(憑藉)
-豐|ㄈㄥ|豆部|生字「豐」的字義與造詞|造詞(豐富)|成語(豐衣足食)
-挫|ㄘㄨㄛˋ|手部|生字「挫」的字義與造詞|造詞(挫折)|成語(愈挫愈勇)
-折|ㄓㄜˊ|手部|生字「折」的字義與造詞|造詞(折斷)|成語(百折不撓)
-===L4===
-恆|ㄏㄥˊ|心部|生字「恆」的字義與造詞|造詞(恆心)|成語(持之以恆)
-澄|ㄔㄥˊ|水部|生字「澄」的字義與造詞|造詞(澄清)|成語(澄澈)
-穗|ㄙㄨㄟˋ|禾部|生字「穗」的字義與造詞|造詞(稻穗)|成語(麥穗)
-養|ㄧㄤˇ|食部|生字「養」的字義與造詞|造詞(營養)|成語(養尊處優)
-源|ㄩㄢˊ|水部|生字「源」的字義與造詞|造詞(來源)|成語(飲水思源)
-藝|ㄧˋ|艸部|生字「藝」的字義與造詞|造詞(藝術)|成語(多才多藝)
-樸|ㄆㄨˊ|木部|生字「樸」的字義與造詞|造詞(樸素)|成語(返璞歸真)
-堆|ㄉㄨㄟ|土部|生字「堆」的字義與造詞|造詞(堆積)|成語(堆積如山)
-撿|ㄐㄧㄢˇ|手部|生字「撿」的字義與造詞|造詞(撿拾)|成語(撿起)
-巾|ㄐㄧㄣ|巾部|生字「巾」的字義與造詞|造詞(毛巾)|成語(巾幗英雄)
-痠|ㄙㄨㄢ|疒部|生字「痠」的字義與造詞|造詞(痠痛)|成語(痠軟)
-素|ㄙㄨˋ|糸部|生字「素」的字義與造詞|造詞(色素)|成語(素昧平生)
-尊|ㄗㄨㄣ|寸部|生字「尊」的字義與造詞|造詞(尊重)|成語(尊師重道)
-嚴|ㄧㄢˊ|口部|生字「嚴」的字義與造詞|造詞(嚴格)|成語(莊嚴肅穆)
-勞|ㄌㄠˊ|力部|生字「勞」的字義與造詞|造詞(疲勞)|成語(徒勞無功)
-怨|ㄩㄢˋ|心部|生字「怨」的字義與造詞|造詞(抱怨)|成語(任勞任怨)
-慷|ㄎㄤ|心部|生字「慷」的字義與造詞|造詞(慷慨)|成語(慷慨激昂)
-慨|ㄎㄞˇ|心部|生字「慨」的字義與造詞|造詞(感慨)|成語(慷慨解囊)
-滋|ㄗ|水部|生字「滋」的字義與造詞|造詞(滋味)|成語(滋生)
-===L5===
-譽|ㄩˋ|言部|生字「譽」的字義與造詞|造詞(名譽)|成語(沽名釣譽)
-務|ㄨˋ|力部|生字「務」的字義與造詞|造詞(任務)|成語(不務正業)
-聯|ㄌㄧㄢˊ|耳部|生字「聯」的字義與造詞|造詞(聯絡)|成語(珠聯璧合)
-核|ㄏㄜˊ|木部|生字「核」的字義與造詞|造詞(果核)|成語(核對)
-申|ㄕㄣ|田部|生字「申」的字義與造詞|造詞(申請)|成語(三令五申)
-局|ㄐㄩˊ|尸部|生字「局」的字義與造詞|造詞(結局)|成語(顧全大局)
-松|ㄙㄨㄥ|木部|生字「松」的字義與造詞|造詞(松樹)|成語(歲寒松柏)
-註|ㄓㄨˋ|言部|生字「註」的字義與造詞|造詞(註冊)|成語(註記)
-冊|ㄘㄜˋ|冂部|生字「冊」的字義與造詞|造詞(手冊)|成語(畫冊)
-企|ㄑㄧˋ|人部|生字「企」的字義與造詞|造詞(企業)|成語(企圖)
-歷|ㄌㄧˋ|止部|生字「歷」的字義與造詞|造詞(歷史)|成語(歷歷在目)
-英|ㄧㄥ|艸部|生字「英」的字義與造詞|造詞(英雄)|成語(英姿煥發)
-銷|ㄒㄧㄠ|金部|生字「銷」的字義與造詞|造詞(推銷)|成語(銷聲匿跡)
-售|ㄕㄡˋ|口部|生字「售」的字義與造詞|造詞(出售)|成語(售票)
-勝|ㄕㄥˋ|力部|生字「勝」的字義與造詞|造詞(勝利)|成語(百戰百勝)
-霸|ㄅㄚˋ|雨部|生字「霸」的字義與造詞|造詞(惡霸)|成語(稱王稱霸)
-項|ㄒㄧㄤˋ|頁部|生字「項」的字義與造詞|造詞(項目)|成語(望其項背)
-===L6===
-娛|ㄩˊ|女部|生字「娛」的字義與造詞|造詞(娛樂)|成語(綵衣娛親)
-汽|ㄑㄧˋ|水部|生字「汽」的字義與造詞|造詞(汽車)|成語(汽水)
-哨|ㄕㄠˋ|口部|生字「哨」的字義與造詞|造詞(哨兵)|成語(口哨)
-典|ㄉㄧㄢˇ|八部|生字「典」的字義與造詞|造詞(字典)|成語(引經據典)
-框|ㄎㄨㄤ|木部|生字「框」的字義與造詞|造詞(相框)|成語(門框)
-劇|ㄐㄩˋ|刀部|生字「劇」的字義與造詞|造詞(戲劇)|成語(惡作劇)
-父|ㄈㄨˋ|父部|生字「父」的字義與造詞|造詞(父親)|成語(父慈子孝)
-責|ㄗㄜˊ|貝部|生字「責」的字義與造詞|造詞(責任)|成語(責無旁貸)
-判|ㄆㄢˋ|刀部|生字「判」的字義與造詞|造詞(判斷)|成語(判若兩人)
-鳴|ㄇㄧㄥˊ|鳥部|生字「鳴」的字義與造詞|造詞(鳥鳴)|成語(一鳴驚人)
-穎|ㄧㄥˇ|禾部|生字「穎」的字義與造詞|造詞(新穎)|成語(脫穎而出)
-獲|ㄏㄨㄛˋ|犬部|生字「獲」的字義與造詞|造詞(獲得)|成語(如獲至寶)
-佳|ㄐㄧㄚ|人部|生字「佳」的字義與造詞|造詞(佳作)|成語(漸入佳境)
-膩|ㄋㄧˋ|肉部|生字「膩」的字義與造詞|造詞(油膩)|成語(細膩)
-交|ㄐㄧㄠ|亠部|生字「交」的字義與造詞|造詞(交通)|成語(交頭接耳)
-隊|ㄉㄨㄟˋ|阜部|生字「隊」的字義與造詞|造詞(隊伍)|成語(排隊)
-益|ㄧˋ|皿部|生字「益」的字義與造詞|造詞(利益)|成語(多多益善)
-貌|ㄇㄠˋ|豸部|生字「貌」的字義與造詞|造詞(容貌)|成語(貌合神離)
-官|ㄍㄨㄢ|宀部|生字「官」的字義與造詞|造詞(器官)|成語(達官貴人)
-增|ㄗㄥ|土部|生字「增」的字義與造詞|造詞(增加)|成語(與日俱增)
-===L7===
-逆|ㄋㄧˋ|辵部|生字「逆」的字義與造詞|造詞(逆境)|成語(逆來順受)
-穩|ㄨㄣˇ|禾部|生字「穩」的字義與造詞|造詞(平穩)|成語(穩如泰山)
-憐|ㄌㄧㄢˊ|心部|生字「憐」的字義與造詞|造詞(可憐)|成語(同病相憐)
-競|ㄐㄧㄥˋ|立部|生字「競」的字義與造詞|造詞(競爭)|成語(物競天擇)
-抗|ㄎㄤˋ|手部|生字「抗」的字義與造詞|造詞(抵抗)|成語(分庭抗禮)
-逸|ㄧˋ|辵部|生字「逸」的字義與造詞|造詞(安逸)|成語(一勞永逸)
-鄰|ㄌㄧㄣˊ|邑部|生字「鄰」的字義與造詞|造詞(鄰居)|成語(千金買鄰)
-脈|ㄇㄞˋ|肉部|生字「脈」的字義與造詞|造詞(葉脈)|成語(一脈相承)
-絡|ㄌㄨㄛˋ|糸部|生字「絡」的字義與造詞|造詞(聯絡)|成語(絡繹不絕)
-緻|ㄓˋ|糸部|生字「緻」的字義與造詞|造詞(精緻)|成語(細緻)
-弱|ㄖㄨㄛˋ|弓部|生字「弱」的字義與造詞|造詞(軟弱)|成語(弱肉強食)
-噴|ㄆㄣ|口部|生字「噴」的字義與造詞|造詞(噴泉)|成語(血口噴人)
-嚏|ㄊㄧˋ|口部|生字「嚏」的字義與造詞|造詞(打噴嚏)|成語(哈嚏)
-織|ㄓ|糸部|生字「織」的字義與造詞|造詞(編織)|成語(穿梭交織)
-碌|ㄌㄨˋ|石部|生字「碌」的字義與造詞|造詞(忙碌)|成語(庸庸碌碌)
-盎|ㄤˋ|皿部|生字「盎」的字義與造詞|造詞(盎然)|成語(生機盎然)
-膽|ㄉㄢˇ|肉部|生字「膽」的字義與造詞|造詞(膽量)|成語(膽大包天)
-圈|ㄑㄩㄢ|囗部|生字「圈」的字義與造詞|造詞(圓圈)|成語(圈套)
-疲|ㄆㄧˊ|疒部|生字「疲」的字義與造詞|造詞(疲勞)|成語(疲於奔命)
-===L8===
-坦|ㄊㄢˇ|土部|生字「坦」的字義與造詞|造詞(平坦)|成語(坦承相見)
-性|ㄒㄧㄥˋ|心部|生字「性」的字義與造詞|造詞(個性)|成語(本性難移)
-恐|ㄎㄨㄥˇ|心部|生字「恐」的字義與造詞|造詞(恐懼)|成語(爭先恐後)
-怖|ㄅㄨˋ|心部|生字「怖」的字義與造詞|造詞(恐怖)|成語(驚怖)
-且|ㄑㄧㄝˇ|一部|生字「且」的字義與造詞|造詞(而且)|成語(苟且偷安)
-占|ㄓㄢˋ|卜部|生字「占」的字義與造詞|造詞(占領)|成語(占為己有)
-番|ㄈㄢ|田部|生字「番」的字義與造詞|造詞(番茄)|成語(三番兩次)
-空|ㄎㄨㄥ|穴部|生字「空」的字義與造詞|造詞(天空)|成語(空前絕後)
-制|ㄓˋ|刀部|生字「制」的字義與造詞|造詞(制度)|成語(因地制宜)
-傷|ㄕㄤ|人部|生字「傷」的字義與造詞|造詞(受傷)|成語(遍體鱗傷)
-攻|ㄍㄨㄥ|攴部|生字「攻」的字義與造詞|造詞(攻擊)|成語(攻無不克)
-擊|ㄐㄧˊ|手部|生字「擊」的字義與造詞|造詞(打擊)|成語(聲東擊西)
-權|ㄑㄩㄢˊ|木部|生字「權」的字義與造詞|造詞(權力)|成語(大權在握)
-脅|ㄒㄧㄝˊ|肉部|生字「脅」的字義與造詞|造詞(威脅)|成語(脅肩諂笑)
-復|ㄈㄨˋ|彳部|生字「復」的字義與造詞|造詞(恢復)|成語(死灰復燃)
-式|ㄕˋ|弋部|生字「式」的字義與造詞|造詞(方式)|成語(各式各樣)
-感|ㄍㄢˇ|心部|生字「感」的字義與造詞|造詞(感動)|成語(感人肺腑)
-醒|ㄒㄧㄥˇ|酉部|生字「醒」的字義與造詞|造詞(清醒)|成語(大夢初醒)
-===L9===
-維|ㄨㄟˊ|糸部|生字「維」的字義與造詞|造詞(維持)|成語(進退維谷)
-戰|ㄓㄢˋ|戈部|生字「戰」的字義與造詞|造詞(戰爭)|成語(百戰百勝)
-崎|ㄑㄧˊ|山部|生字「崎」的字義與造詞|造詞(崎嶇)|成語(崎嶇不平)
-嶇|ㄑㄩ|山部|生字「嶇」的字義與造詞|造詞(崎嶇)|成語(崎嶇不平)
-拳|ㄑㄩㄢˊ|手部|生字「拳」的字義與造詞|造詞(拳頭)|成語(赤手空拳)
-癌|ㄞˊ|疒部|生字「癌」的字義與造詞|造詞(癌症)|成語(防癌)
-症|ㄓㄥˋ|疒部|生字「症」的字義與造詞|造詞(症狀)|成語(對症下藥)
-銅|ㄊㄨㄥˊ|金部|生字「銅」的字義與造詞|造詞(銅牌)|成語(銅牆鐵壁)
-牌|ㄆㄞˊ|片部|生字「牌」的字義與造詞|造詞(獎牌)|成語(招牌)
-屢|ㄌㄩˇ|尸部|生字「屢」的字義與造詞|造詞(屢次)|成語(屢見不鮮)
-減|ㄐㄧㄢˇ|水部|生字「減」的字義與造詞|造詞(減少)|成語(偷工減料)
-予|ㄩˇ|亅部|生字「予」的字義與造詞|造詞(給予)|成語(予取予求)
-幼|ㄧㄡˋ|幺部|生字「幼」的字義與造詞|造詞(幼兒)|成語(扶老攜幼)
-椰|ㄧㄝ|木部|生字「椰」的字義與造詞|造詞(椰子)|成語(椰樹)
-即|ㄐㄧˊ|卩部|生字「即」的字義與造詞|造詞(立即)|成語(一觸即發)
-腐|ㄈㄨˇ|肉部|生字「腐」的字義與造詞|造詞(豆腐)|成語(朽木腐草)
-衝|ㄔㄨㄥ|行部|生字「衝」的字義與造詞|造詞(衝動)|成語(怒髮衝冠)
-鍛|ㄉㄨㄢˋ|金部|生字「鍛」的字義與造詞|造詞(鍛鍊)|成語(鍛造)
-鍊|ㄌㄧㄢˋ|金部|生字「鍊」的字義與造詞|造詞(鍛鍊)|成語(項鍊)
-===L10===
-唐|ㄊㄤˊ|口部|生字「唐」的字義與造詞|造詞(唐朝)|成語(荒唐無稽)
-恬|ㄊㄧㄢˊ|心部|生字「恬」的字義與造詞|造詞(恬靜)|成語(恬不知恥)
-罷|ㄅㄚˋ|罒部|生字「罷」的字義與造詞|造詞(罷休)|成語(善罷甘休)
-暮|ㄇㄨˋ|日部|生字「暮」的字義與造詞|造詞(暮色)|成語(朝三暮四)
-掩|ㄧㄢˇ|手部|生字「掩」的字義與造詞|造詞(掩護)|成語(掩耳盜鈴)
-柴|ㄔㄞˊ|木部|生字「柴」的字義與造詞|造詞(木柴)|成語(骨瘦如柴)
-扉|ㄈㄟ|戶部|生字「扉」的字義與造詞|造詞(門扉)|成語(心扉)
-歸|ㄍㄨㄟ|止部|生字「歸」的字義與造詞|造詞(回歸)|成語(滿載而歸)
-畢|ㄅㄧˋ|田部|生字「畢」的字義與造詞|造詞(畢業)|成語(原形畢露)
-陋|ㄌㄡˋ|阜部|生字「陋」的字義與造詞|造詞(簡陋)|成語(孤陋寡聞)
-傍|ㄅㄤˋ|人部|生字「傍」的字義與造詞|造詞(傍晚)|成語(依山傍水)
-確|ㄑㄩㄝˋ|石部|生字「確」的字義與造詞|造詞(確定)|成語(千真萬確)
-閒|ㄒㄧㄢˊ|門部|生字「閒」的字義與造詞|造詞(空閒)|成語(遊手好閒)
-詠|ㄩㄥˇ|言部|生字「詠」的字義與造詞|造詞(歌詠)|成語(吟詠)
-幽|ㄧㄡ|幺部|生字「幽」的字義與造詞|造詞(幽靜)|成語(尋幽訪勝)
-眠|ㄇㄧㄢˊ|目部|生字「眠」的字義與造詞|造詞(睡眠)|成語(不眠不休)
-職|ㄓˊ|耳部|生字「職」的字義與造詞|造詞(職業)|成語(盡忠職守)
-吟|ㄧㄣˊ|口部|生字「吟」的字義與造詞|造詞(吟唱)|成語(無病呻吟)
-曠|ㄎㄨㄤˋ|日部|生字「曠」的字義與造詞|造詞(空曠)|成語(心曠神怡)
-===L11===
-駭|ㄏㄞˋ|馬部|生字「駭」的字義與造詞|造詞(驚駭)|成語(駭人聽聞)
-疤|ㄅㄚ|疒部|生字「疤」的字義與造詞|造詞(傷疤)|成語(結疤)
-痕|ㄏㄣˊ|疒部|生字「痕」的字義與造詞|造詞(痕跡)|成語(痕印)
-罐|ㄍㄨㄢˋ|缶部|生字「罐」的字義與造詞|造詞(罐頭)|成語(水罐)
-咚|ㄉㄨㄥ|口部|生字「咚」的字義與造詞|造詞(叮咚)|成語(咚咚)
-碰|ㄆㄥˋ|石部|生字「碰」的字義與造詞|造詞(碰撞)|成語(碰壁)
-傾|ㄑㄧㄥ|人部|生字「傾」的字義與造詞|造詞(傾斜)|成語(傾國傾城)
-寮|ㄌㄧㄠˊ|宀部|生字「寮」的字義與造詞|造詞(工寮)|成語(茅寮)
-營|ㄧㄥˊ|火部|生字「營」的字義與造詞|造詞(露營)|成語(步步為營)
-殺|ㄕㄚ|殳部|生字「殺」的字義與造詞|造詞(殺害)|成語(殺雞儆猴)
-崇|ㄔㄨㄥˊ|山部|生字「崇」的字義與造詞|造詞(崇高)|成語(崇拜)
-置|ㄓˋ|罒部|生字「置」的字義與造詞|造詞(放置)|成語(置之不理)
-奄|ㄧㄢ|大部|生字「奄」的字義與造詞|造詞(奄奄)|成語(奄奄一息)
-翼|ㄧˋ|羽部|生字「翼」的字義與造詞|造詞(翅翼)|成語(小心翼翼)
-祈|ㄑㄧˊ|示部|生字「祈」的字義與造詞|造詞(祈求)|成語(祈禱)
-禱|ㄉㄠˇ|示部|生字「禱」的字義與造詞|造詞(禱告)|成語(祈禱)
-吼|ㄏㄡˇ|口部|生字「吼」的字義與造詞|造詞(怒吼)|成語(大吼大叫)
-喉|ㄏㄡˊ|口部|生字「喉」的字義與造詞|造詞(喉嚨)|成語(如鯁在喉)
-嚨|ㄌㄨㄥˊ|口部|生字「嚨」的字義與造詞|造詞(喉嚨)|成語(沙啞)
-===L12===
-烈|ㄌㄧㄝˋ|火部|生字「烈」的字義與造詞|造詞(熱烈)|成語(轟轟烈烈)
-暈|ㄩㄣ|日部|生字「暈」的字義與造詞|造詞(頭暈)|成語(暈頭轉向)
-昏|ㄏㄨㄣ|日部|生字「昏」的字義與造詞|造詞(黃昏)|成語(昏天暗地)
-艙|ㄘㄤ|舟部|生字「艙」的字義與造詞|造詞(機艙)|成語(船艙)
-途|ㄊㄨˊ|辵部|生字「途」的字義與造詞|造詞(路途)|成語(半途而廢)
-捲|ㄐㄩㄢˇ|手部|生字「捲」的字義與造詞|造詞(捲起)|成語(風捲殘雲)
-喪|ㄙㄤˋ|口部|生字「喪」的字義與造詞|造詞(喪失)|成語(垂頭喪氣)
-獸|ㄕㄡˋ|犬部|生字「獸」的字義與造詞|造詞(野獸)|成語(洪水猛獸)
-渾|ㄏㄨㄣˊ|水部|生字「渾」的字義與造詞|造詞(渾身)|成語(渾然天成)
-擱|ㄍㄜ|手部|生字「擱」的字義與造詞|造詞(擱淺)|成語(擱置)
-礁|ㄐㄧㄠ|石部|生字「礁」的字義與造詞|造詞(暗礁)|成語(觸礁)
-筏|ㄈㄚˊ|竹部|生字「筏」的造詞與延伸|造詞(竹筏)|成語(木筏)
-塌|ㄊㄚ|土部|生字「塌」的字義與造詞|造詞(倒塌)|成語(塌陷)
-捏|ㄋㄧㄝ|手部|生字「捏」的字義與造詞|造詞(捏造)|成語(拿捏)
-燒|ㄕㄠ|火部|生字「燒」的字義與造詞|造詞(燃燒)|成語(怒火中燒)
-臼|ㄐㄧㄡˋ|臼部|生字「臼」的字義與造詞|造詞(石臼)|成語(脫臼)
-烤|ㄎㄠˇ|火部|生字「烤」的字義與造詞|造詞(烤肉)|成語(燒烤)
-爐|ㄌㄨˊ|火部|生字「爐」的字義與造詞|造詞(火爐)|成語(爐火純青)
-欲|ㄩˋ|欠部|生字「欲」的字義與造詞|造詞(欲望)|成語(暢所欲言)`;
+<script>
+// API 金鑰管理模組
+function getGeminiApiKey() {
+    const envKey = ""; 
+    if (envKey && envKey.length > 5) return envKey;
 
-    let defaultWords = [];
-    
-    function parseRawData() {
-      const lines = rawData.split('\n');
-      let currentL = "L1";
-      let currentId = 1;
-      
-      for (let line of lines) {
-        line = line.trim();
-        if (!line) continue;
-        
-        if (line.startsWith('===')) {
-          currentL = line.replace(/=/g, '').trim();
-          continue;
-        }
-        
-        const parts = line.split('|');
-        if (parts.length === 6) {
-          const [char, pinyin, bushou, charMeaning, word1Str, word2Str] = parts;
-          
-          const regex = /([^(（]+)[(（]([^)）]+)[)）]/;
-          let v1 = null, v2 = null;
-          
-          const m1 = word1Str.match(regex);
-          if (m1) v1 = { w: m1[1].trim(), m: m1[2].trim() };
-          else if (word1Str.trim()) v1 = { w: word1Str.trim(), m: "無解釋" };
-          
-          const m2 = word2Str.match(regex);
-          if (m2) v2 = { w: m2[1].trim(), m: m2[2].trim() };
-          else if (word2Str.trim()) v2 = { w: word2Str.trim(), m: "無解釋" };
-          
-          let typeStr = "生字";
-          if(bushou.includes('練習')) typeStr = bushou;
-
-          defaultWords.push({
-            id: currentId++, lesson: currentL, type: typeStr, 
-            word: char, pinyin: pinyin, info: bushou, 
-            meaning: charMeaning, v1: v1, v2: v2, starred: false
-          });
-        }
-      }
-    }
-    
-    parseRawData();
-
-    let words = [];
-    let currentLesson = "L1";
-    let currentFilter = 'vocab'; 
-    let filteredWords = [];
-    let currentIndex = 0;
-    let isFlipped = false;
-    let soundEnabled = true;
-
-    // 全域變數供測驗精準訂正使用
-    let currentQType = '';
-    let currentQuizCorrectText = '';
-    let quizQuestions = [];
-    let currentQuizIndex = 0;
-    let quizScore = 0;
-    let wrongWords = [];
-
-    // 音效引擎
-    let audioCtx = null;
-    function getAudioContext() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      return audioCtx;
-    }
-    function playSound(type) {
-      if (!soundEnabled) return;
-      try {
-        const ctx = getAudioContext();
-        if (ctx.state === 'suspended') ctx.resume();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        const now = ctx.currentTime;
-        if (type === 'click') {
-          osc.type = 'sine'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(400, now + 0.05);
-          gain.gain.setValueAtTime(0.15, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-          osc.start(now); osc.stop(now + 0.05);
-        } else if (type === 'flip') {
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(350, now); osc.frequency.exponentialRampToValueAtTime(700, now + 0.08);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
-          osc.start(now); osc.stop(now + 0.08);
-        } else if (type === 'correct') {
-          osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, now); osc.frequency.setValueAtTime(659.25, now + 0.08); 
-          gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-          osc.start(now); osc.stop(now + 0.25);
-        } else if (type === 'wrong') {
-          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(180, now); osc.frequency.setValueAtTime(140, now + 0.1);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-          osc.start(now); osc.stop(now + 0.2);
-        }
-      } catch (e) {}
-    }
-
-    // 真人語音
-    function playPronunciation(e, side) {
-      if (e) e.stopPropagation();
-      if (!soundEnabled) {
-          if (e) alert("請先點擊右上角的 🔊 音量圖示開啟音效喔！");
-          return;
-      }
-      if (filteredWords.length === 0) return;
-      const item = filteredWords[currentIndex];
-      
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        let textToRead = item.word;
-        if (side === 'back') {
-          if (item.info && item.info.includes('練習')) {
-             textToRead += "。意思是：" + item.meaning;
-             if (item.v1 && item.v1.w !== '無') textToRead += "。例句：" + item.v1.m;
-             if (item.v2 && item.v2.w !== '無') textToRead += "。例句：" + item.v2.m;
-          } else {
-             if (item.info && item.info.includes('部')) textToRead += "。部首是：" + item.info;
-             textToRead += "。字義解釋：" + item.meaning;
-             if (item.v1 && item.v1.w !== '無') textToRead += "。造詞：" + item.v1.w + "，" + item.v1.m;
-             if (item.v2 && item.v2.w !== '無') textToRead += "。造詞：" + item.v2.w + "，" + item.v2.m;
-          }
-        }
-        const utterance = new SpeechSynthesisUtterance(textToRead);
-        utterance.lang = 'zh-TW';
-        utterance.rate = 0.85; 
-        window.speechSynthesis.speak(utterance);
-      } else {
-        if (e) alert("您的瀏覽器目前不支援語音朗讀喔！");
-      }
-    }
-
-    function toggleSound() {
-      soundEnabled = !soundEnabled;
-      const soundIcon = document.getElementById('sound-icon');
-      if (soundEnabled) {
-        soundIcon.className = "fa-solid fa-volume-high text-sm"; 
-        playSound('click');
-      } else {
-        soundIcon.className = "fa-solid fa-volume-xmark text-sm text-slate-400";
-        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      }
-    }
-
-    function init() {
-      // 確保強制更新至 v10
-      const localData = localStorage.getItem('kangxuan_g5a_v10');
-      if (localData) {
-        try { words = JSON.parse(localData); } catch (e) { words = [...defaultWords]; }
-      } else { words = [...defaultWords]; }
-      updateCounts();
-      setFilter('vocab'); 
-    }
-
-    function saveData() {
-      localStorage.setItem('kangxuan_g5a_v10', JSON.stringify(words));
-      updateCounts();
-    }
-
-    function changeLesson() {
-      playSound('click');
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      currentLesson = document.getElementById('lesson-select').value;
-      currentIndex = 0; 
-      updateCounts();
-      updateView();
-    }
-
-    function updateCounts() {
-      const lessonWords = words.filter(w => w.lesson === currentLesson);
-      const vocabCount = lessonWords.filter(w => !w.info || !w.info.includes('練習')).length;
-      const sentenceCount = lessonWords.filter(w => w.info && w.info.includes('練習')).length;
-      const starCount = lessonWords.filter(w => w.starred).length;
-
-      document.getElementById('count-vocab').innerText = vocabCount;
-      document.getElementById('count-sentence').innerText = sentenceCount;
-      document.getElementById('count-star').innerText = starCount;
-    }
-
-    function setFilter(filter) {
-      playSound('click');
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      currentFilter = filter;
-      document.getElementById('flashcard-view').classList.remove('hidden');
-      document.getElementById('quiz-view').classList.add('hidden');
-      document.getElementById('quiz-view').classList.remove('flex');
-
-      const tabs = ['vocab', 'sentence', 'star', 'quiz'];
-      tabs.forEach(t => {
-        const el = document.getElementById('tab-' + t);
-        if(t === filter) {
-          el.className = "py-2 rounded-lg transition-all text-center bg-white text-amber-800 shadow-sm font-black flex justify-center items-center gap-0.5";
+    let userKey = localStorage.getItem('my_gemini_api_key');
+    if (!userKey) {
+        userKey = prompt("【首次使用設定】\n\n為了讓 AI 畫家在您的手機上也能順利畫圖，請貼上您的免費 Gemini API 金鑰 (API Key)：\n\n👉 如果您還沒有，請搜尋「Google AI Studio」免費申請一組喔！");
+        if (userKey && userKey.trim().length > 10) {
+            localStorage.setItem('my_gemini_api_key', userKey.trim());
         } else {
-          el.className = "py-2 rounded-lg transition-all text-center text-slate-700 hover:text-amber-800 flex justify-center items-center gap-0.5 font-bold bg-transparent shadow-none";
+            return null;
         }
-      });
-
-      currentIndex = 0; 
-      updateView();
     }
+    return userKey;
+}
 
-    function updateView() {
-      const lessonWords = words.filter(w => w.lesson === currentLesson);
-      
-      if (currentFilter === 'star') {
-        filteredWords = lessonWords.filter(w => w.starred);
-      } else if (currentFilter === 'sentence') {
-        filteredWords = lessonWords.filter(w => w.info && w.info.includes('練習'));
-      } else { 
-        filteredWords = lessonWords.filter(w => !w.info || !w.info.includes('練習'));
-      }
-
-      if (filteredWords.length === 0) {
-        document.getElementById('card-word').innerText = "尚無資料";
-        document.getElementById('card-pinyin-front').innerText = "";
-        document.getElementById('card-word-back').innerText = "";
-        document.getElementById('card-pinyin-back').innerText = "";
-        document.getElementById('card-meaning-container').innerHTML = `<div class="text-center mt-6">目前分類沒有內容喔！請切換其他標籤。</div>`;
-        document.getElementById('card-index-tag').innerText = "0 / 0";
-        document.getElementById('star-icon').className = "fa-solid fa-star text-slate-200";
-        document.getElementById('star-icon-back').className = "fa-solid fa-star text-slate-200";
-        return;
-      }
-
-      if (currentIndex >= filteredWords.length) currentIndex = 0;
-      const item = filteredWords[currentIndex];
-      
-      const wordEl = document.getElementById('card-word');
-      if (item.word.length > 5) {
-        wordEl.className = "text-3xl sm:text-4xl font-black text-slate-800 tracking-wider leading-snug";
-      } else {
-        wordEl.className = "text-6xl font-black text-slate-800 tracking-wider leading-snug";
-      }
-
-      wordEl.innerText = item.word;
-      document.getElementById('card-pinyin-front').innerText = item.pinyin || "";
-      document.getElementById('card-type-tag').innerText = item.info && item.info.includes('練習') ? item.info : "生字學習";
-      document.getElementById('card-index-tag').innerText = `${currentIndex + 1} / ${filteredWords.length}`;
-      
-      const starClass = item.starred ? "fa-solid fa-star text-amber-400" : "fa-regular fa-star text-slate-300";
-      document.getElementById('star-icon').className = starClass;
-      document.getElementById('star-icon-back').className = item.starred ? "fa-solid fa-star text-amber-300" : "fa-regular fa-star text-amber-300/60";
-
-      document.getElementById('card-word-back').innerText = item.word;
-      
-      if (item.info && item.info.includes('練習')) {
-        document.getElementById('card-pinyin-back').innerText = ""; 
-      } else {
-        document.getElementById('card-pinyin-back').innerText = `${item.pinyin || ""} ${item.info ? '('+item.info+')' : ''}`;
-      }
-      
-      let backHtml = `
-        <div class="mb-2 text-amber-100 font-bold border-b border-amber-700/50 pb-2 text-base leading-relaxed">
-          <span class="bg-amber-800 text-yellow-200 px-2 py-0.5 rounded text-xs mr-1">${item.info && item.info.includes('練習') ? '說明' : '字義'}</span>${item.meaning}
-        </div>
-        <div class="space-y-2 mt-3 text-sm">
-          ${item.v1 && item.v1.w !== '無' ? `<div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/50 leading-relaxed"><span class="text-yellow-300 font-black text-sm mr-1">${item.v1.w}</span>${item.v1.m}</div>` : ''}
-          ${item.v2 && item.v2.w !== '無' ? `<div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/50 leading-relaxed"><span class="text-yellow-300 font-black text-sm mr-1">${item.v2.w}</span>${item.v2.m}</div>` : ''}
-        </div>
-      `;
-      document.getElementById('card-meaning-container').innerHTML = backHtml;
-
-      if (isFlipped) {
-        isFlipped = false;
-        document.getElementById('card-inner').classList.remove('is-flipped');
-      }
-    }
-
-    function flipCard() {
-      if (filteredWords.length === 0) return;
-      playSound('flip');
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      isFlipped = !isFlipped;
-      document.getElementById('card-inner').classList.toggle('is-flipped', isFlipped);
-      if (isFlipped && soundEnabled) playPronunciation(null, 'back');
-    }
-
-    function nextCard() {
-      if (filteredWords.length === 0) return;
-      playSound('click');
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      currentIndex = (currentIndex + 1) % filteredWords.length; updateView();
-    }
-
-    function prevCard() {
-      if (filteredWords.length === 0) return;
-      playSound('click');
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      currentIndex = (currentIndex - 1 + filteredWords.length) % filteredWords.length; updateView();
-    }
-
-    function toggleStar(e) {
-      e.stopPropagation();
-      if (filteredWords.length === 0) return;
-      playSound('click');
-      const currentItem = filteredWords[currentIndex];
-      const targetInMain = words.find(w => w.id === currentItem.id);
-      if (targetInMain) { targetInMain.starred = !targetInMain.starred; saveData(); updateView(); }
-    }
-
-    function openQuizSetupModal() {
-      playSound('click'); 
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-      document.getElementById('quiz-setup-modal').classList.remove('hidden');
-    }
-    function closeQuizSetupModal() { playSound('click'); document.getElementById('quiz-setup-modal').classList.add('hidden'); }
-
-    function startQuizWithSetup() {
-      playSound('click');
-      const source = document.getElementById('quiz-source-select').value;
-      const countOpt = document.getElementById('quiz-count-select').value;
-      const lessonWords = words.filter(w => w.lesson === currentLesson);
-      
-      let pool = lessonWords;
-      if (source === 'vocab') pool = lessonWords.filter(w => !w.info || !w.info.includes('練習'));
-      else if (source === 'sentence') pool = lessonWords.filter(w => w.info && w.info.includes('練習'));
-      else if (source === 'star') pool = lessonWords.filter(w => w.starred);
-
-      if (pool.length < 3) {
-        alert('此範圍題目少於 3 題，請切換其他課別或記下星號後再測驗！');
-        return;
-      }
-
-      let totalQuestions = pool.length;
-      if (countOpt !== 'max') totalQuestions = Math.min(parseInt(countOpt), pool.length);
-
-      closeQuizSetupModal();
-      document.getElementById('flashcard-view').classList.add('hidden');
-      const quizView = document.getElementById('quiz-view');
-      quizView.classList.remove('hidden'); quizView.classList.add('flex');
-      
-      const tabs = ['vocab', 'sentence', 'star', 'quiz'];
-      tabs.forEach(t => {
-        const el = document.getElementById('tab-' + t);
-        if(t === 'quiz') el.className = "py-2 rounded-lg transition-all text-center bg-white text-emerald-800 shadow-sm font-black flex justify-center items-center gap-0.5";
-        else el.className = "py-2 rounded-lg transition-all text-center text-slate-700 hover:text-amber-800 flex justify-center items-center gap-0.5 font-bold bg-transparent shadow-none";
-      });
-
-      document.getElementById('quiz-body').classList.remove('hidden');
-      document.getElementById('quiz-result').classList.add('hidden');
-      document.getElementById('quiz-footer').classList.remove('hidden');
-
-      quizQuestions = [...pool].sort(() => 0.5 - Math.random()).slice(0, totalQuestions);
-      currentQuizIndex = 0; quizScore = 0; wrongWords = [];
-      renderQuizQuestion();
-    }
-
-    function renderQuizQuestion() {
-      document.getElementById('quiz-feedback').innerText = '';
-      document.getElementById('quiz-next-btn').classList.add('hidden');
-      const q = quizQuestions[currentQuizIndex];
-      document.getElementById('quiz-progress').innerText = `${currentQuizIndex + 1} / ${quizQuestions.length}`;
-
-      // 決定題型
-      let availableTypes = ['meaning', 'reverse'];
-      if (q.type === '生字' && q.info && q.info.includes('部')) availableTypes.push('radical');
-      currentQType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
-
-      let distractors = [];
-      
-      if (currentQType === 'radical') {
-        // [終極除錯過濾器] 保證「部首選項」絕對不會重複！
-        let pool = words.filter(w => w.id !== q.id && w.type === '生字' && w.info && w.info.includes('部') && w.info !== q.info);
-        let uniqueSet = new Set([q.info]);
-        let uniquePool = [];
-        for(let w of pool.sort(() => 0.5 - Math.random())) {
-          if(!uniqueSet.has(w.info)) {
-            uniqueSet.add(w.info);
-            uniquePool.push(w);
-          }
-        }
-        distractors = uniquePool.slice(0, 3);
-        // 如果獨特部首不夠，塞入備用部首防止破圖
-        if (distractors.length < 3) {
-            const backups = ["水部", "木部", "人部", "手部", "口部", "心部", "金部", "糸部", "艸部", "火部", "言部", "辵部"].filter(r => !uniqueSet.has(r));
-            while (distractors.length < 3 && backups.length > 0) {
-                const r = backups.pop();
-                uniqueSet.add(r);
-                distractors.push({ id: -Math.random(), info: r });
-            }
-        }
-        currentQuizCorrectText = q.info;
-      } else if (currentQType === 'meaning') {
-        // 保證「解釋」不重複
-        let pool = words.filter(w => w.id !== q.id && w.type === q.type && w.meaning !== q.meaning);
-        if(pool.length < 3) pool = words.filter(w => w.id !== q.id && w.meaning !== q.meaning);
-        let uniqueSet = new Set([q.meaning]);
-        let uniquePool = [];
-        for(let w of pool.sort(() => 0.5 - Math.random())) {
-          if(!uniqueSet.has(w.meaning)) {
-            uniqueSet.add(w.meaning);
-            uniquePool.push(w);
-          }
-        }
-        distractors = uniquePool.slice(0, 3);
-        currentQuizCorrectText = q.meaning;
-      } else { 
-        // 保證「反向單字」不重複
-        let pool = words.filter(w => w.id !== q.id && w.type === q.type && w.word !== q.word);
-        if(pool.length < 3) pool = words.filter(w => w.id !== q.id && w.word !== q.word);
-        let uniqueSet = new Set([q.word]);
-        let uniquePool = [];
-        for(let w of pool.sort(() => 0.5 - Math.random())) {
-          if(!uniqueSet.has(w.word)) {
-            uniqueSet.add(w.word);
-            uniquePool.push(w);
-          }
-        }
-        distractors = uniquePool.slice(0, 3);
-        currentQuizCorrectText = q.word;
-      }
-
-      let options = [q, ...distractors].sort(() => 0.5 - Math.random());
-
-      let questionText = "";
-      let subtitleText = "選擇正確答案";
-      let optionsHtml = "";
-
-      if (currentQType === 'meaning') {
-        subtitleText = q.info && q.info.includes('練習') ? "📖 句型/短語測驗" : "📖 字義測驗";
-        questionText = `「${q.word}」的意思是？`;
-        optionsHtml = options.map((opt, i) => `
-          <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-sm sm:text-base transition-all flex items-center justify-between shadow-sm active:scale-95">
-            <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.meaning}</span>
-          </button>
-        `).join('');
-      } else if (currentQType === 'reverse') {
-        subtitleText = "🔍 反向測驗";
-        questionText = `解釋為「${q.meaning}」的是哪一個？`;
-        optionsHtml = options.map((opt, i) => `
-          <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-lg transition-all flex items-center justify-between shadow-sm active:scale-95">
-            <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.word}</span>
-          </button>
-        `).join('');
-      } else if (currentQType === 'radical') {
-        subtitleText = "✍️ 部首測驗";
-        questionText = `生字「${q.word}」的部首是？`;
-        optionsHtml = options.map((opt, i) => `
-          <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-lg transition-all flex items-center justify-between shadow-sm active:scale-95">
-            <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.info}</span>
-          </button>
-        `).join('');
-      }
-
-      document.getElementById('quiz-subtitle').innerText = subtitleText;
-      
-      const qEl = document.getElementById('quiz-question');
-      if(questionText.length > 20) qEl.className = "text-xl sm:text-2xl font-black text-slate-800 tracking-wide leading-snug";
-      else qEl.className = "text-2xl sm:text-3xl font-black text-slate-800 tracking-wide leading-snug";
-      qEl.innerHTML = questionText;
-      
-      document.getElementById('quiz-options').innerHTML = optionsHtml;
-    }
-
-    function checkAnswer(selectedId, correctId, btnElement) {
-      const allBtns = document.querySelectorAll('.option-btn');
-      allBtns.forEach(b => b.onclick = null);
-      const q = quizQuestions[currentQuizIndex];
-      const feedback = document.getElementById('quiz-feedback');
-
-      if (selectedId === correctId) {
-        playSound('correct');
-        btnElement.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800');
-        feedback.className = "text-center py-2 text-emerald-600 font-black text-base";
-        feedback.innerHTML = '<i class="fa-solid fa-circle-check"></i> 太棒了！答對了！🌟';
-        quizScore++;
-      } else {
-        playSound('wrong');
-        btnElement.classList.remove('border-slate-200', 'hover:border-amber-400');
-        btnElement.classList.add('bg-rose-50', 'border-rose-500', 'text-rose-800');
-        
-        // 將正確的選項標亮為綠色
-        const correctBtn = Array.from(allBtns).find(b => parseFloat(b.dataset.id) === parseFloat(correctId));
-        if(correctBtn) {
-            correctBtn.classList.remove('border-slate-200', 'hover:border-amber-400');
-            correctBtn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800');
-        }
-
-        // 精準錯誤提示 (根據題型告訴他錯在哪裡)
-        let explainText = "";
-        if (currentQType === 'radical') {
-            explainText = `「${q.word}」的部首是：<span class="text-rose-800 ml-1 font-extrabold">${q.info}</span>`;
-        } else if (currentQType === 'reverse') {
-            explainText = `這個解釋的字詞是：<span class="text-rose-800 ml-1 font-extrabold">${q.word}</span>`;
+function resetApiKey() {
+    const newKey = prompt("請輸入新的 Gemini API 金鑰：\n(若要清除目前的金鑰，請留空並按下確定)");
+    if (newKey !== null) {
+        if (newKey.trim() === "") {
+            localStorage.removeItem('my_gemini_api_key');
+            alert("金鑰已清除！");
         } else {
-            explainText = `「${q.word}」的意思是：<br><span class="text-rose-800 mt-1 block text-left font-extrabold">${q.meaning}</span>`;
+            localStorage.setItem('my_gemini_api_key', newKey.trim());
+            alert("金鑰設定成功！");
         }
-
-        feedback.className = "text-center py-2 text-rose-600 font-bold text-sm sm:text-base";
-        feedback.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> 答錯囉！${explainText}`;
-        wrongWords.push({ wordObj: q, qType: currentQType });
-      }
-      document.getElementById('quiz-next-btn').classList.remove('hidden');
     }
+}
 
-    function nextQuizQuestion() {
-      playSound('click');
-      currentQuizIndex++;
-      if (currentQuizIndex < quizQuestions.length) renderQuizQuestion();
-      else showQuizResults();
-    }
+// 🔔 按鍵音效：用 Web Audio API 合成一個清脆的「叮」聲，不需要額外的音檔
+function playClickSound(){
+  try{
+    const ctx = window._appAudioCtx || (window._appAudioCtx = new (window.AudioContext || window.webkitAudioContext)());
+    if(ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.13);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.13);
+  }catch(e){}
+}
+document.addEventListener('click', function(e){
+  const btn = e.target.closest('.btn-doodle, .tab-btn');
+  if(btn) playClickSound();
+}, true);
 
-    function showQuizResults() {
-      document.getElementById('quiz-body').classList.add('hidden');
-      document.getElementById('quiz-footer').classList.add('hidden');
-      document.getElementById('quiz-result').classList.remove('hidden');
-      const scorePercent = Math.round((quizScore / quizQuestions.length) * 100);
-      document.getElementById('quiz-score-num').innerText = `${scorePercent} 分`;
-      document.getElementById('quiz-score-detail').innerText = `答對 ${quizScore} / ${quizQuestions.length} 題`;
+let currentIdiomData=null, currentVocabData=null, currentVocabIndex=-1;
+let batchVocabList = [];
 
-      const wrongSummary = document.getElementById('wrong-summary');
-      const wrongList = document.getElementById('wrong-list');
-      const addWrongBtn = document.getElementById('btn-add-wrong-stars');
+const LESSONS = Array.from({length:15},(_,i)=>`第${i+1}課`);
+let lessonNames = JSON.parse(localStorage.getItem('idiom_vocab_lessonNames_v1')||'{}');
+let savedLibrary = JSON.parse(localStorage.getItem('idiom_vocab_library_v3')||'[]');
 
-      if (wrongWords.length > 0) {
-        wrongSummary.classList.remove('hidden'); addWrongBtn.classList.remove('hidden');
-        
-        // 獨特錯題過濾 (精準分類)
-        const uniqueWrongsMap = new Map();
-        wrongWords.forEach(w => uniqueWrongsMap.set(w.wordObj.id + '_' + w.qType, w));
-        
-        wrongList.innerHTML = Array.from(uniqueWrongsMap.values()).map(w => {
-          const obj = w.wordObj;
-          if (w.qType === 'radical') {
-            return `<li><strong>${obj.word}</strong> 的部首是：<span class="text-rose-600">${obj.info}</span></li>`;
-          } else if (w.qType === 'reverse') {
-            return `<li>解釋為「${obj.meaning}」的是：<span class="text-rose-600">${obj.word}</span></li>`;
-          } else {
-            return `<li><strong>${obj.word}</strong> 的意思是：<span class="text-rose-600">${obj.meaning}</span></li>`;
-          }
-        }).join('');
-      } else {
-        wrongSummary.classList.add('hidden'); addWrongBtn.classList.add('hidden');
-      }
-    }
+const IDB_NAME='idiomDictDB', IDB_STORE='userIdioms';
+let idbPromise=null;
+function openIDB(){
+  if(idbPromise) return idbPromise;
+  idbPromise = new Promise((resolve,reject)=>{
+    const req = indexedDB.open(IDB_NAME,1);
+    req.onupgradeneeded = e=>{
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE,{keyPath:'idiom'});
+    };
+    req.onsuccess = e=>resolve(e.target.result);
+    req.onerror = e=>reject(e.target.error);
+  });
+  return idbPromise;
+}
+async function idbGetAll(){
+  const db = await openIDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(IDB_STORE,'readonly');
+    const req = tx.objectStore(IDB_STORE).getAll();
+    req.onsuccess = ()=>resolve(req.result||[]);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function idbPut(record){
+  const db = await openIDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).put(record);
+    tx.oncomplete = resolve;
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
+async function idbClear(){
+  const db = await openIDB();
+  return new Promise((resolve,reject)=>{
+    const tx = db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).clear();
+    tx.oncomplete = resolve;
+    tx.onerror = ()=>reject(tx.error);
+  });
+}
 
-    function addWrongToStars() {
-      playSound('click');
-      wrongWords.forEach(w => {
-        const target = words.find(item => item.id === w.wordObj.id);
-        if (target) target.starred = true;
-      });
-      saveData();
-      alert(`已將 ${wrongWords.length} 題錯題自動標記至「星號加強」！`);
-      document.getElementById('btn-add-wrong-stars').classList.add('hidden');
-      updateCounts();
-    }
+let userLibrary = {};
+async function loadUserLibrary(){
+  const all = await idbGetAll();
+  userLibrary = {};
+  all.forEach(r=>{ const {idiom, ...rest} = r; userLibrary[idiom] = rest; });
+  updateStorageUsage();
+}
 
-    function toggleListView() {
-      playSound('click');
-      const modal = document.getElementById('list-modal');
-      modal.classList.toggle('hidden');
-      if (!modal.classList.contains('hidden')) renderWordList();
-    }
+async function updateStorageUsage(){
+  const el = document.getElementById('storageUsageText');
+  if(!el) return;
+  try{
+    if(navigator.storage && navigator.storage.estimate){
+      const {usage, quota} = await navigator.storage.estimate();
+      const mb = (usage/1024/1024).toFixed(1);
+      el.innerText = `📦 記憶體已使用：約 ${mb} MB`;
+    } else { el.innerText = ''; }
+  }catch(e){ el.innerText=''; }
+}
 
-    function renderWordList() {
-      const container = document.getElementById('word-list-container');
-      const lessonWords = words.filter(w => w.lesson === currentLesson);
-      container.innerHTML = lessonWords.map((w) => `
-        <div class="py-3 flex justify-between items-start gap-2">
-          <div class="flex-1">
-            <div class="flex items-center gap-2">
-              <span class="font-extrabold text-slate-800 text-lg">${w.word}</span>
-              <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">${w.info && w.info.includes('練習') ? w.info : w.pinyin}</span>
-            </div>
-            <p class="text-xs text-slate-500 mt-1.5 leading-relaxed font-bold">${w.meaning}</p>
-          </div>
-          <button onclick="toggleStarById(${w.id})" class="text-2xl p-1 text-slate-300 hover:text-amber-400">
-            <i class="${w.starred ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star'}"></i>
-          </button>
-        </div>
-      `).join('');
-    }
-
-    function toggleStarById(id) {
-      playSound('click');
-      const item = words.find(w => w.id === id);
-      if (item) {
-        item.starred = !item.starred;
-        saveData(); renderWordList(); updateView();
-      }
-    }
-
-    function openAddModal() { playSound('click'); document.getElementById('add-modal').classList.remove('hidden'); }
-    function closeAddModal() {
-      playSound('click'); document.getElementById('add-modal').classList.add('hidden');
-      document.getElementById('new-word').value = ''; document.getElementById('new-pinyin').value = ''; document.getElementById('new-meaning').value = '';
-    }
-
-    function saveNewWord() {
-      playSound('click');
-      const lesson = document.getElementById('new-lesson-code').value || "L1";
-      const typeCode = document.getElementById('new-type-code').value;
-      const word = document.getElementById('new-word').value.trim();
-      const pinyin = document.getElementById('new-pinyin').value.trim();
-      const meaning = document.getElementById('new-meaning').value.trim();
-      if (!word || !meaning) { alert('請完整輸入字詞與解釋！'); return; }
+function compressImageToWebP(dataUrlOrFile, maxDim=800, quality=0.82){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      let w=img.width, h=img.height;
+      if(w>h && w>maxDim){ h=Math.round(h*maxDim/w); w=maxDim; }
+      else if(h>maxDim){ w=Math.round(w*maxDim/h); h=maxDim; }
       
-      const newId = words.length > 0 ? Math.max(...words.map(w => w.id)) + 1 : 1;
-      let infoStr = typeCode === "生字" ? "補充生字" : "句型練習";
-      
-      words.push({ id: newId, lesson, type: typeCode, word, pinyin, info: infoStr, meaning, v1: null, v2: null, starred: true });
-      currentLesson = lesson; document.getElementById('lesson-select').value = lesson;
-      saveData(); closeAddModal(); 
-      setFilter(typeCode === "生字" ? 'vocab' : 'sentence');
-      alert(`已成功將內容新增至學習庫！`);
+      const canvas = document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = reject;
+    
+    if(typeof dataUrlOrFile === 'string') {
+        img.src = dataUrlOrFile;
+    } else {
+        const reader = new FileReader();
+        reader.onload = e => img.src = e.target.result;
+        reader.readAsDataURL(dataUrlOrFile);
     }
+  });
+}
 
-    function openBackupModal() { playSound('click'); document.getElementById('backup-modal').classList.remove('hidden'); }
-    function closeBackupModal() { playSound('click'); document.getElementById('backup-modal').classList.add('hidden'); }
-
-    function exportData() {
-      playSound('click');
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(words, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `康軒五上極致除錯版備份_${new Date().toISOString().slice(0,10)}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click(); downloadAnchor.remove();
-    }
-
-    function importData(event) {
-      const file = event.target.files[0]; if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
+async function fetchWithRetry(url, options, retries = 3) {
+    const delays = [1000, 2000, 4000];
+    let lastErr = null;
+    for (let i = 0; i < retries; i++) {
         try {
-          const imported = JSON.parse(e.target.result);
-          if (Array.isArray(imported)) {
-            words = imported; saveData(); updateView(); closeBackupModal(); alert('成功匯入學習紀錄與字詞！');
-          } else { alert('格式不符，請上傳正確的 JSON 備份檔。'); }
-        } catch (err) { alert('解析檔案失敗，請確認檔案格式是否正確。'); }
-      };
-      reader.readAsText(file);
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                let bodyText = '';
+                try { const j = await response.json(); bodyText = j.error?.message || JSON.stringify(j); } catch(e2) { try { bodyText = await response.text(); } catch(e3){} }
+                const err = new Error(`API 錯誤 ${response.status}: ${bodyText}`);
+                err.status = response.status;
+                // 400/401/403 是金鑰或權限問題，重試沒有意義，直接丟出
+                if ([400,401,403].includes(response.status)) throw err;
+                throw err;
+            }
+            return await response.json();
+        } catch (err) {
+            lastErr = err;
+            if (err.status && [400,401,403].includes(err.status)) throw err;
+            if (i === retries - 1) throw err;
+            await new Promise(res => setTimeout(res, delays[i]));
+        }
+    }
+    throw lastErr;
+}
+
+// 🎨 智慧生圖引擎：使用 Gemini 2.5 Flash Image（正式版，具免費額度）
+async function generateAiImage(idiom, meaning, apiKey) {
+    const prompt = `WaterColor storybook illustration card for Chinese idiom "${idiom}". Traditional Chinese title text banner saying "${idiom}". Scene depicting the story of ${idiom}: ${meaning}. Charming children book watercolor style, warm colors, detailed background.`;
+
+    // 使用 gemini-3.1-flash-image（Google 2026 下半年 GA 版本，2.5 系列已陸續下架）
+    // 注意：不要使用 -preview 版本，該版本免費額度已被 Google 設為 0
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${apiKey}`;
+    const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+    };
+    const data = await fetchWithRetry(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }, 5);
+
+    const part = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    if (part && part.inlineData?.data) {
+        const mime = part.inlineData.mimeType || 'image/png';
+        return await compressImageToWebP(`data:${mime};base64,${part.inlineData.data}`, 800, 0.82);
     }
 
-    function resetDefaultData() {
-      playSound('click');
-      if (confirm('確定要將資料庫重置為最新預設的「康軒五上全12課+句型版」嗎？\n(注意：舊有的星號與新增字詞將會被重置)')) {
-        words = [...defaultWords]; currentLesson = "L1"; document.getElementById('lesson-select').value = "L1";
-        saveData(); setFilter('vocab'); closeBackupModal(); alert('已為您載入最新的1-12課完整資料庫！');
+    throw new Error("AI 未回傳圖片，請確認金鑰額度或稍後再試");
+}
+
+// 使用者提供的 Gemini Gem 連結（網頁版生圖，配額與 API 不同，目前仍可免費使用）
+const GEMINI_GEM_URL = 'https://gemini.google.com/gem/1bUY4OWhqZjcUfelEIKe50aYu7573XsnS?usp=sharing';
+
+function imageGenUiHtml(idiom){
+  return `<div class="crayon-border bg-white p-8 text-center wobble-l max-w-xl mx-auto" id="ai-draw-container">
+        <div class="text-5xl mb-4">🪄</div>
+        <h5 class="display text-xl mb-2 text-[color:var(--ink)]">${idiom} 的故事圖卡</h5>
+        <button onclick="handleGenerateImage('${idiom}')" class="btn-doodle px-6 py-3 bg-[color:var(--yellow)] hover:bg-[#ffcf61] text-lg font-bold">🎨 召喚 AI 小畫家繪製水彩圖</button>
+        ${manualUploadHtml(idiom)}
+      </div>`;
+}
+
+function switchToImageGenUI(idiom){
+  document.getElementById('cardComicGrid').innerHTML = imageGenUiHtml(idiom);
+}
+
+function openGeminiGem(idiom){
+  const meaning = (currentIdiomData && currentIdiomData.idiom === idiom) ? (currentIdiomData.meaning || '') : '';
+  const promptText = `請幫我畫一張中文成語「${idiom}」的繪本風水彩插圖，畫面呈現這個情境：${meaning}`;
+  const openIt = ()=> window.open(GEMINI_GEM_URL, '_blank');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(promptText).then(()=>{
+      alert('✅ 提示詞已複製！\n\n即將開啟 Gemini，貼上（長按畫面選擇「貼上」）後送出即可生圖。完成後請把圖片存到手機相簿，再回來這裡點「📷 上傳圖片」喔！');
+      openIt();
+    }).catch(()=>{
+      alert('請自行輸入以下提示詞給 Gemini：\n\n' + promptText);
+      openIt();
+    });
+  } else {
+    alert('請自行輸入以下提示詞給 Gemini：\n\n' + promptText);
+    openIt();
+  }
+}
+
+function manualUploadHtml(idiom){
+  return `<div class="mt-4 pt-4 border-t-2 border-dashed border-[color:var(--ink)]/20">
+      <p class="text-xs text-[color:var(--ink)]/60 mb-1">或者，也可以手動用您的 Gemini 生圖，完成後上傳回來：</p>
+      <p class="text-xs text-[color:var(--coral)] font-bold mb-2">👉 進入 Gemini 後，記得先點選「圖片」再送出提示詞，這樣才會生成圖片喔！</p>
+      <div class="flex gap-2 justify-center flex-wrap">
+        <button onclick="openGeminiGem('${idiom}')" class="btn-doodle bg-[color:var(--blue)] text-white px-4 py-2 text-sm font-bold">🔗 開啟 Gemini 手動生圖</button>
+        <label class="btn-doodle bg-white text-[color:var(--ink)] px-4 py-2 text-sm font-bold cursor-pointer">
+          📷 上傳圖片
+          <input type="file" accept="image/*" class="hidden" onchange="handleManualImageUpload(event,'${idiom}')">
+        </label>
+      </div>
+    </div>`;
+}
+
+async function handleManualImageUpload(event, idiom){
+  const file = event.target.files[0];
+  if(!file) return;
+  try{
+    const dataUrl = await compressImageToWebP(file, 800, 0.82);
+    await saveAiImageToLibrary(idiom, dataUrl);
+  }catch(e){
+    console.error(e);
+    alert('圖片處理失敗，請換一張圖片再試試！');
+  }
+}
+
+function getStoredApiKeyOnly(){
+    return localStorage.getItem('my_gemini_api_key') || null;
+}
+
+async function generateSimpleMeaning(idiom, meaning){
+    const key = getStoredApiKeyOnly();
+    if(!key) throw new Error('NO_KEY');
+    const prompt = `你是一位親切有耐心的國小老師。請把成語「${idiom}」的意思，改寫成國小中年級學生聽得懂的口語化中文解釋，可以用簡單的比喻或生活情境幫助理解，30字以內。只回傳解釋本身，不要有任何前言、引號或其他文字。原本的字典解釋是：「${meaning || '無'}」`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`;
+    const payload = { contents: [{ parts: [{ text: prompt }] }] };
+    const data = await fetchWithRetry(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }, 3);
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if(!text) throw new Error('AI 沒有回傳解釋內容');
+    return text.replace(/^["「]|["」]$/g, '');
+}
+
+// 查詢成語時，如果使用者已經設定過金鑰，就自動把意思改寫成小朋友聽得懂的版本
+async function autoSimplifyMeaning(d){
+    const idiom = d.idiom;
+    const meaningEl = document.getElementById('cardMeaning');
+
+    if(d.meaningSimple){ return; } // 已經有快取版本，上面已經直接顯示了
+
+    const key = getStoredApiKeyOnly();
+    if(!key){ return; } // 還沒設定金鑰，就維持顯示原本字典解釋，不強迫跳出金鑰視窗
+
+    // 避免使用者切換頁籤後，舊的非同步結果覆蓋新的卡片內容
+    const requestToken = idiom + '|' + Date.now();
+    meaningEl.dataset.token = requestToken;
+
+    try{
+        const simple = await generateSimpleMeaning(idiom, d.meaning);
+        if(meaningEl.dataset.token !== requestToken || !currentIdiomData || currentIdiomData.idiom !== idiom) return; // 使用者已經查別的成語了
+        meaningEl.innerText = simple;
+        d.meaningSimple = simple;
+        if(currentIdiomData) currentIdiomData.meaningSimple = simple;
+
+        // 存回收藏庫／個人圖卡庫，之後查詢就不用再問一次 AI
+        const idx = savedLibrary.findIndex(i => i.idiom === idiom && i.type === 'idiom');
+        if(idx >= 0){
+            savedLibrary[idx].meaningSimple = simple;
+            localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+        }
+        if(userLibrary[idiom]){
+            userLibrary[idiom].meaningSimple = simple;
+            idbPut({ idiom, ...userLibrary[idiom] }).catch(()=>{});
+        }
+    }catch(e){
+        // 失敗就靜靜維持原本字典解釋，不用跳錯誤打擾使用者
+        console.log('AI 簡化解釋失敗：', e);
+    }
+}
+
+async function fetchMoedict(word){
+  const res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(word)}.json`);
+  if(!res.ok) throw new Error('查無此字詞');
+  return await res.json();
+}
+
+// ✍️ AI 造句：用文字模型（跟圖片模型是不同的免費額度，通常不受圖片配額問題影響）
+async function generateChildSentence(idiom, meaning){
+    const key = getGeminiApiKey();
+    if(!key) throw new Error('NO_KEY');
+    const prompt = `你是一位親切的國小國語老師。請針對成語「${idiom}」（意思：${meaning || '無'}），寫一句適合國小中高年級學生程度、貼近生活情境的中文造句，句子裡要包含「${idiom}」這個成語。只回傳造句本身，不要加任何說明、引號或其他文字。`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`;
+    const payload = { contents: [{ parts: [{ text: prompt }] }] };
+    const data = await fetchWithRetry(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }, 3);
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if(!text) throw new Error('AI 沒有回傳造句內容');
+    return text.replace(/^["「]|["」]$/g, '');
+}
+
+async function handleGenerateChildSentence(){
+    if(!currentIdiomData){ return; }
+    const idiom = currentIdiomData.idiom;
+    const meaning = currentIdiomData.meaningSimple || currentIdiomData.meaning;
+    const resultDiv = document.getElementById('childSentenceResult');
+
+    const key = getGeminiApiKey();
+    if(!key){
+        alert('需要先設定 API 金鑰，AI 才能幫您造句喔！');
+        return;
+    }
+
+    resultDiv.innerHTML = '<span class="text-[color:var(--purple)]">🤔 AI 老師正在想例句...</span>';
+    try{
+        const sentence = await generateChildSentence(idiom, meaning);
+        resultDiv.innerHTML = `<div class="bg-white/70 p-3 rounded-xl border border-dashed border-[color:var(--purple)]/40 mb-2">${sentence.replace(/</g,'&lt;')}</div>
+            <div class="flex gap-2">
+                <button onclick="saveChildSentence(this)" data-sentence="${sentence.replace(/"/g,'&quot;')}" class="no-print btn-doodle bg-[color:var(--green)] text-white px-3 py-1 text-xs font-bold">💾 存為這個成語的造句</button>
+                <button onclick="handleGenerateChildSentence()" class="no-print btn-doodle bg-white px-3 py-1 text-xs font-bold">🔄 再想一句</button>
+            </div>`;
+    }catch(e){
+        const msg = (e && e.message) ? e.message : String(e);
+        resultDiv.innerHTML = `<span class="text-[color:var(--coral)] text-xs">造句失敗：${msg.replace(/</g,'&lt;')}</span>`;
+    }
+}
+
+function saveChildSentence(btnEl){
+    const sentence = btnEl.dataset.sentence;
+    if(!currentIdiomData || !sentence) return;
+    currentIdiomData.sentence = sentence;
+    currentIdiomData.sentenceIsAI = true;
+    document.getElementById('cardSentence').innerText = `「${sentence}」`;
+    const idx = savedLibrary.findIndex(i => i.idiom === currentIdiomData.idiom && i.type === 'idiom');
+    if(idx >= 0){
+        savedLibrary[idx].sentence = sentence;
+        savedLibrary[idx].sentenceIsAI = true;
+        localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+        alert('✅ 造句已更新並存入收藏庫！');
+    } else {
+        alert('✅ 造句已更新！記得按上方「📥 收藏」把整張圖卡存進收藏庫喔～');
+    }
+}
+
+let _cachedVoices = [];
+function _loadVoices(){
+  try{
+    const v = window.speechSynthesis.getVoices();
+    if(v && v.length) _cachedVoices = v;
+  }catch(e){}
+}
+if('speechSynthesis' in window){
+  _loadVoices();
+  window.speechSynthesis.onvoiceschanged = _loadVoices;
+}
+function _pickZhVoice(){
+  if(!_cachedVoices || !_cachedVoices.length) _loadVoices();
+  if(!_cachedVoices || !_cachedVoices.length) return null;
+  return _cachedVoices.find(v=>v.lang==='zh-TW')
+      || _cachedVoices.find(v=>/zh[-_]?TW/i.test(v.lang))
+      || _cachedVoices.find(v=>/zh[-_]?HK/i.test(v.lang))
+      || _cachedVoices.find(v=>/^zh/i.test(v.lang))
+      || null;
+}
+function formatGradeLesson(grade, lesson, sep){
+  sep = sep || ' / ';
+  if(grade === '補充' || grade === '尚未分類') return grade;
+  return `${grade}${sep}${lesson}`;
+}
+
+function speak(text){
+  if(!text) return;
+  if(!('speechSynthesis' in window)){
+    alert('您的瀏覽器不支援語音朗讀功能');
+    return;
+  }
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang='zh-TW'; u.rate=0.85;
+    const voice = _pickZhVoice();
+    if(voice) u.voice = voice;
+    u.onerror = (ev)=>{ console.error('語音錯誤', ev); };
+    // 一定要在使用者點擊的當下「同步」呼叫 speak()，iOS Safari 才會允許發聲；
+    // 用 setTimeout 延遲呼叫會被 iOS 判定不是使用者手勢觸發而靜音失敗
+    window.speechSynthesis.speak(u);
+  }catch(e){ console.error(e); }
+}
+function splitList(str){
+  if(!str) return [];
+  return str.split(/[、,，]/).map(s=>s.trim()).filter(Boolean);
+}
+
+function switchTab(tab){
+  ['Idiom', 'Vocab', 'Quiz', 'Manage'].forEach(t => {
+      const btn = document.getElementById(`tab${t}`);
+      const panel = document.getElementById(`panel${t}`);
+      if(t.toLowerCase() === tab.toLowerCase()){
+          btn.className = "tab-btn px-4 sm:px-5 py-3 font-bold display text-base sm:text-lg bg-[color:var(--coral)] text-white";
+          panel.classList.remove('hidden');
+      } else {
+          btn.className = "tab-btn px-4 sm:px-5 py-3 font-bold display text-base sm:text-lg bg-white text-[color:var(--ink)]";
+          panel.classList.add('hidden');
       }
+  });
+
+  if(tab==='manage'){ renderLibrary(); loadLessonSetupForm(); updateStorageUsage(); }
+  if(tab==='quiz'){ renderQuizSelection(); }
+}
+
+// 📚 教育部《成語典》開放資料（CC BY-ND 3.0 TW）：語義說明跟例句都是官方審定的白話文，
+// 完全沒有文言文引用，優先於萌典使用
+window._moeIdiomMap = null;
+window._moeIdiomLoading = null;
+function loadMoeIdiomDataset(){
+    if(window._moeIdiomMap) return Promise.resolve(window._moeIdiomMap);
+    if(window._moeIdiomLoading) return window._moeIdiomLoading;
+    window._moeIdiomLoading = fetch('./idioms_moe.json')
+        .then(res => { if(!res.ok) throw new Error('無法載入成語資料檔'); return res.json(); })
+        .then(list => {
+            const map = {};
+            list.forEach(item => { map[item.idiom] = item; });
+            window._moeIdiomMap = map;
+            return map;
+        })
+        .catch(e => {
+            console.log('成語典開放資料載入失敗，將改用萌典線上查詢：', e);
+            window._moeIdiomMap = {}; // 標記為載入失敗（空物件），避免每次都重新嘗試整份下載
+            return window._moeIdiomMap;
+        });
+    return window._moeIdiomLoading;
+}
+
+function pickIdiomFieldsFromMoe(entry){
+    return {
+        idiom: entry.idiom,
+        zhuyin: entry.zhuyin || '',
+        meaning: entry.meaning || '',
+        sentence: (entry.sentences && entry.sentences[0]) || '',
+        sentenceIsAI: !!(entry.sentences && entry.sentences[0]), // 官方例句本來就是白話文，測驗題目可以直接放心使用
+        synonyms: entry.synonyms || [],
+        antonyms: entry.antonyms || [],
+        extraSentences: (entry.sentences || []).slice(1,3),
+        moeCategory: entry.category || ''
+    };
+}
+
+function pickIdiomFields(data){
+  const h = (data.heteronyms||[])[0] || {};
+  const defs = h.definitions || [];
+  const firstDef = defs.find(d=>d.def) || {};
+  const example = firstDef.example && firstDef.example[0] ? firstDef.example[0] : (firstDef.quote && firstDef.quote[0]) || '';
+  let synonyms=[], antonyms=[];
+  defs.forEach(d=>{
+    if(d.synonyms) synonyms = synonyms.concat(splitList(d.synonyms));
+    if(d.antonyms) antonyms = antonyms.concat(splitList(d.antonyms));
+  });
+  return {
+    idiom: data.title || '',
+    zhuyin: h.bopomofo || h.pinyin || '',
+    meaning: (firstDef.def||'').replace(/^[0-9]+\.\s*/,''),
+    sentence: example,
+    synonyms: [...new Set(synonyms)],
+    antonyms: [...new Set(antonyms)],
+    extraSentences: defs.slice(1,3).map(d=>d.def).filter(Boolean)
+  };
+}
+
+async function getCharBreakdown(chars, idiomZhuyin){
+  // 把成語整體的注音拆成一個字一個音，優先拿來對齊每個字的正確讀音（避免多音字選錯）
+  const idiomSyllables = (idiomZhuyin || '').trim().split(/\s+/).filter(Boolean);
+  const useIdiomSyllables = idiomSyllables.length === chars.length;
+
+  const uniqueChars = [...new Set(chars.split(''))];
+  const results = await Promise.all(uniqueChars.map(async c=>{
+    try{
+      const data = await fetchMoedict(c);
+      return {char:c, heteronyms: data.heteronyms || []};
+    }catch(e){ return {char:c, heteronyms: []}; }
+  }));
+  const map = {}; results.forEach(r=>map[r.char]=r);
+
+  return chars.split('').map((c, idx)=>{
+    const entry = map[c] || {heteronyms:[]};
+    const heteronyms = entry.heteronyms || [];
+    const idiomSyllable = useIdiomSyllables ? idiomSyllables[idx] : null;
+
+    // 多音字：優先挑跟這個成語念法相同的那個讀音／解釋，避免注音跟意思對不上
+    let chosen = idiomSyllable ? heteronyms.find(h => h.bopomofo === idiomSyllable) : null;
+    if(!chosen) chosen = heteronyms[0] || {};
+
+    const def = (chosen.definitions || []).find(dd => dd.def);
+    return {
+      char: c,
+      zhuyin: idiomSyllable || chosen.bopomofo || '',
+      meaning: def ? def.def.slice(0, 10) : ''
+    };
+  });
+}
+
+// 📚 成語輸入自動比對歷史紀錄：把 IndexedDB（AI 圖卡庫）跟收藏庫合併，依成語去重複，
+// 有圖片的優先顯示圖片版本（資訊比較完整）
+function getIdiomHistoryList(){
+    const map = {};
+    // 先放入完整的教育部成語資料庫（如果已載入），這樣建議清單涵蓋所有 1664 條成語，不只是查過的
+    if(window._moeIdiomMap){
+        Object.keys(window._moeIdiomMap).forEach(idiom => {
+            const entry = window._moeIdiomMap[idiom];
+            map[idiom] = { idiom, meaning: entry.meaning || '', image: null };
+        });
+    }
+    savedLibrary.filter(i => i.type === 'idiom').forEach(item => {
+        const existing = map[item.idiom] || {};
+        map[item.idiom] = {
+            idiom: item.idiom,
+            meaning: item.meaningSimple || item.meaning || existing.meaning || '',
+            image: item.singleImage || existing.image || null
+        };
+    });
+    Object.keys(userLibrary).forEach(idiom => {
+        const rec = userLibrary[idiom];
+        const existing = map[idiom] || {};
+        map[idiom] = {
+            idiom: idiom,
+            meaning: existing.meaning || rec.meaningSimple || rec.meaning || '',
+            image: rec.singleImage || existing.image || null
+        };
+    });
+    return Object.values(map);
+}
+
+async function renderIdiomSuggestions(){
+    loadMoeIdiomDataset(); // 第一次聚焦輸入框時就先預載入資料庫，之後打字才不會延遲
+    const box = document.getElementById('idiomSuggestions');
+    const inputEl = document.getElementById('idiomInput');
+    const keyword = inputEl.value.trim();
+
+    if(!keyword){ box.classList.add('hidden'); box.innerHTML=''; return; }
+
+    const matches = getIdiomHistoryList()
+        .filter(item => item.idiom.includes(keyword))
+        .sort((a,b) => a.idiom.indexOf(keyword) - b.idiom.indexOf(keyword))
+        .slice(0, 8);
+
+    if(matches.length === 0){ box.classList.add('hidden'); box.innerHTML=''; return; }
+
+    box.innerHTML = matches.map(item => `
+        <div onmousedown="selectIdiomSuggestion('${item.idiom}')" class="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-[color:var(--cream)] border-b border-dashed border-[color:var(--ink)]/10 last:border-b-0">
+            ${item.image ? `<img src="${item.image}" class="w-10 h-10 rounded-lg object-cover border border-[color:var(--ink)]/20 shrink-0">` : `<div class="w-10 h-10 rounded-lg bg-[color:var(--cream)] flex items-center justify-center text-lg shrink-0">📖</div>`}
+            <div class="min-w-0">
+                <div class="font-bold text-[color:var(--coral)] display text-lg">${item.idiom}</div>
+                <div class="text-xs text-[color:var(--ink)]/60 truncate">${item.meaning ? item.meaning.replace(/</g,'&lt;') : '（查過，但沒有存意思）'}</div>
+            </div>
+        </div>
+    `).join('');
+    box.classList.remove('hidden');
+}
+
+function selectIdiomSuggestion(idiom){
+    document.getElementById('idiomInput').value = idiom;
+    document.getElementById('idiomSuggestions').classList.add('hidden');
+    generateIdiomContent(idiom);
+}
+
+document.addEventListener('click', function(e){
+    const box = document.getElementById('idiomSuggestions');
+    const input = document.getElementById('idiomInput');
+    if(!box || !input) return;
+    if(e.target !== input && !box.contains(e.target)){
+        box.classList.add('hidden');
+    }
+});
+
+// 新增或更新一筆成語收藏，會保留原本已經打勾的「複習」狀態跟已存的圖片，不會被覆蓋掉
+function upsertIdiomToLibrary(record){
+    const idx = savedLibrary.findIndex(i => i.idiom === record.idiom && i.type === 'idiom');
+    if(idx >= 0){
+        savedLibrary[idx] = {
+            ...savedLibrary[idx],
+            ...record,
+            singleImage: record.singleImage || savedLibrary[idx].singleImage,
+            needReview: savedLibrary[idx].needReview || false
+        };
+    } else {
+        savedLibrary.push({ ...record });
+    }
+    localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+}
+
+async function generateIdiomContent(forceIdiom = null){
+  const idiom = forceIdiom || document.getElementById('idiomInput').value.trim();
+  if(forceIdiom) document.getElementById('idiomInput').value = forceIdiom;
+  
+  const grade = document.getElementById('idiomGrade').value;
+  const lesson = document.getElementById('idiomLesson').value;
+  if(!idiom){ alert('請輸入成語喔！'); return; }
+
+  document.getElementById('loadingIdiom').classList.remove('hidden');
+  document.getElementById('cardResult').classList.add('hidden');
+
+  try{
+    let d;
+    if(userLibrary[idiom]){
+      d = {idiom, breakdown:[], ...JSON.parse(JSON.stringify(userLibrary[idiom]))};
+      if(!d.breakdown || d.breakdown.length === 0) d.breakdown = await getCharBreakdown(idiom, d.zhuyin);
+    } else {
+      const moeDataset = await loadMoeIdiomDataset();
+      if(moeDataset[idiom]){
+        // ✅ 優先使用教育部《成語典》開放資料：語義說明跟例句都是官方審定白話文，沒有文言文
+        d = pickIdiomFieldsFromMoe(moeDataset[idiom]);
+      } else {
+        // 開放資料裡沒有收錄這個成語（例如非主條成語／罕用成語），才退回萌典即時查詢
+        const moe = await fetchMoedict(idiom);
+        d = pickIdiomFields(moe);
+      }
+      d.breakdown = await getCharBreakdown(idiom, d.zhuyin);
+    }
+    
+    d.grade=grade; d.lesson=lesson; d.type='idiom';
+    currentIdiomData = d;
+    upsertIdiomToLibrary(d); // 查過的成語直接自動收藏到百寶箱，不用再手動按收藏
+
+    // 查完之後把年級選單重設回「尚未分類」，這樣下一次單純查詢就不會不小心又被歸到剛剛選的課次
+    if(grade !== '尚未分類'){
+        document.getElementById('idiomGrade').value = '尚未分類';
+        toggleLessonVisibility('idiomGrade', 'idiomLesson');
     }
 
-    let touchstartX = 0; let touchendX = 0;
-    const cardEl = document.getElementById('card-container');
-    cardEl.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, false);
-    cardEl.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleSwipe(); }, false);
-    function handleSwipe() { if (touchendX < touchstartX - 50) nextCard(); if (touchendX > touchstartX + 50) prevCard(); }
+    document.getElementById('cardMeta').innerText = formatGradeLesson(grade, lesson);
+    document.getElementById('cardTitle').innerText = d.idiom;
+    document.getElementById('cardZhuyin').innerText = d.zhuyin;
+    document.getElementById('cardMeaning').innerText = d.meaningSimple || d.meaning || '（無解釋）';
+    document.getElementById('cardMeaningOriginal').innerText = d.meaning ? `📖 原辭典解釋：${d.meaning}` : '';
+    autoSimplifyMeaning(d);
 
-    window.onload = init;
-  </script>
+    const bd = document.getElementById('cardBreakdown'); bd.innerHTML='';
+    (d.breakdown||[]).forEach(item=>{
+      bd.innerHTML += `<div onclick="speak('${item.char}')" class="crayon-border bg-white cursor-pointer p-3 text-center wobble-hover wobble-l">
+        <ruby class="text-3xl display">${item.char}<rt>${item.zhuyin||''}</rt></ruby>
+        <div class="text-xs mt-2 text-[color:var(--ink)]/80">${item.meaning||''}</div>
+      </div>`;
+    });
+
+    const cm = document.getElementById('cardComicGrid');
+    if(d.singleImage){
+      cm.innerHTML = `<div class="crayon-border bg-white p-2 wobble-r relative max-w-xl mx-auto shadow-md">
+        <div class="tape -top-2 left-1/2 -translate-x-1/2"></div>
+        <img src="${d.singleImage}" class="w-full rounded-xl border-2 border-[color:var(--ink)]/10">
+      </div>
+      <div class="text-center mt-3 no-print">
+        <a href="javascript:void(0)" onclick="switchToImageGenUI('${d.idiom}')" class="text-[color:var(--purple)] font-bold underline inline-flex items-center gap-1">🔄 更換這張成語情境圖</a>
+      </div>`;
+    } else {
+      cm.innerHTML = imageGenUiHtml(d.idiom);
+    }
+
+    document.getElementById('cardSynonyms').innerHTML = (d.synonyms||[]).map(w=>`<span class="crayon-border bg-white px-3 py-1 text-sm font-bold">${w}</span>`).join('') || '<span class="text-sm text-[color:var(--ink)]/50">（無）</span>';
+    document.getElementById('cardAntonyms').innerHTML = (d.antonyms||[]).map(w=>`<span class="crayon-border bg-white px-3 py-1 text-sm font-bold">${w}</span>`).join('') || '<span class="text-sm text-[color:var(--ink)]/50">（無）</span>';
+    document.getElementById('cardSentence').innerText = d.sentence ? `「${d.sentence}」` : '（請自行發揮想像力造句喔）';
+    document.getElementById('cardExtra').innerHTML = (d.extraSentences||[]).map(s=>`<li>${s}</li>`).join('');
+    document.getElementById('childSentenceResult').innerHTML = '';
+
+    document.getElementById('loadingIdiom').classList.add('hidden');
+    document.getElementById('cardResult').classList.remove('hidden');
+  }catch(e){
+    document.getElementById('loadingIdiom').classList.add('hidden');
+    alert('找不到這個成語耶，請檢查輸入是否正確！');
+  }
+}
+
+async function handleGenerateImage(idiom) {
+    const key = getGeminiApiKey();
+    if(!key) {
+        alert("必須輸入 API 金鑰，小畫家才能幫您畫圖喔！");
+        return;
+    }
+
+    const meaning = currentIdiomData.meaningSimple || currentIdiomData.meaning;
+    const container = document.getElementById('ai-draw-container');
+    container.innerHTML = `<div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[color:var(--coral)] border-t-transparent mb-4"></div>
+        <h5 class="display text-xl text-[color:var(--coral)] mb-2">魔法小畫家正在繪製水彩圖...</h5><p class="text-sm font-bold">約需 10 秒 🎨</p>`;
+    
+    try {
+        const imageUrl = await generateAiImage(idiom, meaning, key);
+        container.innerHTML = `
+            <div class="tape -top-2 left-1/2 -translate-x-1/2"></div>
+            <img src="${imageUrl}" class="w-full rounded-xl border-2 border-[color:var(--ink)]/10 mb-4 bg-white">
+            <button onclick="saveAiImageToLibrary('${idiom}', '${imageUrl}')" class="btn-doodle w-full py-2 bg-[color:var(--green)] text-white font-bold">💾 儲存水彩圖卡</button>`;
+    } catch (e) {
+        console.error(e);
+        const rawMsg = (e && e.message) ? e.message : String(e);
+        container.innerHTML = `<div class="text-5xl mb-4">😭</div>
+            <h5 class="display text-xl text-[color:var(--coral)] mb-2">繪製失敗了！</h5>
+            <p class="text-sm text-[color:var(--ink)]/70 mb-2">可能是網路不穩，或是您的 API 金鑰無效/額度用盡。</p>
+            <p class="text-xs text-left bg-[color:var(--coral)]/10 p-3 rounded-lg break-all mb-4 text-[color:var(--ink)]/80">錯誤訊息：${rawMsg.replace(/</g,'&lt;')}</p>
+            <button onclick="handleGenerateImage('${idiom}')" class="btn-doodle px-6 py-2 bg-[color:var(--yellow)] font-bold mr-2">🔄 重試</button>
+            <button onclick="resetApiKey()" class="btn-doodle px-6 py-2 bg-white font-bold">🔑 更換金鑰</button>
+            ${manualUploadHtml(idiom)}`;
+    }
+}
+
+async function saveAiImageToLibrary(idiom, imageUrl) {
+    currentIdiomData.singleImage = imageUrl;
+    const record = { ...currentIdiomData };
+    try {
+        await idbPut(record);
+        userLibrary[idiom] = record;
+        upsertIdiomToLibrary(record);
+        generateIdiomContent(idiom);
+    } catch (e) { alert('儲存失敗'); }
+}
+
+function printIdiom() {
+    document.body.classList.add('print-mode-idiom');
+    function cleanup(){
+        document.body.classList.remove('print-mode-idiom');
+        window.removeEventListener('afterprint', cleanup);
+    }
+    window.addEventListener('afterprint', cleanup);
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            window.print();
+            setTimeout(cleanup, 5000);
+        });
+    });
+}
+
+function printLibrary() {
+    document.body.classList.add('print-mode-manage');
+    document.querySelectorAll('.lib-detail-box').forEach(el => el.classList.remove('hidden'));
+    function cleanup(){
+        document.body.classList.remove('print-mode-manage');
+        window.removeEventListener('afterprint', cleanup);
+    }
+    window.addEventListener('afterprint', cleanup);
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            window.print();
+            setTimeout(cleanup, 5000);
+        });
+    });
+}
+
+async function fetchBatchVocab(wordOverride = null){
+  let text = wordOverride || document.getElementById('vocabInput').value.trim();
+  if(!text){ alert('請輸入字詞！'); return; }
+  
+  const chars = wordOverride ? [wordOverride] : [...new Set(text.replace(/[^\u4e00-\u9fa5]/g, '').split(''))];
+  if(chars.length === 0){ alert('未偵測到有效中文字'); return; }
+
+  document.getElementById('loadingVocab').classList.remove('hidden');
+  document.getElementById('vocabResult').classList.add('hidden');
+  document.getElementById('vocabBatchArea').classList.add('hidden');
+  
+  const grade = document.getElementById('vocabGrade').value;
+  const lesson = document.getElementById('vocabLesson').value;
+  batchVocabList = [];
+
+  for(let i=0; i<chars.length; i++){
+      if(!wordOverride) {
+          document.getElementById('loadingVocabText').innerText = `正在查詢: ${chars[i]} (${i+1}/${chars.length})...`;
+      }
+      try {
+          const moe = await fetchMoedict(chars[i]);
+          const parsed = parseVocabMoeData(moe, chars[i], grade, lesson);
+          batchVocabList.push(parsed);
+      } catch(e) {
+          console.log(`查無字: ${chars[i]}`);
+      }
+      await new Promise(r => setTimeout(r, 100)); 
+  }
+
+  document.getElementById('loadingVocab').classList.add('hidden');
+  
+  if(batchVocabList.length > 0) {
+      renderVocabTabs();
+      showVocabCard(0);
+      if(batchVocabList.length > 1) {
+          document.getElementById('vocabBatchArea').classList.remove('hidden');
+      }
+  } else {
+      alert('抱歉，找不到您輸入的生字資料！');
+  }
+}
+
+function parseVocabMoeData(moe, char, grade, lesson) {
+    const heteronyms = moe.heteronyms || [];
+
+    const readings = heteronyms.map(h=>{
+        const defs = h.definitions || [];
+        const defList = defs.map((d, idx) => `${idx+1}. ${d.type ? `[${d.type}] ` : ''}${d.def}`).filter(Boolean);
+        const sentList = [];
+        defs.forEach(d => {
+            if(d.example) d.example.forEach(ex => sentList.push(`例：${ex}`));
+            if(d.quote) d.quote.forEach(q => sentList.push(`引：${q}`));
+        });
+        return {
+            zhuyin: h.bopomofo || h.pinyin || '',
+            definitions: defList,
+            sentences: sentList
+        };
+    }).filter(r => r.zhuyin || r.definitions.length);
+
+    // 舊版扁平欄位（相容用），內容統一取第一個讀音，避免舊功能（例如測驗卷）讀取不到資料
+    const first = readings[0] || {definitions:[], sentences:[], zhuyin:''};
+
+    return {
+      char: moe.title || char,
+      zhuyin: readings.map(r=>r.zhuyin).filter(Boolean).join('、') || first.zhuyin,
+      readings,
+      definitions: first.definitions,
+      sentences: first.sentences,
+      radical: (moe.radical ? `部首：${moe.radical}` : '') + (moe.stroke_count ? ` (${moe.stroke_count}劃)` : ''),
+      grade, lesson, type: 'vocab'
+    };
+}
+
+function renderVocabTabs(){
+    const tabArea = document.getElementById('vocabTabs');
+    tabArea.innerHTML = batchVocabList.map((item, idx) => `
+        <button onclick="showVocabCard(${idx})" class="w-10 h-10 rounded-lg text-lg font-bold ZCOOL KuaiLe border-2 border-[color:var(--ink)] bg-white text-[color:var(--purple)] hover:bg-[color:var(--cream)] hover:scale-110 transition-transform flex items-center justify-center">
+            ${item.char}
+        </button>
+    `).join('');
+}
+
+// 讓 speak() 按鈕能安全帶入含有標點/特殊符號的例句文字，不用擔心 onclick 字串跳脫問題
+window._vocabSpeakTexts = window._vocabSpeakTexts || [];
+function registerSpeakText(text){
+    window._vocabSpeakTexts.push(text);
+    return window._vocabSpeakTexts.length - 1;
+}
+
+function vocabWordsHtml(r){
+    if(!r.aiWords || !r.aiWords.length) return '';
+    return `<div class="mt-2 flex flex-wrap gap-2">${r.aiWords.map(w =>
+        `<span class="bg-[color:var(--blue)]/10 px-2 py-1 rounded-lg text-xs"><strong class="text-[color:var(--blue)]">${(w.word||'').replace(/</g,'&lt;')}</strong>：${(w.explain||'').replace(/</g,'&lt;')}</span>`
+    ).join('')}</div>`;
+}
+
+function renderVocabReadingContent(batchIdx, rIdx, r){
+    const simpleEl = document.getElementById(`vSimple-${batchIdx}-${rIdx}`);
+    if(simpleEl) simpleEl.innerText = r.simpleDef ? r.simpleDef.replace(/</g,'&lt;') : (r.definitions && r.definitions.length ? '（無淺顯解釋，請點下方查看字典原文）' : '（無資料）');
+
+    const wordsEl = document.getElementById(`vWords-${batchIdx}-${rIdx}`);
+    if(wordsEl) wordsEl.innerHTML = vocabWordsHtml(r);
+
+    const sentEl = document.getElementById(`vAiSentence-${batchIdx}-${rIdx}`);
+    if(sentEl) sentEl.innerText = r.aiSentence ? r.aiSentence.replace(/</g,'&lt;') : '';
+}
+
+// 兩個獨立的發音按鈕，各自只唸自己旁邊那一段的內容，永遠都會出聲音、不會被任何條件擋住：
+// 「詳細字義」區塊的喇叭 → 唸淺顯解釋（沒有的話唸字典原文）
+// 「造句與範例」區塊的喇叭 → 唸 AI 造句（沒有的話唸字典原造句/單字本身）
+function cleanDictText(text){
+    if(!text) return '';
+    return text.replace(/^\d+\.\s*/, '').replace(/^\[[^\]]*\]\s*/, '').replace(/^[例引]：/, '');
+}
+
+function speakVocabDef(batchIdx, rIdx){
+    const d = batchVocabList[batchIdx];
+    if(!d) return;
+    const r = (d.readings && d.readings[rIdx]) ? d.readings[rIdx] : null;
+    let text = d.char || '';
+    if(r){
+        if(r.simpleDef) text = r.simpleDef;
+        else if(r.definitions && r.definitions[0]) text = cleanDictText(r.definitions[0]);
+    }
+    speak(text);
+}
+
+function speakVocabSentence(batchIdx, rIdx){
+    const d = batchVocabList[batchIdx];
+    if(!d) return;
+    const r = (d.readings && d.readings[rIdx]) ? d.readings[rIdx] : null;
+    let text = d.char || '';
+    if(r){
+        if(r.aiSentence) text = r.aiSentence;
+        else if(r.sentences && r.sentences[0]) text = cleanDictText(r.sentences[0]);
+    }
+    speak(text);
+}
+
+// 手動重新產生某個讀音的 AI 教材（例如剛好額度撞在一起失敗時，不用重查整個字就能單獨重試）
+async function retryVocabReading(batchIdx, rIdx){
+    const d = batchVocabList[batchIdx];
+    if(!d || !d.readings || !d.readings[rIdx]) return;
+    d.readings[rIdx].simpleDef = '';
+    d.readings[rIdx].aiWords = [];
+    d.readings[rIdx].aiSentence = '';
+    await generateOneVocabReading(d, batchIdx, rIdx);
+}
+
+function showVocabCard(index) {
+    const d = batchVocabList[index];
+    currentVocabData = d;
+    currentVocabIndex = index;
+    document.getElementById('vChar').innerText = d.char;
+    document.getElementById('vMeta').innerText = formatGradeLesson(d.grade, d.lesson);
+    document.getElementById('vZhuyin').innerText = d.zhuyin;
+    document.getElementById('vRadical').innerText = d.radical;
+
+    const defContainer = document.getElementById('vDefinitions');
+    const sentContainer = document.getElementById('vSentences');
+
+    const readings = (d.readings && d.readings.length) ? d.readings : [{zhuyin: d.zhuyin, definitions: d.definitions||[], sentences: d.sentences||[]}];
+    const multiReading = readings.length > 1;
+
+    const isBatchQuery = batchVocabList.length > 1;
+
+    defContainer.innerHTML = readings.map((r, rIdx) => {
+        const readingLabel = multiReading
+            ? `<div class="flex items-center gap-2 mb-1">
+                 <span class="text-xs font-bold text-[color:var(--purple)]">讀音：${r.zhuyin || '（無）'}</span>
+                 <button onclick="speakVocabDef(${index}, ${rIdx})" class="no-print text-lg hover:scale-110 transition-transform">🔈</button>
+                 <span class="bg-[color:var(--coral)]/20 text-[color:var(--coral)] text-xs font-bold px-2 py-0.5 rounded-full">⚠️ 破音字</span>
+               </div>`
+            : `<button onclick="speakVocabDef(${index}, ${rIdx})" class="no-print text-sm text-[color:var(--purple)] font-bold mb-1 inline-flex items-center gap-1">🔈 唸一遍</button>`;
+
+        const simpleId = `vSimple-${index}-${rIdx}`;
+        const simpleBlock = r.simpleDef
+            ? `<div id="${simpleId}" class="text-sm bg-white p-2 rounded-lg mb-1 text-[color:var(--ink)]">${r.simpleDef.replace(/</g,'&lt;')}</div>`
+            : `<div id="${simpleId}" class="hidden"></div>`;
+
+        const wordsBlock = `<div id="vWords-${index}-${rIdx}">${vocabWordsHtml(r)}</div>`;
+
+        const defsList = (r.definitions && r.definitions.length) ? r.definitions.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg mt-1">${item}</p>`).join('') : '<p class="text-xs text-[color:var(--ink)]/50">（無資料）</p>';
+        const originalBlock = isBatchQuery
+            ? `<details class="text-xs text-[color:var(--ink)]/50 mt-2"><summary class="cursor-pointer">📖 查看字典完整解釋</summary>${defsList}</details>`
+            : `<div class="text-xs text-[color:var(--ink)]/70 mt-2 space-y-1">${defsList}</div>`;
+
+        return `<div class="mb-4 pb-3 ${rIdx < readings.length-1 ? 'border-b border-dashed border-[color:var(--ink)]/20' : ''}">${readingLabel}${simpleBlock}${wordsBlock}${originalBlock}</div>`;
+    }).join('');
+
+    sentContainer.innerHTML = readings.map((r, rIdx) => {
+        const aiSentId = `vAiSentence-${index}-${rIdx}`;
+        const aiBlock = r.aiSentence
+            ? `<div id="${aiSentId}" class="p-2 bg-[color:var(--blue)]/10 rounded-lg text-[color:var(--ink)] mb-1">${r.aiSentence.replace(/</g,'&lt;')}</div>`
+            : `<div id="${aiSentId}" class="hidden"></div>`;
+
+        const sentsList = (r.sentences && r.sentences.length) ? r.sentences.map(item => `<p class="p-2 bg-[color:var(--cream)] rounded-lg mt-1">${item}</p>`).join('') : '';
+        const originalBlock = !sentsList ? '' : (isBatchQuery
+            ? `<details class="text-xs text-[color:var(--ink)]/50"><summary class="cursor-pointer">📖 查看字典原始造句/引用</summary>${sentsList}</details>`
+            : `<div class="text-xs text-[color:var(--ink)]/70 space-y-1">${sentsList}</div>`);
+
+        if(!r.aiSentence && !sentsList) return multiReading ? `<div class="mb-3"><div class="text-xs font-bold text-[color:var(--purple)] mb-1">讀音：${r.zhuyin || '（無）'}</div><p class="text-sm text-[color:var(--ink)]/60">（無造句範例）</p></div>` : '<p class="text-sm text-[color:var(--ink)]/60">（無造句範例）</p>';
+
+        const label = multiReading ? `<div class="text-xs font-bold text-[color:var(--purple)] mb-1">讀音：${r.zhuyin || '（無）'}</div>` : '';
+        return `<div class="mb-3">${label}${aiBlock}${originalBlock}</div>`;
+    }).join('');
+
+    document.getElementById('vocabResult').classList.remove('hidden');
+    autoSimplifyVocab(d, index);
+}
+
+async function generateSimpleVocabDef(char, zhuyin, defsText){
+    const key = getStoredApiKeyOnly();
+    if(!key) throw new Error('NO_KEY');
+    const prompt = `你是一位親切的國小老師，正在為國小低中年級學生準備生字教材。這個字是「${char}」，這個讀音是「${zhuyin || '無'}」，字典原始解釋是：「${defsText}」。
+
+請只回傳一個 JSON 物件，不要有任何其他文字、說明或 Markdown 符號，格式如下：
+{"meaning":"用口語化中文簡單解釋這個字在這個讀音下的意思，25字以內","words":[{"word":"語詞1","explain":"這個語詞的簡單解釋，15字以內"},{"word":"語詞2","explain":"..."}],"sentence":"包含「${char}」這個字、符合這個讀音意思的簡單例句，適合國小生程度"}
+
+words 請提供2個國小生常見、會用到的詞語（必須包含「${char}」這個字，且要符合這個讀音的意思）。`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`;
+    const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: 'application/json' }
+    };
+    const data = await fetchWithRetry(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }, 3);
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if(!text) throw new Error('AI 沒有回傳解釋內容');
+    let parsed;
+    try{ parsed = JSON.parse(text); }
+    catch(e){ throw new Error('AI 回傳格式錯誤'); }
+    if(!parsed.meaning) throw new Error('AI 沒有回傳解釋內容');
+    return parsed;
+}
+
+// 產生（或重新產生）單一讀音的 AI 教材，成功/失敗都會直接更新畫面，失敗時附上「🔄 重新產生」按鈕
+async function generateOneVocabReading(d, batchIdx, rIdx){
+    const readings = d.readings;
+    if(!readings || !readings[rIdx]) return;
+    const r = readings[rIdx];
+    if(!r.definitions || !r.definitions.length) return;
+
+    const el = document.getElementById(`vSimple-${batchIdx}-${rIdx}`);
+    if(el && currentVocabData === d) el.innerText = '🤔 AI 老師正在準備教材...';
+
+    try{
+        const defsText = r.definitions.join('；').replace(/^\d+\.\s*/, '');
+        const result = await generateSimpleVocabDef(d.char, r.zhuyin, defsText);
+        r.simpleDef = result.meaning;
+        r.aiWords = result.words || [];
+        r.aiSentence = result.sentence || '';
+
+        if(currentVocabData === d){
+            renderVocabReadingContent(batchIdx, rIdx, r);
+        }
+
+        const libIdx = savedLibrary.findIndex(i => i.char === d.char && i.type === 'vocab');
+        if(libIdx >= 0 && savedLibrary[libIdx].readings && savedLibrary[libIdx].readings[rIdx]){
+            savedLibrary[libIdx].readings[rIdx].simpleDef = result.meaning;
+            savedLibrary[libIdx].readings[rIdx].aiWords = result.words || [];
+            savedLibrary[libIdx].readings[rIdx].aiSentence = result.sentence || '';
+            localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+        }
+    }catch(e){
+        console.log('生字教材產生失敗：', e);
+        const msg = (e && e.message) ? e.message : String(e);
+        if(el && currentVocabData === d){
+            el.innerHTML = `<span class="text-[color:var(--coral)] text-xs">產生失敗：${msg.replace(/</g,'&lt;')}</span>
+                <button onclick="retryVocabReading(${batchIdx}, ${rIdx})" class="no-print block mt-1 text-xs text-[color:var(--purple)] font-bold underline">🔄 重新產生</button>`;
+        }
+    }
+}
+
+// 查生字時，如果已經設定金鑰，自動把每個讀音的解釋改寫成淺顯版本，並整理出語詞與造句（有快取，同一個字不會一直重複問 AI）
+// 每個讀音之間間隔一點時間再問 AI，降低同時連續呼叫撞到額度限制的機率
+async function autoSimplifyVocab(d, batchIdx){
+    const key = getStoredApiKeyOnly();
+    if(!key) return; // 沒設定金鑰就單純顯示字典原文，不多顯示提示
+
+    const readings = d.readings && d.readings.length ? d.readings : null;
+    if(!readings) return;
+
+    for(let rIdx = 0; rIdx < readings.length; rIdx++){
+        if(readings[rIdx].simpleDef) continue; // 已經有快取
+        await generateOneVocabReading(d, batchIdx, rIdx);
+        if(rIdx < readings.length - 1) await new Promise(res => setTimeout(res, 500));
+    }
+}
+
+function saveAllBatchToLibrary() {
+    if(batchVocabList.length === 0) return;
+    let addedCount = 0;
+    batchVocabList.forEach(item => {
+        if(!savedLibrary.some(i => i.char === item.char && i.type === 'vocab')) {
+            savedLibrary.push(item);
+            addedCount++;
+        }
+    });
+    localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+    alert(`✅ 已成功將整課共 ${addedCount} 個生字收入收藏庫！`);
+}
+
+function saveVocabToLibrary(){
+  if(!currentVocabData) return;
+  if(!savedLibrary.some(i => i.char === currentVocabData.char && i.type === 'vocab')) {
+      savedLibrary.push(currentVocabData);
+      localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+      alert('🌟 已收藏生字！');
+  } else { alert('這個生字已經在收藏庫裡囉！'); }
+}
+function saveIdiomToLibrary(){
+  if(!currentIdiomData) return;
+  upsertIdiomToLibrary(currentIdiomData);
+  alert('🌟 已收藏在百寶箱囉！（其實查詢的當下就已經自動收藏了，這個按鈕主要是幫您確認一下 😊）');
+}
+
+function renderQuizSelection() {
+    const container = document.getElementById('quizSelectionArea');
+    const fg = document.getElementById('quizFilterGrade').value;
+    const fl = document.getElementById('quizFilterLesson').value;
+    
+    let idioms = savedLibrary.filter(i => i.type === 'idiom');
+    if(fg) idioms = idioms.filter(i => i.grade === fg);
+    if(fl) idioms = idioms.filter(i => i.lesson === fl);
+
+    if (idioms.length === 0) {
+        container.innerHTML = '<div class="col-span-full text-center text-sm p-4 text-[color:var(--ink)]/60">目前此條件下沒有收藏的成語。請先去查詢並收藏喔！</div>';
+        return;
+    }
+
+    container.innerHTML = idioms.map((item, idx) => `
+        <label class="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border-2 border-[color:var(--ink)]/20 cursor-pointer hover:bg-[color:var(--cream)]">
+            <input type="checkbox" value="${item.idiom}" class="quiz-checkbox w-4 h-4 accent-[color:var(--coral)]">
+            <span class="font-bold text-[color:var(--ink)]">${item.idiom}</span>
+        </label>
+    `).join('');
+}
+
+// 把字典解釋裡常見的文言文引用（例如《論語．學而》：「...」）過濾掉，只保留白話說明部分
+function stripCitations(text){
+    if(!text) return '';
+    let cleaned = text.replace(/《[^》]*》[：:]?「[^」]*」[。.]?/g, '');
+    cleaned = cleaned.replace(/[\u4e00-\u9fff]+[．・][\u4e00-\u9fff]+[：:]「[^」]*」[。.]?/g, ''); // 沒有書名號但格式類似的引用
+    return cleaned.trim();
+}
+
+function getKidFriendlyMeaning(item){
+    if(item.meaningSimple) return item.meaningSimple;
+    const cleaned = stripCitations(item.meaning);
+    if(cleaned && cleaned.length >= 4) return cleaned;
+    return '（這句成語還沒有淺顯解釋，建議先到「成語圖說」設定金鑰產生喔）';
+}
+
+function generateQuiz() {
+    const checkboxes = document.querySelectorAll('.quiz-checkbox:checked');
+    if(checkboxes.length === 0) { alert("請至少勾選一個成語來出題喔！"); return; }
+    
+    const selectedIdioms = Array.from(checkboxes).map(cb => cb.value);
+    let quizData = [];
+    selectedIdioms.forEach(idmStr => {
+        let data = savedLibrary.find(i => i.idiom === idmStr);
+        if(data) quizData.push(data);
+    });
+
+    quizData.sort(() => Math.random() - 0.5);
+
+    const defList = document.getElementById('quizDefinitions');
+    const qList = document.getElementById('quizQuestions');
+    const ansList = document.getElementById('quizAnswers');
+    defList.innerHTML = '';
+    qList.innerHTML = '';
+    ansList.innerHTML = '';
+    document.getElementById('quizAnswerSection').classList.add('hidden');
+
+    quizData.forEach((item, idx) => {
+        const num = idx + 1;
+
+        // 📖 成語解釋：優先用淺顯解釋（AI 改寫過的），沒有的話也會強制濾掉文言文引用，絕不讓文言文出現在學習單上
+        const kidMeaning = getKidFriendlyMeaning(item);
+        defList.innerHTML += `<li>${num}、【${item.idiom}】：${kidMeaning}</li>`;
+
+        // ✍️ 例句填空：只用「AI 造句」（已確認是白話文）；沒有的話就用淺顯解釋直接出「這是哪個成語」的題型，
+        // 絕對不用字典原始例句（常常是文言文引用，小朋友看不懂）
+        const blank = '＿＿＿＿';
+        let questionText;
+        if(item.sentenceIsAI && item.sentence){
+            questionText = item.sentence.replace(new RegExp(item.idiom, 'g'), blank);
+            if(questionText === item.sentence) questionText = item.sentence + '這句話最適合填入的成語是：' + blank;
+        } else {
+            questionText = kidMeaning + '——這是哪個成語呢？' + blank;
+        }
+        qList.innerHTML += `<li>${num}、${questionText}</li>`;
+
+        ansList.innerHTML += `<li>${num}、${item.idiom}</li>`;
+    });
+
+    document.getElementById('printQuizArea').classList.remove('hidden');
+    document.getElementById('printQuizArea').scrollIntoView({ behavior: 'smooth' });
+}
+
+function toggleQuizAnswers(){
+    document.getElementById('quizAnswerSection').classList.toggle('hidden');
+}
+
+function printQuiz(scope) {
+    scope = scope || 'all';
+    document.body.classList.add('print-mode-quiz');
+    if(scope === 'definitions') document.body.classList.add('print-scope-definitions');
+    if(scope === 'questions') document.body.classList.add('print-scope-questions');
+
+    function cleanup(){
+        document.body.classList.remove('print-mode-quiz', 'print-scope-definitions', 'print-scope-questions');
+        window.removeEventListener('afterprint', cleanup);
+    }
+    window.addEventListener('afterprint', cleanup);
+
+    // 給瀏覽器一點時間先套用上面的 class／CSS 變化，再觸發列印，
+    // 否則 iOS Safari 有時會抓到 class 還沒生效前的舊畫面，導致篩選失效
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            window.print();
+            // window.print() 在 iOS 上不會等列印視窗關閉才往下執行，
+            // 所以不能列印一觸發就馬上清除 class（會清得太早，導致篩選失效變成全部都印）。
+            // 優先靠 afterprint 事件清除；如果手機不支援這個事件，5 秒後還是會保險清除一次。
+            setTimeout(cleanup, 5000);
+        });
+    });
+}
+
+function lessonLabel(grade, i){ const c = (lessonNames[grade]||[])[i]; return c ? `第${i+1}課 ${c}` : `第${i+1}課`; }
+function buildLessonOptions(grade){ return LESSONS.map((l,i)=>`<option value="${l}" ${i===0?'selected':''}>${lessonLabel(grade,i)}</option>`).join(''); }
+function refreshLessonDropdown(...ids){
+    const grade = document.getElementById(ids[0]).value;
+    document.getElementById(ids[1]).innerHTML = buildLessonOptions(grade);
+    toggleLessonVisibility(ids[0], ids[1]);
+}
+function toggleLessonVisibility(gradeId, lessonId){
+    const grade = document.getElementById(gradeId).value;
+    const lessonEl = document.getElementById(lessonId);
+    if(!lessonEl) return;
+    if(grade === '補充' || grade === '尚未分類'){
+        lessonEl.style.display = 'none';
+    } else {
+        lessonEl.style.display = '';
+    }
+}
+
+function toggleLessonSetup(){
+  const body = document.getElementById('lessonSetupBody');
+  const arrow = document.getElementById('lessonSetupArrow');
+  const willShow = body.classList.contains('hidden');
+  body.classList.toggle('hidden');
+  arrow.innerText = willShow ? '▲' : '▼';
+  if(willShow) loadLessonSetupForm();
+}
+function loadLessonSetupForm(){
+  const grade = document.getElementById('lessonSetupGrade').value;
+  const existing = lessonNames[grade] || [];
+  const box = document.getElementById('lessonNameInputs');
+  box.innerHTML = LESSONS.map((l,i)=>`
+    <div>
+      <label class="text-xs font-bold block mb-1 text-[color:var(--ink)]">${l}</label>
+      <input class="lessonNameInput w-full px-2 py-1.5 crayon-border bg-white text-sm" data-idx="${i}" value="${existing[i]||''}" placeholder="課名(選填)">
+    </div>
+  `).join('');
+}
+function saveLessonNames(){
+  const grade = document.getElementById('lessonSetupGrade').value;
+  const inputs = document.querySelectorAll('.lessonNameInput');
+  const names = [];
+  inputs.forEach(inp=>{ names[parseInt(inp.dataset.idx)] = inp.value.trim(); });
+  lessonNames[grade] = names;
+  localStorage.setItem('idiom_vocab_lessonNames_v1', JSON.stringify(lessonNames));
+  alert(`✅ ${grade}的課名已成功儲存！`);
+  ['idiomGrade','vocabGrade', 'quizFilterGrade'].forEach(id=>{
+      try {
+        if(document.getElementById(id).value===grade){
+          const target = id.replace('Grade', 'Lesson');
+          refreshLessonDropdown(id, target);
+        }
+      }catch(e){}
+  });
+}
+
+function renderLibrary(){
+  const containerIdiom = document.getElementById('libraryContainerIdiom');
+  const containerVocab = document.getElementById('libraryContainerVocab');
+  const containerReview = document.getElementById('libraryContainerReview');
+  const reviewSection = document.getElementById('reviewListSection');
+  const fg = document.getElementById('filterGrade').value;
+  const fl = document.getElementById('filterLesson').value;
+  containerIdiom.innerHTML = '';
+  containerVocab.innerHTML = '';
+  containerReview.innerHTML = '';
+
+  let base = savedLibrary;
+  if(fg) base = base.filter(i=>i.grade===fg);
+  if(fl) base = base.filter(i=>i.lesson===fl);
+
+  const idiomList = base.filter(i=>i.type==='idiom');
+  const vocabList = base.filter(i=>i.type==='vocab');
+  const reviewList = idiomList.filter(i=>i.needReview);
+
+  if(reviewList.length === 0){
+    reviewSection.classList.add('hidden');
+  } else {
+    reviewSection.classList.remove('hidden');
+    renderLibrarySection(containerReview, reviewList, 'idiom');
+    containerReview.classList.toggle('hidden', !window._reviewListExpanded);
+    document.getElementById('reviewListArrow').innerText = window._reviewListExpanded ? '▲' : '▼';
+  }
+
+  renderLibrarySection(containerIdiom, idiomList, 'idiom');
+  containerIdiom.classList.toggle('hidden', !window._idiomBoxExpanded);
+  document.getElementById('idiomBoxArrow').innerText = window._idiomBoxExpanded ? '▲' : '▼';
+
+  renderLibrarySection(containerVocab, vocabList, 'vocab');
+  containerVocab.classList.toggle('hidden', !window._vocabBoxExpanded);
+  document.getElementById('vocabBoxArrow').innerText = window._vocabBoxExpanded ? '▲' : '▼';
+}
+
+function renderLibrarySection(container, items, type){
+  if(items.length===0){
+    container.innerHTML = `<p class="text-sm text-center py-8 text-[color:var(--ink)]/50 bg-white crayon-border">${type==='idiom' ? '成語百寶箱🪎還是空的，快去查一個成語收藏吧！' : '生字寶盒還是空的，快去查生字收藏吧！'}</p>`;
+    return;
+  }
+
+  items.forEach((item)=>{
+    const trueIdx = savedLibrary.indexOf(item); // 用真正在 savedLibrary 裡的位置，避免篩選後索引對不上刪錯/勾錯項目
+
+    const cardWrapper = document.createElement('div');
+    cardWrapper.className = "library-card-item crayon-border bg-white p-4 flex flex-col gap-3 transition-all" + (item.needReview ? " ring-4 ring-[color:var(--yellow)]" : "");
+
+    const mainRow = document.createElement('div');
+    mainRow.className = "flex justify-between items-center cursor-pointer hover:opacity-80";
+
+    if(item.type==='idiom'){
+      const userImg = userLibrary[item.idiom] ? userLibrary[item.idiom].singleImage : null;
+      const imgToUse = userImg || item.singleImage;
+
+      mainRow.innerHTML = `<div class="flex gap-3 items-center flex-1" onclick="toggleLibraryDetail(${trueIdx})">
+        ${imgToUse ? `<img src="${imgToUse}" class="w-16 h-16 object-cover rounded-xl border border-[color:var(--ink)]/20 shrink-0">` : '<div class="w-16 h-16 bg-[color:var(--cream)] rounded-xl flex items-center justify-center text-2xl shrink-0 border border-[color:var(--ink)]/20">📖</div>'}
+        <div>
+          <span class="bg-[color:var(--coral)]/20 text-xs px-2 py-0.5 rounded font-bold">${formatGradeLesson(item.grade, item.lesson, " | ")}</span>
+          <h4 class="display text-xl mt-1 text-[color:var(--coral)]">${item.idiom} <span class="text-xs text-[color:var(--ink)]/50 font-normal">▼ 點擊展開解析</span></h4>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <label class="no-print ${window._reviewEditMode ? '' : 'hidden'} flex flex-col items-center gap-0.5 cursor-pointer" onclick="event.stopPropagation()" title="加入複習清單">
+          <input type="checkbox" ${item.needReview ? 'checked' : ''} onchange="toggleReviewMark(${trueIdx})" class="w-5 h-5 accent-[color:var(--coral)] cursor-pointer">
+          <span class="text-[10px] text-[color:var(--ink)]/50 font-bold">複習</span>
+        </label>
+        <button onclick="event.stopPropagation(); removeItem(${trueIdx})" class="no-print text-[color:var(--coral)] font-bold text-xl px-2 py-1 hover:scale-125 transition-transform">✕</button>
+      </div>`;
+    } else {
+      mainRow.innerHTML = `<div class="flex gap-3 items-center flex-1" onclick="toggleLibraryDetail(${trueIdx})">
+        <div class="w-16 h-16 bg-[color:var(--purple)] text-white rounded-xl flex items-center justify-center text-3xl display shrink-0 shadow-inner">${item.char}</div>
+        <div>
+          <span class="bg-[color:var(--green)]/20 text-xs px-2 py-0.5 rounded font-bold">${formatGradeLesson(item.grade, item.lesson, " | ")}</span>
+          <h4 class="display text-xl mt-1 text-[color:var(--purple)]">${item.char} <span class="text-sm ml-1">${item.zhuyin||''}</span> <span class="text-xs text-[color:var(--ink)]/50 font-normal">▼ 點擊展開解析</span></h4>
+        </div>
+      </div>
+      <button onclick="event.stopPropagation(); removeItem(${trueIdx})" class="no-print text-[color:var(--coral)] font-bold text-xl px-3 py-1 hover:scale-125 transition-transform">✕</button>`;
+    }
+
+    const detailBox = document.createElement('div');
+    detailBox.id = `lib-detail-${trueIdx}`;
+    detailBox.className = "lib-detail-box hidden pt-3 border-t-2 border-dashed border-[color:var(--ink)]/20 text-sm space-y-2";
+
+    if(item.type === 'idiom') {
+        detailBox.innerHTML = `
+            <p><strong>注音：</strong>${item.zhuyin || '（無）'}</p>
+            <p><strong>意思：</strong>${item.meaningSimple || item.meaning || '（無）'}</p>
+            ${item.meaningSimple ? `<p class="text-xs text-[color:var(--ink)]/50 italic">📖 原辭典解釋：${item.meaning || '（無）'}</p>` : ''}
+            <p><strong>造句：</strong>${item.sentence || '（無）'}</p>
+            <div class="flex gap-2 mt-2">
+                <span class="bg-[color:var(--green)]/20 px-2 py-1 rounded">近義詞：${(item.synonyms||[]).join('、') || '無'}</span>
+                <span class="bg-[color:var(--blue)]/20 px-2 py-1 rounded">反義詞：${(item.antonyms||[]).join('、') || '無'}</span>
+            </div>
+        `;
+    } else {
+        const readings = (item.readings && item.readings.length) ? item.readings : [{zhuyin:item.zhuyin, definitions:item.definitions||[], sentences:item.sentences||[]}];
+        const multiReading = readings.length > 1;
+        const readingsHtml = readings.map(r=>{
+            const defs = (r.definitions || []).join('<br>') || '（無詳細字義）';
+            const sents = (r.sentences || []).join('<br>') || '（無造句範例）';
+            const speakText = r.simpleDef || cleanDictText((r.definitions||[])[0]) || item.char;
+            const speakUid = registerSpeakText(speakText);
+            const label = multiReading
+                ? `<p class="text-xs font-bold text-[color:var(--purple)] mt-2 flex items-center gap-2">讀音：${r.zhuyin||'（無）'}<button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-base hover:scale-110 transition-transform">🔈</button></p>`
+                : `<p class="mt-2"><button onclick="speak(window._vocabSpeakTexts[${speakUid}])" class="no-print text-xs text-[color:var(--purple)] font-bold inline-flex items-center gap-1">🔈 唸一遍</button></p>`;
+            const simpleP = r.simpleDef ? `<p><strong>淺顯解釋：</strong>${r.simpleDef}</p>` : '';
+            const wordsP = (r.aiWords && r.aiWords.length) ? `<p><strong>語詞：</strong>${r.aiWords.map(w=>`${w.word}（${w.explain}）`).join('、')}</p>` : '';
+            const aiSentP = r.aiSentence ? `<p><strong>造句：</strong>${r.aiSentence}</p>` : '';
+            return `${label}${simpleP}${wordsP}${aiSentP}<p class="text-xs text-[color:var(--ink)]/50"><strong>字典原文：</strong>${defs}</p><p class="text-xs text-[color:var(--ink)]/50"><strong>字典原造句：</strong>${sents}</p>`;
+        }).join('');
+        detailBox.innerHTML = `
+            <p><strong>部首/筆畫：</strong>${item.radical || '（無）'}</p>
+            ${readingsHtml}
+        `;
+    }
+
+    cardWrapper.appendChild(mainRow);
+    cardWrapper.appendChild(detailBox);
+    container.appendChild(cardWrapper);
+  });
+}
+
+function toggleReviewMark(trueIdx){
+    if(!savedLibrary[trueIdx]) return;
+    savedLibrary[trueIdx].needReview = !savedLibrary[trueIdx].needReview;
+    localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+    renderLibrary();
+}
+
+// 複習勾選框預設隱藏，避免版面雜亂；點「✏️ 編輯複習清單」才會顯示出來讓您打勾
+window._reviewEditMode = false;
+function toggleReviewEditMode(){
+    window._reviewEditMode = !window._reviewEditMode;
+    renderLibrary();
+}
+
+// 📌 複習清單內容預設收合，點標題旁的箭頭才會展開
+window._reviewListExpanded = false;
+function toggleReviewListCollapse(){
+    window._reviewListExpanded = !window._reviewListExpanded;
+    renderLibrary();
+}
+
+// 🪎 成語百寶箱／🔤 生字寶盒內容預設收合，避免項目一多就要一直往下滑
+window._idiomBoxExpanded = false;
+function toggleIdiomBoxCollapse(){
+    window._idiomBoxExpanded = !window._idiomBoxExpanded;
+    renderLibrary();
+}
+window._vocabBoxExpanded = false;
+function toggleVocabBoxCollapse(){
+    window._vocabBoxExpanded = !window._vocabBoxExpanded;
+    renderLibrary();
+}
+
+function toggleLibraryDetail(idx) {
+    const box = document.getElementById(`lib-detail-${idx}`);
+    if(box) {
+        box.classList.toggle('hidden');
+    }
+}
+
+function removeItem(idx){
+  if(confirm('確定要移除這個收藏嗎？')){
+      savedLibrary.splice(idx,1);
+      localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+      renderLibrary();
+  }
+}
+
+async function exportData() {
+    try {
+        const fullIDB = await idbGetAll();
+        const exportObj = {
+            savedLibrary: savedLibrary,
+            lessonNames: lessonNames,
+            customImages: fullIDB
+        };
+        const dataStr = JSON.stringify(exportObj);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement("a");
+        a.href = url;
+        const dateStr = new Date().toISOString().slice(0,10);
+        a.download = `小樹苗辭典備份_${dateStr}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch(e) {
+        alert("匯出失敗：" + e.message);
+    }
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if(!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            if(data.savedLibrary) {
+                savedLibrary = data.savedLibrary;
+                localStorage.setItem('idiom_vocab_library_v3', JSON.stringify(savedLibrary));
+            }
+            if(data.lessonNames) {
+                lessonNames = data.lessonNames;
+                localStorage.setItem('idiom_vocab_lessonNames_v1', JSON.stringify(lessonNames));
+            }
+            if(data.customImages && Array.isArray(data.customImages)) {
+                await idbClear();
+                for(let item of data.customImages) {
+                    await idbPut(item);
+                }
+            }
+            alert("✅ 資料匯入成功！系統將為您重新載入。");
+            window.location.reload();
+        } catch(err) {
+            alert("檔案格式錯誤，無法匯入！");
+        }
+    };
+    reader.readAsText(file);
+}
+
+window.onload = async function(){
+  await loadUserLibrary();
+  loadMoeIdiomDataset(); // 背景預先載入教育部成語資料庫，之後查詢跟自動建議都會更快
+
+  ['idiomLesson','vocabLesson', 'quizFilterLesson'].forEach(id=>{
+    let gradeId = '';
+    if(id==='idiomLesson') gradeId = 'idiomGrade';
+    else if(id==='vocabLesson') gradeId = 'vocabGrade';
+    else gradeId = 'quizFilterGrade';
+    
+    try { document.getElementById(id).innerHTML = buildLessonOptions(document.getElementById(gradeId).value); } catch(e){}
+    try { toggleLessonVisibility(gradeId, id); } catch(e){}
+  });
+
+  document.getElementById('idiomGrade').addEventListener('change', ()=>refreshLessonDropdown('idiomGrade','idiomLesson'));
+  document.getElementById('vocabGrade').addEventListener('change', ()=>refreshLessonDropdown('vocabGrade','vocabLesson'));
+  document.getElementById('quizFilterGrade').addEventListener('change', ()=>refreshLessonDropdown('quizFilterGrade','quizFilterLesson'));
+
+  const gradeOptions = ['一','二','三','四','五','六'].map(g=>`<option value="${g}年級">${g}年級</option>`).join('') + '<option value="補充">補充</option><option value="尚未分類">尚未分類</option>';
+  document.getElementById('filterGrade').innerHTML += gradeOptions;
+  document.getElementById('quizFilterGrade').innerHTML += gradeOptions;
+
+  const lessonOptions = LESSONS.map(l=>`<option value="${l}">${l}</option>`).join('');
+  document.getElementById('filterLesson').innerHTML += lessonOptions;
+  document.getElementById('quizFilterLesson').innerHTML += lessonOptions;
+};
+</script>
 </body>
 </html>
