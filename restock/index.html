@@ -295,7 +295,7 @@ function App() {
       return `【🐖：${todayWeekdayLabel()}】\n` + lines.join("\n");
     }
     if (group.label === "商品庫存不足") {
-      return `叫貨\n` + lines.join("\n");
+      return `【叫貨】\n` + lines.join("\n");
     }
     const shortName = SUPPLIER_SHORT_NAME[group.label] || group.label;
     const emoji = SUPPLIER_EMOJI[group.label] || "";
