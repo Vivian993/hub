@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>我的收藏庫</title>
+<title>AI 教具箱</title>
 
 <!-- 📌 iPhone 桌面 App 圖示 -->
   <link rel="apple-touch-icon" href="custom-icon.png">
@@ -50,7 +50,7 @@
   }
   input, textarea, select { -webkit-user-select: auto; user-select: auto; }
 
-  /* ---- Header 重新排版 ---- */
+  /* ---- Header ---- */
   header{
     background:linear-gradient(135deg, var(--header-bg1), var(--header-bg2));
     padding:16px 20px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -68,7 +68,6 @@
   }
   .header-actions{ display:flex; gap:8px; align-items:center; flex:none; }
   
-  /* 按鈕設計 */
   .btn-primary, .btn-manage, .btn-secondary, .btn-danger, .btn-ghost{
     font-family:'Noto Sans TC', sans-serif; font-size:14px; font-weight:700;
     border-radius:12px; border:none; cursor:pointer; padding:8px 14px;
@@ -89,7 +88,7 @@
   .quick-nav-wrap{
     max-width:1400px; margin:14px auto 0;
     display:flex; gap:8px; overflow-x:auto; padding-bottom:4px;
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
   .quick-nav-wrap::-webkit-scrollbar { display: none; }
@@ -171,7 +170,7 @@
   }
   .card-edit-btn:hover { background: var(--hover-bg); color: var(--ink); border-color: var(--ink-soft); }
 
-  .card-title{ margin: 0; font-size: 19px; line-height: 1.4; font-weight: 800; }
+  /* ⚠️ 卡片上的純文字標題已被隱藏，只留圖片！ */
   
   .card-image-link{
     display: block; width: 100%; border-radius: 12px; overflow: hidden;
@@ -320,23 +319,23 @@
         </svg>
       </div>
       <div class="header-text">
-        <h1>我的收藏庫</h1>
+        <!-- 💡 標題修正為 AI 教具箱 -->
+        <h1>AI 教具箱</h1>
       </div>
     </div>
     <div class="header-actions">
-      <!-- 快捷按鈕區 -->
       <button class="btn-primary" id="openAddGlobal">＋ 新增收藏</button>
       <button class="btn-manage" id="openManage">⚙️ 設定</button>
     </div>
   </div>
   
-  <!-- 🎯 全新：快速跳轉導覽列 -->
+  <!-- 🎯 快速跳轉導覽列 -->
   <div class="quick-nav-wrap" id="quickNav"></div>
 
   <div class="search-wrap">
     <div class="search-box">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="searchInput" type="text" placeholder="搜尋名稱或內容...">
+      <input id="searchInput" type="text" placeholder="">
     </div>
   </div>
 </header>
@@ -360,7 +359,7 @@
     
     <div class="form-group">
       <label>工具名稱 (必填)</label>
-      <input type="text" id="f-title" placeholder="請輸入名稱">
+      <input type="text" id="f-title" placeholder="">
     </div>
     <div class="form-group">
       <label>選擇分類 (隨時可移轉)</label>
@@ -368,12 +367,12 @@
     </div>
     <div class="form-group">
       <label>工具連結網址 (必填)</label>
-      <input type="url" id="f-url" placeholder="https://...">
+      <input type="url" id="f-url" placeholder="">
     </div>
     <div class="form-group">
       <label>封面圖片 (選填)</label>
       <div style="display:flex; gap:8px;">
-        <input type="text" id="f-img" placeholder="留空將自動產生文字封面" style="flex:1;">
+        <input type="text" id="f-img" placeholder="" style="flex:1;">
         <label class="btn-secondary" style="display:inline-flex; align-items:center; cursor:pointer; margin:0; padding:0 12px; border-radius:10px; white-space:nowrap;">
           📸 上傳相片
           <input type="file" id="f-img-file" accept="image/*" style="display:none;">
@@ -382,7 +381,7 @@
     </div>
     <div class="form-group">
       <label>簡短說明 (選填)</label>
-      <textarea id="f-desc" placeholder="讓學生或自己更容易辨識..."></textarea>
+      <textarea id="f-desc" placeholder=""></textarea>
     </div>
 
     <div class="btn-row">
@@ -417,7 +416,7 @@
     <div class="cat-chip-list" id="catChips"></div>
     <div style="display:flex; gap:10px; margin-top:14px; align-items:flex-start;">
       <div style="flex:1;">
-        <input type="text" id="newCatName" placeholder="輸入新分類名稱...">
+        <input type="text" id="newCatName" placeholder="">
         <div class="color-swatch-list" id="colorPicker"></div>
       </div>
       <button class="btn-secondary" id="addCatBtn">＋ 新增</button>
@@ -452,6 +451,70 @@ function ensureHttps(url) {
   return trimmedUrl;
 }
 
+// 🚀 --- 終極升級：IndexedDB 瀏覽器專業資料庫 (突破 5MB 限制) ---
+const DB_NAME = 'AIToolboxDB';
+const STORE_NAME = 'storage';
+
+function getDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => resolve(req.result);
+    req.onupgradeneeded = (e) => {
+      e.target.result.createObjectStore(STORE_NAME);
+    };
+  });
+}
+
+async function idbSet(key, value) {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    tx.objectStore(STORE_NAME).put(value, key);
+    tx.oncomplete = () => resolve(true);
+    tx.onerror = () => reject(false);
+  });
+}
+
+async function idbGet(key) {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly');
+    const req = tx.objectStore(STORE_NAME).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+}
+
+// 新版存檔：優先使用無限制的 IndexedDB
+async function storageSet(key, value){
+  try {
+    await idbSet(key, value);
+    return true;
+  } catch(e) {
+    try { 
+      localStorage.setItem(key, value); return true; 
+    } catch(e2) {
+      alert("⚠️ 您的裝置儲存空間異常，相片可能無法保存。");
+      return false;
+    }
+  }
+}
+
+// 新版讀檔：會自動把您以前舊版的資料無縫轉移過來
+async function storageGet(key){
+  try {
+    let val = await idbGet(key);
+    if (!val) {
+      val = localStorage.getItem(key);
+      if (val) await idbSet(key, val); // 將舊版資料自動升級轉移到新資料庫
+    }
+    return val;
+  } catch(e) {
+    return localStorage.getItem(key);
+  }
+}
+
 // --- Data Setup ---
 const defaultCategories = [
   {name:"閱讀寫作", bg:"#E0F2E9", dot:"#2D6A4F"}, 
@@ -481,25 +544,6 @@ function cloneDefault(){
 }
 function getCatMeta(name){
   return categoriesData.find(c=>c.name===name) || {name, bg:"#F1F5F9", dot:"#64748B"};
-}
-
-async function storageGet(key){
-  try{ const res = await window.storage.get(key); return res ? res.value : null; }
-  catch(e){ try{ return localStorage.getItem(key); }catch(e2){ return null; } }
-}
-
-// ⚠️ 強化存檔與除錯防呆機制
-async function storageSet(key, value){
-  try{ await window.storage.set(key, value); return true; }
-  catch(e){
-    try{ 
-      localStorage.setItem(key, value); return true; 
-    }catch(e2){
-      // 如果存檔失敗 (例如QuotaExceededError 空間滿了)，跳出警告！
-      alert("⚠️ 儲存空間已滿！照片無法儲存，建議減少圖片或改填寫「圖片網址」。");
-      return false;
-    }
-  }
 }
 
 async function loadData(){
@@ -538,14 +582,12 @@ function renderQuickNav(){
       const idx = parseInt(btn.dataset.idx);
       const targetCol = boardEl.children[idx];
       if(targetCol) {
-        // 如果在搜尋模式下點擊導覽，先清空搜尋退出
         if (gridEl.classList.contains('active')) {
           document.getElementById('searchInput').value = '';
           boardEl.style.display = '';
           gridEl.classList.remove('active');
           emptyEl.style.display = 'none';
         }
-        // 平滑捲動至該分類的最上方
         window.scrollTo({top: 0, behavior: 'smooth'});
         boardEl.scrollTo({ left: targetCol.offsetLeft - 24, behavior: 'smooth' });
       }
@@ -572,9 +614,9 @@ function cardHTML(x, absoluteIndex){
         <button class="card-edit-btn" data-index="${absoluteIndex}" title="編輯或移動分類">✏️</button>
       </div>
       
-      <h3 class="card-title">${x.t}</h3>
+      <!-- ⚠️ 這裡已經徹底移除了卡片內的文字標題 (h3) -->
       
-      <!-- 🖼️ 圖片區塊：現已改為「點兩下」換圖 -->
+      <!-- 🖼️ 圖片區塊 -->
       <div class="card-image-link" data-index="${absoluteIndex}" title="點兩下快速換圖">
         ${mediaHtml}
       </div>
@@ -608,7 +650,6 @@ function renderBoard(){
     btn.addEventListener('click', () => openAddModal(btn.dataset.cat));
   });
   
-  // 連帶更新導覽列
   renderQuickNav();
 }
 
@@ -626,10 +667,9 @@ document.getElementById('searchInput').addEventListener('input', (e)=>{
   else { boardEl.style.display = ''; gridEl.classList.remove('active'); emptyEl.style.display = 'none'; }
 });
 
-// ⬆️ --- 懸浮「回到最前」邏輯 ---
+// ⬆️ --- 懸浮「回到最前」按鈕 ---
 const fabTop = document.getElementById('fabTop');
 function handleScroll() {
-  // 如果網頁往下捲動超過200，或者卡片牆往右捲動超過200，就顯示按鈕
   if (window.scrollY > 200 || boardEl.scrollLeft > 200) {
     fabTop.classList.add('show');
   } else {
@@ -645,27 +685,25 @@ fabTop.addEventListener('click', () => {
 });
 
 
-// 🚀 --- 點兩下換圖 (Double Tap) ＆ 照片極限瘦身壓縮 ---
+// 🚀 --- 點兩下換圖 (大幅壓縮畫質以節省空間) ---
 const globalImgUploader = document.getElementById('globalImageUploader');
 const mainArea = document.getElementById('mainArea');
 let lastTapTime = 0;
 let tapIndex = null;
 let currentUploadIndex = null;
 
-// 📸 強化壓縮技術：確保不會把儲存空間塞滿
 function compressImage(file, callback) {
   const reader = new FileReader();
   reader.onload = (e) => {
     const img = new Image();
     img.onload = () => {
       const cvs = document.createElement('canvas');
-      // ⚠️ 將上限從 800px 降至 500px，畫質設為 0.6，檔案大小會劇烈縮減，完全不影響預覽
-      const maxW = 500; 
-      let w = img.width, h = img.height;
+      const maxW = 600; let w = img.width, h = img.height;
       if(w > maxW) { h = Math.round(h * (maxW / w)); w = maxW; }
       cvs.width = w; cvs.height = h;
       cvs.getContext('2d').drawImage(img, 0, 0, w, h);
-      callback(cvs.toDataURL('image/jpeg', 0.6));
+      // 將壓縮品質設為 0.7，大幅減小檔案體積
+      callback(cvs.toDataURL('image/jpeg', 0.7));
     };
     img.src = e.target.result;
   };
@@ -700,7 +738,7 @@ globalImgUploader.addEventListener('change', (e) => {
   if(!file || currentUploadIndex === null) return;
   compressImage(file, async (base64) => {
     toolsData[currentUploadIndex].i = base64; 
-    await saveData(); // 如果存檔失敗會自動跳警告
+    await saveData(); 
     const term = document.getElementById('searchInput').value.trim().toLowerCase();
     if(term) renderSearch(term); else renderBoard();
     currentUploadIndex = null;
@@ -750,7 +788,7 @@ function openAddModal(preselectCat = null, editIdx = null){
 
 document.getElementById('quickDeleteBtn').addEventListener('click', async () => {
   if(editingIndex !== null) {
-    if(confirm(`確定要刪除「${toolsData[editingIndex].t}」嗎？`)){
+    if(confirm(`確定要刪除這張卡片嗎？`)){
       toolsData.splice(editingIndex, 1);
       await saveData();
       const term = document.getElementById('searchInput').value.trim().toLowerCase();
@@ -802,7 +840,6 @@ document.getElementById('saveTool').addEventListener('click', async ()=>{
   
   addOverlay.classList.remove('active');
 });
-
 
 // --- 後台系統管理 ---
 document.getElementById('openManage').addEventListener('click', ()=>{
@@ -894,7 +931,7 @@ function renderManageList(){
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const blob = new Blob([JSON.stringify({categories:categoriesData, tools:toolsData}, null, 2)], {type:'application/json'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `我的收藏庫_${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `AI教具箱備份_${new Date().toISOString().slice(0,10)}.json`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 });
 
@@ -922,9 +959,26 @@ document.getElementById('resetBtn').addEventListener('click', async ()=>{
 
 const fonts = { sans: "'Noto Sans TC', sans-serif", serif: "'Noto Serif TC', serif", rounded: "'Huninn', 'Noto Sans TC', sans-serif", kai: "'LXGW WenKai TC', 'Noto Serif TC', serif" };
 let prefs = { font:'sans', theme:'light' };
-async function loadPrefs(){ const raw = await storageGet('padlet-prefs-v2'); if(raw){ try{ prefs = JSON.parse(raw); }catch(e){} } applyPrefs(); }
-async function savePrefs(){ await storageSet('padlet-prefs-v2', JSON.stringify(prefs)); }
-function applyPrefs(){ document.body.style.fontFamily = fonts[prefs.font] || fonts.sans; document.getElementById('fontSelect').value = prefs.font; document.documentElement.setAttribute('data-theme', prefs.theme); document.getElementById('themeToggle').textContent = prefs.theme === 'dark' ? '☀️ 淺色' : '🌙 深色'; }
+
+// 升級設定儲存至 IndexedDB
+async function loadPrefs(){ 
+  try {
+    const raw = await storageGet('padlet-prefs-v2'); 
+    if(raw) prefs = JSON.parse(raw); 
+  } catch(e) {}
+  applyPrefs(); 
+}
+async function savePrefs(){ 
+  await storageSet('padlet-prefs-v2', JSON.stringify(prefs)); 
+}
+
+function applyPrefs(){ 
+  document.body.style.fontFamily = fonts[prefs.font] || fonts.sans; 
+  document.getElementById('fontSelect').value = prefs.font; 
+  document.documentElement.setAttribute('data-theme', prefs.theme); 
+  document.getElementById('themeToggle').textContent = prefs.theme === 'dark' ? '☀️ 淺色' : '🌙 深色'; 
+}
+
 document.getElementById('fontSelect').addEventListener('change', async (e)=>{ prefs.font = e.target.value; applyPrefs(); await savePrefs(); });
 document.getElementById('themeToggle').addEventListener('click', async ()=>{ prefs.theme = prefs.theme === 'dark' ? 'light' : 'dark'; applyPrefs(); await savePrefs(); });
 
