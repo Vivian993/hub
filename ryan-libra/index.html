@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>康軒五上國語隨身卡 </title>
+  <title>康軒五上國語隨身卡</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
@@ -49,8 +49,8 @@
   <header class="bg-amber-600 text-white shadow-md sticky top-0 z-50">
     <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-2">
-        <i class="fa-solid fa-shield-halved text-2xl text-yellow-300"></i>
-        <h1 class="text-lg font-extrabold tracking-wide">康軒五上 (終極無蟲版)</h1>
+        <i class="fa-solid fa-graduation-cap text-2xl text-yellow-300"></i>
+        <h1 class="text-lg font-extrabold tracking-wide">康軒五上生字句型卡</h1>
       </div>
       <div class="flex items-center gap-2">
         <!-- 音效開關按鈕 -->
@@ -571,7 +571,7 @@
 ===L11===
 駭|ㄏㄞˋ|馬部|生字「駭」的字義與造詞|造詞(驚駭)|成語(駭人聽聞)
 疤|ㄅㄚ|疒部|生字「疤」的字義與造詞|造詞(傷疤)|成語(結疤)
-痕|ㄏㄣˊ|疒部|生字「痕」的字義與造詞|造詞(痕跡)|成語(痕印)
+痕|ㄏㄣˊ|疒部|生字「痕」的字義與造詞|造詞(痕跡)|成語(不著痕跡)
 罐|ㄍㄨㄢˋ|缶部|生字「罐」的字義與造詞|造詞(罐頭)|成語(水罐)
 咚|ㄉㄨㄥ|口部|生字「咚」的字義與造詞|造詞(叮咚)|成語(咚咚)
 碰|ㄆㄥˋ|石部|生字「碰」的字義與造詞|造詞(碰撞)|成語(碰壁)
@@ -579,7 +579,7 @@
 寮|ㄌㄧㄠˊ|宀部|生字「寮」的字義與造詞|造詞(工寮)|成語(茅寮)
 營|ㄧㄥˊ|火部|生字「營」的字義與造詞|造詞(露營)|成語(步步為營)
 殺|ㄕㄚ|殳部|生字「殺」的字義與造詞|造詞(殺害)|成語(殺雞儆猴)
-崇|ㄔㄨㄥˊ|山部|生字「崇」的字義與造詞|造詞(崇高)|成語(崇拜)
+崇|ㄔㄨㄥˊ|山部|生字「崇」的字義與造詞|造詞(崇拜)|成語(崇山峻嶺)
 置|ㄓˋ|罒部|生字「置」的字義與造詞|造詞(放置)|成語(置之不理)
 奄|ㄧㄢ|大部|生字「奄」的字義與造詞|造詞(奄奄)|成語(奄奄一息)
 翼|ㄧˋ|羽部|生字「翼」的字義與造詞|造詞(翅翼)|成語(小心翼翼)
@@ -600,7 +600,7 @@
 渾|ㄏㄨㄣˊ|水部|生字「渾」的字義與造詞|造詞(渾身)|成語(渾然天成)
 擱|ㄍㄜ|手部|生字「擱」的字義與造詞|造詞(擱淺)|成語(擱置)
 礁|ㄐㄧㄠ|石部|生字「礁」的字義與造詞|造詞(暗礁)|成語(觸礁)
-筏|ㄈㄚˊ|竹部|生字「筏」的造詞與延伸|造詞(竹筏)|成語(木筏)
+筏|ㄈㄚˊ|竹部|生字「筏」的字義與造詞|造詞(竹筏)|成語(木筏)
 塌|ㄊㄚ|土部|生字「塌」的字義與造詞|造詞(倒塌)|成語(塌陷)
 捏|ㄋㄧㄝ|手部|生字「捏」的字義與造詞|造詞(捏造)|成語(拿捏)
 燒|ㄕㄠ|火部|生字「燒」的字義與造詞|造詞(燃燒)|成語(怒火中燒)
@@ -753,8 +753,8 @@
     }
 
     function init() {
-      // 確保強制更新至 v10
-      const localData = localStorage.getItem('kangxuan_g5a_v10');
+      // 確保完全無暫存干擾，更換金鑰
+      const localData = localStorage.getItem('kangxuan_g5a_final_db');
       if (localData) {
         try { words = JSON.parse(localData); } catch (e) { words = [...defaultWords]; }
       } else { words = [...defaultWords]; }
@@ -763,7 +763,7 @@
     }
 
     function saveData() {
-      localStorage.setItem('kangxuan_g5a_v10', JSON.stringify(words));
+      localStorage.setItem('kangxuan_g5a_final_db', JSON.stringify(words));
       updateCounts();
     }
 
@@ -969,7 +969,6 @@
       let distractors = [];
       
       if (currentQType === 'radical') {
-        // [終極除錯過濾器] 保證「部首選項」絕對不會重複！
         let pool = words.filter(w => w.id !== q.id && w.type === '生字' && w.info && w.info.includes('部') && w.info !== q.info);
         let uniqueSet = new Set([q.info]);
         let uniquePool = [];
@@ -980,7 +979,6 @@
           }
         }
         distractors = uniquePool.slice(0, 3);
-        // 如果獨特部首不夠，塞入備用部首防止破圖
         if (distractors.length < 3) {
             const backups = ["水部", "木部", "人部", "手部", "口部", "心部", "金部", "糸部", "艸部", "火部", "言部", "辵部"].filter(r => !uniqueSet.has(r));
             while (distractors.length < 3 && backups.length > 0) {
@@ -991,7 +989,6 @@
         }
         currentQuizCorrectText = q.info;
       } else if (currentQType === 'meaning') {
-        // 保證「解釋」不重複
         let pool = words.filter(w => w.id !== q.id && w.type === q.type && w.meaning !== q.meaning);
         if(pool.length < 3) pool = words.filter(w => w.id !== q.id && w.meaning !== q.meaning);
         let uniqueSet = new Set([q.meaning]);
@@ -1005,7 +1002,6 @@
         distractors = uniquePool.slice(0, 3);
         currentQuizCorrectText = q.meaning;
       } else { 
-        // 保證「反向單字」不重複
         let pool = words.filter(w => w.id !== q.id && w.type === q.type && w.word !== q.word);
         if(pool.length < 3) pool = words.filter(w => w.id !== q.id && w.word !== q.word);
         let uniqueSet = new Set([q.word]);
@@ -1079,14 +1075,12 @@
         btnElement.classList.remove('border-slate-200', 'hover:border-amber-400');
         btnElement.classList.add('bg-rose-50', 'border-rose-500', 'text-rose-800');
         
-        // 將正確的選項標亮為綠色
         const correctBtn = Array.from(allBtns).find(b => parseFloat(b.dataset.id) === parseFloat(correctId));
         if(correctBtn) {
             correctBtn.classList.remove('border-slate-200', 'hover:border-amber-400');
             correctBtn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800');
         }
 
-        // 精準錯誤提示 (根據題型告訴他錯在哪裡)
         let explainText = "";
         if (currentQType === 'radical') {
             explainText = `「${q.word}」的部首是：<span class="text-rose-800 ml-1 font-extrabold">${q.info}</span>`;
@@ -1125,7 +1119,6 @@
       if (wrongWords.length > 0) {
         wrongSummary.classList.remove('hidden'); addWrongBtn.classList.remove('hidden');
         
-        // 獨特錯題過濾 (精準分類)
         const uniqueWrongsMap = new Map();
         wrongWords.forEach(w => uniqueWrongsMap.set(w.wordObj.id + '_' + w.qType, w));
         
@@ -1224,7 +1217,7 @@
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(words, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `康軒五上極致除錯版備份_${new Date().toISOString().slice(0,10)}.json`);
+      downloadAnchor.setAttribute("download", `康軒五上完整版備份_${new Date().toISOString().slice(0,10)}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click(); downloadAnchor.remove();
     }
@@ -1245,9 +1238,9 @@
 
     function resetDefaultData() {
       playSound('click');
-      if (confirm('確定要將資料庫重置為最新預設的「康軒五上全12課+句型版」嗎？\n(注意：舊有的星號與新增字詞將會被重置)')) {
+      if (confirm('確定要將資料庫重置為最新預設的「康軒五上完整資料庫」嗎？\n(注意：舊有的星號與新增字詞將會被重置)')) {
         words = [...defaultWords]; currentLesson = "L1"; document.getElementById('lesson-select').value = "L1";
-        saveData(); setFilter('vocab'); closeBackupModal(); alert('已為您載入最新的1-12課完整資料庫！');
+        saveData(); setFilter('vocab'); closeBackupModal(); alert('已為您載入最新的1-12課完整清單！');
       }
     }
 
