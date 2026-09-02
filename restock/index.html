@@ -123,7 +123,8 @@ const SUPPLIERS = [
   {
     name: "商品庫存不足",
     items: [
-      "白蛋","白胡椒","米酒","二砂糖","冰糖","蝦仁","香菇","黑麻油","豬油","肉絲","白醋","味霖","花椒粒"
+      "白蛋","白胡椒","米酒","二砂糖","冰糖","蝦仁","香菇","黑麻油","豬油","肉絲","白醋","味霖","花椒粒",
+      "AO360飲料杯","PE膜","紅茶","醬油","醬油膏"
     ].map(n => ({ name: n, type: "check" }))
   },
   {
@@ -292,6 +293,9 @@ function App() {
     if (lines.length === 0) return "";
     if (group.label === "豬肉攤") {
       return `【🐖：${todayWeekdayLabel()}】\n` + lines.join("\n");
+    }
+    if (group.label === "商品庫存不足") {
+      return `叫貨\n` + lines.join("\n");
     }
     const shortName = SUPPLIER_SHORT_NAME[group.label] || group.label;
     const emoji = SUPPLIER_EMOJI[group.label] || "";
