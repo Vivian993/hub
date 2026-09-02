@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>萌芽成語寶典 - 高年級專用</title>
-    <!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
-    <link rel="apple-touch-icon" href="custom-icon.png">
-    <link rel="icon" type="image/png" href="custom-icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -157,9 +154,38 @@
                     </div>
                     <div id="customListPreview" class="flex flex-wrap gap-2 text-sm text-slate-600"></div>
                 </div>
+
+                <!-- 備份區塊 -->
+                <div class="mt-8 border-t border-slate-100 pt-6">
+                    <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2"><span>⚙️</span> 資料備份與還原</h3>
+                    <p class="text-sm text-slate-500 mb-4">如果您換手機或是想分享題庫給同學，可以使用「備份碼」。</p>
+                    
+                    <div class="flex flex-col gap-3">
+                        <button onclick="exportBackup()" class="w-full py-2 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-700 transition-colors">
+                            📋 複製備份碼 (匯出)
+                        </button>
+                        <div class="flex gap-2">
+                            <input type="text" id="importBackupInput" placeholder="在此貼上備份碼..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-400">
+                            <button onclick="importBackup()" class="px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-colors shrink-0">
+                                🔄 還原
+                            </button>
+                        </div>
+                        <div id="backupStatus" class="text-xs font-bold text-center mt-2 hidden"></div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
+
+    <!-- 備份結果彈跳視窗 -->
+    <div id="backupModal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-2xl max-w-sm w-full mx-4 text-center">
+            <h3 class="text-xl font-bold mb-4">備份碼已產生！</h3>
+            <p class="text-sm text-slate-500 mb-4">代碼已經自動複製到您的剪貼簿囉！<br>您可以去 LINE 貼上並保存起來。</p>
+            <textarea id="backupTextArea" class="w-full text-xs text-slate-400 bg-slate-50 p-2 rounded-lg mb-4 h-20" readonly></textarea>
+            <button onclick="document.getElementById('backupModal').classList.add('hidden')" class="px-6 py-2 bg-emerald-500 text-white font-bold rounded-lg w-full">知道了</button>
+        </div>
+    </div>
 
     <div id="printArea" class="hidden print-hidden bg-white text-black p-4"></div>
 
@@ -211,15 +237,10 @@
 
         // --- 自動分類器 (字數與關鍵字辨識) ---
         function autoCategorize(word, isImport = false) {
-            // 如果字數少於 4 個字 (例如語詞 2 個字)，強制進入語詞區！
             if(word.length < 4) return '語詞';
-            
-            // 4個字以上進行特徵辨識
             if(/[鼠牛虎兔龍蛇馬羊猴雞狗豬貓鳥魚狐狼蛙鶴蚌]/.test(word)) return '動物王國';
             if(/[一二三四五六七八九十百千萬]/.test(word)) return '數字樂園';
             if(/[風雨雷電雲日月星山水海春夏秋冬花草樹木]/.test(word)) return '寫景描寫';
-            
-            // 如果是匯入的且沒有特徵，放學校題庫；如果是自己查的，放其他
             return isImport ? '學校題庫' : '其他';
         }
 
@@ -238,7 +259,7 @@
             document.getElementById('emptySearch').classList.add('hidden');
             
             searchTimer = setTimeout(async ()=>{
-                let onlineRes = await fetchOnlineIdiom(kw, false); // false 代表搜尋
+                let onlineRes = await fetchOnlineIdiom(kw, false);
                 document.getElementById('loadingIndicator').classList.add('hidden');
                 if(onlineRes){
                     if(!localMatch.some(i=>i.i===onlineRes.i)) localMatch.unshift(onlineRes);
@@ -268,15 +289,12 @@
         // --- 單獨刪除功能 ---
         function deleteCustomItem(word) {
             if(!confirm(`確定要將「${word}」刪除嗎？`)) return;
-            // 移除資料
             customDB = customDB.filter(i => i.i !== word);
-            idiomDB = idiomDB.filter(i => !(i.i === word && i.isCustom)); // 確保只刪到自訂的
+            idiomDB = idiomDB.filter(i => !(i.i === word && i.isCustom));
             localStorage.setItem('sproutCustomDB', JSON.stringify(customDB));
-            
-            // 刷新畫面
             updateCustomPreview(); 
             renderCats();
-            setCat(curCat); // 重新渲染當前畫面
+            setCat(curCat);
         }
 
         function renderIdioms(list){
@@ -329,9 +347,9 @@
             let successCount = 0;
             for(let i=0; i<newWords.length; i++){
                 status.innerText = `🔄 正在抓取「${newWords[i]}」... (${i+1}/${newWords.length})`;
-                let res = await fetchOnlineIdiom(newWords[i], true); // true 代表是匯入的
+                let res = await fetchOnlineIdiom(newWords[i], true);
                 if(res){
-                    customDB.unshift(res); // 放到最前面
+                    customDB.unshift(res);
                     idiomDB.push(res); 
                     successCount++;
                 }
@@ -362,6 +380,95 @@
             localStorage.setItem('sproutCustomDB', '[]');
             updateCustomPreview(); renderCats(); setCat('全部');
         }
+
+        // --- 備份與還原功能 ---
+        function exportBackup() {
+            if(customDB.length === 0) {
+                alert("您目前還沒有自訂匯入任何資料，不需要備份喔！");
+                return;
+            }
+            
+            // 將 customDB 和 wrongList 打包編碼
+            const backupData = {
+                customDB: customDB,
+                wrongList: wrongList,
+                date: new Date().toLocaleDateString('zh-TW')
+            };
+            
+            // 轉成 JSON，編碼成 Base64 縮短長度，並加上自訂標記
+            const base64Str = btoa(encodeURIComponent(JSON.stringify(backupData)));
+            const backupCode = `🌱萌芽備份-${base64Str}`;
+            
+            const textArea = document.getElementById('backupTextArea');
+            textArea.value = backupCode;
+            
+            // 複製到剪貼簿
+            textArea.select();
+            document.execCommand('copy');
+            
+            document.getElementById('backupModal').classList.remove('hidden');
+        }
+
+        function importBackup() {
+            const inputEl = document.getElementById('importBackupInput');
+            let code = inputEl.value.trim();
+            const statusEl = document.getElementById('backupStatus');
+            
+            if(!code) {
+                alert("請先貼上備份碼喔！");
+                return;
+            }
+            
+            statusEl.classList.remove('hidden');
+            
+            if(!code.startsWith('🌱萌芽備份-')) {
+                statusEl.innerText = "❌ 備份碼格式錯誤，請確認是否有複製完整。";
+                statusEl.className = "text-xs font-bold text-center mt-2 text-rose-500 block";
+                return;
+            }
+            
+            if(!confirm("⚠️ 警告：還原備份會覆蓋您現在手機上自訂的題庫與錯題本資料，確定要繼續嗎？")) return;
+            
+            try {
+                // 解碼
+                const base64Str = code.replace('🌱萌芽備份-', '');
+                const jsonStr = decodeURIComponent(atob(base64Str));
+                const parsedData = JSON.parse(jsonStr);
+                
+                if(!parsedData.customDB || !Array.isArray(parsedData.customDB)) throw new Error('Data invalid');
+                
+                // 恢復錯題本
+                wrongList = parsedData.wrongList || [];
+                localStorage.setItem('sproutWrong', JSON.stringify(wrongList));
+                
+                // 恢復自訂資料
+                // 1. 先從總資料庫移除原本的自訂資料
+                idiomDB = idiomDB.filter(i => !i.isCustom);
+                
+                // 2. 替換 customDB
+                customDB = parsedData.customDB;
+                localStorage.setItem('sproutCustomDB', JSON.stringify(customDB));
+                
+                // 3. 把還原的資料加進總資料庫
+                idiomDB = idiomDB.concat(customDB);
+                
+                inputEl.value = '';
+                statusEl.innerText = `✅ 還原成功！來自 ${parsedData.date} 的備份資料。`;
+                statusEl.className = "text-xs font-bold text-center mt-2 text-emerald-500 block";
+                
+                // 更新畫面
+                updateCustomPreview(); 
+                renderCats(); 
+                setCat('全部');
+                
+                setTimeout(() => { statusEl.classList.add('hidden'); }, 3000);
+                
+            } catch(e) {
+                statusEl.innerText = "❌ 備份碼解析失敗，可能是複製過程中損毀了。";
+                statusEl.className = "text-xs font-bold text-center mt-2 text-rose-500 block";
+            }
+        }
+
 
         // --- 遊戲邏輯 ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
