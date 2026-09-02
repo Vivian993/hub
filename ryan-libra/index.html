@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>康軒五上國語隨身卡 (最新版)</title>
+  <title>康軒五上國語隨身卡</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
@@ -50,7 +50,7 @@
     <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-2">
         <i class="fa-solid fa-graduation-cap text-2xl text-yellow-300"></i>
-        <h1 class="text-lg font-extrabold tracking-wide">康軒五上生字句型卡 <span class="text-sm text-yellow-200">(最新版)</span></h1>
+        <h1 class="text-lg font-extrabold tracking-wide">康軒五上國語隨身卡</h1>
       </div>
       <div class="flex items-center gap-2">
         <!-- 音效開關按鈕 -->
@@ -105,7 +105,7 @@
       </div>
 
       <p id="mode-tip" class="text-xs text-amber-800/80 text-center font-bold mb-2">
-        💡 切換選項專心背！翻面會「自動朗讀」解釋與例句喔！
+        💡 點擊右上角 <i class="fa-solid fa-pen-to-square"></i> 可直接修改卡片喔！
       </p>
     </div>
 
@@ -114,13 +114,20 @@
       <div id="card-container" class="card-flip w-full min-h-[380px] cursor-pointer" onclick="flipCard()">
         <div id="card-inner" class="card-inner relative w-full h-full min-h-[380px] bg-white rounded-3xl shadow-xl border-4 border-amber-200 flex flex-col justify-between p-6">
           
-          <div class="card-front absolute inset-0 p-6 flex flex-col justify-between bg-white rounded-3xl">
-            <div class="flex justify-between items-center">
-              <span id="card-type-tag" class="text-xs font-black text-amber-700 bg-amber-100 px-3 py-1 rounded-full">生字學習</span>
-              <span id="card-index-tag" class="text-xs font-bold text-slate-400">1 / 20</span>
-              <button onclick="toggleStar(event)" class="text-3xl text-slate-300 hover:text-amber-400 transition-colors p-1" title="加入不熟記號">
-                <i id="star-icon" class="fa-solid fa-star"></i>
-              </button>
+          <div class="card-front absolute inset-0 p-5 flex flex-col justify-between bg-white rounded-3xl">
+            <div class="flex justify-between items-start">
+              <div>
+                <span id="card-type-tag" class="text-xs font-black text-amber-700 bg-amber-100 px-3 py-1 rounded-full">生字學習</span>
+                <span id="card-index-tag" class="text-xs font-bold text-slate-400 ml-2">1 / 20</span>
+              </div>
+              <!-- ✅ 編輯、刪除、星號 按鈕組 -->
+              <div class="flex items-center gap-2 sm:gap-3 bg-slate-50 p-1.5 rounded-xl border border-slate-100 shadow-sm">
+                <button onclick="editCurrentCard(event)" class="text-lg sm:text-xl text-slate-400 hover:text-emerald-500 transition-colors px-1" title="編輯卡片"><i class="fa-solid fa-pen-to-square"></i></button>
+                <button onclick="deleteCurrentCard(event)" class="text-lg sm:text-xl text-slate-400 hover:text-rose-500 transition-colors px-1" title="刪除卡片"><i class="fa-solid fa-trash-can"></i></button>
+                <button onclick="toggleStar(event)" class="text-xl sm:text-2xl text-slate-300 hover:text-amber-400 transition-colors px-1" title="標記星號">
+                  <i id="star-icon" class="fa-solid fa-star"></i>
+                </button>
+              </div>
             </div>
             
             <div class="my-auto text-center py-4 relative">
@@ -139,17 +146,22 @@
           </div>
 
           <div class="card-back absolute inset-0 p-5 flex flex-col justify-between bg-amber-900 text-white rounded-3xl">
-            <div class="flex justify-between items-center border-b border-amber-700 pb-2">
-              <div class="flex items-center gap-3 overflow-hidden">
+            <div class="flex justify-between items-start border-b border-amber-700 pb-2">
+              <div class="flex items-center gap-2 overflow-hidden">
                 <h3 id="card-word-back" class="text-xl sm:text-2xl font-black text-yellow-300 truncate"></h3>
-                <button onclick="playPronunciation(event, 'back')" class="text-amber-900 bg-yellow-400 hover:bg-yellow-300 rounded-full w-8 h-8 flex-shrink-0 flex items-center justify-center transition-colors shadow-sm active:scale-95" title="點擊重新朗讀全部">
+                <button onclick="playPronunciation(event, 'back')" class="text-amber-900 bg-yellow-400 hover:bg-yellow-300 rounded-full w-8 h-8 flex-shrink-0 flex items-center justify-center transition-colors shadow-sm active:scale-95" title="重新朗讀全部">
                   <i class="fa-solid fa-volume-high text-sm"></i>
                 </button>
                 <span id="card-pinyin-back" class="text-xs sm:text-sm font-bold text-amber-200 ml-1 truncate"></span>
               </div>
-              <button onclick="toggleStar(event)" class="text-3xl text-amber-300/60 hover:text-yellow-300 transition-colors p-1 flex-shrink-0">
-                <i id="star-icon-back" class="fa-solid fa-star"></i>
-              </button>
+              <!-- ✅ 編輯、刪除、星號 按鈕組 (背面) -->
+              <div class="flex items-center gap-2 sm:gap-3 bg-amber-950/40 p-1.5 rounded-xl border border-amber-800/50">
+                <button onclick="editCurrentCard(event)" class="text-lg sm:text-xl text-amber-300/60 hover:text-emerald-400 transition-colors px-1"><i class="fa-solid fa-pen-to-square"></i></button>
+                <button onclick="deleteCurrentCard(event)" class="text-lg sm:text-xl text-amber-300/60 hover:text-rose-400 transition-colors px-1"><i class="fa-solid fa-trash-can"></i></button>
+                <button onclick="toggleStar(event)" class="text-xl sm:text-2xl text-amber-300/60 hover:text-yellow-300 transition-colors px-1 flex-shrink-0">
+                  <i id="star-icon-back" class="fa-solid fa-star"></i>
+                </button>
+              </div>
             </div>
 
             <div class="my-auto overflow-y-auto max-h-[260px] py-3 pr-1 text-left">
@@ -235,7 +247,7 @@
   <div id="quiz-setup-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
     <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-black text-slate-800 text-lg">設定測驗範圍與題數</h3>
+        <h3 class="font-black text-slate-800 text-lg">⚙️ 設定測驗範圍與題數</h3>
         <button onclick="closeQuizSetupModal()" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
       
@@ -244,7 +256,7 @@
           <label class="block text-slate-600 font-bold text-sm mb-1.5">測驗題目來源</label>
           <select id="quiz-source-select" class="w-full border-2 border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-700 outline-none">
             <option value="all">綜合大挑戰 (生字 + 句型造句)</option>
-            <option value="vocab">僅限【生字與語詞】測驗</option>
+            <option value="vocab">僅限【生字與造詞】測驗</option>
             <option value="sentence">僅限【句型與造句】測驗</option>
             <option value="star">僅限標記 ⭐ 星號的加強題</option>
           </select>
@@ -272,7 +284,7 @@
     <div class="bg-white w-full max-w-md max-h-[85vh] rounded-t-3xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl">
       <div class="p-4 bg-amber-600 text-white flex justify-between items-center">
         <h3 class="font-black text-base flex items-center gap-2">
-          <i class="fa-solid fa-list"></i> 字詞總覽與星號管理
+          <i class="fa-solid fa-list"></i> 字詞總覽與管理
         </h3>
         <button onclick="toggleListView()" class="text-white hover:text-amber-200 text-xl px-2">✕</button>
       </div>
@@ -280,43 +292,58 @@
     </div>
   </div>
 
-  <!-- 新增語詞 Modal -->
+  <!-- 新增/編輯語詞 Modal -->
   <div id="add-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
-    <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
+    <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-black text-slate-800 text-lg">新增補充內容</h3>
+        <h3 id="modal-title" class="font-black text-slate-800 text-lg">✨ 新增/編輯 學習卡片</h3>
         <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
       <div class="space-y-3 text-sm">
-        <div>
-          <label class="block text-slate-600 font-bold mb-1">所屬課別 *</label>
-          <select id="new-lesson-code" class="w-full border border-slate-300 rounded-xl p-2.5 font-bold outline-none">
-            <option value="L1">第 1 課</option><option value="L2">第 2 課</option><option value="L3">第 3 課</option><option value="L4">第 4 課</option><option value="L5">第 5 課</option><option value="L6">第 6 課</option><option value="L7">第 7 課</option><option value="L8">第 8 課</option><option value="L9">第 9 課</option><option value="L10">第 10 課</option><option value="L11">第 11 課</option><option value="L12">第 12 課</option>
-          </select>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-600 font-bold mb-1">所屬課別 *</label>
+            <select id="new-lesson-code" class="w-full border border-slate-300 rounded-xl p-2.5 font-bold outline-none">
+              <option value="L1">第 1 課</option><option value="L2">第 2 課</option><option value="L3">第 3 課</option><option value="L4">第 4 課</option><option value="L5">第 5 課</option><option value="L6">第 6 課</option><option value="L7">第 7 課</option><option value="L8">第 8 課</option><option value="L9">第 9 課</option><option value="L10">第 10 課</option><option value="L11">第 11 課</option><option value="L12">第 12 課</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-600 font-bold mb-1">類型 *</label>
+            <select id="new-type-code" class="w-full border border-slate-300 rounded-xl p-2.5 font-bold outline-none">
+              <option value="生字">單字/成語</option>
+              <option value="句型練習">句型/短語</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label class="block text-slate-600 font-bold mb-1">類型 *</label>
-          <select id="new-type-code" class="w-full border border-slate-300 rounded-xl p-2.5 font-bold outline-none">
-            <option value="生字">生字與語詞</option>
-            <option value="句型練習">造句與句型</option>
-          </select>
-        </div>
+        
         <div>
           <label class="block text-slate-600 font-bold mb-1">標題文字 (生字 / 句型) *</label>
           <input type="text" id="new-word" placeholder="例如：雖然...可是..." class="w-full border border-slate-300 rounded-xl p-2.5 outline-none font-bold">
         </div>
         <div>
-          <label class="block text-slate-600 font-bold mb-1">注音 / 部首 (選填)</label>
-          <input type="text" id="new-pinyin" placeholder="例如：ㄖㄠˊ (食部)" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
+          <label class="block text-slate-600 font-bold mb-1">注音符號 (選填)</label>
+          <input type="text" id="new-pinyin" placeholder="例如：ㄖㄠˊ" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
         </div>
         <div>
-          <label class="block text-slate-600 font-bold mb-1">解釋與例句 *</label>
-          <textarea id="new-meaning" rows="3" placeholder="請將解釋與相關語詞或例句寫在這裡..." class="w-full border border-slate-300 rounded-xl p-2.5 outline-none"></textarea>
+          <label class="block text-slate-600 font-bold mb-1">部首 / 分類標籤</label>
+          <input type="text" id="new-info" placeholder="例如：食部 (或 短語練習)" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
+        </div>
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">解釋說明</label>
+          <textarea id="new-meaning" rows="2" placeholder="請將詳細解釋寫在這裡..." class="w-full border border-slate-300 rounded-xl p-2.5 outline-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">造詞 1 / 例句 1</label>
+          <input type="text" id="new-v1" placeholder="" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
+        </div>
+        <div>
+          <label class="block text-slate-600 font-bold mb-1">造詞 2 / 例句 2</label>
+          <input type="text" id="new-v2" placeholder="" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
         </div>
       </div>
       <div class="flex justify-end space-x-2 pt-2">
         <button onclick="closeAddModal()" class="px-4 py-2 text-slate-500 font-bold">取消</button>
-        <button onclick="saveNewWord()" class="px-5 py-2 bg-amber-600 text-white rounded-xl font-black">儲存</button>
+        <button onclick="saveNewWord()" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black shadow-sm">💾 儲存</button>
       </div>
     </div>
   </div>
@@ -329,7 +356,7 @@
         <button onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
       <p class="text-xs text-slate-500 leading-relaxed font-semibold">
-        您可以匯出孩子的星號標記與學習紀錄，也可以在其他設備匯入資料！
+        您可以匯出您「修改過」的字庫與星號標記，也可以在其他設備匯入資料！
       </p>
       <div class="space-y-2">
         <button onclick="exportData()" class="w-full py-3 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-2xl font-black border border-amber-200 flex justify-center items-center gap-2 text-sm">
@@ -350,31 +377,31 @@
   </div>
 
   <script>
-    // 📌 您提供且修正後的最新 1-12 課完整版：包含生字、造詞、短語、造句與句型
+    // 📌 完全精準對齊您給予的 1~12 課修正版生字與造詞/成語，並加上句型
     const rawData = `===L1===
-蚊|ㄨㄣˊ|虫部|昆蟲名,吸食血液或植物汁液。|例句(蚊子)|例句(蚊帳)
-帳|ㄓㄤˋ|巾部|用布或紗等做成的遮蔽物。|例句(蚊帳)|例句(帳篷)
-洲|ㄓㄡ|水部|地球表面被分隔開的大片陸地。|例句(亞洲)|例句(非洲)
-瘧|ㄋㄩㄝˋ|疒部|一種由瘧原蟲引起的急性傳染病。|例句(瘧疾)|例句(瘧蚊)
-疾|ㄐㄧˊ|疒部|病、身體不適,或指快速。|例句(疾病)|例句(疾走)
-死|ㄙˇ|歹部|生命結束。與「生」相對。|例句(死亡)|例句(死板)
-叮|ㄉㄧㄥ|口部|昆蟲刺吸,或指再三吩咐。|例句(叮咬)|例句(叮嚀)
-鼓|ㄍㄨˇ|鼓部|敲擊樂器,引申為拍擊或激勵。|例句(鼓起)|例句(鼓勵)
-募|ㄇㄨˋ|力部|廣泛徵求、募集。|例句(募集)|例句(募款)
-集|ㄐㄧˊ|隹部|聚合、會合。|例句(聚集)|例句(集中)
-寄|ㄐㄧˋ|宀部|透過郵局傳送,或指託付。|例句(寄信)|例句(寄託)
-贈|ㄗㄥˋ|貝部|送東西給別人。|例句(贈送)|例句(捐贈)
-賣|ㄇㄞˋ|貝部|出售東西以換取金錢。|例句(買賣)|例句(拍賣)
-獎|ㄐㄧㄤˇ|大部|為了鼓勵或表揚給予的榮譽財物。|例句(獎狀)|例句(獎金)
-狀|ㄓㄨㄤˋ|犬部|形貌、樣子,或指陳述事實的文件。|例句(狀態)|例句(獎狀)
-誌|ㄓˋ|言部|記載、記錄,或指記錄事情的刊物。|例句(雜誌)|例句(日誌)
-基|ㄐㄧ|土部|事物的根本、底部。|例句(基礎)|例句(基金會)
-潛|ㄑㄧㄢˊ|水部|隱藏未顯現,或在水面下活動。|例句(潛力)|例句(潛水)
+蚊,ㄨㄣˊ,虫部,蚊子,聚蚊成雷
+帳,ㄓㄤˋ,巾部,帳篷,蚊帳
+洲,ㄓㄡ,水部,亞洲,非洲
+瘧,ㄋㄩㄝˋ,疒部,瘧疾,瘧蚊
+疾,ㄐㄧˊ,疒部,疾病,疾言厲色
+死,ㄙˇ,歹部,死亡,醉生夢死
+叮,ㄉㄧㄥ,口部,叮嚀,千叮萬囑
+存,ㄘㄨㄣˊ,子部,生存,蕩然無存
+募,ㄇㄨˋ,力部,募集,募款
+集,ㄐㄧˊ,隹部,集合,悲喜交集
+寄,ㄐㄧˋ,宀部,寄託,寄人籬下
+贈,ㄗㄥˋ,貝部,贈送,捐贈
+獎,ㄐㄧㄤˇ,大部,獎狀,獎賞
+狀,ㄓㄨㄤˋ,犬部,形狀,奇形怪狀
+藏,ㄘㄤˊ,艸部,躲藏,包藏禍心
+誌,ㄓˋ,言部,雜誌,永誌不忘
+基,ㄐㄧ,土部,基礎,基本
+赴,ㄈㄨˋ,走部,奔赴,全力以赴
 引起世人的關注||短語練習|描述對事物的影響。結構：（動詞）（名詞）的（動詞）|例句(造成房屋的倒塌)|例句(面臨人生的抉擇)
 驚慌失措|ㄐㄧㄥ ㄏㄨㄤ ㄕ ㄘㄨㄛˋ|造句練習|驚嚇慌張得不知如何應付。|例句(森林發生大火，動物們驚慌失措，紛紛四處逃竄。)|例句(弟弟在夜市和家人走散了，不知如何是好。)
 聚精會神|ㄐㄩˋ ㄐㄧㄥ ㄏㄨㄟˋ ㄕㄣˊ|造句練習|指集中精神，專心一意。|例句(他們正聚精會神的下棋，完全不受周圍事物的影響。)|例句(同學們正聚精會神的聆聽老師解題。)
 一筆一畫|ㄧˋ ㄅㄧˇ ㄧˊ ㄏㄨㄚˋ|造句練習|每一個筆畫。|例句(想寫出端正工整的字，得靜下心來一筆一畫慢慢的書寫。)|例句(這張手繪地圖是他一筆一畫勾勒出來的。)
-喜不自禁|ㄒㄧˇ ㄅㄨˋ ㄗˋ ㄐㄧㄣ|造句練習|高興得不得了。|例句(他一聽到要去露營，就喜不自禁的大聲歡呼。)|例句(多年不見的好朋友在路上不期而遇，令我喜不自禁。)
+喜不自禁|ㄒㄧˇ ㄅㄨˋ ㄗˋ ㄐㄧㄣ|造句練習|高興得不得了。|例句(他一聽到要去露營，就喜不自禁的大聲歡呼。)|例句(多年不見的好朋友在路上不期遇，令我喜不自禁。)
 夢想成真|ㄇㄥˋ ㄒㄧㄤˇ ㄔㄥˊ ㄓㄣ|造句練習|心中所欲想的已在生活中實現。|例句(只有透過不懈的努力耕耘，才能夢想成真。)|例句(這趟旅行是我計畫很久的事，能夠實現真是夢想成真。)
 全力以赴|ㄑㄩㄢˊ ㄌㄧˋ ㄧˇ ㄈㄨˋ|造句練習|投入全部的心力以達成目的。|例句(他做事十分認真盡責，交代給他的任務必定全力以赴。)|例句(面對實力強勁的敵隊，每個隊員都全力以赴。)
 雖然……可是……||句型練習|轉折複句。語意做了一個轉折，使意思形成相反或相對。|例句(弟弟練習騎腳踏車時，雖然一再跌倒，可是一滴眼淚都沒有流下來。)|例句(淨灘雖然能暫時清除環境中的垃圾，可是要杜絕海洋垃圾還是得從源頭著手。)
@@ -382,24 +409,24 @@
 不但……還……||句型練習|遞進複句。後句的意思比前句更進一層。|例句(落實垃圾分類，不但可以減少垃圾量，還可以使資源循環再利用。)|例句(多多種植樹木，不但可以美化環境，還可以吸收大氣中的二氧化碳。)
 不僅……更……||句型練習|遞進複句。後句的意思比前句更進一層。|例句(他不僅完成了這次的馬拉松挑戰，更超越極限，創下了新的紀錄。)|例句()
 ===L2===
-德|ㄉㄜˊ|彳部|人類道德、品行的修養。|例句(品德)|例句(美德)
-乎|ㄏㄨ|丿部|介詞。同「於」,表示處所或比較。|例句(在乎)|例句(合乎)
-血|ㄒㄧㄝˇ|血部|動物體內循環流動的紅色液體。|例句(流血)|例句(血液)
-攝|ㄕㄜˋ|手部|利用鏡頭記錄影像,或指吸收。|例句(攝影)|例句(攝取)
-颱|ㄊㄞˊ|風部|發生在西太平洋及南海的熱帶氣旋。|例句(颱風)|例句(颱風天)
-錄|ㄌㄨˋ|金部|記載、抄寫,或利用設備保存音像。|例句(記錄)|例句(錄音)
-哀|ㄞ|口部|悲傷、悲痛。|例句(悲哀)|例句(哀求)
-巒|ㄌㄨㄢˊ|山部|連綿起伏的山峰。|例句(山巒)|例句(層巒)
-縱|ㄗㄨㄥˋ|糸部|南北向的、直的。|例句(縱谷)|例句(縱向)
-臍|ㄑㄧˊ|肉部|腹部中央,胎兒臍帶脫落後的凹陷處。|例句(臍帶)|例句(肚臍)
-禍|ㄏㄨㄛˋ|示部|災難、不幸的事。|例句(車禍)|例句(禍害)
-殘|ㄘㄢˊ|歹部|不完整、毀壞的、剩餘的。|例句(殘破)|例句(殘留)
-檳|ㄅㄧㄣ|木部|植物名。|例句(檳榔)|例句(檳榔樹)
-榔|ㄌㄤˊ|木部|常用於植物名,或指槌子。|例句(檳榔)|例句(榔頭)
-鏟|ㄔㄢˇ|金部|削平或挖掘泥土的鐵製工具。|例句(鏟子)|例句(鏟除)
-汙|ㄨ|水部|骯髒、不乾淨。|例句(汙染)|例句(汙垢)
-超|ㄔㄠ|走部|越過、高出、勝過。|例句(超過)|例句(超越)
-抽|ㄔㄡ|手部|拔出、取出,或把液體吸上來。|例句(抽水)|例句(抽籤)
+德,ㄉㄜˊ,彳部,品德,感恩戴德
+乎,ㄏㄨ,丿部,似乎,出乎意料
+血,ㄒㄧㄝˇ,血部,流血,血口噴人
+攝,ㄕㄜˋ,手部,拍攝,攝取
+颱,ㄊㄞˊ,風部,颱風,防颱
+錄,ㄌㄨˋ,金部,記錄,錄音
+哀,ㄞ,口部,悲哀,哀鴻遍野
+巒,ㄌㄨㄢˊ,山部,山巒,層巒疊嶂
+縱,ㄗㄨㄥˋ,糸部,操縱,欲擒故縱
+臍,ㄑㄧˊ,肉部,肚臍,噬臍莫及
+禍,ㄏㄨㄛˋ,示部,車禍,幸災樂禍
+殘,ㄘㄢˊ,歹部,殘留,風捲殘雲
+檳,ㄅㄧㄣ,木部,檳榔,檳榔樹
+榔,ㄌㄤˊ,木部,檳榔,榔頭
+降,ㄐㄧㄤˋ,阜部,降落,從天而降
+鏟,ㄔㄢˇ,金部,鏟子,鐵鏟
+汙,ㄨ,水部,汙染,同流合汙
+斷,ㄉㄨㄢˋ,斤部,中斷,當機立斷
 深深的哀愁||短語練習|結構：（疊字詞）的（名詞）|例句(淡淡的哀傷)|例句(甜甜的微笑)
 這是個昂貴而困難的計畫||短語練習|以兩個詞語說明某件事。結構：這是（量詞）（形容詞）而（形容詞）的（名詞）。|例句(這是個溫馨而難忘的聚會。)|例句(這是場豐富而精采的演講。)
 無聲無息|ㄨˊ ㄕㄥ ㄨˊ ㄒㄧˊ|造句練習|沉寂沒有聲音。比喻人沒有名氣或對事情不發生影響。|例句(葉子從翠綠到枯黃，季節無聲無息的交替著。)|例句(光陰總是無聲無息的從我們身邊溜走。)
@@ -412,24 +439,24 @@
 ……所以……||句型練習|因果複句。前句表示原因，後句表示結果。|例句(他的小狗走失了，所以他四處張貼尋狗啟示。)|例句()
 由於……||句型練習|因果複句。表示原因。|例句(由於一場大雷雨，迫使運動會突然中斷。)|例句()
 ===L3===
-峭|ㄑㄧㄠˋ|山部|高峻且坡度大。|例句(陡峭)|例句(懸崖峭壁)
-勁|ㄐㄧㄥˋ|力部|力量、精神。|例句(幹勁)|例句(蒼勁有力)
-聳|ㄙㄨㄥˇ|耳部|高起、直立。|例句(高聳)|例句(聳人聽聞)
-飢|ㄐㄧ|食部|肚子空、想吃東西。|例句(飢餓)|例句(飢寒交迫)
-隱|ㄧㄣˇ|阜部|藏匿、不顯露。|例句(隱藏)|例句(若隱若現)
-扯|ㄔㄜˇ|手部|拉、牽引。|例句(拉扯)|例句(牽扯)
-銳|ㄖㄨㄟˋ|金部|尖、鋒利。|例句(尖銳)|例句(銳不可擋)
-箭|ㄐㄧㄢˋ|竹部|搭在弓上發射的武器。|例句(弓箭)|例句(光陰似箭)
-韌|ㄖㄣˋ|韋部|柔軟而結實，受力不易折斷。|例句(堅韌)|例句(堅韌不拔)
-虯|ㄑㄧㄡˊ|虫部|傳說中一種無角的龍。|例句(虯髯)|例句(虯龍)
-鬚|ㄒㄩ|髟部|生在下巴或嘴邊的毛。|例句(鬍鬚)|例句(溜鬚拍馬)
-茂|ㄇㄠˋ|艸部|草木繁盛的樣子。|例句(茂盛)|例句(圖文並茂)
-止|ㄓˇ|止部|停住、不繼續。|例句(停止)|例句(嘆為觀止)
-蔓|ㄇㄢˋ|艸部|細長不能直立的莖。|例句(藤蔓)|例句(蔓延)
-藉|ㄐㄧㄝˋ|艸部|利用、依靠、憑藉。|例句(慰藉)|例句(憑藉)
-豐|ㄈㄥ|豆部|多、充足、富裕。|例句(豐富)|例句(豐衣足食)
-挫|ㄘㄨㄛˋ|手部|受打擊、降低或阻折。|例句(挫折)|例句(愈挫愈勇)
-折|ㄓㄜˊ|手部|弄斷、彎曲,或轉折。|例句(折斷)|例句(百折不撓)
+峭,ㄑㄧㄠˋ,山部,陡峭,懸崖峭壁
+勁,ㄐㄧㄥˋ,力部,幹勁,蒼勁有力
+聳,ㄙㄨㄥˇ,耳部,高聳,聳人聽聞
+飢,ㄐㄧ,食部,飢餓,飢寒交迫
+隱,ㄧㄣˇ,阜部,隱藏,若隱若現
+扯,ㄘㄜˇ,手部,拉扯,牽扯
+銳,ㄖㄨㄟˋ,金部,尖銳,銳不可擋
+箭,ㄐㄧㄢˋ,竹部,弓箭,光陰似箭
+韌,ㄖㄣˋ,韋部,堅韌,堅韌不拔
+虯,ㄑㄧㄡˊ,虫部,虯髯,虯龍
+鬚,ㄒㄩ,髟部,鬍鬚,溜鬚拍馬
+茂,ㄇㄠˋ,艸部,茂盛,圖文並茂
+止,ㄓˇ,止部,停止,嘆為觀止
+蔓,ㄇㄢˋ,艸部,藤蔓,蔓延
+藉,ㄐㄧㄝˋ,艸部,慰藉,憑藉
+豐,ㄈㄥ,豆部,豐富,豐衣足食
+挫,ㄘㄨㄛˋ,手部,挫折,愈挫愈勇
+折,ㄓㄜˊ,手部,折斷,百折不撓
 伸長堅韌的虯鬚||短語練習|結構：︵動詞︶︵形容詞︶的︵名詞︶|例句(蓋出堅固的大樓)|例句(創造神奇的故事)
 堅定不移的勇氣||短語練習|結構：︵形容詞︶的︵名詞︶|例句(鍥而不捨的精神)|例句(一望無際的天際)
 陡峭|ㄉㄡˇ ㄑㄧㄠˋ|造句練習|高峻且坡度大。|例句(在陡峭的岩壁上，登山者小心翼翼的攀爬著。)|例句(這條山路非常陡峭，領隊決定改走另一條路。)
@@ -439,25 +466,25 @@
 先……再……||句型練習|承接複句。連續發生的事情或動作，強調先後順序。|例句(弟弟決定先把房間打掃乾淨，再開始看電影。)|例句(運動前要先做暖身運動，再開始運動，避免受傷。)
 就算……也……||句型練習|假設複句。前句提出假設的情況，後句表示結果保持不變。|例句(就算時間緊迫，我也會準時完成工作。)|例句(就算遇到再大的困難，他也不會輕易放棄夢想。)
 ===L4===
-恆|ㄏㄥˊ|心部|長久不變的。|例句(恆心)|例句(持之以恆)
-澄|ㄔㄥˊ|水部|水清澈、透明的樣子。|例句(澄清)|例句(澄澈)
-穗|ㄙㄨㄟˋ|禾部|禾穀類植物莖頂聚成的花果。|例句(稻穗)|例句(麥穗)
-養|ㄧㄤˇ|食部|撫育、培植,或提供生活所需。|例句(營養)|例句(養尊處優)
-源|ㄩㄢˊ|水部|水流發源處,引申為事物根本。|例句(來源)|例句(飲水思源)
-藝|ㄧˋ|艸部|才能技能,或指文學美術創作。|例句(藝術)|例句(多才多藝)
-樸|ㄆㄨˊ|木部|質直、忠厚、不加雕飾。|例句(樸素)|例句(返璞歸真)
-堆|ㄉㄨㄟ|土部|聚積在一起的物體,或聚攏。|例句(堆積)|例句(堆積如山)
-撿|ㄐㄧㄢˇ|手部|拾取、由地面拾起。|例句(撿拾)|例句(撿起)
-巾|ㄐㄧㄣ|巾部|擦拭或包裹用的織物。|例句(毛巾)|例句(巾幗英雄)
-痠|ㄙㄨㄢ|疒部|微痛無力、疲憊的感覺。|例句(痠痛)|例句(痠軟)
-素|ㄙㄨˋ|糸部|單純不雕飾,或指蔬菜類食物。|例句(色素)|例句(素昧平生)
-尊|ㄗㄨㄣ|寸部|敬重、推崇,或地位高尚。|例句(尊重)|例句(尊師重道)
-嚴|ㄧㄢˊ|口部|緊密、認真,或指嚴厲。|例句(嚴格)|例句(莊嚴肅穆)
-勞|ㄌㄠˊ|力部|辛苦工作、付出體力。|例句(疲勞)|例句(徒勞無功)
-怨|ㄩㄢˋ|心部|責怪、不滿、仇恨。|例句(抱怨)|例句(任勞任怨)
-慷|ㄎㄤ|心部|性格豪爽、大方。|例句(慷慨)|例句(慷慨激昂)
-慨|ㄎㄞˇ|心部|心有感觸,或指大方。|例句(感慨)|例句(慷慨解囊)
-滋|ㄗ|水部|生長、擴大,或指味道。|例句(滋味)|例句(滋生)
+恆,ㄏㄥˊ,心部,恆心,持之以恆
+澄,ㄔㄥˊ,水部,澄清,澄澈
+穗,ㄙㄨㄟˋ,禾部,稻穗,麥穗
+養,ㄧㄤˇ,食部,營養,養尊處優
+源,ㄩㄢˊ,水部,來源,飲水思源
+藝,ㄧˋ,艸部,藝術,多才多藝
+樸,ㄆㄨˊ,木部,樸素,返璞歸真
+堆,ㄉㄨㄟ,土部,堆積,堆積如山
+撿,ㄐㄧㄢˇ,手部,撿拾,撿起
+巾,ㄐㄧㄣ,巾部,毛巾,巾幗英雄
+痠,ㄙㄨㄢ,疒部,痠痛,痠軟
+素,ㄙㄨˋ,糸部,色素,素昧平生
+尊,ㄗㄨㄣ,寸部,尊重,尊師重道
+嚴,ㄧㄢˊ,口部,嚴格,莊嚴肅穆
+勞,ㄌㄠˊ,力部,疲勞,徒勞無功
+怨,ㄩㄢˋ,心部,抱怨,任勞任怨
+慷,ㄎㄤ,心部,慷慨,慷慨激昂
+慨,ㄎㄞˇ,心部,感慨,慷慨解囊
+滋,ㄗ,水部,滋味,滋生
 一片黃澄澄的稻田||短語練習|結構：（量詞）（疊字詞）的（名詞）|例句(一顆紅通通的蘋果)|例句(一個圓滾滾的皮球)
 一串串飽滿的稻穗||短語練習|結構：（疊字量詞）（形容詞）的（名詞）|例句(一朵朵美麗的鮮花)|例句(一個個英勇的士兵)
 刻畫農民樸實的生活||短語練習|結構：（動詞）（名詞）（形容詞）的（名詞）|例句(描寫鄉村悠閒的生活)|例句(展現舞者優雅的舞步)
@@ -469,23 +496,23 @@
 雖然……卻……||句型練習|轉折複句。表示前後句的內容相反或相對，強調結果與預期不同。|例句(弟弟雖然身材瘦小，卻非常有力氣，可以輕易搬起重物。)|例句(他雖然當選了模範生，卻一點兒也不驕傲。)
 原本……但……||句型練習|轉折複句。|例句(我們原本打算去公園玩，但突然下起了大雨，只好改去圖書館。)|例句()
 ===L5===
-譽|ㄩˋ|言部|名聲、稱讚。|例句(名譽)|例句(沽名釣譽)
-務|ㄨˋ|力部|必須做的事,或致力從事。|例句(任務)|例句(不務正業)
-聯|ㄌㄧㄢˊ|耳部|結合、連綴。|例句(聯絡)|例句(珠聯璧合)
-核|ㄏㄜˊ|木部|果實硬殼種子,或仔細審查。|例句(果核)|例句(核對)
-申|ㄕㄣ|田部|敘述,或向上級報告請求。|例句(申請)|例句(三令五申)
-局|ㄐㄩˊ|尸部|部分、政府機關,或情勢。|例句(結局)|例句(顧全大局)
-松|ㄙㄨㄥ|木部|常綠喬木,多針狀葉。|例句(松樹)|例句(歲寒松柏)
-註|ㄓㄨˋ|言部|解釋字句的文字,或記錄登記。|例句(註冊)|例句(註記)
-冊|ㄘㄜˋ|冂部|書本、簿本,或計算書本單位。|例句(手冊)|例句(畫冊)
-企|ㄑㄧˋ|人部|踮腳盼望,引申為圖謀、規劃。|例句(企業)|例句(企圖)
-歷|ㄌㄧˋ|止部|經過、度過,或過往經驗。|例句(歷史)|例句(歷歷在目)
-英|ㄧㄥ|艸部|才能傑出的人,或指花。|例句(英雄)|例句(英姿煥發)
-銷|ㄒㄧㄠ|金部|花費毀壞,或出售貨物。|例句(推銷)|例句(銷聲匿跡)
-售|ㄕㄡˋ|口部|賣出、出售。|例句(出售)|例句(售票)
-勝|ㄕㄥˋ|力部|贏、占優勢,或優美的。|例句(勝利)|例句(百戰百勝)
-霸|ㄅㄚˋ|雨部|依仗權勢橫行、強橫占有。|例句(惡霸)|例句(稱王稱霸)
-項|ㄒㄧㄤˋ|頁部|脖子後部,或計算事務單位。|例句(項目)|例句(望其項背)
+譽,ㄩˋ,言部,名譽,沽名釣譽
+務,ㄨˋ,力部,任務,不務正業
+聯,ㄌㄧㄢˊ,耳部,聯絡,珠聯璧合
+核,ㄏㄜˊ,木部,果核,核對
+申,ㄕㄣ,田部,申請,三令五申
+局,ㄐㄩˊ,尸部,結局,顧全大局
+松,ㄙㄨㄥ,木部,松樹,歲寒松柏
+註,ㄓㄨˋ,言部,註冊,註記
+冊,ㄘㄜˋ,冂部,手冊,畫冊
+企,ㄑㄧˇ,人部,企業,企圖
+歷,ㄌㄧˋ,止部,歷史,歷歷在目
+英,ㄧㄥ,艸部,英雄,英姿煥發
+銷,ㄒㄧㄠ,金部,推銷,銷聲匿跡
+售,ㄕㄡˋ,口部,出售,售票
+勝,ㄕㄥˋ,力部,勝利,百戰百勝
+霸,ㄅㄚˋ,雨部,惡霸,稱王稱霸
+項,ㄒㄧㄤˋ,頁部,項目,望其項背
 像松樹般堅毅不拔||短語練習|結構：像（名詞）般（形容詞）|例句(像鋼鐵般堅固強韌)|例句(像春風般溫柔嫵媚)
 每一個商品都有商標||短語練習|結構：每（量詞）（名詞）都有（名詞）。|例句(每一段旅程都有故事。)|例句(每一次嘗試都有意義。)
 每個商標都有一個特別的故事||短語練習|結構：每（量詞）（名詞）都有（量詞）（形容詞）的（名詞）。|例句(每張畫作都有一種獨特的技法。)|例句(每次努力都有一份珍貴的收穫。)
@@ -497,58 +524,58 @@
 雖然……但……||句型練習|轉折複句。語意做了一個轉折，使意思形成相反或相對。|例句(雖然這朵花很不起眼，但它的香味非常濃郁。)|例句(雖然今天的天氣很冷，但我們依然開心的在操場上玩耍。)
 為了……||句型練習|目的複句。|例句(為了打造整齊美觀的市容，市長決定加強綠化，讓城市展現新風貌。)|例句()
 ===L6===
-娛|ㄩˊ|女部|快樂、使人快樂。|例句(娛樂)|例句(綵衣娛親)
-汽|ㄑㄧˋ|水部|液體受熱蒸發成的氣體。|例句(汽車)|例句(汽水)
-哨|ㄕㄠˋ|口部|巡邏崗位,或嘴吹出的聲音。|例句(哨兵)|例句(口哨)
-典|ㄉㄧㄢˇ|八部|做標準的書,或隆重儀式。|例句(字典)|例句(引經據典)
-框|ㄎㄨㄤ|木部|鑲在器物周圍的保護架子。|例句(相框)|例句(門框)
-劇|ㄐㄩˋ|刀部|戲劇,或指厲害猛烈。|例句(戲劇)|例句(惡作劇)
-父|ㄈㄨˋ|父部|親代中的男性尊長、父親。|例句(父親)|例句(父慈子孝)
-責|ㄗㄜˊ|貝部|責任、過錯。|例句(責任)|例句(責無旁貸)
-判|ㄆㄢˋ|刀部|判斷、分辨。|例句(判斷)|例句(判若兩人)
-鳴|ㄇㄧㄥˊ|鳥部|鳥獸叫,或泛指發出聲音。|例句(鳥鳴)|例句(一鳴驚人)
-穎|ㄧㄥˇ|禾部|才能出眾的人或事物。|例句(新穎)|例句(脫穎而出)
-獲|ㄏㄨㄛˋ|犬部|得到、獵取。|例句(獲得)|例句(如獲至寶)
-佳|ㄐㄧㄚ|人部|美好的、優秀的。|例句(佳作)|例句(漸入佳境)
-膩|ㄋㄧˋ|肉部|食物油脂多,引申為厭煩。|例句(油膩)|例句(細膩)
-交|ㄐㄧㄠ|亠部|給付、互相。|例句(交通)|例句(交頭接耳)
-隊|ㄉㄨㄟˋ|阜部|行列、團體。|例句(隊伍)|例句(排隊)
-益|ㄧˋ|皿部|好處、幫助。|例句(利益)|例句(多多益善)
-貌|ㄇㄠˋ|豸部|容貌長相,或指禮節。|例句(容貌)|例句(貌合神離)
-官|ㄍㄨㄢ|宀部|政府工作人員,或指感覺器官。|例句(器官)|例句(達官貴人)
-增|ㄗㄥ|土部|加多、添補。|例句(增加)|例句(與日俱增)
+娛,ㄩˊ,女部,娛樂,綵衣娛親
+汽,ㄑㄧˋ,水部,汽車,汽水
+哨,ㄕㄠˋ,口部,哨兵,口哨
+典,ㄉㄧㄢˇ,八部,字典,引經據典
+框,ㄎㄨㄤ,木部,相框,門框
+劇,ㄐㄩˋ,刀部,戲劇,惡作劇
+父,ㄈㄨˋ,父部,父親,父慈子孝
+責,ㄗㄜˊ,貝部,責任,責無旁貸
+判,ㄆㄢˋ,刀部,判斷,判若兩人
+鳴,ㄇㄧㄥˊ,鳥部,鳥鳴,一鳴驚人
+穎,ㄧㄥˇ,禾部,新穎,脫穎而出
+獲,ㄏㄨㄛˋ,犬部,獲得,如獲至寶
+佳,ㄐㄧㄚ,人部,佳作,漸入佳境
+膩,ㄋㄧˋ,肉部,油膩,細膩
+交,ㄐㄧㄠ,亠部,交通,交頭接耳
+隊,ㄉㄨㄟˋ,阜部,隊伍,排隊
+益,ㄧˋ,皿部,利益,多多益善
+貌,ㄇㄠˋ,豸部,容貌,貌合神離
+官,ㄍㄨㄢ,宀部,器官,達官貴人
+增,ㄗㄥ,土部,增加,與日俱增
 獨特的音樂風格||短語練習|結構：（形容詞）的（名詞）|例句(明亮的燈光效果)|例句(深刻的情感表達)
 不可或缺|ㄅㄨˋ ㄎㄜˇ ㄏㄨㄛˋ ㄑㄩㄝ|造句練習|必須，不能有所缺少。|例句(努力是成功不可或缺的要素。)|例句(爬山需要適當的衣著與食物，這些都是不可或缺的必需品。)
 不假思索|ㄅㄨˋ ㄐㄧㄚˇ ㄙ ㄙㄨㄛˇ|造句練習|不用費心思考，多形容說話做事反應敏捷。|例句(他在會議上的建議，主席當場不假思索的否定了。)|例句(平常媽媽總會教導應變方案，遇到特殊情況她才能不假思索的反應。)
 舉世聞名|ㄐㄩˇ ㄕˋ ㄨㄣˊ ㄇㄧㄥˊ|造句練習|形容名氣極大，全世界都知道。|例句(舉世聞名的蒙娜麗莎是達文西的作品，收藏在羅浮宮。)|例句(埃及金字塔是舉世聞名的世界文化遺產，每年都有不少遊客造訪。)
 獨具一格|ㄉㄨˊ ㄐㄩˋ ㄧˋ ㄍㄜˊ|造句練習|擁有與眾不同的風格。|例句(我設計的手工卡片獨具一格，每張都有獨特的創意和風格。)|例句(這場音樂表演獨具一格，將傳統樂器與現代音樂完美結合。)
 融為一體|ㄖㄨㄥˊ ㄨㄟˊ ㄧˋ ㄊㄧˇ|造句練習|比喻幾種事物關係密切，配合自然，如一個整體。|例句(這個漁村將街景的布置與漁民生活的特色融為一體。)|例句(走入山林，就可以感受到與大自然融為一體的美好。)
-脫穎而出|ㄊㄨㄛ ㄧㄥˇ ㄦˊ ㄔㄨ|造句練習|顯露才能，超越眾人。|例句(經過多年努力練習，這位鋼琴家終於在國際大賽中脫穎而出。)|例句(在全國作文比賽中，他以獨特的觀點和細膩文筆脫穎而出。)
+脫穎而出|ㄊㄨㄛ ㄧㄥˇ ㄦˊ ㄔㄨ|造句練習|顯露才能，超越眾人。|例句(經過多年努力練習，這位鋼琴家終於在國際大賽中脫穎而出。)|例句(他在作文比賽中，以獨特的觀點和細膩文筆脫穎而出。)
 精益求精|ㄐㄧㄥ ㄧˋ ㄑㄧㄡˊ ㄐㄧㄥ|造句練習|不斷努力求進步。|例句(哥哥的作文已經寫得很好了，但他努力做到精益求精。)|例句(運動員每天刻苦訓練，雖然已經很厲害，卻依然精益求精。)
 如果……||句型練習|假設複句。前句假設情況，後句說明結果。|例句(如果你今天有空，我們就一起去圖書館看書。)|例句(如果我們可以合作，這項任務就一定能順利完成。)
 由於……因此……||句型練習|因果複句。說明原因和結果的關係。|例句(由於人手不足，因此公司決定請幾名工讀生幫忙。)|例句(由於連日大雨導致土石滑動，因此我們決定取消登山行程。)
 不僅……也……||句型練習|遞進複句。後分句在範圍、程度等比前句更進一層。|例句(賣場販售的湯圓不僅口味眾多，造型也有不同的變化。)|例句(這家店的料理不僅吸引客人光顧，也獲得世界級美食獎。)
 為了……||句型練習|目的複句。|例句(為了保護環境，我們應該減少使用塑膠袋，多使用環保袋。)|例句()
 ===L7===
-逆|ㄋㄧˋ|辵部|方向相反、不順從。|例句(逆境)|例句(逆來順受)
-穩|ㄨㄣˇ|禾部|安定、不易搖晃或改變。|例句(平穩)|例句(穩如泰山)
-憐|ㄌㄧㄢˊ|心部|同情、哀憐,或喜愛。|例句(可憐)|例句(同病相憐)
-競|ㄐㄧㄥˋ|立部|爭逐、比賽。|例句(競爭)|例句(物競天擇)
-抗|ㄎㄤˋ|手部|抵擋、不順從。|例句(抵抗)|例句(分庭抗禮)
-逸|ㄧˋ|辵部|安樂舒適,或逃跑。|例句(安逸)|例句(一勞永逸)
-鄰|ㄌㄧㄣˊ|邑部|鄰近的、附近的人。|例句(鄰居)|例句(千金買鄰)
-脈|ㄇㄞˋ|肉部|相連延伸的事物。|例句(葉脈)|例句(一脈相承)
-絡|ㄌㄨㄛˋ|糸部|網狀物、纏繞。|例句(聯絡)|例句(絡繹不絕)
-緻|ㄓˋ|糸部|細密、精細。|例句(精緻)|例句(細緻)
-弱|ㄖㄨㄛˋ|弓部|力量小、不堅強。|例句(軟弱)|例句(弱肉強食)
-噴|ㄆㄣ|口部|液體或氣體受壓射出。|例句(噴泉)|例句(血口噴人)
-嚏|ㄊㄧˋ|口部|鼻黏膜受刺激而噴出氣體。|例句(打噴嚏)|例句(哈嚏)
-織|ㄓ|糸部|用絲麻棉毛等交錯編製。|例句(編織)|例句(穿梭交織)
-碌|ㄌㄨˋ|石部|忙碌、平庸。|例句(忙碌)|例句(庸庸碌碌)
-盎|ㄤˋ|皿部|盛滿的樣子。|例句(盎然)|例句(生機盎然)
-膽|ㄉㄢˇ|肉部|人體器官，引申為勇氣。|例句(膽量)|例句(膽大包天)
-圈|ㄑㄩㄢ|囗部|環形的東西。|例句(圓圈)|例句(圈套)
-疲|ㄆㄧˊ|疒部|勞累、困乏。|例句(疲勞)|例句(疲於奔命)
+逆,ㄋㄧˋ,辵部,逆境,逆來順受
+穩,ㄨㄣˇ,禾部,平穩,穩如泰山
+憐,ㄌㄧㄢˊ,心部,可憐,同病相憐
+競,ㄐㄧㄥˋ,立部,競爭,物競天擇
+抗,ㄎㄤˋ,手部,抵抗,分庭抗禮
+逸,ㄧˋ,辵部,安逸,一勞永逸
+鄰,ㄌㄧㄣˊ,邑部,鄰居,千金買鄰
+脈,ㄇㄞˋ,肉部,葉脈,一脈相承
+絡,ㄌㄨㄛˋ,糸部,聯絡,絡繹不絕
+緻,ㄓˋ,糸部,精緻,細緻
+弱,ㄖㄨㄛˋ,弓部,軟弱,弱肉強食
+噴,ㄆㄣ,口部,噴泉,血口噴人
+嚏,ㄊㄧˋ,口部,打噴嚏,哈嚏
+織,ㄓ,糸部,編織,穿梭交織
+碌,ㄌㄨˋ,石部,忙碌,庸庸碌碌
+盎,ㄤˋ,皿部,盎然,生機盎然
+膽,ㄉㄢˇ,肉部,膽量,膽大包天
+圈,ㄑㄩㄢ,囗部,圓圈,圈套
+疲,ㄆㄧˊ,疒部,疲勞,疲於奔命
 一次一次的練習著||短語練習|結構：︵量詞︶︵量詞︶的︵動詞︶著|例句(一遍一遍的朗讀著)|例句(一天一天的努力著)
 最酷熱的沙漠||短語練習|結構：最︵形容詞︶的︵名詞︶|例句(最巨大的生物)|例句(最閃亮的星星)
 望著這面小小的蛛網||短語練習|結構：︵動詞︶著︵量詞︶︵疊字形容詞︶的︵名詞︶|例句(吃著這顆紅紅的蘋果)|例句(看著這片藍藍的天空)
@@ -559,24 +586,24 @@
 精疲力盡|ㄐㄧㄥ ㄆㄧˊ ㄌㄧˋ ㄐㄧㄣˋ|造句練習|精神疲累，力氣耗盡。形容非常的疲憊。|例句(表演結束後，大家都精疲力盡，連話也說不出來。)|例句(跑完馬拉松後，選手們個個精疲力盡，只想好好休息。)
 只有……才能……||句型練習|條件複句。前句提出條件，後句說明產生的結果。|例句(只有專心一致的人，才能屏除雜念，完成任務。)|例句(要改掉壞習慣，只有時時提醒自己，才能免於再犯。)
 ===L8===
-坦|ㄊㄢˇ|土部|平廣,或胸懷寬廣直率。|例句(平坦)|例句(坦承相見)
-性|ㄒㄧㄥˋ|心部|本性、特質。|例句(個性)|例句(本性難移)
-恐|ㄎㄨㄥˇ|心部|害怕、驚慌,或指大概。|例句(恐懼)|例句(爭先恐後)
-怖|ㄅㄨˋ|巾部|驚恐、害怕。|例句(恐怖)|例句(驚怖)
-且|ㄑㄧㄝˇ|一部|並且、將要。|例句(而且)|例句(苟且偷安)
-占|ㄓㄢˋ|卜部|據有,或推算吉凶。|例句(占領)|例句(占為己有)
-番|ㄈㄢ|田部|回、次、種。|例句(番茄)|例句(三番兩次)
-空|ㄎㄨㄥ|穴部|沒有東西、天空。|例句(天空)|例句(空前絕後)
-制|ㄓˋ|刀部|訂定、限制或約束。|例句(制度)|例句(因地制宜)
-傷|ㄕㄤ|人部|身體受損、妨礙。|例句(受傷)|例句(遍體鱗傷)
-攻|ㄍㄨㄥ|攴部|打擊敵人,或致力研讀。|例句(攻擊)|例句(攻無不克)
-擊|ㄐㄧˊ|手部|敲打、碰撞或打擊。|例句(打擊)|例句(聲東擊西)
-權|ㄑㄩㄢˊ|木部|職權、利益,或應享有的保障。|例句(權力)|例句(大權在握)
-脅|ㄒㄧㄝˊ|肉部|威迫、逼迫,或指腋下脅骨。|例句(威脅)|例句(脅肩諂笑)
-復|ㄈㄨˋ|彳部|重來、還原,或回報。|例句(恢復)|例句(死灰復燃)
-式|ㄕˋ|弋部|模樣、規格。|例句(方式)|例句(各式各樣)
-感|ㄍㄢˇ|心部|覺得、受外界事物影響。|例句(感動)|例句(感人肺腑)
-醒|ㄒㄧㄥˇ|酉部|恢復知覺、明白。|例句(清醒)|例句(大夢初醒)
+坦,ㄊㄢˇ,土部,平坦,坦承相見
+性,ㄒㄧㄥˋ,心部,個性,本性難移
+恐,ㄎㄨㄥˇ,心部,恐懼,爭先恐後
+怖,ㄅㄨˋ,心部,恐怖,驚怖
+且,ㄑㄧㄝˇ,一部,而且,苟且偷安
+占,ㄓㄢˋ,卜部,占領,占為己有
+番,ㄈㄢ,田部,番茄,三番兩次
+空,ㄎㄨㄥ,穴部,天空,空前絕後
+制,ㄓˋ,刀部,制度,因地制宜
+傷,ㄕㄤ,人部,受傷,遍體鱗傷
+攻,ㄍㄨㄥ,攴部,攻擊,攻無不克
+擊,ㄐㄧˊ,手部,打擊,聲東擊西
+權,ㄑㄩㄢˊ,木部,權力,大權在握
+脅,ㄒㄧㄝˊ,肉部,威脅,脅肩諂笑
+復,ㄈㄨˋ,彳部,恢復,死灰復燃
+式,ㄕˋ,弋部,方式,各式各樣
+感,ㄍㄢˇ,心部,感動,感人肺腑
+醒,ㄒㄧㄥˇ,酉部,清醒,大夢初醒
 全世界最勇敢的女孩||短語練習|結構：（名詞）最（形容詞）的（名詞）|例句(全國最高聳的山峰)|例句(全球最賣座的電影)
 展現出無比勇氣的馬拉拉||短語練習|結構：︵動詞︶出無比︵名詞︶的︵名詞︶|例句(激發出無比潛力的學生)|例句(展露出無比熱情的球迷)
 垂危|ㄔㄨㄟˊ ㄨㄟˊ|造句練習|瀕臨危險或是將近死亡。|例句(正當我軍垂危之際，幸好援軍及時趕到。)|例句(這位醫師妙手回春，治好了許多生命垂危的病患。)
@@ -589,25 +616,25 @@
 縱使……卻……||句型練習|轉折複句。語意做了一個轉折，意思相反或相對。|例句(縱使前方困難重重，他卻依然保持樂觀勇往直前。)|例句(縱使強烈寒流來襲，卻不減跑者心中的熱情。)
 就算……也……||句型練習|假設複句。|例句(他的個性好強，就算受到委屈，也不會輕易向人訴苦。)|例句()
 ===L9===
-維|ㄨㄟˊ|糸部|保持、繫結,或綱領。|例句(維持)|例句(進退維谷)
-戰|ㄓㄢˋ|戈部|打仗、爭鬥,或害怕發抖。|例句(戰爭)|例句(百戰百勝)
-崎|ㄑㄧˊ|山部|山路高低不平。|例句(崎嶇)|例句(崎嶇不平)
-嶇|ㄑㄩ|山部|山路險阻不平。|例句(崎嶇)|例句(崎嶇不平)
-拳|ㄑㄩㄢˊ|手部|手指向內彎曲握緊的形狀。|例句(拳頭)|例句(赤手空拳)
-癌|ㄞˊ|疒部|惡性腫瘤。|例句(癌症)|例句(防癌)
-症|ㄓㄥˋ|疒部|疾病的表象。|例句(症狀)|例句(對症下藥)
-銅|ㄊㄨㄥˊ|金部|金屬元素。|例句(銅牌)|例句(銅牆鐵壁)
-牌|ㄆㄞˊ|片部|標誌、版子。|例句(獎牌)|例句(招牌)
-屢|ㄌㄩˇ|尸部|常常、多次。|例句(屢次)|例句(屢見不鮮)
-減|ㄐㄧㄢˇ|水部|減少、扣除。|例句(減少)|例句(偷工減料)
-予|ㄩˇ|亅部|給予、送給。|例句(給予)|例句(予取予求)
-幼|ㄧㄡˋ|幺部|年紀小、未成熟。|例句(幼兒)|例句(扶老攜幼)
-椰|ㄧㄝ|木部|植物名。產於熱帶。|例句(椰子)|例句(椰樹)
-即|ㄐㄧˊ|卩部|靠近,或當下、立刻。|例句(立即)|例句(一觸即發)
-腐|ㄈㄨˇ|肉部|爛掉、陳舊,或指豆製品。|例句(豆腐)|例句(朽木腐草)
-衝|ㄔㄨㄥ|行部|衝撞、猛烈向前。|例句(衝動)|例句(怒髮衝冠)
-鍛|ㄉㄨㄢˋ|金部|淬鍊金屬,或指體育訓練。|例句(鍛鍊)|例句(鍛造)
-鍊|ㄌㄧㄢˋ|金部|金屬環狀鎖鏈,或精練考驗。|例句(鍛鍊)|例句(項鍊)
+維,ㄨㄟˊ,糸部,維持,進退維谷
+戰,ㄓㄢˋ,戈部,戰爭,百戰百勝
+崎,ㄑㄧˊ,山部,崎嶇,崎嶇不平
+嶇,ㄑㄩ,山部,崎嶇,崎嶇不平
+拳,ㄑㄩㄢˊ,手部,拳頭,赤手空拳
+癌,ㄞˊ,疒部,癌症,防癌
+症,ㄓㄥˋ,疒部,症狀,對症下藥
+銅,ㄊㄨㄥˊ,金部,銅牌,銅牆鐵壁
+牌,ㄆㄞˊ,片部,獎牌,招牌
+屢,ㄌㄩˇ,尸部,屢次,屢見不鮮
+減,ㄐㄧㄢˇ,水部,減少,偷工減料
+予,ㄩˇ,亅部,給予,予取予求
+幼,ㄧㄡˋ,幺部,幼兒,扶老攜幼
+椰,ㄧㄝ,木部,椰子,椰樹
+即,ㄐㄧˊ,卩部,立即,一觸即發
+腐,ㄈㄨˇ,肉部,豆腐,朽木腐草
+衝,ㄔㄨㄥ,行部,衝動,怒髮衝冠
+鍛,ㄉㄨㄢˋ,金部,鍛鍊,鍛造
+鍊,ㄌㄧㄢˋ,金部,鍛鍊,項鍊
 磨練出堅強的意志||短語練習|結構：（動詞）出（形容詞）的（名詞）|例句(締造出輝煌的成果)|例句(設計出獨特的作品)
 將挫折化為前進的動力||短語練習|結構：將（名詞）化為（動詞）的（名詞）|例句(將失敗化為成長的養分)|例句(將傳統化為創新的基礎)
 綻放生命的光彩||短語練習|結構：（動詞）（名詞）的（名詞）|例句(展現學習的成效)|例句(開創事業的高峰)
@@ -621,25 +648,25 @@
 雖然……但……||句型練習|轉折複句。|例句(雖然屢遭挫折，但他百折不撓，最後終於成功。)|例句()
 只要……就……||句型練習|條件複句。|例句(只要用心觀察，就能發現大自然的美妙。)|例句()
 ===L10===
-唐|ㄊㄤˊ|口部|朝代名,或指廣大誇張。|例句(唐朝)|例句(荒唐無稽)
-恬|ㄊㄧㄢˊ|心部|安適平靜、不求名利。|例句(恬靜)|例句(恬不知恥)
-罷|ㄅㄚˋ|罒部|停止、結束,或免去職務。|例句(罷休)|例句(善罷甘休)
-暮|ㄇㄨˋ|日部|太陽下山、傍晚、晚期。|例句(暮色)|例句(朝三暮四)
-掩|ㄧㄢˇ|手部|遮蓋、關上或隱藏。|例句(掩護)|例句(掩耳盜鈴)
-柴|ㄔㄞˊ|木部|供燃燒的木條植物幹。|例句(木柴)|例句(骨瘦如柴)
-扉|ㄈㄟ|戶部|門扇。|例句(門扉)|例句(心扉)
-歸|ㄍㄨㄟ|止部|返回、回到原處,或歸屬。|例句(回歸)|例句(滿載而歸)
-畢|ㄅㄧˋ|田部|結束、完成,或指完全。|例句(畢業)|例句(原形畢露)
-陋|ㄌㄡˋ|阜部|狹小不完美,或粗俗。|例句(簡陋)|例句(孤陋寡聞)
-傍|ㄅㄤˋ|人部|靠近、臨近(多指時間或空間)。|例句(傍晚)|例句(依山傍水)
-確|ㄑㄩㄝˋ|石部|真實的、肯定的。|例句(確定)|例句(千真萬確)
-閒|ㄒㄧㄢˊ|門部|空暇,或指無事安逸。|例句(空閒)|例句(遊手好閒)
-詠|ㄩㄥˇ|言部|吟唱、讚美歌頌。|例句(歌詠)|例句(吟詠)
-幽|ㄧㄡ|幺部|深遠幽靜、昏暗不顯露。|例句(幽靜)|例句(尋幽訪勝)
-眠|ㄇㄧㄢˊ|目部|閉眼休息、睡眠。|例句(睡眠)|例句(不眠不休)
-職|ㄓˊ|耳部|工作、責任,或掌管。|例句(職業)|例句(盡忠職守)
-吟|ㄧㄣˊ|口部|抑揚頓挫地吟詠詩歌,或呻吟。|例句(吟唱)|例句(無病呻吟)
-曠|ㄎㄨㄤˋ|日部|空闊、開朗,或耽誤。|例句(空曠)|例句(心曠神怡)
+唐,ㄊㄤˊ,口部,唐朝,荒唐無稽
+恬,ㄊㄧㄢˊ,心部,恬靜,恬不知恥
+罷,ㄅㄚˋ,罒部,罷休,善罷甘休
+暮,ㄇㄨˋ,日部,暮色,朝三暮四
+掩,ㄧㄢˇ,手部,掩護,掩耳盜鈴
+柴,ㄔㄞˊ,木部,木柴,骨瘦如柴
+扉,ㄈㄟ,戶部,門扉,心扉
+歸,ㄍㄨㄟ,止部,回歸,滿載而歸
+畢,ㄅㄧˋ,田部,畢業,原形畢露
+陋,ㄌㄡˋ,阜部,簡陋,孤陋寡聞
+傍,ㄅㄤˋ,人部,傍晚,依山傍水
+確,ㄑㄩㄝˋ,石部,確定,千真萬確
+閒,ㄒㄧㄢˊ,門部,空閒,遊手好閒
+詠,ㄩㄥˇ,言部,歌詠,吟詠
+幽,ㄧㄡ,幺部,幽靜,尋幽訪勝
+眠,ㄇㄧㄢˊ,目部,睡眠,不眠不休
+職,ㄓˊ,耳部,職業,盡忠職守
+吟,ㄧㄣˊ,口部,吟唱,無病呻吟
+曠,ㄎㄨㄤˋ,日部,空曠,心曠神怡
 流露出真誠的情感||短語練習|結構：（動詞）出（形容詞）的（名詞）|例句(彈奏出動人的樂章)|例句(布置出舒適的房間)
 恬淡|ㄊㄧㄢˊ ㄉㄢˋ|造句練習|清靜淡泊，不求名利。|例句(在湖邊散步，聽著鳥叫聲，感覺特別恬淡自在。)|例句(奶奶的生活很恬淡，每天種花、喝茶，過得快樂又平靜。)
 詩中有畫|ㄕ ㄓㄨㄥ ㄧㄡˇ ㄏㄨㄚˋ|造句練習|形容詩歌意象很美，有如圖畫。|例句(這首詩把玉山描寫得十分優美，真是詩中有畫呀！)|例句(他寫的詩清新動人，充滿詩中有畫的意境。)
@@ -648,25 +675,24 @@
 一邊……一邊……||句型練習|並列複句。表示兩種行為同時進行。|例句(哥哥一邊洗澡，一邊唱歌，心情相當愉快。)|例句(叔叔一邊接電話，一邊做筆記，就怕忘了交代的事。)
 雖然……卻……||句型練習|轉折複句。前後語意轉變。|例句(雖然爸爸工作忙碌，卻很關心我的學習狀況。)|例句(雖然他是個大名鼎鼎的科學家，待人卻十分謙和有禮。)
 ===L11===
-駭|ㄏㄞˋ|馬部|驚嚇、害怕。|例句(驚駭)|例句(駭人聽聞)
-疤|ㄅㄚ|疒部|傷口痊癒後留下的痕跡。|例句(傷疤)|例句(結疤)
-痕|ㄏㄣˊ|疒部|印跡、殘留的跡象。|例句(痕跡)|例句(不著痕跡)
-罐|ㄍㄨㄢˋ|缶部|盛裝物品的圓筒形容器。|例句(罐頭)|例句(水罐)
-咚|ㄉㄨㄥ|口部|象聲詞。敲擊或物體落地的聲音。|例句(叮咚)|例句(咚咚)
-碰|ㄆㄥˋ|石部|碰撞、遇到。|例句(碰撞)|例句(碰壁)
-傾|ㄑㄧㄥ|人部|斜靠、傾倒,或完全倒出。|例句(傾斜)|例句(傾國傾城)
-寮|ㄌㄧㄠˊ|宀部|簡陋的房屋或小屋。|例句(工寮)|例句(茅寮)
-營|ㄧㄥˊ|火部|謀求、建設,或設營住宿。|例句(露營)|例句(步步為營)
-殺|ㄕㄚ|殳部|使生命終結、弄死,或消滅。|例句(殺害)|例句(殺雞儆猴)
-崇|ㄔㄨㄥˊ|山部|高大、尊崇,或推崇。|例句(崇拜)|例句(崇山峻嶺)
-置|ㄓˋ|罒部|放置、設立或購買。|例句(放置)|例句(置之不理)
-奄|ㄧㄢ|大部|氣息微弱,或指瞬間。|例句(奄奄)|例句(奄奄一息)
-翼|ㄧˋ|羽部|鳥類的翅膀,或小心謹慎。|例句(翅翼)|例句(小心翼翼)
-祈|ㄑㄧˊ|示部|向神明求福,或誠心的請求。|例句(祈求)|例句(祈禱)
-禱|ㄉㄠˇ|示部|向神明祈求賜福。|例句(禱告)|例句(祈禱)
-吼|ㄏㄡˇ|口部|野獸大聲叫或發怒咆哮。|例句(怒吼)|例句(大吼大叫)
-喉|ㄏㄡˊ|口部|呼吸與發聲的器官,咽喉。|例句(喉嚨)|例句(如鯁在喉)
-嚨|ㄌㄨㄥˊ|口部|咽喉、喉嚨。|例句(喉嚨)|例句(沙啞)
+駭,ㄏㄞˋ,馬部,驚駭,駭人聽聞
+疤,ㄅㄚ,疒部,傷疤,結疤
+痕,ㄏㄣˊ,疒部,痕跡,不著痕跡
+罐,ㄍㄨㄢˋ,缶部,罐頭,水罐
+咚,ㄉㄨㄥ,口部,叮咚,咚咚響
+碰,ㄆㄥˋ,石部,碰撞,碰面
+傾,ㄑㄧㄥ,人部,傾斜,傾倒
+寮,ㄌㄧㄠˊ,宀部,工寮,寮房
+營,ㄧㄥˊ,火部,露營,營地
+殺,ㄕㄚ,殳部,殺害,殺菌
+崇,ㄔㄨㄥˊ,山部,崇高,崇拜
+置,ㄓˋ,罒部,放置,布置
+奄,ㄧㄢˇ,大部,奄奄一息,奄忽
+翼,ㄧˋ,羽部,羽翼,小心翼翼
+禱,ㄉㄠˇ,示部,祈禱,禱告
+喉,ㄏㄡˊ,口部,喉嚨,咽喉
+吼,ㄏㄡˇ,口部,怒吼,吼叫
+嚨,ㄌㄨㄥˊ,口部,喉嚨,嗓嚨
 鐵罐咚咚作響||短語練習|結構：（名詞）（摹聲詞）作響|例句(雷聲隆隆作響)|例句(樹葉沙沙作響)
 爺爺是部落的傳奇獵人||短語練習|結構：（名詞）是（名詞）的（名詞）。|例句(媽媽是社區的美食專家。)|例句(姐姐是學校的風雲人物。)
 雜草叢生|ㄗㄚˊ ㄘㄠˇ ㄘㄨㄥˊ ㄕㄥ|造句練習|野草生長得很多。|例句(後院荒廢已久，處處雜草叢生。)|例句(這片荒地雜草叢生，但整理後變成美麗的花園。)
@@ -677,25 +703,22 @@
 除了……還……甚至……||句型練習|遞進複句。三者之間有程度差別，越後面意思更進一層。|例句(閱讀除了放鬆心情，還可以增廣見聞，甚至培養寫作能力。)|例句(阿姨除了每天晨跑，還參加路跑，甚至準備出國比賽。)
 ……於是……||句型練習|承接複句。|例句(天空突然下起大雨，於是我們趕緊躲進商店避雨。)|例句()
 ===L12===
-烈|ㄌㄧㄝˋ|火部|猛烈、強大、興盛。|例句(熱烈)|例句(轟轟烈烈)
-暈|ㄩㄣ|日部|頭腦昏沉、旋轉,或指光環。|例句(頭暈)|例句(暈頭轉向)
-昏|ㄏㄨㄣ|日部|黑暗、神智不清,或黃昏。|例句(黃昏)|例句(昏天暗地)
-艙|ㄘㄤ|舟部|船隻或飛機內分隔的房間。|例句(機艙)|例句(船艙)
-途|ㄊㄨˊ|辵部|路途、旅程。|例句(路途)|例句(半途而廢)
-捲|ㄐㄩㄢˇ|手部|裹起來、彎曲,或席捲。|例句(捲起)|例句(風捲殘雲)
-喪|ㄙㄤˋ|口部|失去、死,或情緒低落。|例句(喪失)|例句(垂頭喪氣)
-獸|ㄕㄡˋ|犬部|四足野獸或哺乳類動物。|例句(野獸)|例句(洪水猛獸)
-渾|ㄏㄨㄣˊ|水部|全、整個,或水不清澈。|例句(渾身)|例句(渾然天成)
-擱|ㄍㄜ|手部|放置,或指船隻卡在淺灘。|例句(擱淺)|例句(擱置)
-礁|ㄐㄧㄠ|石部|水中或海面附近的岩石。|例句(暗礁)|例句(觸礁)
-筏|ㄈㄚˊ|竹部|用竹子或木頭綁成的水上工具。|例句(竹筏)|例句(木筏)
-塌|ㄊㄚ|土部|倒塌、下陷。|例句(倒塌)|例句(塌陷)
-捏|ㄋㄧㄝ|手部|用手指夾住,或揉塑形狀。|例句(捏造)|例句(拿捏)
-燒|ㄕㄠ|火部|用火焚燒,或加熱煮熟。|例句(燃燒)|例句(怒火中燒)
-臼|ㄐㄧㄡˋ|臼部|舂米或研磨的石質器具。|例句(石臼)|例句(脫臼)
-烤|ㄎㄠˇ|火部|在火上烘熟。|例句(烤肉)|例句(燒烤)
-爐|ㄌㄨˊ|火部|火爐。|例句(火爐)|例句(爐火純青)
-欲|ㄩˋ|欠部|想要、希望,或心思。|例句(欲望)|例句(暢所欲言)
+烈,ㄌㄧㄝˋ,火部,熱烈,轟轟烈烈
+暈,ㄩㄣˋ,日部,暈倒,頭暈
+昏,ㄏㄨㄣ,日部,昏暗,昏倒
+艙,ㄘㄤ,舟部,船艙,客艙
+途,ㄊㄨˊ,辵部,旅途,路途
+捲,ㄐㄩㄢˇ,手部,捲入,席捲
+喪,ㄙㄤˋ,口部,喪失,沮喪
+獸,ㄕㄡˋ,犬部,野獸,猛獸
+擱,ㄍㄜ,手部,擱置,擱淺
+礁,ㄐㄧㄠ,石部,礁石,暗礁
+筏,ㄈㄚˊ,竹部,竹筏,木筏
+塌,ㄊㄚ,土部,倒塌,塌陷
+鸚,ㄧㄥ,鳥部,鸚鵡,鸚鵡螺
+捏,ㄋㄧㄝ,手部,捏造,捏麵人
+燒,ㄕㄠ,火部,燃燒,燒水
+臼,ㄐㄧㄡˋ,臼部,石臼,臼齒
 一輪火紅的夕陽||短語練習|結構：（量詞）（形容詞）的（名詞）|例句(一本精采的小說)|例句(一片閃耀的星空)
 閃著金光的波浪||短語練習|結構：（動詞）（名詞）的（名詞）|例句(含著淚光的雙眼)|例句(寫滿回憶的日記)
 載浮載沉|ㄗㄞˋ ㄈㄨˊ ㄗㄞˋ ㄔㄣˊ|造句練習|忽浮忽沉，隨著環境浮動起落不定。|例句(他在商場上奮鬥數年，載浮載沉，吃了不少苦。)|例句(海面上載浮載沉的垃圾，嚴重破壞了海洋生態。)
@@ -729,48 +752,54 @@
           continue;
         }
         
-        let parts = line.includes('|') ? line.split('|') : line.split(',');
-        
-        if (parts.length >= 5) {
-          const char = parts[0].trim();
-          const pinyin = parts[1].trim();
-          const bushou = parts[2].trim();
-          let word1 = parts[3].trim();
-          let word2 = parts[4] ? parts[4].trim() : '';
-          
-          let typeStr = "生字";
-          if(bushou.includes('練習')) typeStr = bushou;
+        let typeStr = "生字";
+        let char = "", pinyin = "", bushou = "", charMeaning = "", word1Str = "", word2Str = "";
 
-          let v1Obj = null, v2Obj = null;
-          let charMeaning = "";
-
-          // 判斷是否為「管線格式」的完整資料 (包含字義)
-          if(parts.length === 6) {
-             charMeaning = parts[3].trim(); // 第四個欄位是字義
-             word1 = parts[4].trim();       // 第五個欄位是造詞1
-             word2 = parts[5].trim();       // 第六個欄位是造詞2
-          } else {
-             // 如果是舊的「逗號格式」
-             charMeaning = `生字「${char}」之標準讀音、部首與造詞`;
-             if(typeStr.includes('練習')) charMeaning = word1;
-          }
-          
-          const regex = /([^(（]+)[(（]([^)）]+)[)）]/;
-          
-          const m1 = word1.match(regex);
-          if (m1) v1Obj = { w: m1[1].trim(), m: m1[2].trim() };
-          else if (word1.trim() && word1 !== '例句()') v1Obj = { w: word1.trim(), m: "無解釋" };
-          
-          const m2 = word2.match(regex);
-          if (m2) v2Obj = { w: m2[1].trim(), m: m2[2].trim() };
-          else if (word2.trim() && word2 !== '例句()') v2Obj = { w: word2.trim(), m: "無解釋" };
-
-          defaultWords.push({
-            id: currentId++, lesson: currentL, type: typeStr, 
-            word: char, pinyin: pinyin, info: bushou, 
-            meaning: charMeaning, v1: v1Obj, v2: v2Obj, starred: false
-          });
+        if (line.includes('|')) {
+          // 句型與短語使用 pipe 分隔
+          const parts = line.split('|');
+          char = parts[0] ? parts[0].trim() : '';
+          pinyin = parts[1] ? parts[1].trim() : '';
+          bushou = parts[2] ? parts[2].trim() : '';
+          charMeaning = parts[3] ? parts[3].trim() : '';
+          word1Str = parts[4] ? parts[4].trim() : '';
+          word2Str = parts[5] ? parts[5].trim() : '';
+          typeStr = bushou; // 如: 短語練習, 造句練習, 句型練習
+        } else {
+          // 生字使用逗號分隔
+          const parts = line.split(',');
+          char = parts[0] ? parts[0].trim() : '';
+          pinyin = parts[1] ? parts[1].trim() : '';
+          bushou = parts[2] ? parts[2].trim() : '';
+          word1Str = parts[3] ? parts[3].trim() : '';
+          word2Str = parts[4] ? parts[4].trim() : '';
+          charMeaning = `生字「${char}」的標準解釋與造詞`;
         }
+
+        const regex = /([^(（]+)[(（]([^)）]+)[)）]/;
+        let v1 = null, v2 = null;
+        
+        // 處理 v1
+        const m1 = word1Str.match(regex);
+        if (m1) {
+          v1 = { w: m1[1].trim(), m: m1[2].trim() };
+        } else if (word1Str.trim()) {
+          v1 = { w: typeStr.includes('練習') ? '例句 1' : word1Str.trim(), m: typeStr.includes('練習') ? word1Str.trim() : `造詞：${word1Str.trim()}` };
+        }
+        
+        // 處理 v2
+        const m2 = word2Str.match(regex);
+        if (m2) {
+          v2 = { w: m2[1].trim(), m: m2[2].trim() };
+        } else if (word2Str.trim() && word2Str.trim() !== '例句()') {
+          v2 = { w: typeStr.includes('練習') ? '例句 2' : word2Str.trim(), m: typeStr.includes('練習') ? word2Str.trim() : `成語：${word2Str.trim()}` };
+        }
+
+        defaultWords.push({
+          id: currentId++, lesson: currentL, type: typeStr, 
+          word: char, pinyin: pinyin, info: bushou, 
+          meaning: charMeaning, v1: v1, v2: v2, starred: false
+        });
       }
     }
     
@@ -784,7 +813,6 @@
     let isFlipped = false;
     let soundEnabled = true;
 
-    // 全域變數供測驗精準訂正使用
     let currentQType = '';
     let currentQuizCorrectText = '';
     let quizQuestions = [];
@@ -848,9 +876,7 @@
              if (item.v2 && item.v2.w !== '無') textToRead += "。例句：" + item.v2.m;
           } else {
              if (item.info && item.info.includes('部')) textToRead += "。部首是：" + item.info;
-             textToRead += "。字義解釋：" + item.meaning;
-             if (item.v1 && item.v1.w !== '無') textToRead += "。造詞：" + item.v1.w + "，" + item.v1.m;
-             if (item.v2 && item.v2.w !== '無') textToRead += "。成語：" + item.v2.w + "，" + item.v2.m;
+             textToRead += "。造詞：" + (item.v1 ? item.v1.w : '') + "，成語：" + (item.v2 ? item.v2.w : '');
           }
         }
         const utterance = new SpeechSynthesisUtterance(textToRead);
@@ -875,8 +901,8 @@
     }
 
     function init() {
-      // 升級至 v2026_final_v1，確保強制刷新舊快取
-      const localData = localStorage.getItem('kangxuan_g5a_v2026_final_v1');
+      // 升級至 v15 強制更新緩存
+      const localData = localStorage.getItem('kangxuan_g5a_v15');
       if (localData) {
         try { words = JSON.parse(localData); } catch (e) { words = [...defaultWords]; }
       } else { words = [...defaultWords]; }
@@ -885,7 +911,7 @@
     }
 
     function saveData() {
-      localStorage.setItem('kangxuan_g5a_v2026_final_v1', JSON.stringify(words));
+      localStorage.setItem('kangxuan_g5a_v15', JSON.stringify(words));
       updateCounts();
     }
 
@@ -900,8 +926,8 @@
 
     function updateCounts() {
       const lessonWords = words.filter(w => w.lesson === currentLesson);
-      const vocabCount = lessonWords.filter(w => !w.info || !w.info.includes('練習')).length;
-      const sentenceCount = lessonWords.filter(w => w.info && w.info.includes('練習')).length;
+      const vocabCount = lessonWords.filter(w => w.type === '生字').length;
+      const sentenceCount = lessonWords.filter(w => w.type.includes('練習')).length;
       const starCount = lessonWords.filter(w => w.starred).length;
 
       document.getElementById('count-vocab').innerText = vocabCount;
@@ -937,9 +963,9 @@
       if (currentFilter === 'star') {
         filteredWords = lessonWords.filter(w => w.starred);
       } else if (currentFilter === 'sentence') {
-        filteredWords = lessonWords.filter(w => w.info && w.info.includes('練習'));
+        filteredWords = lessonWords.filter(w => w.type.includes('練習'));
       } else { 
-        filteredWords = lessonWords.filter(w => !w.info || !w.info.includes('練習'));
+        filteredWords = lessonWords.filter(w => w.type === '生字');
       }
 
       if (filteredWords.length === 0) {
@@ -958,15 +984,17 @@
       const item = filteredWords[currentIndex];
       
       const wordEl = document.getElementById('card-word');
-      if (item.word.length > 5) {
+      if (item.word.length > 8) {
+        wordEl.className = "text-2xl sm:text-3xl font-black text-slate-800 tracking-wider leading-snug";
+      } else if (item.word.length > 5) {
         wordEl.className = "text-3xl sm:text-4xl font-black text-slate-800 tracking-wider leading-snug";
       } else {
-        wordEl.className = "text-6xl font-black text-slate-800 tracking-wider leading-snug";
+        wordEl.className = "text-5xl sm:text-6xl font-black text-slate-800 tracking-wider leading-snug";
       }
 
       wordEl.innerText = item.word;
       document.getElementById('card-pinyin-front').innerText = item.pinyin || "";
-      document.getElementById('card-type-tag').innerText = item.info && item.info.includes('練習') ? item.info : "生字學習";
+      document.getElementById('card-type-tag').innerText = item.type.includes('練習') ? item.type : "生字學習";
       document.getElementById('card-index-tag').innerText = `${currentIndex + 1} / ${filteredWords.length}`;
       
       const starClass = item.starred ? "fa-solid fa-star text-amber-400" : "fa-regular fa-star text-slate-300";
@@ -975,7 +1003,7 @@
 
       document.getElementById('card-word-back').innerText = item.word;
       
-      if (item.info && item.info.includes('練習')) {
+      if (item.type.includes('練習')) {
         document.getElementById('card-pinyin-back').innerText = ""; 
       } else {
         document.getElementById('card-pinyin-back').innerText = `${item.pinyin || ""} ${item.info ? '('+item.info+')' : ''}`;
@@ -983,11 +1011,11 @@
       
       let backHtml = `
         <div class="mb-2 text-amber-100 font-bold border-b border-amber-700/50 pb-2 text-base leading-relaxed">
-          <span class="bg-amber-800 text-yellow-200 px-2 py-0.5 rounded text-xs mr-1">${item.info && item.info.includes('練習') ? '說明' : '字義'}</span>${item.meaning}
+          <span class="bg-amber-800 text-yellow-200 px-2 py-0.5 rounded text-xs mr-1">${item.type.includes('練習') ? '說明' : '字義'}</span>${item.meaning}
         </div>
         <div class="space-y-2 mt-3 text-sm">
-          ${item.v1 && item.v1.w !== '無' ? `<div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/50 leading-relaxed"><span class="text-yellow-300 font-black text-sm mr-1">${item.info && item.info.includes('練習') ? '例句：' : '常造詞：'}</span>${item.v1.w}${item.info && item.info.includes('練習') ? '' : ' (' + item.v1.m + ')'}</div>` : ''}
-          ${item.v2 && item.v2.w !== '無' ? `<div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/50 leading-relaxed"><span class="text-yellow-300 font-black text-sm mr-1">${item.info && item.info.includes('練習') ? '例句：' : '成語/延伸：'}</span>${item.v2.w}${item.info && item.info.includes('練習') ? '' : ' (' + item.v2.m + ')'}</div>` : ''}
+          ${item.v1 && item.v1.w !== '無' ? `<div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/50 leading-relaxed"><span class="text-yellow-300 font-black text-sm mr-1">${item.v1.w}</span>${item.v1.m}</div>` : ''}
+          ${item.v2 && item.v2.w !== '無' ? `<div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/50 leading-relaxed"><span class="text-yellow-300 font-black text-sm mr-1">${item.v2.w}</span>${item.v2.m}</div>` : ''}
         </div>
       `;
       document.getElementById('card-meaning-container').innerHTML = backHtml;
@@ -1030,6 +1058,135 @@
       if (targetInMain) { targetInMain.starred = !targetInMain.starred; saveData(); updateView(); }
     }
 
+    // --- 卡片刪除與編輯功能 ---
+    let editingCardId = null;
+
+    function deleteCurrentCard(e) {
+      e.stopPropagation();
+      if (filteredWords.length === 0) return;
+      playSound('click');
+      const item = filteredWords[currentIndex];
+      if(confirm(`確定要刪除「${item.word}」這張卡片嗎？\n(刪除後無法復原喔)`)) {
+        words = words.filter(w => w.id !== item.id);
+        saveData();
+        setFilter(currentFilter); // 重新整理畫面
+      }
+    }
+
+    function deleteCardById(id) {
+      playSound('click');
+      if(confirm(`確定要刪除這張卡片嗎？`)) {
+        words = words.filter(w => w.id !== id);
+        saveData();
+        renderWordList();
+        
+        // 如果剛好是畫面上顯示的那張，就重置索引
+        if (filteredWords[currentIndex] && filteredWords[currentIndex].id === id) {
+           currentIndex = 0;
+        }
+        updateCounts();
+        if(!document.getElementById('list-modal').classList.contains('hidden')){
+           updateView(); 
+        } else {
+           setFilter(currentFilter);
+        }
+      }
+    }
+
+    function editCurrentCard(e) {
+      e.stopPropagation();
+      if (filteredWords.length === 0) return;
+      openEditModal(filteredWords[currentIndex].id);
+    }
+
+    function openEditModal(id = null) {
+      playSound('click'); 
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      const modal = document.getElementById('add-modal');
+      modal.classList.remove('hidden');
+
+      if (id !== null) {
+        editingCardId = id;
+        const item = words.find(w => w.id === id);
+        document.getElementById('modal-title').innerText = "✏️ 編輯卡片內容";
+        document.getElementById('new-lesson-code').value = item.lesson;
+        document.getElementById('new-type-code').value = item.type.includes('練習') ? '句型練習' : '生字';
+        document.getElementById('new-word').value = item.word;
+        document.getElementById('new-pinyin').value = item.pinyin || '';
+        document.getElementById('new-info').value = item.info || '';
+        document.getElementById('new-meaning').value = item.meaning || '';
+        document.getElementById('new-v1').value = item.v1 ? (item.type.includes('練習') ? item.v1.m : item.v1.w) : '';
+        document.getElementById('new-v2').value = item.v2 ? (item.type.includes('練習') ? item.v2.m : item.v2.w) : '';
+      } else {
+        editingCardId = null;
+        document.getElementById('modal-title').innerText = "✨ 新增補充卡片";
+        document.getElementById('new-lesson-code').value = currentLesson;
+        document.getElementById('new-type-code').value = '生字';
+        document.getElementById('new-word').value = '';
+        document.getElementById('new-pinyin').value = '';
+        document.getElementById('new-info').value = '';
+        document.getElementById('new-meaning').value = '';
+        document.getElementById('new-v1').value = '';
+        document.getElementById('new-v2').value = '';
+      }
+    }
+
+    function closeAddModal() { 
+      playSound('click'); 
+      document.getElementById('add-modal').classList.add('hidden'); 
+    }
+
+    function saveNewWord() {
+      playSound('click');
+      const lesson = document.getElementById('new-lesson-code').value || "L1";
+      const typeCode = document.getElementById('new-type-code').value;
+      const word = document.getElementById('new-word').value.trim();
+      const pinyin = document.getElementById('new-pinyin').value.trim();
+      const info = document.getElementById('new-info').value.trim();
+      const meaning = document.getElementById('new-meaning').value.trim();
+      const v1Str = document.getElementById('new-v1').value.trim();
+      const v2Str = document.getElementById('new-v2').value.trim();
+
+      if (!word) { alert('請至少輸入「生字/標題」！'); return; }
+      
+      let infoStr = info || (typeCode === "生字" ? "補充生字" : "句型練習");
+      let v1Obj = null, v2Obj = null;
+
+      if (typeCode.includes('練習')) {
+        if(v1Str) v1Obj = { w: '例句 1', m: v1Str };
+        if(v2Str) v2Obj = { w: '例句 2', m: v2Str };
+      } else {
+        if(v1Str) v1Obj = { w: v1Str, m: `造詞：${v1Str}` };
+        if(v2Str) v2Obj = { w: v2Str, m: `成語/延伸：${v2Str}` };
+      }
+
+      if (editingCardId !== null) {
+        const target = words.find(w => w.id === editingCardId);
+        target.lesson = lesson;
+        target.type = typeCode;
+        target.word = word;
+        target.pinyin = pinyin;
+        target.info = infoStr;
+        target.meaning = meaning;
+        target.v1 = v1Obj;
+        target.v2 = v2Obj;
+        alert('卡片編輯成功！');
+      } else {
+        const newId = words.length > 0 ? Math.max(...words.map(w => w.id)) + 1 : 1;
+        words.push({ id: newId, lesson, type: typeCode, word, pinyin, info: infoStr, meaning, v1: v1Obj, v2: v2Obj, starred: true });
+        alert('卡片新增成功！已自動標記為星號。');
+      }
+      
+      currentLesson = lesson; document.getElementById('lesson-select').value = lesson;
+      saveData(); 
+      closeAddModal(); 
+      
+      if(!document.getElementById('list-modal').classList.contains('hidden')){
+         renderWordList();
+      }
+      setFilter(typeCode === "生字" ? 'vocab' : 'sentence');
+    }
+
     function openQuizSetupModal() {
       playSound('click'); 
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -1044,8 +1201,8 @@
       const lessonWords = words.filter(w => w.lesson === currentLesson);
       
       let pool = lessonWords;
-      if (source === 'vocab') pool = lessonWords.filter(w => !w.info || !w.info.includes('練習'));
-      else if (source === 'sentence') pool = lessonWords.filter(w => w.info && w.info.includes('練習'));
+      if (source === 'vocab') pool = lessonWords.filter(w => w.type === '生字');
+      else if (source === 'sentence') pool = lessonWords.filter(w => w.type.includes('練習'));
       else if (source === 'star') pool = lessonWords.filter(w => w.starred);
 
       if (pool.length < 3) {
@@ -1077,17 +1234,25 @@
       renderQuizQuestion();
     }
 
+    // 進階題型測驗邏輯
     function renderQuizQuestion() {
       document.getElementById('quiz-feedback').innerText = '';
       document.getElementById('quiz-next-btn').classList.add('hidden');
       const q = quizQuestions[currentQuizIndex];
       document.getElementById('quiz-progress').innerText = `${currentQuizIndex + 1} / ${quizQuestions.length}`;
 
-      // 決定題型：確保不會混淆生字與句型的邏輯
-      let availableTypes = ['meaning', 'reverse'];
-      if (q.type === '生字' && q.info && q.info.includes('部')) availableTypes.push('radical');
-      if (q.info && q.info.includes('練習')) availableTypes = ['meaning']; // 句型短語只考解釋
-
+      let availableTypes = [];
+      if (q.type === '生字') {
+         // 生字不再考字義，只考部首與造詞
+         if (q.info && q.info.includes('部')) availableTypes.push('radical');
+         if (q.v1 && q.v1.w !== '無') availableTypes.push('vocab1');
+         if (q.v2 && q.v2.w !== '無') availableTypes.push('vocab2');
+      } else {
+         // 句型與短語考字義與反向測驗
+         availableTypes = ['meaning', 'reverse'];
+      }
+      
+      if(availableTypes.length === 0) availableTypes = ['meaning']; // 備用防錯
       currentQType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
 
       let distractors = [];
@@ -1104,7 +1269,7 @@
         }
         distractors = uniquePool.slice(0, 3);
         if (distractors.length < 3) {
-            const backups = ["水部", "木部", "人部", "手部", "口部", "心部", "金部", "糸部", "艸部", "火部", "言部", "辵部"].filter(r => !uniqueSet.has(r));
+            const backups = ["虫部", "巾部", "水部", "疒部", "歹部", "口部", "子部", "力部", "隹部", "宀部", "貝部", "大部", "犬部", "言部", "土部", "走部"].filter(r => !uniqueSet.has(r));
             while (distractors.length < 3 && backups.length > 0) {
                 const r = backups.pop();
                 uniqueSet.add(r);
@@ -1112,6 +1277,7 @@
             }
         }
         currentQuizCorrectText = q.info;
+
       } else if (currentQType === 'meaning') {
         let pool = words.filter(w => w.id !== q.id && w.type === q.type && w.meaning !== q.meaning);
         if(pool.length < 3) pool = words.filter(w => w.id !== q.id && w.meaning !== q.meaning);
@@ -1125,7 +1291,34 @@
         }
         distractors = uniquePool.slice(0, 3);
         currentQuizCorrectText = q.meaning;
-      } else { 
+
+      } else if (currentQType === 'vocab1') {
+        let pool = words.filter(w => w.id !== q.id && w.type === '生字' && w.v1 && w.v1.w !== q.v1.w);
+        let uniqueSet = new Set([q.v1.w]);
+        let uniquePool = [];
+        for(let w of pool.sort(() => 0.5 - Math.random())) {
+          if(!uniqueSet.has(w.v1.w)) {
+            uniqueSet.add(w.v1.w);
+            uniquePool.push(w);
+          }
+        }
+        distractors = uniquePool.slice(0, 3);
+        currentQuizCorrectText = q.v1.w;
+
+      } else if (currentQType === 'vocab2') {
+        let pool = words.filter(w => w.id !== q.id && w.type === '生字' && w.v2 && w.v2.w !== q.v2.w);
+        let uniqueSet = new Set([q.v2.w]);
+        let uniquePool = [];
+        for(let w of pool.sort(() => 0.5 - Math.random())) {
+          if(!uniqueSet.has(w.v2.w)) {
+            uniqueSet.add(w.v2.w);
+            uniquePool.push(w);
+          }
+        }
+        distractors = uniquePool.slice(0, 3);
+        currentQuizCorrectText = q.v2.w;
+
+      } else { // reverse
         let pool = words.filter(w => w.id !== q.id && w.type === q.type && w.word !== q.word);
         if(pool.length < 3) pool = words.filter(w => w.id !== q.id && w.word !== q.word);
         let uniqueSet = new Set([q.word]);
@@ -1146,8 +1339,32 @@
       let subtitleText = "選擇正確答案";
       let optionsHtml = "";
 
-      if (currentQType === 'meaning') {
-        subtitleText = q.info && q.info.includes('練習') ? "📖 句型/短語測驗" : "📖 字義測驗";
+      if (currentQType === 'radical') {
+        subtitleText = "✍️ 部首測驗";
+        questionText = `生字「${q.word}」的部首是？`;
+        optionsHtml = options.map((opt, i) => `
+          <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-lg transition-all flex items-center justify-between shadow-sm active:scale-95">
+            <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.info}</span>
+          </button>
+        `).join('');
+      } else if (currentQType === 'vocab1') {
+        subtitleText = "🔍 造詞測驗";
+        questionText = `下列哪一個是生字「${q.word}」的造詞？`;
+        optionsHtml = options.map((opt, i) => `
+          <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-lg transition-all flex items-center justify-between shadow-sm active:scale-95">
+            <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.v1 ? opt.v1.w : ''}</span>
+          </button>
+        `).join('');
+      } else if (currentQType === 'vocab2') {
+        subtitleText = "🔍 成語/延伸測驗";
+        questionText = `下列哪一個是生字「${q.word}」的相關成語？`;
+        optionsHtml = options.map((opt, i) => `
+          <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-lg transition-all flex items-center justify-between shadow-sm active:scale-95">
+            <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.v2 ? opt.v2.w : ''}</span>
+          </button>
+        `).join('');
+      } else if (currentQType === 'meaning') {
+        subtitleText = "📖 句型/短語測驗";
         questionText = `「${q.word}」的意思是？`;
         optionsHtml = options.map((opt, i) => `
           <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-sm sm:text-base transition-all flex items-center justify-between shadow-sm active:scale-95">
@@ -1160,14 +1377,6 @@
         optionsHtml = options.map((opt, i) => `
           <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-lg transition-all flex items-center justify-between shadow-sm active:scale-95">
             <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.word}</span>
-          </button>
-        `).join('');
-      } else if (currentQType === 'radical') {
-        subtitleText = "✍️ 部首測驗";
-        questionText = `生字「${q.word}」的部首是？`;
-        optionsHtml = options.map((opt, i) => `
-          <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-lg transition-all flex items-center justify-between shadow-sm active:scale-95">
-            <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.info}</span>
           </button>
         `).join('');
       }
@@ -1207,16 +1416,20 @@
 
         let explainText = "";
         if (currentQType === 'radical') {
-            explainText = `<span class="text-rose-700">【部首錯題】</span>「${q.word}」的部首是：<span class="text-rose-800 ml-1 font-extrabold">${q.info}</span>`;
+            explainText = `「${q.word}」的部首是：<span class="text-rose-800 ml-1 font-extrabold">${q.info}</span>`;
+        } else if (currentQType === 'vocab1') {
+            explainText = `「${q.word}」的造詞是：<span class="text-rose-800 ml-1 font-extrabold">${q.v1 ? q.v1.w : ''}</span>`;
+        } else if (currentQType === 'vocab2') {
+            explainText = `「${q.word}」的成語是：<span class="text-rose-800 ml-1 font-extrabold">${q.v2 ? q.v2.w : ''}</span>`;
         } else if (currentQType === 'reverse') {
-            explainText = `<span class="text-rose-700">【認字錯題】</span> 這個解釋的字詞是：<span class="text-rose-800 ml-1 font-extrabold">${q.word}</span>`;
+            explainText = `這個解釋的詞是：<span class="text-rose-800 ml-1 font-extrabold">${q.word}</span>`;
         } else {
-            explainText = `<span class="text-rose-700">【字義錯題】</span>「${q.word}」的意思是：<br><span class="text-rose-800 mt-1 block text-left font-extrabold">${q.meaning}</span>`;
+            explainText = `「${q.word}」的意思是：<br><span class="text-rose-800 mt-1 block text-left font-extrabold">${q.meaning}</span>`;
         }
 
         feedback.className = "text-center py-2 text-rose-600 font-bold text-sm sm:text-base";
-        feedback.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> 答錯囉！<br>${explainText}`;
-        wrongWords.push({ wordObj: q, qType: currentQType });
+        feedback.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> 答錯囉！${explainText}`;
+        wrongWords.push({ wordObj: q, qType: currentQType, correctTxt: currentQuizCorrectText });
       }
       document.getElementById('quiz-next-btn').classList.remove('hidden');
     }
@@ -1243,18 +1456,19 @@
       if (wrongWords.length > 0) {
         wrongSummary.classList.remove('hidden'); addWrongBtn.classList.remove('hidden');
         
-        // 獨特錯題過濾
         const uniqueWrongsMap = new Map();
         wrongWords.forEach(w => uniqueWrongsMap.set(w.wordObj.id + '_' + w.qType, w));
         
         wrongList.innerHTML = Array.from(uniqueWrongsMap.values()).map(w => {
           const obj = w.wordObj;
           if (w.qType === 'radical') {
-            return `<li><span class="text-rose-700">【部首】</span> <strong>${obj.word}</strong> 的部首是：<span class="text-rose-600">${obj.info}</span></li>`;
+            return `<li><strong>${obj.word}</strong> 的部首是：<span class="text-rose-600">${obj.info}</span></li>`;
+          } else if (w.qType === 'vocab1' || w.qType === 'vocab2') {
+            return `<li><strong>${obj.word}</strong> 的造詞/成語是：<span class="text-rose-600">${w.correctTxt}</span></li>`;
           } else if (w.qType === 'reverse') {
-            return `<li><span class="text-rose-700">【認字】</span> 解釋為「${obj.meaning}」的是：<span class="text-rose-600">${obj.word}</span></li>`;
+            return `<li>解釋為「${obj.meaning}」的是：<span class="text-rose-600">${obj.word}</span></li>`;
           } else {
-            return `<li><span class="text-rose-700">【字義】</span> <strong>${obj.word}</strong> 的意思是：<span class="text-rose-600">${obj.meaning}</span></li>`;
+            return `<li><strong>${obj.word}</strong> 的意思是：<span class="text-rose-600">${obj.meaning}</span></li>`;
           }
         }).join('');
       } else {
@@ -1285,17 +1499,21 @@
       const container = document.getElementById('word-list-container');
       const lessonWords = words.filter(w => w.lesson === currentLesson);
       container.innerHTML = lessonWords.map((w) => `
-        <div class="py-3 flex justify-between items-start gap-2">
+        <div class="py-3 flex justify-between items-start gap-2 border-b border-slate-100">
           <div class="flex-1">
             <div class="flex items-center gap-2">
               <span class="font-extrabold text-slate-800 text-lg">${w.word}</span>
               <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">${w.info && w.info.includes('練習') ? w.info : w.pinyin}</span>
             </div>
-            <p class="text-xs text-slate-500 mt-1.5 leading-relaxed font-bold">${w.meaning}</p>
+            <p class="text-xs text-slate-500 mt-1.5 leading-relaxed font-bold">${w.type.includes('練習') ? w.meaning : '造詞：' + (w.v1 ? w.v1.w : '') + '、' + (w.v2 ? w.v2.w : '')}</p>
           </div>
-          <button onclick="toggleStarById(${w.id})" class="text-2xl p-1 text-slate-300 hover:text-amber-400">
-            <i class="${w.starred ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star'}"></i>
-          </button>
+          <div class="flex items-center gap-1">
+            <button onclick="openEditModal(${w.id})" class="p-2 text-slate-300 hover:text-emerald-500" title="編輯"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button onclick="deleteCardById(${w.id})" class="p-2 text-slate-300 hover:text-rose-500" title="刪除"><i class="fa-solid fa-trash-can"></i></button>
+            <button onclick="toggleStarById(${w.id})" class="p-2 text-slate-300 hover:text-amber-400" title="加星號">
+              <i class="${w.starred ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star'}"></i>
+            </button>
+          </div>
         </div>
       `).join('');
     }
@@ -1309,31 +1527,6 @@
       }
     }
 
-    function openAddModal() { playSound('click'); document.getElementById('add-modal').classList.remove('hidden'); }
-    function closeAddModal() {
-      playSound('click'); document.getElementById('add-modal').classList.add('hidden');
-      document.getElementById('new-word').value = ''; document.getElementById('new-pinyin').value = ''; document.getElementById('new-meaning').value = '';
-    }
-
-    function saveNewWord() {
-      playSound('click');
-      const lesson = document.getElementById('new-lesson-code').value || "L1";
-      const typeCode = document.getElementById('new-type-code').value;
-      const word = document.getElementById('new-word').value.trim();
-      const pinyin = document.getElementById('new-pinyin').value.trim();
-      const meaning = document.getElementById('new-meaning').value.trim();
-      if (!word || !meaning) { alert('請完整輸入字詞與解釋！'); return; }
-      
-      const newId = words.length > 0 ? Math.max(...words.map(w => w.id)) + 1 : 1;
-      let infoStr = typeCode === "生字" ? "補充生字" : "句型練習";
-      
-      words.push({ id: newId, lesson, type: typeCode, word, pinyin, info: infoStr, meaning, v1: null, v2: null, starred: true });
-      currentLesson = lesson; document.getElementById('lesson-select').value = lesson;
-      saveData(); closeAddModal(); 
-      setFilter(typeCode === "生字" ? 'vocab' : 'sentence');
-      alert(`已成功將內容新增至學習庫！`);
-    }
-
     function openBackupModal() { playSound('click'); document.getElementById('backup-modal').classList.remove('hidden'); }
     function closeBackupModal() { playSound('click'); document.getElementById('backup-modal').classList.add('hidden'); }
 
@@ -1342,7 +1535,7 @@
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(words, null, 2));
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `康軒五上全資料版備份_${new Date().toISOString().slice(0,10)}.json`);
+      downloadAnchor.setAttribute("download", `康軒五上完美版備份_${new Date().toISOString().slice(0,10)}.json`);
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click(); downloadAnchor.remove();
     }
@@ -1363,7 +1556,7 @@
 
     function resetDefaultData() {
       playSound('click');
-      if (confirm('確定要將資料庫重置為最新預設的「康軒五上全資料版」嗎？\n(注意：舊有的星號與新增字詞將會被重置)')) {
+      if (confirm('確定要將資料庫重置為最新預設的「康軒五上完整資料庫」嗎？\n(注意：您手動刪除或新增的字詞將會被重置)')) {
         words = [...defaultWords]; currentLesson = "L1"; document.getElementById('lesson-select').value = "L1";
         saveData(); setFilter('vocab'); closeBackupModal(); alert('已為您載入最新的1-12課完整清單！');
       }
