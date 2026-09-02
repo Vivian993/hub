@@ -89,7 +89,7 @@
                 </div>
 
                 <div id="quizBoard" class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 mb-6 transition-all">
-                    <p class="text-sm text-emerald-600 font-bold mb-3">💬 請問這句話最適合填入哪個選項？</p>
+                    <p class="text-sm text-emerald-600 font-bold mb-3">💬 請問這是哪個選項？</p>
                     <p id="quizQuestionText" class="text-xl md:text-2xl leading-relaxed font-bold text-slate-800"></p>
                 </div>
                 <div id="quizOptions" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
@@ -159,16 +159,11 @@
                 <div class="mt-8 border-t border-slate-100 pt-6">
                     <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2"><span>⚙️</span> 資料備份與還原</h3>
                     <p class="text-sm text-slate-500 mb-4">如果您換手機或是想分享題庫給同學，可以使用「備份碼」。</p>
-                    
                     <div class="flex flex-col gap-3">
-                        <button onclick="exportBackup()" class="w-full py-2 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-700 transition-colors">
-                            📋 複製備份碼 (匯出)
-                        </button>
+                        <button onclick="exportBackup()" class="w-full py-2 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-700 transition-colors">📋 複製備份碼 (匯出)</button>
                         <div class="flex gap-2">
                             <input type="text" id="importBackupInput" placeholder="在此貼上備份碼..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-400">
-                            <button onclick="importBackup()" class="px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-colors shrink-0">
-                                🔄 還原
-                            </button>
+                            <button onclick="importBackup()" class="px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-colors shrink-0">🔄 還原</button>
                         </div>
                         <div id="backupStatus" class="text-xs font-bold text-center mt-2 hidden"></div>
                     </div>
@@ -177,7 +172,7 @@
         </section>
     </main>
 
-    <!-- 備份結果彈跳視窗 -->
+    <!-- 備份結果視窗 -->
     <div id="backupModal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-2xl max-w-sm w-full mx-4 text-center">
             <h3 class="text-xl font-bold mb-4">備份碼已產生！</h3>
@@ -235,7 +230,6 @@
             renderIdioms(curCat==='全部'? idiomDB : curCat==='錯題本'? idiomDB.filter(i=>wrongList.includes(i.i)) : idiomDB.filter(i=>i.c===curCat));
         }
 
-        // --- 自動分類器 (字數與關鍵字辨識) ---
         function autoCategorize(word, isImport = false) {
             if(word.length < 4) return '語詞';
             if(/[鼠牛虎兔龍蛇馬羊猴雞狗豬貓鳥魚狐狼蛙鶴蚌]/.test(word)) return '動物王國';
@@ -244,7 +238,6 @@
             return isImport ? '學校題庫' : '其他';
         }
 
-        // --- 搜尋功能 ---
         function handleSearch(){
             curCat='全部'; renderCats();
             clearTimeout(searchTimer);
@@ -271,6 +264,7 @@
             }, 600);
         }
 
+        // 強力過濾文言文與多餘舉例
         async function fetchOnlineIdiom(word, isImport){
             try {
                 let res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(word)}.json`);
@@ -279,22 +273,25 @@
                 let h = data.heteronyms?.[0] || {};
                 let defs = h.definitions || [];
                 let fd = defs.find(d=>d.def) || {};
-                let meaning = fd.def ? fd.def.replace(/^[0-9]+\.\s*/,'').replace(/《[^》]*》[：:]?「[^」]*」[。.]?/g, '').trim() : '無解釋';
+                
+                // 去除字典常有的「如：...」、「也作...」以及書名號內的文言文
+                let meaning = fd.def ? fd.def.replace(/^[0-9]+\.\s*/,'')
+                                             .replace(/《[^》]*》[：:]?「[^」]*」[。.]?/g, '')
+                                             .replace(/如[：:]「[^」]*」[。.]?/g, '')
+                                             .replace(/也作「[^」]*」[。.]?/g, '')
+                                             .trim() : '無解釋';
                 let sentence = (fd.example?.[0] || fd.quote?.[0] || '').replace(/《[^》]*》/g, '').trim();
                 let cat = autoCategorize(data.title, isImport);
-                return { c: cat, i: data.title, z: h.bopomofo||'', m: meaning||'無白話解釋', s: sentence||'無例句', d: '', isCustom: isImport };
+                return { c: cat, i: data.title, z: h.bopomofo||'', m: meaning||'無解釋', s: sentence||'無例句', d: '', isCustom: isImport };
             } catch(e) { return null; }
         }
 
-        // --- 單獨刪除功能 ---
         function deleteCustomItem(word) {
             if(!confirm(`確定要將「${word}」刪除嗎？`)) return;
             customDB = customDB.filter(i => i.i !== word);
             idiomDB = idiomDB.filter(i => !(i.i === word && i.isCustom));
             localStorage.setItem('sproutCustomDB', JSON.stringify(customDB));
-            updateCustomPreview(); 
-            renderCats();
-            setCat(curCat);
+            updateCustomPreview(); renderCats(); setCat(curCat);
         }
 
         function renderIdioms(list){
@@ -331,7 +328,6 @@
             window.speechSynthesis.speak(u);
         }
 
-        // --- 匯入邏輯 (含自動分類與顯示刪除按鈕) ---
         async function startImport(){
             let text = document.getElementById('importInput').value;
             let words = text.split(/[\s,，、；;]+/).map(w=>w.trim()).filter(w=>w.length>=2 && w.length<=8);
@@ -349,9 +345,7 @@
                 status.innerText = `🔄 正在抓取「${newWords[i]}」... (${i+1}/${newWords.length})`;
                 let res = await fetchOnlineIdiom(newWords[i], true);
                 if(res){
-                    customDB.unshift(res);
-                    idiomDB.push(res); 
-                    successCount++;
+                    customDB.unshift(res); idiomDB.push(res); successCount++;
                 }
                 await new Promise(r=>setTimeout(r, 400));
             }
@@ -381,31 +375,14 @@
             updateCustomPreview(); renderCats(); setCat('全部');
         }
 
-        // --- 備份與還原功能 ---
+        // --- 備份 ---
         function exportBackup() {
-            if(customDB.length === 0) {
-                alert("您目前還沒有自訂匯入任何資料，不需要備份喔！");
-                return;
-            }
-            
-            // 將 customDB 和 wrongList 打包編碼
-            const backupData = {
-                customDB: customDB,
-                wrongList: wrongList,
-                date: new Date().toLocaleDateString('zh-TW')
-            };
-            
-            // 轉成 JSON，編碼成 Base64 縮短長度，並加上自訂標記
-            const base64Str = btoa(encodeURIComponent(JSON.stringify(backupData)));
-            const backupCode = `🌱萌芽備份-${base64Str}`;
-            
+            if(customDB.length === 0) return alert("您目前還沒有自訂資料，不需要備份喔！");
+            const backupData = { customDB: customDB, wrongList: wrongList, date: new Date().toLocaleDateString('zh-TW') };
+            const backupCode = `🌱萌芽備份-${btoa(encodeURIComponent(JSON.stringify(backupData)))}`;
             const textArea = document.getElementById('backupTextArea');
             textArea.value = backupCode;
-            
-            // 複製到剪貼簿
-            textArea.select();
-            document.execCommand('copy');
-            
+            textArea.select(); document.execCommand('copy');
             document.getElementById('backupModal').classList.remove('hidden');
         }
 
@@ -413,69 +390,36 @@
             const inputEl = document.getElementById('importBackupInput');
             let code = inputEl.value.trim();
             const statusEl = document.getElementById('backupStatus');
-            
-            if(!code) {
-                alert("請先貼上備份碼喔！");
-                return;
-            }
-            
+            if(!code) return alert("請先貼上備份碼喔！");
             statusEl.classList.remove('hidden');
-            
             if(!code.startsWith('🌱萌芽備份-')) {
-                statusEl.innerText = "❌ 備份碼格式錯誤，請確認是否有複製完整。";
-                statusEl.className = "text-xs font-bold text-center mt-2 text-rose-500 block";
-                return;
+                statusEl.innerText = "❌ 備份碼格式錯誤，請確認是否有複製完整。"; statusEl.className = "text-xs font-bold text-center mt-2 text-rose-500 block"; return;
             }
-            
-            if(!confirm("⚠️ 警告：還原備份會覆蓋您現在手機上自訂的題庫與錯題本資料，確定要繼續嗎？")) return;
-            
+            if(!confirm("⚠️ 警告：還原備份會覆蓋目前的自訂題庫與錯題本，確定要繼續嗎？")) return;
             try {
-                // 解碼
-                const base64Str = code.replace('🌱萌芽備份-', '');
-                const jsonStr = decodeURIComponent(atob(base64Str));
+                const jsonStr = decodeURIComponent(atob(code.replace('🌱萌芽備份-', '')));
                 const parsedData = JSON.parse(jsonStr);
-                
-                if(!parsedData.customDB || !Array.isArray(parsedData.customDB)) throw new Error('Data invalid');
-                
-                // 恢復錯題本
                 wrongList = parsedData.wrongList || [];
                 localStorage.setItem('sproutWrong', JSON.stringify(wrongList));
-                
-                // 恢復自訂資料
-                // 1. 先從總資料庫移除原本的自訂資料
                 idiomDB = idiomDB.filter(i => !i.isCustom);
-                
-                // 2. 替換 customDB
                 customDB = parsedData.customDB;
                 localStorage.setItem('sproutCustomDB', JSON.stringify(customDB));
-                
-                // 3. 把還原的資料加進總資料庫
                 idiomDB = idiomDB.concat(customDB);
-                
                 inputEl.value = '';
                 statusEl.innerText = `✅ 還原成功！來自 ${parsedData.date} 的備份資料。`;
                 statusEl.className = "text-xs font-bold text-center mt-2 text-emerald-500 block";
-                
-                // 更新畫面
-                updateCustomPreview(); 
-                renderCats(); 
-                setCat('全部');
-                
+                updateCustomPreview(); renderCats(); setCat('全部');
                 setTimeout(() => { statusEl.classList.add('hidden'); }, 3000);
-                
             } catch(e) {
-                statusEl.innerText = "❌ 備份碼解析失敗，可能是複製過程中損毀了。";
-                statusEl.className = "text-xs font-bold text-center mt-2 text-rose-500 block";
+                statusEl.innerText = "❌ 解析失敗，可能是複製過程中損毀了。"; statusEl.className = "text-xs font-bold text-center mt-2 text-rose-500 block";
             }
         }
-
 
         // --- 遊戲邏輯 ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playGameSound(type) {
             if(audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+            const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
             osc.connect(gainNode); gainNode.connect(audioCtx.destination);
             if(type === 'correct') {
                 osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.1);
@@ -494,7 +438,6 @@
             if(audioCtx.state === 'suspended') audioCtx.resume();
             let c=document.getElementById('quizCategory').value, cnt=parseInt(document.getElementById('quizCount').value);
             let pool= c==='ALL'? idiomDB : c==='REVIEW'? idiomDB.filter(i=>wrongList.includes(i.i)) : idiomDB.filter(i=>i.c===c);
-            
             if(pool.length<4) return alert(`「${c}」的題目不夠 4 題喔！請先去匯入或選其他分類。`);
             
             qList = pool.sort(()=>.5-Math.random()).slice(0, Math.min(cnt, pool.length));
@@ -518,8 +461,9 @@
             document.getElementById('quizNextBtnBox').classList.add('hidden');
             document.getElementById('quizBoard').classList.remove('animate-shake', 'animate-pop');
             
-            let qTxt = q.s.replace(new RegExp(q.i,'g'), "＿＿＿＿");
-            if(qTxt===q.s) qTxt=`${q.m} —— 請選出符合這個意思的選項：＿＿＿＿`;
+            // 💡 完全改掉！統一考「意思」，並隱藏解釋中可能漏餡的成語字眼
+            let safeMeaning = q.m.replace(new RegExp(q.i, 'g'), "〇〇〇〇");
+            let qTxt = `意思是指：「${safeMeaning}」\n\n請問這是哪個選項？`;
             document.getElementById('quizQuestionText').innerText = qTxt;
 
             let opts = [q].concat(idiomDB.filter(i=>i.i!==q.i).sort(()=>.5-Math.random()).slice(0,3)).sort(()=>.5-Math.random());
@@ -601,8 +545,11 @@
                 area.innerHTML=`<div class="print-title">🌱 解釋講義</div><div style="display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #ccc;padding-bottom:10px;"><span>班級：____ 座號：__ 姓名：_______</span><span>日期：${date}</span></div>`+ 
                 data.map((i,idx)=>`<div class="print-item"><strong>${idx+1}. 【${i.i}】</strong> (${i.z})<br>📖 意思：${i.m}<br>✍️ 例句：${i.s}</div>`).join('');
             }else{
-                area.innerHTML=`<div class="print-title">📝 例句填空</div><div style="display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #ccc;padding-bottom:10px;"><span>班級：____ 座號：__ 姓名：_______</span><span>得分：_______</span></div><p style="margin-bottom:15px;font-weight:bold;">※ 請填入正確的選項：</p><div style="margin-bottom:30px;padding:15px;border:1px solid #000;border-radius:5px;line-height:2;">${data.map(i=>i.i).sort(()=>.5-Math.random()).join('　｜　')}</div>`+
-                data.map((i,idx)=>{ let q=i.s.replace(new RegExp(i.i,'g'),"(　　)"); return `<div class="print-item"><strong>${idx+1}.</strong> ${q===i.s ? i.m+" —— 請問這是？(　　)" : q}</div>`; }).join('')+`<div class="page-break"></div><div class="print-title">✅ 解答參考</div>`+data.map((i,idx)=>`<div class="print-item"><strong>${idx+1}.</strong> ${i.i}</div>`).join('');
+                area.innerHTML=`<div class="print-title">📝 選擇考卷</div><div style="display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #ccc;padding-bottom:10px;"><span>班級：____ 座號：__ 姓名：_______</span><span>得分：_______</span></div><p style="margin-bottom:15px;font-weight:bold;">※ 請選出最符合意思的選項：</p><div style="margin-bottom:30px;padding:15px;border:1px solid #000;border-radius:5px;line-height:2;">${data.map(i=>i.i).sort(()=>.5-Math.random()).join('　｜　')}</div>`+
+                data.map((i,idx)=>{ 
+                    let safeM = i.m.replace(new RegExp(i.i, 'g'), "〇〇〇〇");
+                    return `<div class="print-item"><strong>${idx+1}.</strong> 意思是：「${safeM}」 —— 請問這是？(　　)</div>`; 
+                }).join('')+`<div class="page-break"></div><div class="print-title">✅ 解答參考</div>`+data.map((i,idx)=>`<div class="print-item"><strong>${idx+1}.</strong> ${i.i}</div>`).join('');
             }
             window.print();
         }
