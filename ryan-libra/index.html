@@ -17,30 +17,13 @@
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
     }
-    .card-flip {
-      perspective: 1000px;
-    }
-    .card-inner {
-      transition: transform 0.5s;
-      transform-style: preserve-3d;
-    }
-    .card-inner.is-flipped {
-      transform: rotateY(180deg);
-    }
-    .card-front, .card-back {
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-    }
-    .card-back {
-      transform: rotateY(180deg);
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
-    }
+    .card-flip { perspective: 1000px; }
+    .card-inner { transition: transform 0.5s; transform-style: preserve-3d; }
+    .card-inner.is-flipped { transform: rotateY(180deg); }
+    .card-front, .card-back { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+    .card-back { transform: rotateY(180deg); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
   </style>
 </head>
 <body class="bg-amber-50 min-h-screen text-slate-800 flex flex-col justify-between selection:bg-amber-200">
@@ -50,14 +33,12 @@
     <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-2">
         <i class="fa-solid fa-graduation-cap text-2xl text-yellow-300"></i>
-        <h1 class="text-lg font-extrabold tracking-wide">康軒五上國語隨身卡</h1>
+        <h1 class="text-lg font-extrabold tracking-wide">康軒五上隨身卡</h1>
       </div>
       <div class="flex items-center gap-2">
-        <!-- 音效開關按鈕 -->
         <button id="sound-toggle-btn" onclick="toggleSound()" class="text-xs bg-amber-700 hover:bg-amber-800 border border-amber-400 p-2 rounded-xl text-yellow-300" title="切換音效開關">
           <i id="sound-icon" class="fa-solid fa-volume-high text-sm"></i>
         </button>
-        <!-- 備份管理按鈕 -->
         <button onclick="openBackupModal()" class="text-xs bg-amber-700 hover:bg-amber-800 border border-amber-400 px-2.5 py-1.5 rounded-xl flex items-center space-x-1 font-bold">
           <i class="fa-solid fa-floppy-disk"></i>
           <span>管理/備份</span>
@@ -103,28 +84,29 @@
           <i class="fa-solid fa-gamepad text-emerald-600"></i>測驗
         </button>
       </div>
-
-      <p id="mode-tip" class="text-xs text-amber-800/80 text-center font-bold mb-2">
-        💡 點擊右上角 <i class="fa-solid fa-pen-to-square"></i> 可直接修改卡片喔！
-      </p>
     </div>
 
     <!-- 單字卡視圖 -->
     <div id="flashcard-view" class="flex-1 flex flex-col justify-center my-2">
       <div id="card-container" class="card-flip w-full min-h-[380px] cursor-pointer" onclick="flipCard()">
-        <div id="card-inner" class="card-inner relative w-full h-full min-h-[380px] bg-white rounded-3xl shadow-xl border-4 border-amber-200 flex flex-col justify-between p-6">
+        <div id="card-inner" class="card-inner relative w-full h-full min-h-[380px] bg-white rounded-3xl shadow-xl border-4 border-amber-200 flex flex-col justify-between p-5">
           
+          <!-- 卡片正面 -->
           <div class="card-front absolute inset-0 p-5 flex flex-col justify-between bg-white rounded-3xl">
             <div class="flex justify-between items-start">
-              <div>
-                <span id="card-type-tag" class="text-xs font-black text-amber-700 bg-amber-100 px-3 py-1 rounded-full">生字學習</span>
-                <span id="card-index-tag" class="text-xs font-bold text-slate-400 ml-2">1 / 20</span>
+              <!-- ✅ 超明顯的編輯與刪除按鈕 -->
+              <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200">
+                <button onclick="editCurrentCard(event)" class="text-sm font-bold text-slate-600 hover:text-emerald-600 px-2 border-r border-slate-300" title="修改卡片">
+                  <i class="fa-solid fa-pen-to-square"></i> 修改
+                </button>
+                <button onclick="deleteCurrentCard(event)" class="text-sm font-bold text-slate-600 hover:text-rose-600 px-2" title="刪除卡片">
+                  <i class="fa-solid fa-trash-can"></i> 刪除
+                </button>
               </div>
-              <!-- ✅ 編輯、刪除、星號 按鈕組 -->
-              <div class="flex items-center gap-2 sm:gap-3 bg-slate-50 p-1.5 rounded-xl border border-slate-100 shadow-sm">
-                <button onclick="editCurrentCard(event)" class="text-lg sm:text-xl text-slate-400 hover:text-emerald-500 transition-colors px-1" title="編輯卡片"><i class="fa-solid fa-pen-to-square"></i></button>
-                <button onclick="deleteCurrentCard(event)" class="text-lg sm:text-xl text-slate-400 hover:text-rose-500 transition-colors px-1" title="刪除卡片"><i class="fa-solid fa-trash-can"></i></button>
-                <button onclick="toggleStar(event)" class="text-xl sm:text-2xl text-slate-300 hover:text-amber-400 transition-colors px-1" title="標記星號">
+              
+              <div class="flex items-center">
+                <span id="card-index-tag" class="text-xs font-bold text-slate-400 mr-2">1 / 20</span>
+                <button onclick="toggleStar(event)" class="text-2xl text-slate-300 hover:text-amber-400 transition-colors p-1" title="標記星號">
                   <i id="star-icon" class="fa-solid fa-star"></i>
                 </button>
               </div>
@@ -141,27 +123,23 @@
             </div>
 
             <div class="text-center text-xs text-slate-400 flex items-center justify-center gap-1 font-semibold">
-              <i class="fa-solid fa-hand-pointer"></i> 點擊卡片空白處翻面，將會自動朗讀
+              <i class="fa-solid fa-hand-pointer"></i> 點擊空白處翻面，將會自動朗讀
             </div>
           </div>
 
+          <!-- 卡片背面 -->
           <div class="card-back absolute inset-0 p-5 flex flex-col justify-between bg-amber-900 text-white rounded-3xl">
             <div class="flex justify-between items-start border-b border-amber-700 pb-2">
-              <div class="flex items-center gap-2 overflow-hidden">
+              <div class="flex items-center gap-3 overflow-hidden">
                 <h3 id="card-word-back" class="text-xl sm:text-2xl font-black text-yellow-300 truncate"></h3>
-                <button onclick="playPronunciation(event, 'back')" class="text-amber-900 bg-yellow-400 hover:bg-yellow-300 rounded-full w-8 h-8 flex-shrink-0 flex items-center justify-center transition-colors shadow-sm active:scale-95" title="重新朗讀全部">
+                <button onclick="playPronunciation(event, 'back')" class="text-amber-900 bg-yellow-400 hover:bg-yellow-300 rounded-full w-8 h-8 flex-shrink-0 flex items-center justify-center transition-colors shadow-sm active:scale-95" title="點擊重新朗讀全部">
                   <i class="fa-solid fa-volume-high text-sm"></i>
                 </button>
                 <span id="card-pinyin-back" class="text-xs sm:text-sm font-bold text-amber-200 ml-1 truncate"></span>
               </div>
-              <!-- ✅ 編輯、刪除、星號 按鈕組 (背面) -->
-              <div class="flex items-center gap-2 sm:gap-3 bg-amber-950/40 p-1.5 rounded-xl border border-amber-800/50">
-                <button onclick="editCurrentCard(event)" class="text-lg sm:text-xl text-amber-300/60 hover:text-emerald-400 transition-colors px-1"><i class="fa-solid fa-pen-to-square"></i></button>
-                <button onclick="deleteCurrentCard(event)" class="text-lg sm:text-xl text-amber-300/60 hover:text-rose-400 transition-colors px-1"><i class="fa-solid fa-trash-can"></i></button>
-                <button onclick="toggleStar(event)" class="text-xl sm:text-2xl text-amber-300/60 hover:text-yellow-300 transition-colors px-1 flex-shrink-0">
-                  <i id="star-icon-back" class="fa-solid fa-star"></i>
-                </button>
-              </div>
+              <button onclick="toggleStar(event)" class="text-3xl text-amber-300/60 hover:text-yellow-300 transition-colors p-1 flex-shrink-0">
+                <i id="star-icon-back" class="fa-solid fa-star"></i>
+              </button>
             </div>
 
             <div class="my-auto overflow-y-auto max-h-[260px] py-3 pr-1 text-left">
@@ -195,7 +173,7 @@
         </div>
         <div class="text-center my-3">
           <span id="quiz-subtitle" class="text-sm text-slate-400 font-bold block mb-2">測驗載入中</span>
-          <h3 id="quiz-question" class="text-2xl sm:text-3xl font-black text-slate-800 tracking-wide leading-snug">--</h3>
+          <h3 id="quiz-question" class="text-xl sm:text-2xl font-black text-slate-800 tracking-wide leading-snug">--</h3>
         </div>
         <div id="quiz-options" class="space-y-3 my-4"></div>
       </div>
@@ -209,7 +187,7 @@
         </div>
 
         <div id="wrong-summary" class="hidden text-left bg-rose-50 p-3 rounded-2xl border border-rose-200 text-xs space-y-1 max-h-[160px] overflow-y-auto">
-          <p class="font-black text-rose-700 mb-2">❌ 錯題檢討紀錄：</p>
+          <p class="font-black text-rose-700 mb-2">❌ 錯題精準訂正：</p>
           <ul id="wrong-list" class="list-disc list-inside text-rose-800 space-y-2 font-semibold leading-relaxed"></ul>
         </div>
 
@@ -237,7 +215,7 @@
         <i class="fa-solid fa-circle-plus"></i> 新增補充學習
       </button>
       <button onclick="toggleListView()" id="btn-toggle-list" class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-black py-2.5 px-3 rounded-2xl shadow flex justify-center items-center gap-1.5 active:scale-95 transition-all">
-        <i class="fa-solid fa-list-check"></i> 總覽清單
+        <i class="fa-solid fa-list-check"></i> 📝 後台總覽與修改
       </button>
     </div>
 
@@ -247,7 +225,7 @@
   <div id="quiz-setup-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
     <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
-        <h3 class="font-black text-slate-800 text-lg">⚙️ 設定測驗範圍與題數</h3>
+        <h3 class="font-black text-slate-800 text-lg">⚙️ 測驗範圍與題數設定</h3>
         <button onclick="closeQuizSetupModal()" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
       
@@ -279,12 +257,12 @@
     </div>
   </div>
 
-  <!-- 語詞清單 Modal -->
+  <!-- 語詞清單(後台) Modal -->
   <div id="list-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-end sm:items-center p-0 sm:p-4">
     <div class="bg-white w-full max-w-md max-h-[85vh] rounded-t-3xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl">
       <div class="p-4 bg-amber-600 text-white flex justify-between items-center">
         <h3 class="font-black text-base flex items-center gap-2">
-          <i class="fa-solid fa-list"></i> 字詞總覽與管理
+          <i class="fa-solid fa-list-check"></i> 後台：字詞總覽與修改
         </h3>
         <button onclick="toggleListView()" class="text-white hover:text-amber-200 text-xl px-2">✕</button>
       </div>
@@ -292,58 +270,66 @@
     </div>
   </div>
 
-  <!-- 新增/編輯語詞 Modal -->
+  <!-- 新增/編輯共用 Modal -->
   <div id="add-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
     <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-2">
         <h3 id="modal-title" class="font-black text-slate-800 text-lg">✨ 新增/編輯 學習卡片</h3>
         <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
+      
       <div class="space-y-3 text-sm">
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-slate-600 font-bold mb-1">所屬課別 *</label>
+            <label class="block text-slate-600 font-bold mb-1">所屬課別</label>
             <select id="new-lesson-code" class="w-full border border-slate-300 rounded-xl p-2.5 font-bold outline-none">
               <option value="L1">第 1 課</option><option value="L2">第 2 課</option><option value="L3">第 3 課</option><option value="L4">第 4 課</option><option value="L5">第 5 課</option><option value="L6">第 6 課</option><option value="L7">第 7 課</option><option value="L8">第 8 課</option><option value="L9">第 9 課</option><option value="L10">第 10 課</option><option value="L11">第 11 課</option><option value="L12">第 12 課</option>
             </select>
           </div>
           <div>
-            <label class="block text-slate-600 font-bold mb-1">類型 *</label>
+            <label class="block text-slate-600 font-bold mb-1">類型</label>
             <select id="new-type-code" class="w-full border border-slate-300 rounded-xl p-2.5 font-bold outline-none">
               <option value="生字">單字/成語</option>
               <option value="句型練習">句型/短語</option>
             </select>
           </div>
         </div>
-        
-        <div>
-          <label class="block text-slate-600 font-bold mb-1">標題文字 (生字 / 句型) *</label>
-          <input type="text" id="new-word" placeholder="例如：雖然...可是..." class="w-full border border-slate-300 rounded-xl p-2.5 outline-none font-bold">
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-600 font-bold mb-1">生字 / 標題 <span class="text-rose-500">*</span></label>
+            <input type="text" id="new-word" placeholder="例: 蚊" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none font-bold">
+          </div>
+          <div>
+            <label class="block text-slate-600 font-bold mb-1">注音符號</label>
+            <input type="text" id="new-pinyin" placeholder="例: ㄨㄣˊ" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
+          </div>
         </div>
+
         <div>
-          <label class="block text-slate-600 font-bold mb-1">注音符號 (選填)</label>
-          <input type="text" id="new-pinyin" placeholder="例如：ㄖㄠˊ" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
+          <label class="block text-slate-600 font-bold mb-1">部首 / 標籤</label>
+          <input type="text" id="new-info" placeholder="例: 虫部 (或 轉折複句)" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
         </div>
+
         <div>
-          <label class="block text-slate-600 font-bold mb-1">部首 / 分類標籤</label>
-          <input type="text" id="new-info" placeholder="例如：食部 (或 短語練習)" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
+          <label class="block text-slate-600 font-bold mb-1">字義解釋 / 句型說明</label>
+          <textarea id="new-meaning" rows="2" placeholder="請輸入詳細解釋..." class="w-full border border-slate-300 rounded-xl p-2.5 outline-none"></textarea>
         </div>
-        <div>
-          <label class="block text-slate-600 font-bold mb-1">解釋說明</label>
-          <textarea id="new-meaning" rows="2" placeholder="請將詳細解釋寫在這裡..." class="w-full border border-slate-300 rounded-xl p-2.5 outline-none"></textarea>
-        </div>
+
         <div>
           <label class="block text-slate-600 font-bold mb-1">造詞 1 / 例句 1</label>
-          <input type="text" id="new-v1" placeholder="" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
+          <input type="text" id="new-v1" placeholder="輸入造詞或例句" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
         </div>
+
         <div>
           <label class="block text-slate-600 font-bold mb-1">造詞 2 / 例句 2</label>
-          <input type="text" id="new-v2" placeholder="" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
+          <input type="text" id="new-v2" placeholder="輸入造詞或例句" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none">
         </div>
+
       </div>
       <div class="flex justify-end space-x-2 pt-2">
         <button onclick="closeAddModal()" class="px-4 py-2 text-slate-500 font-bold">取消</button>
-        <button onclick="saveNewWord()" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black shadow-sm">💾 儲存</button>
+        <button onclick="saveNewWord()" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black shadow-sm transition-colors">💾 儲存卡片</button>
       </div>
     </div>
   </div>
@@ -356,7 +342,7 @@
         <button onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-600">✕</button>
       </div>
       <p class="text-xs text-slate-500 leading-relaxed font-semibold">
-        您可以匯出您「修改過」的字庫與星號標記，也可以在其他設備匯入資料！
+        您可以匯出您「修改過」的字庫或學習紀錄，也可以在其他設備匯入資料喔！
       </p>
       <div class="space-y-2">
         <button onclick="exportData()" class="w-full py-3 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-2xl font-black border border-amber-200 flex justify-center items-center gap-2 text-sm">
@@ -377,7 +363,7 @@
   </div>
 
   <script>
-    // 📌 完全精準對齊您給予的 1~12 課修正版生字與造詞/成語，並加上句型
+    // 預設 1~12 課資料庫
     const rawData = `===L1===
 蚊,ㄨㄣˊ,虫部,蚊子,聚蚊成雷
 帳,ㄓㄤˋ,巾部,帳篷,蚊帳
@@ -401,7 +387,7 @@
 驚慌失措|ㄐㄧㄥ ㄏㄨㄤ ㄕ ㄘㄨㄛˋ|造句練習|驚嚇慌張得不知如何應付。|例句(森林發生大火，動物們驚慌失措，紛紛四處逃竄。)|例句(弟弟在夜市和家人走散了，不知如何是好。)
 聚精會神|ㄐㄩˋ ㄐㄧㄥ ㄏㄨㄟˋ ㄕㄣˊ|造句練習|指集中精神，專心一意。|例句(他們正聚精會神的下棋，完全不受周圍事物的影響。)|例句(同學們正聚精會神的聆聽老師解題。)
 一筆一畫|ㄧˋ ㄅㄧˇ ㄧˊ ㄏㄨㄚˋ|造句練習|每一個筆畫。|例句(想寫出端正工整的字，得靜下心來一筆一畫慢慢的書寫。)|例句(這張手繪地圖是他一筆一畫勾勒出來的。)
-喜不自禁|ㄒㄧˇ ㄅㄨˋ ㄗˋ ㄐㄧㄣ|造句練習|高興得不得了。|例句(他一聽到要去露營，就喜不自禁的大聲歡呼。)|例句(多年不見的好朋友在路上不期遇，令我喜不自禁。)
+喜不自禁|ㄒㄧˇ ㄅㄨˋ ㄗˋ ㄐㄧㄣ|造句練習|高興得不得了。|例句(他一聽到要去露營，就喜不自禁的大聲歡呼。)|例句(多年不見的好朋友在路上不期而遇，令我喜不自禁。)
 夢想成真|ㄇㄥˋ ㄒㄧㄤˇ ㄔㄥˊ ㄓㄣ|造句練習|心中所欲想的已在生活中實現。|例句(只有透過不懈的努力耕耘，才能夢想成真。)|例句(這趟旅行是我計畫很久的事，能夠實現真是夢想成真。)
 全力以赴|ㄑㄩㄢˊ ㄌㄧˋ ㄧˇ ㄈㄨˋ|造句練習|投入全部的心力以達成目的。|例句(他做事十分認真盡責，交代給他的任務必定全力以赴。)|例句(面對實力強勁的敵隊，每個隊員都全力以赴。)
 雖然……可是……||句型練習|轉折複句。語意做了一個轉折，使意思形成相反或相對。|例句(弟弟練習騎腳踏車時，雖然一再跌倒，可是一滴眼淚都沒有流下來。)|例句(淨灘雖然能暫時清除環境中的垃圾，可是要杜絕海洋垃圾還是得從源頭著手。)
@@ -505,7 +491,7 @@
 松,ㄙㄨㄥ,木部,松樹,歲寒松柏
 註,ㄓㄨˋ,言部,註冊,註記
 冊,ㄘㄜˋ,冂部,手冊,畫冊
-企,ㄑㄧˇ,人部,企業,企圖
+企,ㄑㄧˋ,人部,企業,企圖
 歷,ㄌㄧˋ,止部,歷史,歷歷在目
 英,ㄧㄥ,艸部,英雄,英姿煥發
 銷,ㄒㄧㄠ,金部,推銷,銷聲匿跡
@@ -670,7 +656,7 @@
 流露出真誠的情感||短語練習|結構：（動詞）出（形容詞）的（名詞）|例句(彈奏出動人的樂章)|例句(布置出舒適的房間)
 恬淡|ㄊㄧㄢˊ ㄉㄢˋ|造句練習|清靜淡泊，不求名利。|例句(在湖邊散步，聽著鳥叫聲，感覺特別恬淡自在。)|例句(奶奶的生活很恬淡，每天種花、喝茶，過得快樂又平靜。)
 詩中有畫|ㄕ ㄓㄨㄥ ㄧㄡˇ ㄏㄨㄚˋ|造句練習|形容詩歌意象很美，有如圖畫。|例句(這首詩把玉山描寫得十分優美，真是詩中有畫呀！)|例句(他寫的詩清新動人，充滿詩中有畫的意境。)
-畫中有詩|ㄏㄨㄚˋ ㄓㄨㄥ ㄧㄡˇ ㄕ|造句練習|泛指畫作意境優美，含有詩意。|例句(這位畫家才華出眾，他的畫作達到畫中有詩的藝術境界。)|例句(這幅畫的意境很美，畫出了春天如歌的美景。)
+畫中有詩|ㄏㄚˋ ㄓㄨㄥ ㄧㄡˇ ㄕ|造句練習|泛指畫作意境優美，含有詩意。|例句(這位畫家才華出眾，他的畫作達到畫中有詩的藝術境界。)|例句(這幅畫的意境很美，畫出了春天如歌的美景。)
 耐人尋味|ㄋㄞˋ ㄖㄣˊ ㄒㄩㄣˊ ㄨㄟˋ|造句練習|意味深遠雋永，值得人反覆尋思體會。|例句(這篇文章雖然很短，所傳達的意境卻耐人尋味。)|例句(這是一部耐人尋味的電影，值得推薦給大家觀賞。)
 一邊……一邊……||句型練習|並列複句。表示兩種行為同時進行。|例句(哥哥一邊洗澡，一邊唱歌，心情相當愉快。)|例句(叔叔一邊接電話，一邊做筆記，就怕忘了交代的事。)
 雖然……卻……||句型練習|轉折複句。前後語意轉變。|例句(雖然爸爸工作忙碌，卻很關心我的學習狀況。)|例句(雖然他是個大名鼎鼎的科學家，待人卻十分謙和有禮。)
@@ -679,20 +665,21 @@
 疤,ㄅㄚ,疒部,傷疤,結疤
 痕,ㄏㄣˊ,疒部,痕跡,不著痕跡
 罐,ㄍㄨㄢˋ,缶部,罐頭,水罐
-咚,ㄉㄨㄥ,口部,叮咚,咚咚響
-碰,ㄆㄥˋ,石部,碰撞,碰面
-傾,ㄑㄧㄥ,人部,傾斜,傾倒
-寮,ㄌㄧㄠˊ,宀部,工寮,寮房
-營,ㄧㄥˊ,火部,露營,營地
-殺,ㄕㄚ,殳部,殺害,殺菌
-崇,ㄔㄨㄥˊ,山部,崇高,崇拜
-置,ㄓˋ,罒部,放置,布置
-奄,ㄧㄢˇ,大部,奄奄一息,奄忽
-翼,ㄧˋ,羽部,羽翼,小心翼翼
-禱,ㄉㄠˇ,示部,祈禱,禱告
-喉,ㄏㄡˊ,口部,喉嚨,咽喉
-吼,ㄏㄡˇ,口部,怒吼,吼叫
-嚨,ㄌㄨㄥˊ,口部,喉嚨,嗓嚨
+咚,ㄉㄨㄥ,口部,叮咚,咚咚
+碰,ㄆㄥˋ,石部,碰撞,碰壁
+傾,ㄑㄧㄥ,人部,傾斜,傾國傾城
+寮,ㄌㄧㄠˊ,宀部,工寮,茅寮
+營,ㄧㄥˊ,火部,露營,步步為營
+殺,ㄕㄚ,殳部,殺害,殺雞儆猴
+崇,ㄔㄨㄥˊ,山部,崇拜,崇山峻嶺
+置,ㄓˋ,罒部,放置,置之不理
+奄,ㄧㄢ,大部,奄奄,奄奄一息
+翼,ㄧˋ,羽部,翅翼,小心翼翼
+祈,ㄑㄧˊ,示部,祈求,祈禱
+禱,ㄉㄠˇ,示部,禱告,祈禱
+吼,ㄏㄡˇ,口部,怒吼,大吼大叫
+喉,ㄏㄡˊ,口部,喉嚨,如鯁在喉
+嚨,ㄌㄨㄥˊ,口部,喉嚨,沙啞
 鐵罐咚咚作響||短語練習|結構：（名詞）（摹聲詞）作響|例句(雷聲隆隆作響)|例句(樹葉沙沙作響)
 爺爺是部落的傳奇獵人||短語練習|結構：（名詞）是（名詞）的（名詞）。|例句(媽媽是社區的美食專家。)|例句(姐姐是學校的風雲人物。)
 雜草叢生|ㄗㄚˊ ㄘㄠˇ ㄘㄨㄥˊ ㄕㄥ|造句練習|野草生長得很多。|例句(後院荒廢已久，處處雜草叢生。)|例句(這片荒地雜草叢生，但整理後變成美麗的花園。)
@@ -704,21 +691,24 @@
 ……於是……||句型練習|承接複句。|例句(天空突然下起大雨，於是我們趕緊躲進商店避雨。)|例句()
 ===L12===
 烈,ㄌㄧㄝˋ,火部,熱烈,轟轟烈烈
-暈,ㄩㄣˋ,日部,暈倒,頭暈
-昏,ㄏㄨㄣ,日部,昏暗,昏倒
-艙,ㄘㄤ,舟部,船艙,客艙
-途,ㄊㄨˊ,辵部,旅途,路途
-捲,ㄐㄩㄢˇ,手部,捲入,席捲
-喪,ㄙㄤˋ,口部,喪失,沮喪
-獸,ㄕㄡˋ,犬部,野獸,猛獸
-擱,ㄍㄜ,手部,擱置,擱淺
-礁,ㄐㄧㄠ,石部,礁石,暗礁
+暈,ㄩㄣ,日部,頭暈,暈頭轉向
+昏,ㄏㄨㄣ,日部,黃昏,昏天暗地
+艙,ㄘㄤ,舟部,機艙,船艙
+途,ㄊㄨˊ,辵部,路途,半途而廢
+捲,ㄐㄩㄢˇ,手部,捲起,風捲殘雲
+喪,ㄙㄤˋ,口部,喪失,垂頭喪氣
+獸,ㄕㄡˋ,犬部,野獸,洪水猛獸
+渾,ㄏㄨㄣˊ,水部,渾身,渾然天成
+擱,ㄍㄜ,手部,擱淺,擱置
+礁,ㄐㄧㄠ,石部,暗礁,觸礁
 筏,ㄈㄚˊ,竹部,竹筏,木筏
 塌,ㄊㄚ,土部,倒塌,塌陷
-鸚,ㄧㄥ,鳥部,鸚鵡,鸚鵡螺
-捏,ㄋㄧㄝ,手部,捏造,捏麵人
-燒,ㄕㄠ,火部,燃燒,燒水
-臼,ㄐㄧㄡˋ,臼部,石臼,臼齒
+捏,ㄋㄧㄝ,手部,捏造,拿捏
+燒,ㄕㄠ,火部,燃燒,怒火中燒
+臼,ㄐㄧㄡˋ,臼部,石臼,脫臼
+烤,ㄎㄠˇ,火部,烤肉,燒烤
+爐,ㄌㄨˊ,火部,火爐,爐火純青
+欲,ㄩˋ,欠部,欲望,暢所欲言
 一輪火紅的夕陽||短語練習|結構：（量詞）（形容詞）的（名詞）|例句(一本精采的小說)|例句(一片閃耀的星空)
 閃著金光的波浪||短語練習|結構：（動詞）（名詞）的（名詞）|例句(含著淚光的雙眼)|例句(寫滿回憶的日記)
 載浮載沉|ㄗㄞˋ ㄈㄨˊ ㄗㄞˋ ㄔㄣˊ|造句練習|忽浮忽沉，隨著環境浮動起落不定。|例句(他在商場上奮鬥數年，載浮載沉，吃了不少苦。)|例句(海面上載浮載沉的垃圾，嚴重破壞了海洋生態。)
@@ -752,54 +742,44 @@
           continue;
         }
         
-        let typeStr = "生字";
-        let char = "", pinyin = "", bushou = "", charMeaning = "", word1Str = "", word2Str = "";
-
-        if (line.includes('|')) {
-          // 句型與短語使用 pipe 分隔
-          const parts = line.split('|');
-          char = parts[0] ? parts[0].trim() : '';
-          pinyin = parts[1] ? parts[1].trim() : '';
-          bushou = parts[2] ? parts[2].trim() : '';
-          charMeaning = parts[3] ? parts[3].trim() : '';
-          word1Str = parts[4] ? parts[4].trim() : '';
-          word2Str = parts[5] ? parts[5].trim() : '';
-          typeStr = bushou; // 如: 短語練習, 造句練習, 句型練習
-        } else {
-          // 生字使用逗號分隔
-          const parts = line.split(',');
-          char = parts[0] ? parts[0].trim() : '';
-          pinyin = parts[1] ? parts[1].trim() : '';
-          bushou = parts[2] ? parts[2].trim() : '';
-          word1Str = parts[3] ? parts[3].trim() : '';
-          word2Str = parts[4] ? parts[4].trim() : '';
-          charMeaning = `生字「${char}」的標準解釋與造詞`;
-        }
-
-        const regex = /([^(（]+)[(（]([^)）]+)[)）]/;
-        let v1 = null, v2 = null;
+        let parts = line.includes('|') ? line.split('|') : line.split(',');
         
-        // 處理 v1
-        const m1 = word1Str.match(regex);
-        if (m1) {
-          v1 = { w: m1[1].trim(), m: m1[2].trim() };
-        } else if (word1Str.trim()) {
-          v1 = { w: typeStr.includes('練習') ? '例句 1' : word1Str.trim(), m: typeStr.includes('練習') ? word1Str.trim() : `造詞：${word1Str.trim()}` };
-        }
-        
-        // 處理 v2
-        const m2 = word2Str.match(regex);
-        if (m2) {
-          v2 = { w: m2[1].trim(), m: m2[2].trim() };
-        } else if (word2Str.trim() && word2Str.trim() !== '例句()') {
-          v2 = { w: typeStr.includes('練習') ? '例句 2' : word2Str.trim(), m: typeStr.includes('練習') ? word2Str.trim() : `成語：${word2Str.trim()}` };
-        }
+        if (parts.length >= 3) {
+          const char = parts[0] ? parts[0].trim() : '';
+          const pinyin = parts[1] ? parts[1].trim() : '';
+          const bushou = parts[2] ? parts[2].trim() : '';
+          const word1Str = parts[3] ? parts[3].trim() : '';
+          const word2Str = parts[4] ? parts[4].trim() : '';
+          
+          let typeStr = "生字";
+          if (bushou && bushou.includes('練習')) typeStr = bushou;
 
-        defaultWords.push({
-          id: currentId++, lesson: currentL, type: typeStr, 
-          word: char, pinyin: pinyin, info: bushou, 
-          meaning: charMeaning, v1: v1, v2: v2, starred: false
-        });
+          let charMeaning = "";
+          let v1 = null, v2 = null;
+          
+          if(typeStr.includes('練習')) {
+             charMeaning = parts[3] ? parts[3].trim() : "";
+             let w1 = parts[4] ? parts[4].replace(/^例句\((.*)\)$/, '$1').trim() : '';
+             let w2 = parts[5] ? parts[5].replace(/^例句\((.*)\)$/, '$1').trim() : '';
+             if(!w1 && parts[4]) w1 = parts[4].trim();
+             if(!w2 && parts[5]) w2 = parts[5].trim();
+             if(w1) v1 = { w: '例句 1', m: w1 };
+             if(w2) v2 = { w: '例句 2', m: w2 };
+          } else {
+             charMeaning = ""; // 生字資料中沒有提供解釋，所以預設為空，才不會出奇怪的考題。
+             let w1 = parts[3] ? parts[3].trim() : '';
+             let w2 = parts[4] ? parts[4].trim() : '';
+             
+             if(w1) v1 = { w: w1, m: `造詞：${w1}` };
+             if(w2) v2 = { w: w2, m: `成語/衍生：${w2}` };
+          }
+
+          defaultWords.push({
+            id: currentId++, lesson: currentL, type: typeStr, 
+            word: char, pinyin: pinyin, info: bushou, 
+            meaning: charMeaning, v1: v1, v2: v2, starred: false
+          });
+        }
       }
     }
     
@@ -813,6 +793,7 @@
     let isFlipped = false;
     let soundEnabled = true;
 
+    // 全域變數供測驗精準訂正使用
     let currentQType = '';
     let currentQuizCorrectText = '';
     let quizQuestions = [];
@@ -870,12 +851,13 @@
         window.speechSynthesis.cancel();
         let textToRead = item.word;
         if (side === 'back') {
-          if (item.info && item.info.includes('練習')) {
+          if (item.type.includes('練習')) {
              textToRead += "。意思是：" + item.meaning;
              if (item.v1 && item.v1.w !== '無') textToRead += "。例句：" + item.v1.m;
              if (item.v2 && item.v2.w !== '無') textToRead += "。例句：" + item.v2.m;
           } else {
              if (item.info && item.info.includes('部')) textToRead += "。部首是：" + item.info;
+             if (item.meaning) textToRead += "。字義解釋：" + item.meaning;
              textToRead += "。造詞：" + (item.v1 ? item.v1.w : '') + "，成語：" + (item.v2 ? item.v2.w : '');
           }
         }
@@ -901,8 +883,8 @@
     }
 
     function init() {
-      // 升級至 v15 強制更新緩存
-      const localData = localStorage.getItem('kangxuan_g5a_v15');
+      // 升級至 v25，保證強制清除所有舊版殘留，讓修改按鈕立刻出現！
+      const localData = localStorage.getItem('kangxuan_g5a_v25');
       if (localData) {
         try { words = JSON.parse(localData); } catch (e) { words = [...defaultWords]; }
       } else { words = [...defaultWords]; }
@@ -911,7 +893,7 @@
     }
 
     function saveData() {
-      localStorage.setItem('kangxuan_g5a_v15', JSON.stringify(words));
+      localStorage.setItem('kangxuan_g5a_v25', JSON.stringify(words));
       updateCounts();
     }
 
@@ -973,7 +955,7 @@
         document.getElementById('card-pinyin-front').innerText = "";
         document.getElementById('card-word-back').innerText = "";
         document.getElementById('card-pinyin-back').innerText = "";
-        document.getElementById('card-meaning-container').innerHTML = `<div class="text-center mt-6">目前分類沒有內容喔！請切換其他標籤。</div>`;
+        document.getElementById('card-meaning-container').innerHTML = `<div class="text-center mt-6">目前分類沒有內容喔！請點擊下方新增。</div>`;
         document.getElementById('card-index-tag').innerText = "0 / 0";
         document.getElementById('star-icon').className = "fa-solid fa-star text-slate-200";
         document.getElementById('star-icon-back').className = "fa-solid fa-star text-slate-200";
@@ -1009,15 +991,27 @@
         document.getElementById('card-pinyin-back').innerText = `${item.pinyin || ""} ${item.info ? '('+item.info+')' : ''}`;
       }
       
-      let backHtml = `
-        <div class="mb-2 text-amber-100 font-bold border-b border-amber-700/50 pb-2 text-base leading-relaxed">
-          <span class="bg-amber-800 text-yellow-200 px-2 py-0.5 rounded text-xs mr-1">${item.type.includes('練習') ? '說明' : '字義'}</span>${item.meaning}
-        </div>
-        <div class="space-y-2 mt-3 text-sm">
-          ${item.v1 && item.v1.w !== '無' ? `<div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/50 leading-relaxed"><span class="text-yellow-300 font-black text-sm mr-1">${item.v1.w}</span>${item.v1.m}</div>` : ''}
-          ${item.v2 && item.v2.w !== '無' ? `<div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/50 leading-relaxed"><span class="text-yellow-300 font-black text-sm mr-1">${item.v2.w}</span>${item.v2.m}</div>` : ''}
-        </div>
-      `;
+      let backHtml = '';
+      if (item.type.includes('練習')) {
+        backHtml = `
+          <div class="mb-2 text-amber-100 font-bold border-b border-amber-700/50 pb-2 text-base leading-relaxed">
+            <span class="bg-amber-800 text-yellow-200 px-2 py-0.5 rounded text-xs mr-1">說明</span>${item.meaning}
+          </div>
+          <div class="space-y-2 mt-3 text-sm">
+            ${item.v1 && item.v1.m ? `<div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/50 leading-relaxed"><span class="text-yellow-300 font-black text-sm mr-1">例句 1：</span>${item.v1.m}</div>` : ''}
+            ${item.v2 && item.v2.m ? `<div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/50 leading-relaxed"><span class="text-yellow-300 font-black text-sm mr-1">例句 2：</span>${item.v2.m}</div>` : ''}
+          </div>
+        `;
+      } else {
+        if (item.meaning) {
+           backHtml += `<div class="mb-2 text-amber-100 font-bold border-b border-amber-700/50 pb-2 text-base leading-relaxed"><span class="bg-amber-800 text-yellow-200 px-2 py-0.5 rounded text-xs mr-1">字義</span>${item.meaning}</div>`;
+        }
+        backHtml += `<div class="space-y-2 mt-3 text-sm">`;
+        if (item.v1 && item.v1.w !== '無') backHtml += `<div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/50 leading-relaxed"><span class="text-yellow-300 font-black text-sm mr-1">常造詞：</span>${item.v1.w}</div>`;
+        if (item.v2 && item.v2.w !== '無') backHtml += `<div class="bg-amber-950/40 p-2.5 rounded-xl border border-amber-800/50 leading-relaxed"><span class="text-yellow-300 font-black text-sm mr-1">成語：</span>${item.v2.w}</div>`;
+        backHtml += `</div>`;
+      }
+
       document.getElementById('card-meaning-container').innerHTML = backHtml;
 
       if (isFlipped) {
@@ -1080,7 +1074,6 @@
         saveData();
         renderWordList();
         
-        // 如果剛好是畫面上顯示的那張，就重置索引
         if (filteredWords[currentIndex] && filteredWords[currentIndex].id === id) {
            currentIndex = 0;
         }
@@ -1178,12 +1171,9 @@
       }
       
       currentLesson = lesson; document.getElementById('lesson-select').value = lesson;
-      saveData(); 
-      closeAddModal(); 
+      saveData(); closeAddModal(); 
       
-      if(!document.getElementById('list-modal').classList.contains('hidden')){
-         renderWordList();
-      }
+      if(!document.getElementById('list-modal').classList.contains('hidden')){ renderWordList(); }
       setFilter(typeCode === "生字" ? 'vocab' : 'sentence');
     }
 
@@ -1234,7 +1224,7 @@
       renderQuizQuestion();
     }
 
-    // 進階題型測驗邏輯
+    // 🏆 終極去重測驗引擎 (保證不再出現奇怪字義與重複選項)
     function renderQuizQuestion() {
       document.getElementById('quiz-feedback').innerText = '';
       document.getElementById('quiz-next-btn').classList.add('hidden');
@@ -1243,146 +1233,123 @@
 
       let availableTypes = [];
       if (q.type === '生字') {
-         // 生字不再考字義，只考部首與造詞
+         // 生字絕不考「字義」，只考部首、注音、造詞、成語
          if (q.info && q.info.includes('部')) availableTypes.push('radical');
-         if (q.v1 && q.v1.w !== '無') availableTypes.push('vocab1');
-         if (q.v2 && q.v2.w !== '無') availableTypes.push('vocab2');
+         if (q.pinyin && q.pinyin !== '補充') availableTypes.push('pinyin');
+         if (q.v1 && q.v1.w && q.v1.w !== '無') availableTypes.push('vocab1');
+         if (q.v2 && q.v2.w && q.v2.w !== '無') availableTypes.push('vocab2');
+         if (availableTypes.length === 0) availableTypes = ['vocab1']; 
       } else {
-         // 句型與短語考字義與反向測驗
-         availableTypes = ['meaning', 'reverse'];
+         // 短語/句型/造句：考字義說明 與 反向測驗
+         if (q.meaning) availableTypes.push('meaning');
+         if (q.v1 && q.v1.m) availableTypes.push('example1');
+         if (q.v2 && q.v2.m) availableTypes.push('example2');
+         if (availableTypes.length === 0) availableTypes = ['meaning'];
       }
       
-      if(availableTypes.length === 0) availableTypes = ['meaning']; // 備用防錯
       currentQType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
 
       let distractors = [];
+      let uniqueSet = new Set();
       
       if (currentQType === 'radical') {
-        let pool = words.filter(w => w.id !== q.id && w.type === '生字' && w.info && w.info.includes('部') && w.info !== q.info);
-        let uniqueSet = new Set([q.info]);
-        let uniquePool = [];
+        currentQuizCorrectText = q.info;
+        uniqueSet.add(q.info);
+        let pool = words.filter(w => w.id !== q.id && w.type === '生字' && w.info && w.info.includes('部') && !uniqueSet.has(w.info));
         for(let w of pool.sort(() => 0.5 - Math.random())) {
-          if(!uniqueSet.has(w.info)) {
-            uniqueSet.add(w.info);
-            uniquePool.push(w);
-          }
+          if(!uniqueSet.has(w.info)) { uniqueSet.add(w.info); distractors.push({id: w.id, fakeAns: w.info}); }
+          if(distractors.length === 3) break;
         }
-        distractors = uniquePool.slice(0, 3);
         if (distractors.length < 3) {
             const backups = ["虫部", "巾部", "水部", "疒部", "歹部", "口部", "子部", "力部", "隹部", "宀部", "貝部", "大部", "犬部", "言部", "土部", "走部"].filter(r => !uniqueSet.has(r));
             while (distractors.length < 3 && backups.length > 0) {
                 const r = backups.pop();
                 uniqueSet.add(r);
-                distractors.push({ id: -Math.random(), info: r });
+                distractors.push({ id: -Math.random(), fakeAns: r });
             }
         }
-        currentQuizCorrectText = q.info;
-
-      } else if (currentQType === 'meaning') {
-        let pool = words.filter(w => w.id !== q.id && w.type === q.type && w.meaning !== q.meaning);
-        if(pool.length < 3) pool = words.filter(w => w.id !== q.id && w.meaning !== q.meaning);
-        let uniqueSet = new Set([q.meaning]);
-        let uniquePool = [];
+      } else if (currentQType === 'pinyin') {
+        currentQuizCorrectText = q.pinyin;
+        uniqueSet.add(q.pinyin);
+        let pool = words.filter(w => w.id !== q.id && w.type === '生字' && w.pinyin && !uniqueSet.has(w.pinyin));
         for(let w of pool.sort(() => 0.5 - Math.random())) {
-          if(!uniqueSet.has(w.meaning)) {
-            uniqueSet.add(w.meaning);
-            uniquePool.push(w);
-          }
+          if(!uniqueSet.has(w.pinyin)) { uniqueSet.add(w.pinyin); distractors.push({id: w.id, fakeAns: w.pinyin}); }
+          if(distractors.length === 3) break;
         }
-        distractors = uniquePool.slice(0, 3);
-        currentQuizCorrectText = q.meaning;
-
       } else if (currentQType === 'vocab1') {
-        let pool = words.filter(w => w.id !== q.id && w.type === '生字' && w.v1 && w.v1.w !== q.v1.w);
-        let uniqueSet = new Set([q.v1.w]);
-        let uniquePool = [];
-        for(let w of pool.sort(() => 0.5 - Math.random())) {
-          if(!uniqueSet.has(w.v1.w)) {
-            uniqueSet.add(w.v1.w);
-            uniquePool.push(w);
-          }
-        }
-        distractors = uniquePool.slice(0, 3);
         currentQuizCorrectText = q.v1.w;
-
+        uniqueSet.add(q.v1.w);
+        let pool = words.filter(w => w.id !== q.id && w.type === '生字' && w.v1 && w.v1.w && !uniqueSet.has(w.v1.w));
+        for(let w of pool.sort(() => 0.5 - Math.random())) {
+          if(!uniqueSet.has(w.v1.w)) { uniqueSet.add(w.v1.w); distractors.push({id: w.id, fakeAns: w.v1.w}); }
+          if(distractors.length === 3) break;
+        }
       } else if (currentQType === 'vocab2') {
-        let pool = words.filter(w => w.id !== q.id && w.type === '生字' && w.v2 && w.v2.w !== q.v2.w);
-        let uniqueSet = new Set([q.v2.w]);
-        let uniquePool = [];
-        for(let w of pool.sort(() => 0.5 - Math.random())) {
-          if(!uniqueSet.has(w.v2.w)) {
-            uniqueSet.add(w.v2.w);
-            uniquePool.push(w);
-          }
-        }
-        distractors = uniquePool.slice(0, 3);
         currentQuizCorrectText = q.v2.w;
-
-      } else { // reverse
-        let pool = words.filter(w => w.id !== q.id && w.type === q.type && w.word !== q.word);
-        if(pool.length < 3) pool = words.filter(w => w.id !== q.id && w.word !== q.word);
-        let uniqueSet = new Set([q.word]);
-        let uniquePool = [];
+        uniqueSet.add(q.v2.w);
+        let pool = words.filter(w => w.id !== q.id && w.type === '生字' && w.v2 && w.v2.w && !uniqueSet.has(w.v2.w));
         for(let w of pool.sort(() => 0.5 - Math.random())) {
-          if(!uniqueSet.has(w.word)) {
-            uniqueSet.add(w.word);
-            uniquePool.push(w);
-          }
+          if(!uniqueSet.has(w.v2.w)) { uniqueSet.add(w.v2.w); distractors.push({id: w.id, fakeAns: w.v2.w}); }
+          if(distractors.length === 3) break;
         }
-        distractors = uniquePool.slice(0, 3);
-        currentQuizCorrectText = q.word;
+      } else if (currentQType === 'meaning') {
+        currentQuizCorrectText = q.meaning;
+        uniqueSet.add(q.meaning);
+        let pool = words.filter(w => w.id !== q.id && w.type.includes('練習') && w.meaning && !uniqueSet.has(w.meaning));
+        for(let w of pool.sort(() => 0.5 - Math.random())) {
+          if(!uniqueSet.has(w.meaning)) { uniqueSet.add(w.meaning); distractors.push({id: w.id, fakeAns: w.meaning}); }
+          if(distractors.length === 3) break;
+        }
+      } else if (currentQType === 'example1') {
+        currentQuizCorrectText = q.v1.m;
+        uniqueSet.add(q.v1.m);
+        let pool = words.filter(w => w.id !== q.id && w.type === q.type && w.v1 && w.v1.m && !uniqueSet.has(w.v1.m));
+        for(let w of pool.sort(() => 0.5 - Math.random())) {
+          if(!uniqueSet.has(w.v1.m)) { uniqueSet.add(w.v1.m); distractors.push({id: w.id, fakeAns: w.v1.m}); }
+          if(distractors.length === 3) break;
+        }
+      } else if (currentQType === 'example2') {
+        currentQuizCorrectText = q.v2.m;
+        uniqueSet.add(q.v2.m);
+        let pool = words.filter(w => w.id !== q.id && w.type === q.type && w.v2 && w.v2.m && !uniqueSet.has(w.v2.m));
+        for(let w of pool.sort(() => 0.5 - Math.random())) {
+          if(!uniqueSet.has(w.v2.m)) { uniqueSet.add(w.v2.m); distractors.push({id: w.id, fakeAns: w.v2.m}); }
+          if(distractors.length === 3) break;
+        }
       }
 
-      let options = [q, ...distractors].sort(() => 0.5 - Math.random());
+      let options = [{id: q.id, fakeAns: currentQuizCorrectText}, ...distractors].sort(() => 0.5 - Math.random());
 
       let questionText = "";
       let subtitleText = "選擇正確答案";
-      let optionsHtml = "";
 
       if (currentQType === 'radical') {
         subtitleText = "✍️ 部首測驗";
         questionText = `生字「${q.word}」的部首是？`;
-        optionsHtml = options.map((opt, i) => `
-          <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-lg transition-all flex items-center justify-between shadow-sm active:scale-95">
-            <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.info}</span>
-          </button>
-        `).join('');
+      } else if (currentQType === 'pinyin') {
+        subtitleText = "🗣️ 注音測驗";
+        questionText = `生字「${q.word}」的注音是？`;
       } else if (currentQType === 'vocab1') {
         subtitleText = "🔍 造詞測驗";
-        questionText = `下列哪一個是生字「${q.word}」的造詞？`;
-        optionsHtml = options.map((opt, i) => `
-          <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-lg transition-all flex items-center justify-between shadow-sm active:scale-95">
-            <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.v1 ? opt.v1.w : ''}</span>
-          </button>
-        `).join('');
+        questionText = `下列哪一個是生字「${q.word}」的正確造詞？`;
       } else if (currentQType === 'vocab2') {
-        subtitleText = "🔍 成語/延伸測驗";
+        subtitleText = "🔍 成語測驗";
         questionText = `下列哪一個是生字「${q.word}」的相關成語？`;
-        optionsHtml = options.map((opt, i) => `
-          <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-lg transition-all flex items-center justify-between shadow-sm active:scale-95">
-            <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.v2 ? opt.v2.w : ''}</span>
-          </button>
-        `).join('');
       } else if (currentQType === 'meaning') {
-        subtitleText = "📖 句型/短語測驗";
-        questionText = `「${q.word}」的意思是？`;
-        optionsHtml = options.map((opt, i) => `
-          <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-sm sm:text-base transition-all flex items-center justify-between shadow-sm active:scale-95">
-            <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.meaning}</span>
-          </button>
-        `).join('');
-      } else if (currentQType === 'reverse') {
-        subtitleText = "🔍 反向測驗";
-        questionText = `解釋為「${q.meaning}」的是哪一個？`;
-        optionsHtml = options.map((opt, i) => `
-          <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-lg transition-all flex items-center justify-between shadow-sm active:scale-95">
-            <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.word}</span>
-          </button>
-        `).join('');
+        subtitleText = "📖 句型/詞義測驗";
+        questionText = `「${q.word}」的意思或句型說明是？`;
+      } else if (currentQType === 'example1' || currentQType === 'example2') {
+        subtitleText = "📝 例句測驗";
+        questionText = `下列哪一句是「${q.word}」的正確例句？`;
       }
 
+      let optionsHtml = options.map((opt, i) => `
+        <button data-id="${opt.id}" onclick="checkAnswer(${opt.id}, ${q.id}, this)" class="option-btn w-full text-left p-4 rounded-2xl border-2 border-slate-200 hover:border-amber-400 font-extrabold text-slate-700 text-sm sm:text-base transition-all flex items-center justify-between shadow-sm active:scale-95 bg-white">
+          <span class="leading-relaxed">${String.fromCharCode(65 + i)}. ${opt.fakeAns}</span>
+        </button>
+      `).join('');
+
       document.getElementById('quiz-subtitle').innerText = subtitleText;
-      
       const qEl = document.getElementById('quiz-question');
       if(questionText.length > 20) qEl.className = "text-xl sm:text-2xl font-black text-slate-800 tracking-wide leading-snug";
       else qEl.className = "text-2xl sm:text-3xl font-black text-slate-800 tracking-wide leading-snug";
@@ -1415,17 +1382,12 @@
         }
 
         let explainText = "";
-        if (currentQType === 'radical') {
-            explainText = `「${q.word}」的部首是：<span class="text-rose-800 ml-1 font-extrabold">${q.info}</span>`;
-        } else if (currentQType === 'vocab1') {
-            explainText = `「${q.word}」的造詞是：<span class="text-rose-800 ml-1 font-extrabold">${q.v1 ? q.v1.w : ''}</span>`;
-        } else if (currentQType === 'vocab2') {
-            explainText = `「${q.word}」的成語是：<span class="text-rose-800 ml-1 font-extrabold">${q.v2 ? q.v2.w : ''}</span>`;
-        } else if (currentQType === 'reverse') {
-            explainText = `這個解釋的詞是：<span class="text-rose-800 ml-1 font-extrabold">${q.word}</span>`;
-        } else {
-            explainText = `「${q.word}」的意思是：<br><span class="text-rose-800 mt-1 block text-left font-extrabold">${q.meaning}</span>`;
-        }
+        if (currentQType === 'radical') explainText = `「${q.word}」的部首是：<span class="text-rose-800 ml-1 font-extrabold">${q.info}</span>`;
+        else if (currentQType === 'pinyin') explainText = `「${q.word}」的注音是：<span class="text-rose-800 ml-1 font-extrabold">${q.pinyin}</span>`;
+        else if (currentQType === 'vocab1') explainText = `「${q.word}」的造詞是：<span class="text-rose-800 ml-1 font-extrabold">${q.v1.w}</span>`;
+        else if (currentQType === 'vocab2') explainText = `「${q.word}」的成語是：<span class="text-rose-800 ml-1 font-extrabold">${q.v2.w}</span>`;
+        else if (currentQType === 'meaning') explainText = `「${q.word}」的說明是：<br><span class="text-rose-800 mt-1 block text-left font-extrabold">${q.meaning}</span>`;
+        else explainText = `正確例句是：<br><span class="text-rose-800 mt-1 block text-left font-extrabold">${currentQuizCorrectText}</span>`;
 
         feedback.className = "text-center py-2 text-rose-600 font-bold text-sm sm:text-base";
         feedback.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> 答錯囉！${explainText}`;
@@ -1461,15 +1423,11 @@
         
         wrongList.innerHTML = Array.from(uniqueWrongsMap.values()).map(w => {
           const obj = w.wordObj;
-          if (w.qType === 'radical') {
-            return `<li><strong>${obj.word}</strong> 的部首是：<span class="text-rose-600">${obj.info}</span></li>`;
-          } else if (w.qType === 'vocab1' || w.qType === 'vocab2') {
-            return `<li><strong>${obj.word}</strong> 的造詞/成語是：<span class="text-rose-600">${w.correctTxt}</span></li>`;
-          } else if (w.qType === 'reverse') {
-            return `<li>解釋為「${obj.meaning}」的是：<span class="text-rose-600">${obj.word}</span></li>`;
-          } else {
-            return `<li><strong>${obj.word}</strong> 的意思是：<span class="text-rose-600">${obj.meaning}</span></li>`;
-          }
+          if (w.qType === 'radical') return `<li><strong>${obj.word}</strong> 的部首是：<span class="text-rose-600">${obj.info}</span></li>`;
+          if (w.qType === 'pinyin') return `<li><strong>${obj.word}</strong> 的注音是：<span class="text-rose-600">${obj.pinyin}</span></li>`;
+          if (w.qType === 'vocab1' || w.qType === 'vocab2') return `<li><strong>${obj.word}</strong> 的造詞/成語是：<span class="text-rose-600">${w.correctTxt}</span></li>`;
+          if (w.qType === 'meaning') return `<li><strong>${obj.word}</strong> 的說明是：<span class="text-rose-600">${obj.meaning}</span></li>`;
+          return `<li><strong>${obj.word}</strong> 的例句是：<span class="text-rose-600">${w.correctTxt}</span></li>`;
         }).join('');
       } else {
         wrongSummary.classList.add('hidden'); addWrongBtn.classList.add('hidden');
@@ -1525,6 +1483,60 @@
         item.starred = !item.starred;
         saveData(); renderWordList(); updateView();
       }
+    }
+
+    function openAddModal() { playSound('click'); document.getElementById('add-modal').classList.remove('hidden'); }
+    function closeAddModal() {
+      playSound('click'); document.getElementById('add-modal').classList.add('hidden');
+      document.getElementById('new-word').value = ''; document.getElementById('new-pinyin').value = ''; document.getElementById('new-meaning').value = '';
+    }
+
+    function saveNewWord() {
+      playSound('click');
+      const lesson = document.getElementById('new-lesson-code').value || "L1";
+      const typeCode = document.getElementById('new-type-code').value;
+      const word = document.getElementById('new-word').value.trim();
+      const pinyin = document.getElementById('new-pinyin').value.trim();
+      const info = document.getElementById('new-info').value.trim();
+      const meaning = document.getElementById('new-meaning').value.trim();
+      const v1Str = document.getElementById('new-v1').value.trim();
+      const v2Str = document.getElementById('new-v2').value.trim();
+
+      if (!word) { alert('請至少輸入「標題文字」！'); return; }
+      
+      let infoStr = info || (typeCode === "生字" ? "補充生字" : "句型練習");
+      let v1Obj = null, v2Obj = null;
+
+      if (typeCode.includes('練習')) {
+        if(v1Str) v1Obj = { w: '例句 1', m: v1Str };
+        if(v2Str) v2Obj = { w: '例句 2', m: v2Str };
+      } else {
+        if(v1Str) v1Obj = { w: v1Str, m: `造詞：${v1Str}` };
+        if(v2Str) v2Obj = { w: v2Str, m: `成語/延伸：${v2Str}` };
+      }
+
+      if (editingCardId !== null) {
+        const target = words.find(w => w.id === editingCardId);
+        target.lesson = lesson;
+        target.type = typeCode;
+        target.word = word;
+        target.pinyin = pinyin;
+        target.info = infoStr;
+        target.meaning = meaning;
+        target.v1 = v1Obj;
+        target.v2 = v2Obj;
+        alert('卡片編輯成功！');
+      } else {
+        const newId = words.length > 0 ? Math.max(...words.map(w => w.id)) + 1 : 1;
+        words.push({ id: newId, lesson, type: typeCode, word, pinyin, info: infoStr, meaning, v1: v1Obj, v2: v2Obj, starred: true });
+        alert('卡片新增成功！已自動標記為星號。');
+      }
+      
+      currentLesson = lesson; document.getElementById('lesson-select').value = lesson;
+      saveData(); closeAddModal(); 
+      
+      if(!document.getElementById('list-modal').classList.contains('hidden')){ renderWordList(); }
+      setFilter(typeCode === "生字" ? 'vocab' : 'sentence');
     }
 
     function openBackupModal() { playSound('click'); document.getElementById('backup-modal').classList.remove('hidden'); }
