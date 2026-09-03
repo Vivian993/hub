@@ -90,7 +90,7 @@
     .hide-mobile { display: none; }
   }
 
-  /* 🔥 快速跳轉導覽列 (多排換行、加大字體設計) */
+  /* 🔥 快速跳轉導覽列 */
   .quick-nav-wrap{
     max-width:1400px; margin:14px auto 0;
     display:flex; flex-wrap:wrap; gap:10px;
@@ -129,7 +129,6 @@
   .board::-webkit-scrollbar-track{ background:transparent; }
 
   .column{
-    /* 📐 卡片寬度微調縮小 */
     flex:0 0 min(280px, 82vw); scroll-snap-align:start; display:flex; flex-direction:column;
   }
   
@@ -166,7 +165,6 @@
     font-size: 13px; font-weight: 800; color: white;
   }
   
-  /* 🏷️ 工具名稱顯示在上方，粗體放大 */
   .card-title{ 
     margin: 0; font-size: 17px; line-height: 1.3; font-weight: 800;
     flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -332,7 +330,6 @@
       </div>
     </div>
     <div class="header-actions">
-      <!-- 手機上自動縮減文字 -->
       <button class="btn-primary" id="openAddGlobal">＋ 新增<span class="hide-mobile">收藏</span></button>
       <button class="btn-manage" id="openManage">⚙️<span class="hide-mobile"> 設定</span></button>
     </div>
@@ -368,7 +365,7 @@
     
     <div class="form-group">
       <label>工具名稱 (子分類)</label>
-      <input type="text" id="f-title" placeholder="例如：貼圖生成大師">
+      <input type="text" id="f-title" placeholder="例如：寫作小幫手">
     </div>
     <div class="form-group">
       <label>選擇分類 (隨時可移轉)</label>
@@ -379,7 +376,7 @@
       <input type="url" id="f-url" placeholder="https://...">
     </div>
     
-    <!-- 🖼️ 封面圖片區域：新增 AI 畫圖按鈕 -->
+    <!-- 🖼️ 封面圖片區域：全新升級繪本畫風 AI -->
     <div class="form-group">
       <label>封面圖片 (可上傳相片，或讓 AI 幫您畫！)</label>
       <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
@@ -388,13 +385,13 @@
           📸 上傳相片
           <input type="file" id="f-img-file" accept="image/*" style="display:none;">
         </label>
-        <button type="button" class="btn-primary" id="btn-ai-gen" style="margin:0; padding:8px 12px; border-radius:10px; white-space:nowrap; background:#8B5CF6;">🪄 AI 畫圖</button>
+        <button type="button" class="btn-primary" id="btn-ai-gen" style="margin:0; padding:8px 12px; border-radius:10px; white-space:nowrap; background:#F59E0B; color:#fff; border:none; box-shadow:0 2px 6px rgba(245,158,11,0.3);">🪄 AI 繪本畫風</button>
       </div>
     </div>
     
     <div class="form-group">
       <label>簡短說明 (選填)</label>
-      <textarea id="f-desc" placeholder="簡短描述功能或用途，AI 畫圖時也會參考這段文字喔！"></textarea>
+      <textarea id="f-desc" placeholder="簡短描述功能或用途..."></textarea>
     </div>
 
     <div class="btn-row">
@@ -465,7 +462,7 @@ function ensureHttps(url) {
   return trimmedUrl;
 }
 
-// 🚀 --- IndexedDB 瀏覽器專業資料庫 (無限容量) ---
+// 🚀 --- IndexedDB 瀏覽器專業資料庫 ---
 const DB_NAME = 'AIToolboxDB';
 const STORE_NAME = 'storage';
 
@@ -528,7 +525,6 @@ async function storageGet(key){
 }
 
 // --- Data Setup ---
-// 🎨 更新為 12 款豐富且辨識度高的莫蘭迪色
 const defaultCategories = [
   {name:"閱讀寫作", bg:"#D1E8E2", dot:"#3A7CA5"}, 
   {name:"識字生字", bg:"#F7D1CD", dot:"#B56576"}, 
@@ -584,7 +580,6 @@ const gridEl = document.getElementById('grid');
 const emptyEl = document.getElementById('empty');
 const quickNav = document.getElementById('quickNav');
 
-// 渲染「快速跳轉導覽列」
 function renderQuickNav(){
   quickNav.innerHTML = categoriesData.map((c, i) => `
     <button class="nav-chip" style="color:${c.dot}; border-color: ${c.dot}33;" data-idx="${i}">
@@ -625,12 +620,10 @@ function cardHTML(x, absoluteIndex){
     <div class="card">
       <div class="card-header">
         <div class="card-avatar" style="background:${accent};">${initial}</div>
-        <!-- 🏷️ 工具名稱顯示在上方，粗體放大 -->
         <h3 class="card-title" title="${x.t}">${x.t}</h3>
         <button class="card-edit-btn" data-index="${absoluteIndex}" title="編輯或移動分類">✏️</button>
       </div>
       
-      <!-- 🖼️ 圖片區塊 -->
       <div class="card-image-link" data-index="${absoluteIndex}" title="點兩下快速換圖">
         ${mediaHtml}
       </div>
@@ -799,7 +792,7 @@ function openAddModal(preselectCat = null, editIdx = null){
   addOverlay.classList.add('active');
 }
 
-// 🪄 --- 免費、免註冊的 AI 圖片生成功能 ---
+// 🎨 --- 核心升級：兒童繪本畫風 AI 生成 ---
 document.getElementById('btn-ai-gen').addEventListener('click', async () => {
   const title = document.getElementById('f-title').value.trim();
   const desc = document.getElementById('f-desc').value.trim();
@@ -813,28 +806,31 @@ document.getElementById('btn-ai-gen').addEventListener('click', async () => {
   const originalValue = imgInput.value;
   
   // 顯示 Loading 狀態
-  imgInput.value = "⏳ AI 畫圖中 (約需 5~10 秒)...";
+  imgInput.value = "⏳ AI 繪本畫風生成中 (約 5~10 秒)...";
   const aiBtn = document.getElementById('btn-ai-gen');
   aiBtn.disabled = true;
   aiBtn.style.opacity = "0.5";
 
   try {
-    // 組合給 AI 的提示詞
-    const promptText = `A beautiful clean illustration for an educational tool about ${title} ${desc}. Cute, soft colors, minimalist, high quality, flat art style, education UI.`;
+    // 🔥 全新優化的繪本詠唱咒語 (過濾掉可能的特殊符號以防報錯)
+    const safeTitle = title.replace(/[^a-zA-Z0-9\u4e00-\u9fa5\s]/g, ' ');
+    const safeDesc = desc.replace(/[^a-zA-Z0-9\u4e00-\u9fa5\s]/g, ' ');
+    
+    const promptText = `Cute educational illustration for kids about ${safeTitle} ${safeDesc}. Children's picture book style, soft pastel colors, cozy watercolor texture, adorable characters, bright and cheerful, high quality, no letters, no words, clean background.`;
     const encodedPrompt = encodeURIComponent(promptText);
     
-    // 呼叫 Pollinations AI 免費出圖 API
-    const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=450&nologo=true`;
+    // 呼叫 Pollinations AI (加入 enhance=true 提升品質)
+    const seed = Math.floor(Math.random() * 1000000);
+    const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=450&nologo=true&seed=${seed}&enhance=true`;
 
     const response = await fetch(url);
     if (!response.ok) throw new Error("Network error");
     const blob = await response.blob();
 
-    // 轉換成 Base64 以供永久儲存
     const reader = new FileReader();
     reader.onload = () => {
       tempManageBase64Img = reader.result;
-      imgInput.value = '(✨ 已成功生成 AI 圖片，儲存後生效)';
+      imgInput.value = '(✨ 已成功生成溫馨繪本圖片，儲存後生效)';
       aiBtn.disabled = false;
       aiBtn.style.opacity = "1";
     };
@@ -931,7 +927,6 @@ function renderColorPicker(){
   });
 }
 
-// ✏️ 支援直接編輯分類名稱
 function renderCatChips(){
   const wrap = document.getElementById('catChips');
   wrap.innerHTML = categoriesData.map((c,i)=>`
