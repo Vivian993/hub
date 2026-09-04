@@ -198,7 +198,7 @@
     <div id="printArea" class="hidden print-hidden bg-white text-black p-4"></div>
 
     <script>
-        // --- 安全的資料讀取功能 (防止瀏覽器阻擋儲存空間導致當機) ---
+        // --- 安全的資料讀取功能 ---
         function safeGet(key, defaultVal) {
             try { return localStorage.getItem(key) || defaultVal; } catch(e) { return defaultVal; }
         }
@@ -236,7 +236,7 @@
             const key = document.getElementById('apiKeyInput').value.trim();
             if(key) {
                 safeSet('sproutApiKey', key);
-                alert('🔑 API 金鑰儲存成功！接下來的查詢都會有 AI 老師幫忙翻譯囉！');
+                alert('🔑 API 金鑰儲存成功！');
             } else {
                 localStorage.removeItem('sproutApiKey');
                 alert('金鑰已清除！');
@@ -246,31 +246,26 @@
         // --- AI 白話文改寫引擎 (極致防錯版) ---
         async function generateKidFriendlyIdiom(word, defaultMeaning, defaultSentence) {
             const key = getApiKey();
-            if(!key) return null; 
+            if(!key) throw new Error("尚未設定 API Key"); 
             
             const prompt = `你是一位親切的國小老師。請用國小高年級學生聽得懂的簡單白話文，解釋「${word}」的意思(限25字內)。然後造一個貼近國小校園或家庭日常生活的例句(限30字內)，絕對不可以包含文言文。請只回傳合法的 JSON 格式：{"meaning":"...","sentence":"..."}`;
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
             
-            try {
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json' }})
-                });
-                if(!res.ok) throw new Error("API 連線失敗");
-                const data = await res.json();
-                let text = data.candidates[0].content.parts[0].text.trim();
-                
-                // 強制取出 JSON 結構，防止 AI 回傳額外文字導致當機
-                let match = text.match(/\{[\s\S]*\}/);
-                if (match) {
-                    return JSON.parse(match[0]);
-                }
-                return JSON.parse(text);
-            } catch(e) { 
-                console.error("AI 轉換發生錯誤", e);
-                return null; 
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json' }})
+            });
+            
+            if(!res.ok) {
+                const errObj = await res.json();
+                throw new Error(errObj.error?.message || "API 連線失敗");
             }
+            const data = await res.json();
+            let text = data.candidates[0].content.parts[0].text.trim();
+            let match = text.match(/\{[\s\S]*\}/);
+            if (match) return JSON.parse(match[0]);
+            return JSON.parse(text);
         }
 
         // --- 介面控制 ---
@@ -333,7 +328,8 @@
             }, 600);
         }
 
-        async function fetchOnlineIdiom(word, isImport){
+        // 強力過濾文言文 + AI 自動改寫
+        async function fetchOnlineIdiom(word, isImport, throwError = false){
             try {
                 let res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(word)}.json`);
                 if(!res.ok) return null;
@@ -342,20 +338,29 @@
                 let defs = h.definitions || [];
                 let fd = defs.find(d=>d.def) || {};
                 
-                let meaning = fd.def ? fd.def.replace(/^[0-9]+\.\s*/,'').replace(/《[^》]*》[：:]?「[^」]*」[。.]?/g, '').replace(/如[：:]「[^」]*」[。.]?/g, '').replace(/也作「[^」]*」[。.]?/g, '').trim() : '無解釋';
+                // 初步過濾字典雜訊
+                let meaning = fd.def ? fd.def.replace(/^[0-9]+\.\s*/,'').replace(/《[^》]*》[：:]?「[^」]*」[。.]?/g, '').replace(/如[：:]「[^」]*」[。.]?/g, '').replace(/也作「[^」]*」[。.]?/g, '').replace(/《[^》]*》第[一二三四五六七八九十百千萬]+回[：:]「[^」]*」[。.]?/g, '').trim() : '無解釋';
                 let sentence = '';
                 if (fd.example && fd.example.length > 0) sentence = fd.example[0].replace(/《[^》]*》/g, '').trim();
                 if (!sentence) sentence = '（辭典暫無簡單例句，請發揮想像力造句看看喔！）';
 
                 if (getApiKey()) {
-                    let aiData = await generateKidFriendlyIdiom(data.title, meaning, sentence);
-                    if(aiData && aiData.meaning) meaning = aiData.meaning;
-                    if(aiData && aiData.sentence) sentence = aiData.sentence;
+                    try {
+                        let aiData = await generateKidFriendlyIdiom(data.title, meaning, sentence);
+                        if(aiData && aiData.meaning) meaning = aiData.meaning;
+                        if(aiData && aiData.sentence) sentence = aiData.sentence;
+                    } catch (e) {
+                        console.error("AI 失敗:", e);
+                        if(throwError) throw e; 
+                    }
                 }
 
                 let cat = autoCategorize(data.title, isImport);
                 return { c: cat, i: data.title, z: h.bopomofo||'', m: meaning||'無解釋', s: sentence, d: '', isCustom: isImport };
-            } catch(e) { return null; }
+            } catch(e) { 
+                if(throwError) throw e;
+                return null; 
+            }
         }
 
         function deleteCustomItem(word) {
@@ -366,12 +371,46 @@
             updateCustomPreview(); renderCats(); setCat(curCat);
         }
 
+        // 💡 全新：強制 AI 重新改寫單張卡片
+        async function forceAIRewrite(word) {
+            if(!getApiKey()) return alert("請先到「學校管理」設定並儲存 API Key 喔！");
+            
+            let btn = document.getElementById(`rewriteBtn-${word}`);
+            let originalText = btn.innerHTML;
+            btn.innerHTML = '✨ 施法中...';
+            btn.classList.add('opacity-50', 'pointer-events-none');
+
+            try {
+                let res = await fetchOnlineIdiom(word, true, true); 
+                if(res) {
+                    let idx = customDB.findIndex(i => i.i === word);
+                    if(idx !== -1) customDB[idx] = res;
+                    
+                    let mIdx = idiomDB.findIndex(i => i.i === word && i.isCustom);
+                    if(mIdx !== -1) idiomDB[mIdx] = res;
+                    else idiomDB.push(res);
+                    
+                    safeSet('sproutCustomDB', JSON.stringify(customDB));
+                    setCat(curCat); 
+                    updateCustomPreview();
+                }
+            } catch (error) {
+                alert(`❌ AI 改寫失敗！\n錯誤訊息：${error.message}\n請確認您的 API 金鑰是否正確或有被阻擋。`);
+                btn.innerHTML = originalText;
+                btn.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        }
+
         function renderIdioms(list){
             document.getElementById('emptySearch').classList.add('hidden');
             document.getElementById('idiomList').innerHTML = list.map(item=>`
                 <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md relative">
-                    ${item.isCustom ? `<button onclick="deleteCustomItem('${item.i}')" class="absolute top-4 right-4 text-slate-300 hover:text-rose-500 transition-colors" title="刪除此自訂項目">🗑️</button>` : ''}
-                    <div class="flex justify-between items-start mb-3 pr-8">
+                    ${item.isCustom ? `<button onclick="deleteCustomItem('${item.i}')" class="absolute top-4 right-4 text-slate-300 hover:text-rose-500 transition-colors" title="刪除此項目">🗑️</button>` : ''}
+                    
+                    <!-- 💡 魔法重寫按鈕 -->
+                    ${item.isCustom ? `<button id="rewriteBtn-${item.i}" onclick="forceAIRewrite('${item.i}')" class="absolute top-4 right-12 text-amber-500 hover:text-amber-600 font-bold text-sm bg-amber-50 px-2 py-1 rounded-md transition-colors" title="讓 AI 重新造句">✨ AI 改寫</button>` : ''}
+                    
+                    <div class="flex justify-between items-start mb-3 pr-24">
                         <div>
                             <span class="inline-block px-2 py-1 ${item.c==='語詞'?'bg-indigo-50 text-indigo-600':item.c==='學校題庫'?'bg-purple-50 text-purple-600':'bg-emerald-50 text-emerald-600'} text-xs font-bold rounded mb-2">${catIcons[item.c]||''} ${item.c}</span>
                             <div class="flex items-center gap-3">
@@ -409,7 +448,10 @@
                 words = [...new Set(words)]; 
                 let newWords = words.filter(w => !idiomDB.some(i => i.i === w));
                 
-                if(newWords.length === 0){ alert("沒有偵測到新的項目，或已經在系統中囉！"); return; }
+                if(newWords.length === 0){ 
+                    alert(`沒有偵測到新項目，或您輸入的詞已經在題庫裡囉！\n（如果想要重寫舊題庫，請直接點卡片上的 ✨ AI改寫 按鈕）`); 
+                    return; 
+                }
 
                 btn.disabled = true; btn.classList.add('opacity-50');
                 
@@ -429,7 +471,7 @@
                 
                 updateCustomPreview(); renderCats();
             } catch (error) {
-                alert("匯入過程中發生錯誤，請檢查網路連線或 API 金鑰！");
+                alert("匯入過程中發生錯誤！");
                 status.innerText = "❌ 匯入失敗";
             } finally {
                 btn.disabled = false; btn.classList.remove('opacity-50');
@@ -547,9 +589,7 @@
             document.getElementById('quizBoard').classList.remove('animate-shake', 'animate-pop');
             
             let safeMeaning = q.m.replace(new RegExp(q.i, 'g'), "〇〇〇〇");
-            let qTxt = `意思是指：「${safeMeaning}」
-
-請問這是哪個選項？`;
+            let qTxt = `意思是指：「${safeMeaning}」\n\n請問這是哪個選項？`;
             document.getElementById('quizQuestionText').innerText = qTxt;
 
             let opts = [q].concat(idiomDB.filter(i=>i.i!==q.i).sort(()=>.5-Math.random()).slice(0,3)).sort(()=>.5-Math.random());
