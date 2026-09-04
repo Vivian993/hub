@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>萌芽成語寶典 - 高年級專用</title>
-    
+    <!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
+    <link rel="apple-touch-icon" href="custom-icon.png">
+    <link rel="icon" type="image/png" href="custom-icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -53,7 +55,7 @@
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl">🔍</span>
             </div>
             <div id="loadingIndicator" class="hidden text-center text-emerald-500 font-bold py-4">
-                <span class="inline-block animate-spin mr-2">⏳</span>AI 老師正在連線編寫中...
+                <span class="inline-block animate-spin mr-2">⏳</span>網路連線中...
             </div>
             <div class="flex gap-3 overflow-x-auto hide-scrollbar py-2" id="categoryTabs"></div>
             <div id="idiomList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -138,10 +140,10 @@
         <section id="panel-import" class="hidden space-y-6">
             <div class="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-100 max-w-2xl mx-auto mt-6">
                 
-                <!-- 1. AI 金鑰設定區塊 -->
+                <!-- 1. AI 金鑰設定 (選填) -->
                 <div class="mb-8 pb-8 border-b border-slate-100">
-                    <h2 class="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2"><span>🔑</span> AI 小老師設定 (API Key)</h2>
-                    <p class="text-sm text-slate-500 mb-4">設定 Google Gemini API 金鑰後，系統會自動把字典生硬的解釋，改寫成「國小生聽得懂的話」與「校園造句」喔！</p>
+                    <h2 class="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2"><span>🔑</span> AI 小老師設定 (選填)</h2>
+                    <p class="text-sm text-slate-500 mb-4">有設定 API 金鑰的話，系統會自動把字典生硬的解釋改寫。如果您習慣「自己定義造句」，這裡留空白不設定也完全沒關係！</p>
                     <div class="flex gap-2">
                         <input type="password" id="apiKeyInput" placeholder="在此貼上您的 API Key..." class="flex-1 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-sm focus:outline-none focus:border-emerald-400">
                         <button onclick="saveApiKey()" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors shrink-0">💾 儲存</button>
@@ -149,13 +151,20 @@
                 </div>
 
                 <!-- 2. 匯入題庫區塊 -->
-                <h2 class="text-xl font-bold text-slate-800 mb-2">🏫 學校題庫自動匯入</h2>
-                <p class="text-slate-500 mb-6 text-sm">請把成語或語詞貼在下方，AI 會自動幫您寫好白話造句！</p>
+                <h2 class="text-xl font-bold text-slate-800 mb-2">🏫 學校題庫自動匯入 (支援自訂造句)</h2>
+                <p class="text-slate-500 mb-4 text-sm">您可以直接貼上成語讓系統抓，也可以加上等號「<strong class="text-emerald-600">=</strong>」自己決定白話文！</p>
                 
-                <textarea id="importInput" rows="5" class="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-emerald-400 mb-4" placeholder="請貼上內容，例如：&#10;負責&#10;一石二鳥，守株待兔"></textarea>
+                <textarea id="importInput" rows="6" class="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-emerald-400 mb-4 text-sm" placeholder="【支援兩種寫法，可混用】
+
+寫法一（交給系統查）：
+一石二鳥, 負責
+
+寫法二（自己決定白話文與造句，用等號隔開）：
+守株待兔 = 妄想不勞而獲 = 你不讀書想靠猜對，簡直是守株待兔！
+破釜沉舟 = 下定決心不顧一切 = 這次段考我破釜沉舟，一定要拿第一名！"></textarea>
                 
                 <button onclick="startImport()" id="importBtn" class="w-full py-3 bg-emerald-500 text-white font-bold rounded-xl shadow-md hover:bg-emerald-600 transition-colors">
-                    📥 開始自動分類與匯入
+                    📥 開始匯入題庫
                 </button>
                 
                 <div id="importStatus" class="mt-4 text-center font-bold text-emerald-600"></div>
@@ -168,10 +177,9 @@
                     <div id="customListPreview" class="flex flex-wrap gap-2 text-sm text-slate-600"></div>
                 </div>
 
-                <!-- 3. 備份區塊 (隱私保護版) -->
+                <!-- 3. 備份區塊 -->
                 <div class="mt-8 border-t border-slate-100 pt-6">
                     <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2"><span>⚙️</span> 資料備份與分享</h3>
-                    <p class="text-sm text-slate-500 mb-4">您可以產生備份碼分享給別人。分享出去的只有「題庫」，不會包含您的 API 金鑰和小孩的錯題本，請安心分享！</p>
                     <div class="flex flex-col gap-3">
                         <button onclick="exportBackup()" class="w-full py-2 bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition-colors">📋 產生備份碼 (匯出)</button>
                         <div class="flex gap-2">
@@ -185,7 +193,6 @@
         </section>
     </main>
 
-    <!-- 備份結果視窗 -->
     <div id="backupModal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-2xl max-w-sm w-full mx-4 text-center">
             <h3 class="text-xl font-bold mb-4">備份碼已產生！</h3>
@@ -198,7 +205,6 @@
     <div id="printArea" class="hidden print-hidden bg-white text-black p-4"></div>
 
     <script>
-        // --- 安全的資料讀取功能 ---
         function safeGet(key, defaultVal) {
             try { return localStorage.getItem(key) || defaultVal; } catch(e) { return defaultVal; }
         }
@@ -230,7 +236,6 @@
             renderCats(); renderIdioms(idiomDB); renderPrintCheckboxes(); updateCustomPreview();
         };
 
-        // --- 金鑰管理 ---
         function getApiKey() { return safeGet('sproutApiKey', ''); }
         function saveApiKey() {
             const key = document.getElementById('apiKeyInput').value.trim();
@@ -243,32 +248,39 @@
             }
         }
 
-        // --- AI 白話文改寫引擎 (極致防錯版) ---
         async function generateKidFriendlyIdiom(word, defaultMeaning, defaultSentence) {
             const key = getApiKey();
             if(!key) throw new Error("尚未設定 API Key"); 
             
             const prompt = `你是一位親切的國小老師。請用國小高年級學生聽得懂的簡單白話文，解釋「${word}」的意思(限25字內)。然後造一個貼近國小校園或家庭日常生活的例句(限30字內)，絕對不可以包含文言文。請只回傳合法的 JSON 格式：{"meaning":"...","sentence":"..."}`;
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
-            
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json' }})
-            });
-            
-            if(!res.ok) {
-                const errObj = await res.json();
-                throw new Error(errObj.error?.message || "API 連線失敗");
+            const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-pro'];
+            let lastErrorMsg = "API 連線失敗";
+
+            for(let model of modelsToTry) {
+                try {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json' }})
+                    });
+                    if(res.ok) {
+                        const data = await res.json();
+                        let text = data.candidates[0].content.parts[0].text.trim();
+                        let match = text.match(/\{[\s\S]*\}/);
+                        if (match) return JSON.parse(match[0]);
+                        return JSON.parse(text);
+                    } else {
+                        const errObj = await res.json();
+                        lastErrorMsg = errObj.error?.message || "未知的 API 錯誤";
+                    }
+                } catch(e) {
+                    lastErrorMsg = e.message;
+                }
             }
-            const data = await res.json();
-            let text = data.candidates[0].content.parts[0].text.trim();
-            let match = text.match(/\{[\s\S]*\}/);
-            if (match) return JSON.parse(match[0]);
-            return JSON.parse(text);
+            throw new Error(lastErrorMsg);
         }
 
-        // --- 介面控制 ---
         function switchTab(t){
             ['explore','quiz','print','import'].forEach(n=>{
                 document.getElementById(`panel-${n}`).classList.toggle('hidden',n!==t);
@@ -328,7 +340,6 @@
             }, 600);
         }
 
-        // 強力過濾文言文 + AI 自動改寫
         async function fetchOnlineIdiom(word, isImport, throwError = false){
             try {
                 let res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(word)}.json`);
@@ -338,7 +349,6 @@
                 let defs = h.definitions || [];
                 let fd = defs.find(d=>d.def) || {};
                 
-                // 初步過濾字典雜訊
                 let meaning = fd.def ? fd.def.replace(/^[0-9]+\.\s*/,'').replace(/《[^》]*》[：:]?「[^」]*」[。.]?/g, '').replace(/如[：:]「[^」]*」[。.]?/g, '').replace(/也作「[^」]*」[。.]?/g, '').replace(/《[^》]*》第[一二三四五六七八九十百千萬]+回[：:]「[^」]*」[。.]?/g, '').trim() : '無解釋';
                 let sentence = '';
                 if (fd.example && fd.example.length > 0) sentence = fd.example[0].replace(/《[^》]*》/g, '').trim();
@@ -371,7 +381,6 @@
             updateCustomPreview(); renderCats(); setCat(curCat);
         }
 
-        // 💡 全新：強制 AI 重新改寫單張卡片
         async function forceAIRewrite(word) {
             if(!getApiKey()) return alert("請先到「學校管理」設定並儲存 API Key 喔！");
             
@@ -395,7 +404,7 @@
                     updateCustomPreview();
                 }
             } catch (error) {
-                alert(`❌ AI 改寫失敗！\n錯誤訊息：${error.message}\n請確認您的 API 金鑰是否正確或有被阻擋。`);
+                alert("❌ AI 改寫失敗！\n錯誤訊息：" + error.message);
                 btn.innerHTML = originalText;
                 btn.classList.remove('opacity-50', 'pointer-events-none');
             }
@@ -407,7 +416,6 @@
                 <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md relative">
                     ${item.isCustom ? `<button onclick="deleteCustomItem('${item.i}')" class="absolute top-4 right-4 text-slate-300 hover:text-rose-500 transition-colors" title="刪除此項目">🗑️</button>` : ''}
                     
-                    <!-- 💡 魔法重寫按鈕 -->
                     ${item.isCustom ? `<button id="rewriteBtn-${item.i}" onclick="forceAIRewrite('${item.i}')" class="absolute top-4 right-12 text-amber-500 hover:text-amber-600 font-bold text-sm bg-amber-50 px-2 py-1 rounded-md transition-colors" title="讓 AI 重新造句">✨ AI 改寫</button>` : ''}
                     
                     <div class="flex justify-between items-start mb-3 pr-24">
@@ -439,26 +447,53 @@
             window.speechSynthesis.speak(u);
         }
 
+        // 💡 終極更新：支援手動輸入「等號」格式，直接跳過 AI 瞬間匯入！
         async function startImport(){
             let btn = document.getElementById('importBtn');
             let status = document.getElementById('importStatus');
             try {
-                let text = document.getElementById('importInput').value;
-                let words = text.split(/[\s,，、；;]+/).map(w=>w.trim()).filter(w=>w.length>=2 && w.length<=8);
-                words = [...new Set(words)]; 
-                let newWords = words.filter(w => !idiomDB.some(i => i.i === w));
+                let text = document.getElementById('importInput').value.trim();
+                if(!text) { alert("請輸入內容喔！"); return; }
                 
-                if(newWords.length === 0){ 
-                    alert(`沒有偵測到新項目，或您輸入的詞已經在題庫裡囉！\n（如果想要重寫舊題庫，請直接點卡片上的 ✨ AI改寫 按鈕）`); 
-                    return; 
-                }
-
                 btn.disabled = true; btn.classList.add('opacity-50');
                 
+                let lines = text.split('\n');
+                let fetchQueue = [];
                 let successCount = 0;
-                for(let i=0; i<newWords.length; i++){
-                    status.innerText = `🔄 正在抓取並請 AI 改寫「${newWords[i]}」... (${i+1}/${newWords.length})`;
-                    let res = await fetchOnlineIdiom(newWords[i], true);
+
+                for(let line of lines) {
+                    line = line.trim();
+                    if(!line) continue;
+
+                    // 支援全形或半形等號自訂格式
+                    if(line.includes('=') || line.includes('＝')) {
+                        let parts = line.split(/[=＝]/).map(p=>p.trim());
+                        let word = parts[0];
+                        if(!word || idiomDB.some(i => i.i === word)) continue;
+
+                        let meaning = parts[1] || '無解釋';
+                        let sentence = parts[2] || '無造句';
+                        let cat = autoCategorize(word, true);
+
+                        let newItem = { c: cat, i: word, z: '', m: meaning, s: sentence, d: '', isCustom: true };
+                        customDB.unshift(newItem);
+                        idiomDB.push(newItem);
+                        successCount++;
+                    } else {
+                        // 一般格式，丟到佇列準備連網
+                        let words = line.split(/[\s,，、；;]+/).map(w=>w.trim()).filter(w=>w.length>=2 && w.length<=8);
+                        for(let w of words) {
+                            if(!idiomDB.some(i => i.i === w) && !fetchQueue.includes(w)) {
+                                fetchQueue.push(w);
+                            }
+                        }
+                    }
+                }
+                
+                // 處理需要連網抓取的部分
+                for(let i=0; i<fetchQueue.length; i++){
+                    status.innerText = `🔄 正在連網抓取「${fetchQueue[i]}」... (${i+1}/${fetchQueue.length})`;
+                    let res = await fetchOnlineIdiom(fetchQueue[i], true);
                     if(res){
                         customDB.unshift(res); idiomDB.push(res); successCount++;
                     }
@@ -495,7 +530,6 @@
             updateCustomPreview(); renderCats(); setCat('全部');
         }
 
-        // --- 隱私保護版備份功能 ---
         function exportBackup() {
             if(customDB.length === 0) return alert("您目前還沒有自訂資料，不需要備份喔！");
             const backupData = { customDB: customDB, date: new Date().toLocaleDateString('zh-TW') };
@@ -535,7 +569,6 @@
             }
         }
 
-        // --- 遊戲邏輯 ---
         let audioCtx = null;
         function playGameSound(type) {
             if(!audioCtx) {
@@ -653,7 +686,6 @@
         }
         function resetQuiz(){ document.getElementById('quizSetup').classList.remove('hidden'); document.getElementById('quizResult').classList.add('hidden'); }
 
-        // --- 學習單 ---
         function renderPrintCheckboxes(){
             let f=document.getElementById('printFilter').value;
             let list = f==='REVIEW' ? idiomDB.filter(i=>wrongList.includes(i.i)) : f==='ALL'? idiomDB : idiomDB.filter(i=>i.c===f);
