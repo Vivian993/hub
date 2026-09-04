@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>萌芽成語寶典 - 高年級專用</title>
-    <!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
+    
+    <!-- 📌 iPhone 桌面 App 圖示 -->
     <link rel="apple-touch-icon" href="custom-icon.png">
     <link rel="icon" type="image/png" href="custom-icon.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -42,7 +44,7 @@
                 <button onclick="switchTab('explore')" id="tab-explore" class="tab-btn whitespace-nowrap sm:px-5 py-2 px-3 rounded-lg text-sm font-bold bg-white text-emerald-600 shadow-sm">📖 速查</button>
                 <button onclick="switchTab('quiz')" id="tab-quiz" class="tab-btn whitespace-nowrap sm:px-5 py-2 px-3 rounded-lg text-sm font-medium text-slate-500">🎮 遊戲闖關</button>
                 <button onclick="switchTab('print')" id="tab-print" class="tab-btn whitespace-nowrap sm:px-5 py-2 px-3 rounded-lg text-sm font-medium text-slate-500">🖨️ 學習單</button>
-                <button onclick="switchTab('import')" id="tab-import" class="tab-btn whitespace-nowrap sm:px-5 py-2 px-3 rounded-lg text-sm font-medium text-slate-500">📥 學校題庫</button>
+                <button onclick="switchTab('import')" id="tab-import" class="tab-btn whitespace-nowrap sm:px-5 py-2 px-3 rounded-lg text-sm font-medium text-slate-500">📥 學校管理</button>
             </nav>
         </div>
     </header>
@@ -51,11 +53,11 @@
         <!-- 探索面板 -->
         <section id="panel-explore" class="space-y-6">
             <div class="relative">
-                <input type="text" id="searchInput" placeholder="輸入成語或語詞..." oninput="handleSearch()" class="w-full px-5 py-4 rounded-2xl border-2 border-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-50 text-lg transition-all pl-12 bg-white">
+                <input type="text" id="searchInput" placeholder="輸入成語或語詞 (雲端 AI 自動查詢)..." oninput="handleSearch()" class="w-full px-5 py-4 rounded-2xl border-2 border-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-50 text-lg transition-all pl-12 bg-white">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl">🔍</span>
             </div>
             <div id="loadingIndicator" class="hidden text-center text-emerald-500 font-bold py-4">
-                <span class="inline-block animate-spin mr-2">⏳</span>雲端連線中...
+                <span class="inline-block animate-spin mr-2">⏳</span>AI 老師正在連線編寫中...
             </div>
             <div class="flex gap-3 overflow-x-auto hide-scrollbar py-2" id="categoryTabs"></div>
             <div id="idiomList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -139,31 +141,43 @@
         <!-- 匯入與管理面板 -->
         <section id="panel-import" class="hidden space-y-6">
             <div class="bg-white rounded-3xl p-6 md:p-10 shadow-sm border border-slate-100 max-w-2xl mx-auto mt-6">
-                <h2 class="text-2xl font-bold text-slate-800 mb-2">🏫 學校題庫與語詞匯入</h2>
-                <p class="text-slate-500 mb-6">把成語或語詞貼在下面，系統會自動辨識：<strong class="text-emerald-600">小於4個字會分到「📓語詞區」，有動物會去「🦁動物王國」，否則去「🏫學校題庫」。</strong></p>
                 
-                <textarea id="importInput" rows="5" class="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-emerald-400 mb-4" placeholder="請貼上內容，例如：&#10;負責 (我是語詞)&#10;一石二鳥，守株待兔 (逗號分開也行)"></textarea>
+                <!-- 1. AI 金鑰設定區塊 -->
+                <div class="mb-8 pb-8 border-b border-slate-100">
+                    <h2 class="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2"><span>🔑</span> AI 小老師設定 (API Key)</h2>
+                    <p class="text-sm text-slate-500 mb-4">設定 Google Gemini API 金鑰後，系統會自動把字典生硬的解釋，改寫成「國小生聽得懂的話」與「校園造句」喔！</p>
+                    <div class="flex gap-2">
+                        <input type="password" id="apiKeyInput" placeholder="在此貼上您的 API Key..." class="flex-1 px-4 py-3 border border-slate-200 bg-slate-50 rounded-xl text-sm focus:outline-none focus:border-emerald-400">
+                        <button onclick="saveApiKey()" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-700 transition-colors shrink-0">💾 儲存</button>
+                    </div>
+                </div>
+
+                <!-- 2. 匯入題庫區塊 -->
+                <h2 class="text-xl font-bold text-slate-800 mb-2">🏫 學校題庫自動匯入</h2>
+                <p class="text-slate-500 mb-6 text-sm">把成語或語詞貼在下面，有設定金鑰的話，AI 會自動幫您寫好白話造句！</p>
+                
+                <textarea id="importInput" rows="5" class="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-emerald-400 mb-4" placeholder="請貼上內容，例如：&#10;負責&#10;一石二鳥，守株待兔"></textarea>
                 
                 <button onclick="startImport()" id="importBtn" class="w-full py-3 bg-emerald-500 text-white font-bold rounded-xl shadow-md hover:bg-emerald-600 transition-colors">
-                    📥 開始自動分類匯入
+                    📥 開始自動分類與匯入
                 </button>
                 
                 <div id="importStatus" class="mt-4 text-center font-bold text-emerald-600"></div>
                 
                 <div class="mt-8 border-t border-slate-100 pt-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-slate-700">您自訂新增的項目 (<span id="customCount">0</span>) <span class="text-xs text-slate-400 font-normal">學會了可以點 ❌ 刪除</span></h3>
+                        <h3 class="font-bold text-slate-700">您自訂新增的項目 (<span id="customCount">0</span>)</h3>
                         <button onclick="clearCustomDB()" class="text-xs text-rose-500 hover:underline">🗑️ 全部清空</button>
                     </div>
                     <div id="customListPreview" class="flex flex-wrap gap-2 text-sm text-slate-600"></div>
                 </div>
 
-                <!-- 備份區塊 -->
+                <!-- 3. 備份區塊 (隱私保護版) -->
                 <div class="mt-8 border-t border-slate-100 pt-6">
-                    <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2"><span>⚙️</span> 資料備份與還原</h3>
-                    <p class="text-sm text-slate-500 mb-4">如果您換手機或是想分享題庫給同學，可以使用「備份碼」。</p>
+                    <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2"><span>⚙️</span> 資料備份與分享</h3>
+                    <p class="text-sm text-slate-500 mb-4">您可以產生備份碼分享給別人。分享出去的只有「題庫」，不會包含您的 API 金鑰和小孩的錯題本，請安心分享！</p>
                     <div class="flex flex-col gap-3">
-                        <button onclick="exportBackup()" class="w-full py-2 bg-slate-800 text-white font-bold rounded-lg hover:bg-slate-700 transition-colors">📋 複製備份碼 (匯出)</button>
+                        <button onclick="exportBackup()" class="w-full py-2 bg-slate-100 text-slate-700 font-bold rounded-lg hover:bg-slate-200 transition-colors">📋 產生備份碼 (匯出)</button>
                         <div class="flex gap-2">
                             <input type="text" id="importBackupInput" placeholder="在此貼上備份碼..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-emerald-400">
                             <button onclick="importBackup()" class="px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 transition-colors shrink-0">🔄 還原</button>
@@ -179,7 +193,7 @@
     <div id="backupModal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-50">
         <div class="bg-white p-6 rounded-2xl max-w-sm w-full mx-4 text-center">
             <h3 class="text-xl font-bold mb-4">備份碼已產生！</h3>
-            <p class="text-sm text-slate-500 mb-4">代碼已經自動複製到您的剪貼簿囉！<br>您可以去 LINE 貼上並保存起來。</p>
+            <p class="text-sm text-slate-500 mb-4">代碼已經自動複製到您的剪貼簿囉！</p>
             <textarea id="backupTextArea" class="w-full text-xs text-slate-400 bg-slate-50 p-2 rounded-lg mb-4 h-20" readonly></textarea>
             <button onclick="document.getElementById('backupModal').classList.add('hidden')" class="px-6 py-2 bg-emerald-500 text-white font-bold rounded-lg w-full">知道了</button>
         </div>
@@ -191,6 +205,7 @@
         // --- 核心資料 ---
         const cats=['全部','語詞','學校題庫','動物王國','數字樂園','寫景描寫','歷史典故','勤學勉勵','人品情操','其他','錯題本'];
         const catIcons={'全部':'🌟','語詞':'📓','學校題庫':'🏫','動物王國':'🦁','數字樂園':'🔢','寫景描寫':'🌧️','歷史典故':'📜','勤學勉勵':'✏️','人品情操':'👥','其他':'💡','錯題本':'📌'};
+        
         let idiomDB=[
             {c:'動物王國',i:'狐假虎威',z:'ㄏㄨˊ ㄐㄧㄚˇ ㄏㄨˇ ㄨㄟ',m:'藉著別人的勢力來欺壓別人。',s:'小霸王靠著高年級勢力狐假虎威。',d:'狐狸走在老虎前嚇跑百獸。', isCustom: false},
             {c:'動物王國',i:'守株待兔',z:'ㄕㄡˇ ㄓㄨ ㄉㄞˋ ㄊㄨˋ',m:'只想靠好運氣，自己不肯努力做事。',s:'你不讀書想靠猜對，簡直是守株待兔！',d:'', isCustom: false},
@@ -204,8 +219,43 @@
 
         window.onload=()=>{ 
             idiomDB = idiomDB.concat(customDB);
+            document.getElementById('apiKeyInput').value = getApiKey();
             renderCats(); renderIdioms(idiomDB); renderPrintCheckboxes(); updateCustomPreview();
         };
+
+        // --- 金鑰管理 ---
+        function getApiKey() { return localStorage.getItem('sproutApiKey') || ''; }
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if(key) {
+                localStorage.setItem('sproutApiKey', key);
+                alert('🔑 API 金鑰儲存成功！接下來的查詢都會有 AI 老師幫忙翻譯囉！');
+            } else {
+                localStorage.removeItem('sproutApiKey');
+                alert('金鑰已清除！');
+            }
+        }
+
+        // --- AI 白話文改寫引擎 ---
+        async function generateKidFriendlyIdiom(word, defaultMeaning, defaultSentence) {
+            const key = getApiKey();
+            if(!key) return null; 
+            
+            const prompt = `你是一位親切的國小老師。請用國小高年級學生聽得懂的簡單白話文，解釋「${word}」的意思(限25字內)。然後造一個貼近國小校園或家庭日常生活的例句(限30字內)，絕對不可以包含文言文。請只回傳合法的 JSON 格式：{"meaning":"...","sentence":"..."}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`;
+            
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json' }})
+                });
+                if(!res.ok) return null;
+                const data = await res.json();
+                const text = data.candidates[0].content.parts[0].text.trim();
+                return JSON.parse(text);
+            } catch(e) { return null; }
+        }
 
         // --- 介面控制 ---
         function switchTab(t){
@@ -267,7 +317,6 @@
             }, 600);
         }
 
-        // 強力過濾文言文與多餘舉例
         async function fetchOnlineIdiom(word, isImport){
             try {
                 let res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(word)}.json`);
@@ -277,15 +326,19 @@
                 let defs = h.definitions || [];
                 let fd = defs.find(d=>d.def) || {};
                 
-                // 去除字典常有的「如：...」、「也作...」以及書名號內的文言文
-                let meaning = fd.def ? fd.def.replace(/^[0-9]+\.\s*/,'')
-                                             .replace(/《[^》]*》[：:]?「[^」]*」[。.]?/g, '')
-                                             .replace(/如[：:]「[^」]*」[。.]?/g, '')
-                                             .replace(/也作「[^」]*」[。.]?/g, '')
-                                             .trim() : '無解釋';
-                let sentence = (fd.example?.[0] || fd.quote?.[0] || '').replace(/《[^》]*》/g, '').trim();
+                let meaning = fd.def ? fd.def.replace(/^[0-9]+\.\s*/,'').replace(/《[^》]*》[：:]?「[^」]*」[。.]?/g, '').replace(/如[：:]「[^」]*」[。.]?/g, '').replace(/也作「[^」]*」[。.]?/g, '').trim() : '無解釋';
+                let sentence = '';
+                if (fd.example && fd.example.length > 0) sentence = fd.example[0].replace(/《[^》]*》/g, '').trim();
+                if (!sentence) sentence = '（辭典暫無簡單例句，請發揮想像力造句看看喔！）';
+
+                if (getApiKey()) {
+                    let aiData = await generateKidFriendlyIdiom(data.title, meaning, sentence);
+                    if(aiData && aiData.meaning) meaning = aiData.meaning;
+                    if(aiData && aiData.sentence) sentence = aiData.sentence;
+                }
+
                 let cat = autoCategorize(data.title, isImport);
-                return { c: cat, i: data.title, z: h.bopomofo||'', m: meaning||'無解釋', s: sentence||'無例句', d: '', isCustom: isImport };
+                return { c: cat, i: data.title, z: h.bopomofo||'', m: meaning||'無解釋', s: sentence, d: '', isCustom: isImport };
             } catch(e) { return null; }
         }
 
@@ -345,12 +398,12 @@
             
             let successCount = 0;
             for(let i=0; i<newWords.length; i++){
-                status.innerText = `🔄 正在抓取「${newWords[i]}」... (${i+1}/${newWords.length})`;
+                status.innerText = `🔄 正在抓取並請 AI 改寫「${newWords[i]}」... (${i+1}/${newWords.length})`;
                 let res = await fetchOnlineIdiom(newWords[i], true);
                 if(res){
                     customDB.unshift(res); idiomDB.push(res); successCount++;
                 }
-                await new Promise(r=>setTimeout(r, 400));
+                await new Promise(r=>setTimeout(r, 600)); 
             }
             
             localStorage.setItem('sproutCustomDB', JSON.stringify(customDB));
@@ -378,10 +431,13 @@
             updateCustomPreview(); renderCats(); setCat('全部');
         }
 
-        // --- 備份 ---
+        // --- 隱私保護版備份功能 ---
         function exportBackup() {
             if(customDB.length === 0) return alert("您目前還沒有自訂資料，不需要備份喔！");
-            const backupData = { customDB: customDB, wrongList: wrongList, date: new Date().toLocaleDateString('zh-TW') };
+            
+            // 只打包自訂題庫，不打包錯題本(wrongList)
+            const backupData = { customDB: customDB, date: new Date().toLocaleDateString('zh-TW') };
+            
             const backupCode = `🌱萌芽備份-${btoa(encodeURIComponent(JSON.stringify(backupData)))}`;
             const textArea = document.getElementById('backupTextArea');
             textArea.value = backupCode;
@@ -398,18 +454,20 @@
             if(!code.startsWith('🌱萌芽備份-')) {
                 statusEl.innerText = "❌ 備份碼格式錯誤，請確認是否有複製完整。"; statusEl.className = "text-xs font-bold text-center mt-2 text-rose-500 block"; return;
             }
-            if(!confirm("⚠️ 警告：還原備份會覆蓋目前的自訂題庫與錯題本，確定要繼續嗎？")) return;
+            if(!confirm("⚠️ 確定要匯入這份題庫嗎？（這會保留您目前的錯題本，並將新題庫取代您原本的自訂區）")) return;
             try {
                 const jsonStr = decodeURIComponent(atob(code.replace('🌱萌芽備份-', '')));
                 const parsedData = JSON.parse(jsonStr);
-                wrongList = parsedData.wrongList || [];
-                localStorage.setItem('sproutWrong', JSON.stringify(wrongList));
+                
+                // 不覆蓋原本的 wrongList
+                
                 idiomDB = idiomDB.filter(i => !i.isCustom);
                 customDB = parsedData.customDB;
                 localStorage.setItem('sproutCustomDB', JSON.stringify(customDB));
                 idiomDB = idiomDB.concat(customDB);
+                
                 inputEl.value = '';
-                statusEl.innerText = `✅ 還原成功！來自 ${parsedData.date} 的備份資料。`;
+                statusEl.innerText = `✅ 還原成功！已載入 ${parsedData.date} 的題庫資料。`;
                 statusEl.className = "text-xs font-bold text-center mt-2 text-emerald-500 block";
                 updateCustomPreview(); renderCats(); setCat('全部');
                 setTimeout(() => { statusEl.classList.add('hidden'); }, 3000);
@@ -464,7 +522,6 @@
             document.getElementById('quizNextBtnBox').classList.add('hidden');
             document.getElementById('quizBoard').classList.remove('animate-shake', 'animate-pop');
             
-            // 💡 完全改掉！統一考「意思」，並隱藏解釋中可能漏餡的成語字眼
             let safeMeaning = q.m.replace(new RegExp(q.i, 'g'), "〇〇〇〇");
             let qTxt = `意思是指：「${safeMeaning}」\n\n請問這是哪個選項？`;
             document.getElementById('quizQuestionText').innerText = qTxt;
