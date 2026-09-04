@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>萌芽成語寶典 - 高年級專用</title>
     
-    <!-- 📌 iPhone 桌面 App 圖示 -->
-    <link rel="apple-touch-icon" href="custom-icon.png">
-    <link rel="icon" type="image/png" href="custom-icon.png">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -133,7 +129,7 @@
                 <div id="printCheckboxContainer" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 max-h-60 overflow-y-auto p-2 mb-6 border-b border-slate-100"></div>
                 <div class="flex flex-wrap gap-4 justify-center">
                     <button onclick="executePrint('meaning')" class="px-6 py-3 border-2 border-slate-800 text-slate-800 font-bold rounded-xl">📖 印「解釋講義」</button>
-                    <button onclick="executePrint('quiz')" class="px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl shadow-md">📝 印「填空考卷」</button>
+                    <button onclick="executePrint('quiz')" class="px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl shadow-md">📝 印「選擇考卷」</button>
                 </div>
             </div>
         </section>
@@ -154,7 +150,7 @@
 
                 <!-- 2. 匯入題庫區塊 -->
                 <h2 class="text-xl font-bold text-slate-800 mb-2">🏫 學校題庫自動匯入</h2>
-                <p class="text-slate-500 mb-6 text-sm">把成語或語詞貼在下面，有設定金鑰的話，AI 會自動幫您寫好白話造句！</p>
+                <p class="text-slate-500 mb-6 text-sm">請把成語或語詞貼在下方，AI 會自動幫您寫好白話造句！</p>
                 
                 <textarea id="importInput" rows="5" class="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-emerald-400 mb-4" placeholder="請貼上內容，例如：&#10;負責&#10;一石二鳥，守株待兔"></textarea>
                 
@@ -202,7 +198,14 @@
     <div id="printArea" class="hidden print-hidden bg-white text-black p-4"></div>
 
     <script>
-        // --- 核心資料 ---
+        // --- 安全的資料讀取功能 (防止瀏覽器阻擋儲存空間導致當機) ---
+        function safeGet(key, defaultVal) {
+            try { return localStorage.getItem(key) || defaultVal; } catch(e) { return defaultVal; }
+        }
+        function safeSet(key, val) {
+            try { localStorage.setItem(key, val); } catch(e) { console.error("儲存失敗", e); }
+        }
+
         const cats=['全部','語詞','學校題庫','動物王國','數字樂園','寫景描寫','歷史典故','勤學勉勵','人品情操','其他','錯題本'];
         const catIcons={'全部':'🌟','語詞':'📓','學校題庫':'🏫','動物王國':'🦁','數字樂園':'🔢','寫景描寫':'🌧️','歷史典故':'📜','勤學勉勵':'✏️','人品情操':'👥','其他':'💡','錯題本':'📌'};
         
@@ -214,21 +217,25 @@
         ];
         
         let curTab='explore', curCat='全部', searchTimer=null;
-        let wrongList=JSON.parse(localStorage.getItem('sproutWrong')||'[]');
-        let customDB=JSON.parse(localStorage.getItem('sproutCustomDB')||'[]');
+        
+        let wrongList = [];
+        let customDB = [];
+        
+        try { wrongList = JSON.parse(safeGet('sproutWrong', '[]')); } catch(e){}
+        try { customDB = JSON.parse(safeGet('sproutCustomDB', '[]')); } catch(e){}
 
         window.onload=()=>{ 
             idiomDB = idiomDB.concat(customDB);
-            document.getElementById('apiKeyInput').value = getApiKey();
+            document.getElementById('apiKeyInput').value = safeGet('sproutApiKey', '');
             renderCats(); renderIdioms(idiomDB); renderPrintCheckboxes(); updateCustomPreview();
         };
 
         // --- 金鑰管理 ---
-        function getApiKey() { return localStorage.getItem('sproutApiKey') || ''; }
+        function getApiKey() { return safeGet('sproutApiKey', ''); }
         function saveApiKey() {
             const key = document.getElementById('apiKeyInput').value.trim();
             if(key) {
-                localStorage.setItem('sproutApiKey', key);
+                safeSet('sproutApiKey', key);
                 alert('🔑 API 金鑰儲存成功！接下來的查詢都會有 AI 老師幫忙翻譯囉！');
             } else {
                 localStorage.removeItem('sproutApiKey');
@@ -236,13 +243,14 @@
             }
         }
 
-        // --- AI 白話文改寫引擎 ---
+        // --- AI 白話文改寫引擎 (修正穩定版) ---
         async function generateKidFriendlyIdiom(word, defaultMeaning, defaultSentence) {
             const key = getApiKey();
             if(!key) return null; 
             
             const prompt = `你是一位親切的國小老師。請用國小高年級學生聽得懂的簡單白話文，解釋「${word}」的意思(限25字內)。然後造一個貼近國小校園或家庭日常生活的例句(限30字內)，絕對不可以包含文言文。請只回傳合法的 JSON 格式：{"meaning":"...","sentence":"..."}`;
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${key}`;
+            // 💡 修正 1：改用最穩定的 gemini-1.5-flash 模型
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
             
             try {
                 const res = await fetch(url, {
@@ -252,9 +260,15 @@
                 });
                 if(!res.ok) return null;
                 const data = await res.json();
-                const text = data.candidates[0].content.parts[0].text.trim();
+                let text = data.candidates[0].content.parts[0].text.trim();
+                
+                // 💡 修正 2：加強過濾 AI 偶爾產生的 Markdown 標籤，防止當機
+                text = text.replace(/^```json/i, '').replace(/^```/i, '').replace(/```$/i, '').trim();
                 return JSON.parse(text);
-            } catch(e) { return null; }
+            } catch(e) { 
+                console.error("AI 轉換發生錯誤，自動切回原字典設定", e);
+                return null; 
+            }
         }
 
         // --- 介面控制 ---
@@ -319,7 +333,7 @@
 
         async function fetchOnlineIdiom(word, isImport){
             try {
-                let res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(word)}.json`);
+                let res = await fetch(`[https://www.moedict.tw/uni/$](https://www.moedict.tw/uni/$){encodeURIComponent(word)}.json`);
                 if(!res.ok) return null;
                 let data = await res.json();
                 let h = data.heteronyms?.[0] || {};
@@ -346,7 +360,7 @@
             if(!confirm(`確定要將「${word}」刪除嗎？`)) return;
             customDB = customDB.filter(i => i.i !== word);
             idiomDB = idiomDB.filter(i => !(i.i === word && i.isCustom));
-            localStorage.setItem('sproutCustomDB', JSON.stringify(customDB));
+            safeSet('sproutCustomDB', JSON.stringify(customDB));
             updateCustomPreview(); renderCats(); setCat(curCat);
         }
 
@@ -406,7 +420,7 @@
                 await new Promise(r=>setTimeout(r, 600)); 
             }
             
-            localStorage.setItem('sproutCustomDB', JSON.stringify(customDB));
+            safeSet('sproutCustomDB', JSON.stringify(customDB));
             status.innerText = `✅ 匯入完成！成功新增 ${successCount} 個項目。`;
             document.getElementById('importInput').value = '';
             
@@ -427,17 +441,14 @@
             if(!confirm("確定要清空所有您手動匯入的項目嗎？這不會刪除內建預設的資料喔！")) return;
             idiomDB = idiomDB.filter(i => !i.isCustom);
             customDB = [];
-            localStorage.setItem('sproutCustomDB', '[]');
+            safeSet('sproutCustomDB', '[]');
             updateCustomPreview(); renderCats(); setCat('全部');
         }
 
         // --- 隱私保護版備份功能 ---
         function exportBackup() {
             if(customDB.length === 0) return alert("您目前還沒有自訂資料，不需要備份喔！");
-            
-            // 只打包自訂題庫，不打包錯題本(wrongList)
             const backupData = { customDB: customDB, date: new Date().toLocaleDateString('zh-TW') };
-            
             const backupCode = `🌱萌芽備份-${btoa(encodeURIComponent(JSON.stringify(backupData)))}`;
             const textArea = document.getElementById('backupTextArea');
             textArea.value = backupCode;
@@ -459,11 +470,9 @@
                 const jsonStr = decodeURIComponent(atob(code.replace('🌱萌芽備份-', '')));
                 const parsedData = JSON.parse(jsonStr);
                 
-                // 不覆蓋原本的 wrongList
-                
                 idiomDB = idiomDB.filter(i => !i.isCustom);
                 customDB = parsedData.customDB;
-                localStorage.setItem('sproutCustomDB', JSON.stringify(customDB));
+                safeSet('sproutCustomDB', JSON.stringify(customDB));
                 idiomDB = idiomDB.concat(customDB);
                 
                 inputEl.value = '';
@@ -477,11 +486,19 @@
         }
 
         // --- 遊戲邏輯 ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let audioCtx = null;
         function playGameSound(type) {
+            // 💡 修正 3：延遲載入聲音引擎，避免手機瀏覽器阻擋
+            if(!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if(AudioContext) audioCtx = new AudioContext();
+            }
+            if(!audioCtx) return; // 不支援聲音的舊手機就安靜度過
+
             if(audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
             osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+            
             if(type === 'correct') {
                 osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.1);
                 gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
@@ -496,7 +513,7 @@
         let qList=[], qIdx=0, score=0, isAns=false, lives=3, combo=0, maxCombo=0;
 
         function startQuiz(){
-            if(audioCtx.state === 'suspended') audioCtx.resume();
+            if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             let c=document.getElementById('quizCategory').value, cnt=parseInt(document.getElementById('quizCount').value);
             let pool= c==='ALL'? idiomDB : c==='REVIEW'? idiomDB.filter(i=>wrongList.includes(i.i)) : idiomDB.filter(i=>i.c===c);
             if(pool.length<4) return alert(`「${c}」的題目不夠 4 題喔！請先去匯入或選其他分類。`);
@@ -559,7 +576,7 @@
                 fb.innerHTML=`💥 扣一滴血！<br><span class="text-sm">正確是「${q.i}」喔！</span>`; 
                 fb.className='text-xl font-bold mb-4 text-rose-600';
                 if(!wrongList.includes(q.i)) wrongList.push(q.i);
-                localStorage.setItem('sproutWrong', JSON.stringify(wrongList)); renderCats();
+                safeSet('sproutWrong', JSON.stringify(wrongList)); renderCats();
                 updateGameStats();
                 if(lives <= 0) setTimeout(() => { showResult(false); }, 1500);
                 else setTimeout(() => { document.getElementById('quizNextBtnBox').classList.remove('hidden'); }, 600);
