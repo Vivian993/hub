@@ -243,13 +243,12 @@
             }
         }
 
-        // --- AI 白話文改寫引擎 (修正穩定版) ---
+        // --- AI 白話文改寫引擎 (極致防錯版) ---
         async function generateKidFriendlyIdiom(word, defaultMeaning, defaultSentence) {
             const key = getApiKey();
             if(!key) return null; 
             
             const prompt = `你是一位親切的國小老師。請用國小高年級學生聽得懂的簡單白話文，解釋「${word}」的意思(限25字內)。然後造一個貼近國小校園或家庭日常生活的例句(限30字內)，絕對不可以包含文言文。請只回傳合法的 JSON 格式：{"meaning":"...","sentence":"..."}`;
-            // 💡 修正 1：改用最穩定的 gemini-1.5-flash 模型
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
             
             try {
@@ -258,15 +257,18 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json' }})
                 });
-                if(!res.ok) return null;
+                if(!res.ok) throw new Error("API 連線失敗");
                 const data = await res.json();
                 let text = data.candidates[0].content.parts[0].text.trim();
                 
-                // 💡 修正 2：加強過濾 AI 偶爾產生的 Markdown 標籤，防止當機
-                text = text.replace(/^```json/i, '').replace(/^```/i, '').replace(/```$/i, '').trim();
+                // 強制取出 JSON 結構，防止 AI 回傳額外文字導致當機
+                let match = text.match(/\{[\s\S]*\}/);
+                if (match) {
+                    return JSON.parse(match[0]);
+                }
                 return JSON.parse(text);
             } catch(e) { 
-                console.error("AI 轉換發生錯誤，自動切回原字典設定", e);
+                console.error("AI 轉換發生錯誤", e);
                 return null; 
             }
         }
@@ -333,7 +335,7 @@
 
         async function fetchOnlineIdiom(word, isImport){
             try {
-                let res = await fetch(`[https://www.moedict.tw/uni/$](https://www.moedict.tw/uni/$){encodeURIComponent(word)}.json`);
+                let res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(word)}.json`);
                 if(!res.ok) return null;
                 let data = await res.json();
                 let h = data.heteronyms?.[0] || {};
@@ -399,33 +401,39 @@
         }
 
         async function startImport(){
-            let text = document.getElementById('importInput').value;
-            let words = text.split(/[\s,，、；;]+/).map(w=>w.trim()).filter(w=>w.length>=2 && w.length<=8);
-            words = [...new Set(words)]; 
-            let newWords = words.filter(w => !idiomDB.some(i => i.i === w));
-            
-            if(newWords.length === 0){ alert("沒有偵測到新的項目，或已經在系統中囉！"); return; }
-
             let btn = document.getElementById('importBtn');
             let status = document.getElementById('importStatus');
-            btn.disabled = true; btn.classList.add('opacity-50');
-            
-            let successCount = 0;
-            for(let i=0; i<newWords.length; i++){
-                status.innerText = `🔄 正在抓取並請 AI 改寫「${newWords[i]}」... (${i+1}/${newWords.length})`;
-                let res = await fetchOnlineIdiom(newWords[i], true);
-                if(res){
-                    customDB.unshift(res); idiomDB.push(res); successCount++;
+            try {
+                let text = document.getElementById('importInput').value;
+                let words = text.split(/[\s,，、；;]+/).map(w=>w.trim()).filter(w=>w.length>=2 && w.length<=8);
+                words = [...new Set(words)]; 
+                let newWords = words.filter(w => !idiomDB.some(i => i.i === w));
+                
+                if(newWords.length === 0){ alert("沒有偵測到新的項目，或已經在系統中囉！"); return; }
+
+                btn.disabled = true; btn.classList.add('opacity-50');
+                
+                let successCount = 0;
+                for(let i=0; i<newWords.length; i++){
+                    status.innerText = `🔄 正在抓取並請 AI 改寫「${newWords[i]}」... (${i+1}/${newWords.length})`;
+                    let res = await fetchOnlineIdiom(newWords[i], true);
+                    if(res){
+                        customDB.unshift(res); idiomDB.push(res); successCount++;
+                    }
+                    await new Promise(r=>setTimeout(r, 600)); 
                 }
-                await new Promise(r=>setTimeout(r, 600)); 
+                
+                safeSet('sproutCustomDB', JSON.stringify(customDB));
+                status.innerText = `✅ 匯入完成！成功新增 ${successCount} 個項目。`;
+                document.getElementById('importInput').value = '';
+                
+                updateCustomPreview(); renderCats();
+            } catch (error) {
+                alert("匯入過程中發生錯誤，請檢查網路連線或 API 金鑰！");
+                status.innerText = "❌ 匯入失敗";
+            } finally {
+                btn.disabled = false; btn.classList.remove('opacity-50');
             }
-            
-            safeSet('sproutCustomDB', JSON.stringify(customDB));
-            status.innerText = `✅ 匯入完成！成功新增 ${successCount} 個項目。`;
-            document.getElementById('importInput').value = '';
-            
-            btn.disabled = false; btn.classList.remove('opacity-50');
-            updateCustomPreview(); renderCats();
         }
 
         function updateCustomPreview(){
@@ -488,12 +496,11 @@
         // --- 遊戲邏輯 ---
         let audioCtx = null;
         function playGameSound(type) {
-            // 💡 修正 3：延遲載入聲音引擎，避免手機瀏覽器阻擋
             if(!audioCtx) {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if(AudioContext) audioCtx = new AudioContext();
             }
-            if(!audioCtx) return; // 不支援聲音的舊手機就安靜度過
+            if(!audioCtx) return; 
 
             if(audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
@@ -540,7 +547,9 @@
             document.getElementById('quizBoard').classList.remove('animate-shake', 'animate-pop');
             
             let safeMeaning = q.m.replace(new RegExp(q.i, 'g'), "〇〇〇〇");
-            let qTxt = `意思是指：「${safeMeaning}」\n\n請問這是哪個選項？`;
+            let qTxt = `意思是指：「${safeMeaning}」
+
+請問這是哪個選項？`;
             document.getElementById('quizQuestionText').innerText = qTxt;
 
             let opts = [q].concat(idiomDB.filter(i=>i.i!==q.i).sort(()=>.5-Math.random()).slice(0,3)).sort(()=>.5-Math.random());
