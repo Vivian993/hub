@@ -69,7 +69,7 @@
                     <input type="text" id="searchInput" placeholder="輸入成語或語詞 (雲端 AI 自動查詢)..." oninput="handleSearch()" class="w-full px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-50 text-lg transition-all pl-12 bg-white shadow-sm">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl">🔍</span>
                 </div>
-                <!-- 💡 改為下拉選單 -->
+                <!-- 💡 下拉選單 -->
                 <select id="categoryDropdown" onchange="setCat(this.value)" class="w-full p-3 rounded-xl border border-slate-300 bg-white text-slate-800 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 appearance-none cursor-pointer">
                     <!-- 選項將由 JavaScript 動態生成 -->
                 </select>
@@ -232,13 +232,16 @@
         </div>
     </div>
 
-    <!-- 備份結果視窗 -->
-    <div id="backupModal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center z-[100]">
-        <div class="bg-white p-6 rounded-3xl max-w-sm w-full mx-4 text-center">
-            <h3 class="text-xl font-bold mb-4">備份碼已產生！</h3>
-            <p class="text-sm text-slate-500 mb-4">代碼已經自動複製到您的剪貼簿囉！</p>
-            <textarea id="backupTextArea" class="w-full text-xs text-slate-400 bg-slate-50 p-2 rounded-lg mb-4 h-20" readonly></textarea>
-            <button onclick="document.getElementById('backupModal').classList.add('hidden')" class="px-6 py-2 bg-emerald-500 text-white font-bold rounded-lg w-full">知道了</button>
+    <!-- 💡 備份結果視窗 (升級版，方便手機複製) -->
+    <div id="backupModal" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center z-[100] px-4">
+        <div class="bg-white p-6 rounded-3xl max-w-sm w-full text-center shadow-2xl">
+            <h3 class="text-xl font-bold mb-2">📦 備份碼已產生！</h3>
+            <p class="text-sm text-slate-500 mb-4">請將下方的亂碼複製起來，傳到 LINE 或存到記事本。把這段貼給別人，他們就能收到您的題庫囉！</p>
+            <textarea id="backupTextArea" class="w-full text-xs text-slate-500 bg-slate-50 p-3 rounded-xl mb-4 h-32 border border-slate-200 focus:outline-none focus:border-emerald-400" readonly></textarea>
+            <div class="flex gap-3">
+                <button onclick="copyBackupText()" class="flex-1 px-4 py-3 bg-slate-800 text-white font-bold rounded-xl shadow-md active:scale-95 transition-transform">📋 點我複製</button>
+                <button onclick="document.getElementById('backupModal').classList.add('hidden')" class="flex-1 px-4 py-3 bg-emerald-500 text-white font-bold rounded-xl shadow-md active:scale-95 transition-transform">關閉</button>
+            </div>
         </div>
     </div>
 
@@ -271,7 +274,9 @@
         try { customDB = JSON.parse(safeGet('sproutCustomDB', '[]')); } catch(e){}
 
         window.onload=()=>{ 
-            idiomDB = idiomDB.concat(customDB);
+            // 💡 確保最新的自訂題庫排在最前面
+            idiomDB = customDB.concat(idiomDB); 
+            
             document.getElementById('apiKeyInput').value = safeGet('sproutApiKey', '');
             renderCats(); 
             setCat('學校題庫'); // 預設顯示學校題庫
@@ -454,7 +459,7 @@
                     
                     let mIdx = idiomDB.findIndex(i => i.i === word && i.isCustom);
                     if(mIdx !== -1) idiomDB[mIdx] = res;
-                    else idiomDB.push(res);
+                    else idiomDB.unshift(res);
                     
                     safeSet('sproutCustomDB', JSON.stringify(customDB));
                     setCat(curCat); 
@@ -567,8 +572,10 @@
                         let cat = autoCategorize(word, true);
 
                         let newItem = { c: cat, i: word, z: '', m: meaning, s: sentence, d: '', isCustom: true };
+                        
+                        // 💡 確保新的自訂題庫加入到陣列最前面
                         customDB.unshift(newItem);
-                        idiomDB.push(newItem);
+                        idiomDB.unshift(newItem);
                         successCount++;
                     } else {
                         let words = line.split(/[\s,，、；;]+/).map(w=>w.trim()).filter(w=>w.length>=2 && w.length<=8);
@@ -584,7 +591,8 @@
                     status.innerText = `🔄 正在連網抓取「${fetchQueue[i]}」... (${i+1}/${fetchQueue.length})`;
                     let res = await fetchOnlineIdiom(fetchQueue[i], true);
                     if(res){
-                        customDB.unshift(res); idiomDB.push(res); successCount++;
+                        // 💡 確保新的 AI 題庫加入到陣列最前面
+                        customDB.unshift(res); idiomDB.unshift(res); successCount++;
                     }
                     await new Promise(r=>setTimeout(r, 600)); 
                 }
@@ -596,7 +604,7 @@
                 updateCustomPreview(); 
                 renderCats();
                 
-                // 💡 匯入後自動跳轉回速查頁面並顯示學校題庫
+                // 💡 匯入後自動跳轉回速查頁面並顯示學校題庫，畫面置頂
                 setTimeout(() => {
                     switchTab('explore');
                     setCat('學校題庫');
@@ -636,8 +644,20 @@
             const backupCode = `🌱萌芽備份-${btoa(encodeURIComponent(JSON.stringify(backupData)))}`;
             const textArea = document.getElementById('backupTextArea');
             textArea.value = backupCode;
-            textArea.select(); document.execCommand('copy');
             document.getElementById('backupModal').classList.remove('hidden');
+        }
+        
+        // 💡 提供方便手機操作的複製按鈕功能
+        function copyBackupText() {
+            let textArea = document.getElementById('backupTextArea');
+            textArea.select();
+            textArea.setSelectionRange(0, 99999); // 支援手機選取
+            try {
+                document.execCommand('copy');
+                alert('✅ 複製成功！\n現在您可以打開 LINE 或記事本，長按輸入框選擇「貼上」分享給別人囉！');
+            } catch(e) {
+                alert('複製失敗，請手動全選框框內的文字並拷貝。');
+            }
         }
 
         function importBackup() {
@@ -657,7 +677,7 @@
                 idiomDB = idiomDB.filter(i => !i.isCustom);
                 customDB = parsedData.customDB;
                 safeSet('sproutCustomDB', JSON.stringify(customDB));
-                idiomDB = idiomDB.concat(customDB);
+                idiomDB = customDB.concat(idiomDB); // 確保備份還原的新資料在最前面
                 
                 inputEl.value = '';
                 statusEl.innerText = `✅ 還原成功！已載入 ${parsedData.date} 的題庫資料。`;
