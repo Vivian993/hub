@@ -116,7 +116,7 @@
     .def-popup-body ul { padding-left: 1.3rem; margin: 4px 0 10px; }
     .char-info { flex-grow: 1; }
     .char-pinyin { font-size: 1rem; font-weight: 700; }
-    .char-radical { font-size: 0.75rem; color: #fff; background: var(--m-blue); padding: 2px 6px; border-radius: 8px; margin-left: 5px; }
+    .char-radical { font-size: 0.75rem; color: #fff; background: var(--m-blue); padding: 2px 6px; border-radius: 8px; margin-left: 5px; cursor: pointer; }
 
     /* 課文大意／造句造詞成語：改成點擊查看的按鈕與彈窗 */
     .lesson-quicklink-row { display: flex; gap: 8px; margin: 0.6rem 0 1rem; flex-wrap: wrap; }
@@ -698,7 +698,7 @@
               <div class="char-header">
                 <div class="char-big" data-word="${c.char}" title="點一下聽發音、看字義">${c.char}</div>
                 <div class="char-info">
-                  <div class="char-pinyin">${c.zhuyin} <span class="char-radical">${c.rad}</span></div>
+                  <div class="char-pinyin">${c.zhuyin} <span class="char-radical" data-word="${c.rad}" title="點一下聽部首發音">${c.rad}</span></div>
                   <div style="font-size:0.68rem; color:#bbb; margin-top:2px;">👆 點字聽發音＋看意思</div>
                 </div>
                 <button class="btn btn-blue" style="padding: 0.3rem;" onclick="speak('${c.char}')">🔊</button>
@@ -707,6 +707,7 @@
               <input type="text" class="input-box" style="padding:0.4rem; font-size:0.88rem; font-weight:bold;" value="${c.terms}" onblur="saveCharData('${lesson.id}', ${i}, 'terms', this.value); updateTermsChips('${lesson.id}', ${i}, this.value)">
               <div class="terms-chips" id="chips-${lesson.id}-${i}">${buildTermsChipsHtml(c.terms)}</div>
               <input type="text" class="input-box" style="padding:0.4rem; font-size:0.85rem; margin-top:5px; background:#FBF3DE; border-color:#E3B15E;" placeholder="⚠️ 易錯提醒或造句備註..." value="${c.note}" onblur="saveCharData('${lesson.id}', ${i}, 'note', this.value)">
+              <button class="btn btn-purple no-print" style="width:100%; margin-top:8px; font-size:0.78rem; padding:0.4rem;" onclick="speakWholeCard('${lesson.id}', ${i})">🔊 整段朗讀（字・部首・語詞）</button>
             </div>
           `).join('')}
         </div>
@@ -1356,6 +1357,19 @@
       }, 30);
     }
 
+    // 依序朗讀：生字 → 部首 → 每個圈詞語詞
+    async function speakWholeCard(lId, idx) {
+      const l = getLessonById(lId);
+      const c = l && l.chars[idx];
+      if (!c) return;
+      const terms = (c.terms || '').split(/[,，、\s]+/).filter(Boolean);
+      const sequence = [c.char, c.rad, ...terms].filter(Boolean);
+      for (const part of sequence) {
+        await playSpeech(part);
+        await sleep(250);
+      }
+    }
+
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
     // === 🔍 線上查字典（改用正確的萌典 /uni/ 端點，並附備援方案）===
@@ -1388,9 +1402,20 @@
       return fallbackHtml(q);
     }
 
-    function buildDictHtml(data, q) {
-      let html = `<strong>【${data.title || q}】</strong><br>`;
-      if (data.radical) html += `<span style="font-size:1rem; color:#888;">部首：${data.radical}部${data.stroke_count ? (' | 筆畫：' + data.stroke_count + '畫') : ''}</span><br><br>`;
+    async function buildDictHtml(data, q) {
+      const title = data.title || q;
+      let html = `<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <strong style="font-size:1.25rem;">【${title}】</strong>
+        <button class="btn btn-blue dict-speak-btn" data-word="${escapeAttr(title)}" style="padding:4px 10px; font-size:0.78rem;">🔊 朗讀</button>
+      </div><br>`;
+
+      if (data.radical) {
+        const radicalZy = (await fetchZhuyinForChar(data.radical)) || '';
+        html += `<span style="font-size:1rem; color:#888;">
+          部首：${data.radical}${radicalZy ? `（${radicalZy}）` : ''}部${data.stroke_count ? (' | 筆畫：' + data.stroke_count + '畫') : ''}
+          <button class="btn btn-blue dict-speak-btn" data-word="${escapeAttr(data.radical)}" style="padding:2px 8px; font-size:0.7rem; margin-left:4px;">🔊</button>
+        </span><br><br>`;
+      }
 
       const heteronyms = data.heteronyms || data.h;
       heteronyms.forEach(h => {
@@ -1416,6 +1441,10 @@
         請點擊下方按鈕直接查詢「${q}」：<br><br>
         <a href="https://dict.revised.moe.edu.tw/search.jsp?md=1&word=${encodeURIComponent(q)}" target="_blank" class="btn btn-pink" style="text-decoration:none; font-size:1.1rem; padding: 0.8rem 1.5rem;">🔗 前往教育部國語辭典查「${q}」</a>
       `;
+    }
+
+    function escapeAttr(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
     }
 
     // === 👆 點生字／語詞馬上看解釋（彈窗） ===
@@ -1633,10 +1662,19 @@
 
     // 點生字（char-big）或語詞標籤（term-chip）：立刻朗讀發音，並彈窗顯示意思
     document.addEventListener('click', function (e) {
-      const wordEl = e.target.closest('.char-big, .term-chip');
+      const wordEl = e.target.closest('.char-big, .term-chip, .char-radical');
       if (wordEl && wordEl.dataset.word) {
         speak(wordEl.dataset.word);
         showDefPopup(wordEl.dataset.word);
+      }
+    });
+
+    // 線上字典結果中的「🔊 朗讀」按鈕（生字本身或部首）
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('.dict-speak-btn');
+      if (btn && btn.dataset.word) {
+        speak(btn.dataset.word);
+        playClickSound();
       }
     });
   </script>
