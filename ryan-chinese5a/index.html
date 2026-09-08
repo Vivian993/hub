@@ -117,6 +117,7 @@
     .char-info { flex-grow: 1; }
     .char-pinyin { font-size: 1rem; font-weight: 700; }
     .char-radical { font-size: 0.75rem; color: #fff; background: var(--m-blue); padding: 2px 6px; border-radius: 8px; margin-left: 5px; cursor: pointer; }
+    .char-detail-info { font-size: 0.68rem; color: #aaa; margin-left: 2px; }
 
     /* 課文大意／造句造詞成語：改成點擊查看的按鈕與彈窗 */
     .lesson-quicklink-row { display: flex; gap: 8px; margin: 0.6rem 0 1rem; flex-wrap: wrap; }
@@ -499,7 +500,7 @@
     const DEFAULT_PROFILE_KEY = "五_上_康軒";
 
     const defaultData = {
-      grade: "五", semester: "上", publisher: "康軒", speed: "0.75", soundEnabled: true, zhuyinCache: {}, definitionCache: {}, zhuyinOverride: {}, radicalCache: {},
+      grade: "五", semester: "上", publisher: "康軒", speed: "0.75", soundEnabled: true, zhuyinCache: {}, definitionCache: {}, zhuyinOverride: {}, radicalCache: {}, charDetailCache: {},
       profiles: {
         [DEFAULT_PROFILE_KEY]: { lessons: createDemoLessons() }
       },
@@ -568,6 +569,7 @@
       if (typeof appData.soundEnabled === 'undefined') appData.soundEnabled = true;
       if (!appData.zhuyinCache) appData.zhuyinCache = {};
       if (!appData.radicalCache) appData.radicalCache = {};
+      if (!appData.charDetailCache) appData.charDetailCache = {};
       if (!appData.extraLesson) appData.extraLesson = createExtraLesson();
       if (!appData.zhuyinOverride) appData.zhuyinOverride = {};
       if (!appData.definitionCache) appData.definitionCache = {};
@@ -698,7 +700,7 @@
               <div class="char-header">
                 <div class="char-big" data-word="${c.char}" title="點一下聽發音、看字義">${c.char}</div>
                 <div class="char-info">
-                  <div class="char-pinyin">${c.zhuyin} <span class="char-radical" data-word="${c.rad}" title="點一下聽部首發音">${c.rad}</span></div>
+                  <div class="char-pinyin">${c.zhuyin} <span class="char-radical" data-word="${c.rad}" title="點一下聽部首發音">${c.rad}</span> <span class="char-detail-info" data-char="${c.char}">${buildCharDetailPreview(c.char)}</span></div>
                   <div style="font-size:0.68rem; color:#bbb; margin-top:2px;">👆 點字聽發音＋看意思</div>
                 </div>
                 <button class="btn btn-blue" style="padding: 0.3rem;" onclick="speak('${c.char}')">🔊</button>
@@ -707,13 +709,14 @@
               <input type="text" class="input-box" style="padding:0.4rem; font-size:0.88rem; font-weight:bold;" value="${c.terms}" onblur="saveCharData('${lesson.id}', ${i}, 'terms', this.value); updateTermsChips('${lesson.id}', ${i}, this.value)">
               <div class="terms-chips" id="chips-${lesson.id}-${i}">${buildTermsChipsHtml(c.terms)}</div>
               <input type="text" class="input-box" style="padding:0.4rem; font-size:0.85rem; margin-top:5px; background:#FBF3DE; border-color:#E3B15E;" placeholder="⚠️ 易錯提醒或造句備註..." value="${c.note}" onblur="saveCharData('${lesson.id}', ${i}, 'note', this.value)">
-              <button class="btn btn-purple no-print" style="width:100%; margin-top:8px; font-size:0.78rem; padding:0.4rem;" onclick="speakWholeCard('${lesson.id}', ${i})">🔊 整段朗讀（字・部首・語詞）</button>
+              <button class="btn btn-purple no-print" style="width:100%; margin-top:8px; font-size:0.78rem; padding:0.4rem;" onclick="speakWholeCard('${lesson.id}', ${i})">🔊 整段朗讀（字・部首・筆畫・字義・語詞）</button>
             </div>
           `).join('')}
         </div>
       `;
       container.innerHTML = html;
       document.getElementById('test-lesson-select').value = currentLessonId;
+      autoFillCharDetails(lesson.chars.map(c => c.char));
     }
 
     function previewText(str, maxLen) {
@@ -911,6 +914,61 @@
       } catch (e) {
         return null;
       }
+    }
+
+    // 查詢「部首注音・筆畫・字義」完整資訊（用於生字卡顯示與整段朗讀）
+    async function fetchCharDetail(ch) {
+      try {
+        const res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(ch)}.json`);
+        if (!res.ok) return null;
+        const data = await res.json();
+        const het = data.heteronyms || data.h;
+        const defs = het && het[0] ? (het[0].definitions || het[0].d) : null;
+        const defText = (defs && defs[0] && (defs[0].def || defs[0].f)) || '';
+        let radicalZy = '';
+        if (data.radical) radicalZy = (await fetchZhuyinForChar(data.radical)) || '';
+        return {
+          radical: data.radical || '',
+          radicalZy,
+          strokeCount: data.stroke_count || '',
+          def: defText.replace(/`|~/g, '')
+        };
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function getOrFetchCharDetail(ch) {
+      if (!appData.charDetailCache) appData.charDetailCache = {};
+      if (appData.charDetailCache[ch]) return appData.charDetailCache[ch];
+      const detail = await fetchCharDetail(ch);
+      if (detail) {
+        appData.charDetailCache[ch] = detail;
+        saveData();
+      }
+      return detail;
+    }
+
+    function buildCharDetailPreview(ch) {
+      const d = appData.charDetailCache && appData.charDetailCache[ch];
+      if (!d) return '';
+      const parts = [];
+      if (d.radicalZy) parts.push(d.radicalZy);
+      if (d.strokeCount) parts.push(`${d.strokeCount}畫`);
+      return parts.length ? `（${parts.join('・')}）` : '';
+    }
+
+    // 生字卡渲染後，背景查詢還沒快取過的字詳細資料，查到就直接更新卡片上的顯示文字
+    async function autoFillCharDetails(chars) {
+      const uniqueChars = [...new Set(chars)];
+      await Promise.all(uniqueChars.map(async (ch) => {
+        if (appData.charDetailCache && appData.charDetailCache[ch]) return;
+        const detail = await getOrFetchCharDetail(ch);
+        if (!detail) return;
+        document.querySelectorAll(`.char-detail-info[data-char="${cssEscape(ch)}"]`).forEach(el => {
+          el.textContent = buildCharDetailPreview(ch);
+        });
+      }));
     }
 
     async function autoFillMissingCharInfo(lessonIds) {
@@ -1357,13 +1415,18 @@
       }, 30);
     }
 
-    // 依序朗讀：生字 → 部首 → 每個圈詞語詞
+    // 依序朗讀：生字 → 部首（含筆畫）→ 字義解釋 → 每個圈詞語詞
     async function speakWholeCard(lId, idx) {
       const l = getLessonById(lId);
       const c = l && l.chars[idx];
       if (!c) return;
+      const detail = await getOrFetchCharDetail(c.char);
+      const sequence = [c.char];
+      if (c.rad) sequence.push(`部首 ${c.rad}`);
+      if (detail && detail.strokeCount) sequence.push(`共 ${detail.strokeCount} 畫`);
+      if (detail && detail.def) sequence.push(detail.def);
       const terms = (c.terms || '').split(/[,，、\s]+/).filter(Boolean);
-      const sequence = [c.char, c.rad, ...terms].filter(Boolean);
+      sequence.push(...terms);
       for (const part of sequence) {
         await playSpeech(part);
         await sleep(250);
