@@ -275,15 +275,29 @@ const lessonCats = [
 '第八課：最勇敢的女孩', '第九課：在挫折中成長', '第十課：山中寄情',
 '第十一課：與達駭黑熊走入森林', '第十二課：荒島上的國王', '補充成語'
 ];
-const catIcons={'全部':'🌟','錯題本':'📌', '第一課：蚊帳大使':'📖','第二課：從空中看臺灣':'📖','第三課：攀岩高手':'📖','第四課：恆久的美':'📖','第五課：它抓得住你——商標的故事':'📖','第六課：故事「動」起來':'📖','第七課：為生命找出口':'📖','第八課：最勇敢的女孩':'📖','第九課：在挫折中成長':'📖','第十課：山中寄情':'📖','第十一課：與達駭黑熊走入森林':'📖','第十二課：荒島上的國王':'📖','補充成語':'✏️'};
 let idiomDB=[
 {c:'第一課：蚊帳大使',i:'守株待兔',z:'ㄕㄡˇ ㄓㄨ ㄉㄞˋ ㄊㄨˋ',m:'只想靠好運氣，自己不肯努力做事。',s:'你不讀書想靠猜對，簡直是守株待兔！',d:'', isCustom: false}
 ];
 let curTab='explore', curCat='第一課：蚊帳大使', searchTimer=null;
 let wrongList = [];
 let customDB = [];
-try { wrongList = JSON.parse(safeGet('sproutWrong', '[]')); } catch(e){}
-try { customDB = JSON.parse(safeGet('sproutCustomDB', '[]')); } catch(e){}
+// 💡 嚴格防呆機制：確保讀取出來的舊資料不會造成陣列崩潰
+try {
+let wl = JSON.parse(safeGet('sproutWrong', '[]'));
+if (Array.isArray(wl)) wrongList = wl;
+} catch(e){}
+try {
+let cd = JSON.parse(safeGet('sproutCustomDB', '[]'));
+if (Array.isArray(cd)) {
+// 自動轉移舊版無效分類的資料，防止崩潰
+cd.forEach(item => {
+if (!lessonCats.includes(item.c)) {
+item.c = '補充成語';
+}
+});
+customDB = cd;
+}
+} catch(e){}
 window.onload=()=>{
 idiomDB = customDB.concat(idiomDB);
 document.getElementById('apiKeyInput').value = safeGet('sproutApiKey', '');
@@ -306,7 +320,8 @@ async function generateKidFriendlyIdiom(word, defaultMeaning, defaultSentence) {
 const key = getApiKey();
 if(!key) throw new Error("尚未設定 API Key");
 const prompt = ⁠你是一位親切的國小老師。請用國小高年級學生聽得懂的簡單白話文，解釋「${word}」的意思(限25字內)。然後造一個貼近國小校園或家庭日常生活的例句(限30字內)，絕對不可以包含文言文。請只回傳合法的 JSON 格式：{"meaning":"...","sentence":"..."}⁠;
-const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-pro'];
+// 💡 鎖定最新模型，並加入無縫切換機制
+const modelsToTry = ['gemini-3.5-flash', 'gemini-2.5-flash'];
 let lastErrorMsg = "API 連線失敗";
 for(let model of modelsToTry) {
 try {
@@ -322,6 +337,9 @@ let text = data.candidates[0].content.parts[0].text.trim();
 let match = text.match(/{[\s\S]*}/);
 if (match) return JSON.parse(match[0]);
 return JSON.parse(text);
+} else {
+const errObj = await res.json();
+lastErrorMsg = errObj.error?.message || "未知的 API 錯誤";
 }
 } catch(e) { lastErrorMsg = e.message; }
 }
@@ -555,7 +573,11 @@ document.getElementById('backupModal').classList.remove('hidden');
 function copyBackupText() {
 let textArea = document.getElementById('backupTextArea');
 textArea.select();
-try { document.execCommand('copy'); alert('✅ 複製成功！'); } catch(e) { alert('複製失敗。'); }
+textArea.setSelectionRange(0, 99999);
+try {
+document.execCommand('copy');
+alert('✅ 複製成功！\n現在您可以打開 LINE 或記事本，長按輸入框選擇「貼上」分享給別人囉！');
+} catch(e) { alert('複製失敗。'); }
 }
 function importBackup() {
 const inputEl = document.getElementById('importBackupInput');
