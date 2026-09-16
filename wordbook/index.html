@@ -24,6 +24,7 @@ body{background:#fff!important}.no-print{display:none!important}#printArea{displ
 .print-title{font-size:24px;font-weight:bold;text-align:center;margin-bottom:20px}
 .print-item{margin-bottom:15px;line-height:1.6;font-size:14px;break-inside:avoid}
 }
+/* 調整首頁上方固定的高度與樣式 */
 .sticky-tools {
 position: sticky;
 top: 76px;
@@ -196,8 +197,10 @@ box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 <div>
 <label class="block text-sm font-bold text-slate-700 mb-1">輸入成語或語詞（支援多筆與等號自訂）：</label>
 <textarea id="importInput" rows="6" class="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-emerald-400 text-sm" placeholder="【支援兩種寫法，可混用】
-寫法一（自動查）：一石二鳥, 負責
-寫法二（自訂）：守株待兔 = 妄想不勞而獲 = 你不讀書想靠猜對，簡直是守株待兔！"></textarea>
+寫法一（自動查）：
+一石二鳥, 負責
+寫法二（自訂）：
+守株待兔 = 妄想不勞而獲 = 你不讀書想靠猜對，簡直是守株待兔！"></textarea>
 </div>
 </div>
 <button onclick="startImport()" id="importBtn" class="w-full py-3 bg-emerald-500 text-white font-bold rounded-xl shadow-md hover:bg-emerald-600 transition-colors">
@@ -445,17 +448,17 @@ document.getElementById('idiomList').innerHTML = list.map(item=>⁠<div class="b
 ${item.isCustom ? ⁠<div class="absolute top-4 right-12 flex gap-2"> <button onclick="openEditModal('${item.i}')" class="text-indigo-500 hover:text-indigo-600 font-bold text-sm bg-indigo-50 px-3 py-1 rounded-md transition-colors shadow-sm" title="修改內容">✏️ 修改</button> <button id="rewriteBtn-${item.i}" onclick="forceAIRewrite('${item.i}')" class="text-amber-500 hover:text-amber-600 font-bold text-sm bg-amber-50 px-3 py-1 rounded-md transition-colors shadow-sm" title="AI 重新造句">✨ AI</button> </div>⁠ : ''}
 <div class="flex justify-between items-start mb-3 pr-40">
 <div>
-<span class="inline-block px-2 py-1 bg-purple-50 text-purple-600 text-xs font-bold rounded mb-2">📖 ￼
-￼
-￼{item.i}</h3>
+<span class="inline-block px-2 py-1 bg-purple-50 text-purple-600 text-xs font-bold rounded mb-2">📖 {item.c}</span>
+<div class="flex items-center gap-3">
+<h3 class="text-2xl font-bold text-slate-800">{item.i}</h3>
 <button onclick="speakText('${item.i}。${item.m}')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center">🔊</button>
 </div>
-<p class="text-xs text-slate-500 font-medium tracking-widest mt-1">￼
-￼
-￼
-￼
-￼
-￼{item.m}</span></p>
+<p class="text-xs text-slate-500 font-medium tracking-widest mt-1">{item.z}</p>
+</div>
+</div>
+<div class="space-y-3 mt-4">
+<div class="bg-amber-50 rounded-xl p-3">
+<p class="text-sm font-bold text-amber-800 flex gap-2"><span class="shrink-0 mt-0.5">💡</span><span>{item.m}</span></p>
 </div>
 <div class="border border-dashed border-slate-300 rounded-xl p-3 bg-slate-50">
 <p class="text-sm text-slate-700 leading-relaxed"><strong class="text-slate-400">例句：</strong>${item.s.replace(new RegExp(item.i,'g'), ⁠<span class="text-emerald-600 font-bold underline">${item.i}</span>⁠)}</p>
