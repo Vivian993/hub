@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>萌芽成語寶典 - 高年級專用</title>
     
-    <!-- 📌 iPhone 桌面 App 圖示 -->
     <link rel="apple-touch-icon" href="custom-icon.png">
     <link rel="icon" type="image/png" href="custom-icon.png">
     
@@ -80,9 +79,9 @@
         <section id="panel-explore" class="block">
             
             <div class="search-sticky">
-                <!-- 💡 任何詞彙都能自動查詢 -->
+                <!-- 💡 搜尋框提示已更新 -->
                 <div class="relative mb-3">
-                    <input type="text" id="searchInput" placeholder="輸入任何成語、語詞或生字 (自動連網查字義)..." oninput="handleSearch()" class="w-full px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:outline-none text-base pl-12 bg-white shadow-sm">
+                    <input type="text" id="searchInput" placeholder="輸入任何生字、語詞或成語 (打完會自動查字典)..." oninput="handleSearch()" class="w-full px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-50 text-lg transition-all pl-12 bg-white shadow-sm">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl">🔍</span>
                 </div>
                 
@@ -177,22 +176,20 @@
         <section id="panel-import" class="hidden space-y-6 mt-4">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
                 
-                <!-- 備份與還原區塊 -->
+                <!-- 💡 備份與還原區塊 (完全改為實體 JSON 檔案下載與上傳) -->
                 <div class="pb-6 border-b border-slate-100">
                     <h2 class="text-xl font-bold text-indigo-700 mb-3 flex items-center gap-2">📱 換手機專用：備份與還原</h2>
                     <div class="flex justify-between items-center mb-3">
                         <span class="text-sm font-bold text-slate-600">目前題庫數量：<span id="customCount" class="text-indigo-600 text-lg">0</span> 筆</span>
                     </div>
                     <div class="bg-indigo-50 p-4 rounded-xl mb-4 border border-indigo-100">
-                        <p class="text-sm text-indigo-800 font-bold mb-2">📤 匯出：將目前的題庫備份</p>
-                        <button type="button" onclick="exportBackup()" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg text-sm shadow-md hover:bg-indigo-700">產生並複製備份碼</button>
+                        <p class="text-sm text-indigo-800 font-bold mb-2">📤 匯出備份 (下載成實體檔案)</p>
+                        <button type="button" onclick="exportBackupFile()" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg text-sm shadow-md hover:bg-indigo-700">下載備份檔 (.json)</button>
                     </div>
                     <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
-                        <p class="text-sm text-amber-800 font-bold mb-2">📥 匯入：貼上備份碼還原資料</p>
-                        <div class="flex gap-2">
-                            <input type="text" id="importBackupInput" placeholder="請長按貼上備份碼..." class="flex-1 px-3 py-3 border border-amber-200 rounded-lg text-sm focus:outline-none focus:border-amber-500 bg-white">
-                            <button type="button" onclick="importBackup()" class="px-5 py-3 bg-amber-500 text-white font-bold rounded-lg text-sm shadow-md hover:bg-amber-600">還原</button>
-                        </div>
+                        <p class="text-sm text-amber-800 font-bold mb-2">📥 匯入備份 (選擇備份檔案上傳)</p>
+                        <input type="file" id="importFileInput" accept=".json" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-amber-500 file:text-white hover:file:bg-amber-600 mb-2 cursor-pointer bg-white border border-amber-200 rounded-lg">
+                        <button type="button" onclick="importBackupFile()" class="w-full py-3 bg-amber-600 text-white font-bold rounded-lg text-sm shadow-md hover:bg-amber-700">開始還原資料</button>
                     </div>
                     <div class="mt-4 text-right">
                         <button type="button" onclick="clearCustomDB()" class="text-xs text-rose-500 underline font-bold">🗑️ 清空所有自訂資料</button>
@@ -250,19 +247,6 @@
         </div>
     </div>
 
-    <!-- 備份視窗 -->
-    <div id="backupModal" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center z-[100] px-4">
-        <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center shadow-2xl">
-            <h3 class="text-lg font-bold mb-2">📦 備份碼已產生！</h3>
-            <p class="text-sm text-slate-500 mb-4">請將下方的亂碼複製起來，傳到 LINE 或存到記事本。換手機時，把這段貼到「管理/備份」的還原框就可以囉！</p>
-            <textarea id="backupTextArea" class="w-full text-xs text-slate-500 bg-slate-50 p-3 rounded-xl mb-4 h-32 border border-slate-200 focus:outline-none focus:border-indigo-400" readonly></textarea>
-            <div class="flex gap-3">
-                <button type="button" onclick="copyBackupText()" class="flex-1 px-4 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-md active:scale-95 transition-transform">📋 點我複製</button>
-                <button type="button" onclick="document.getElementById('backupModal').classList.add('hidden')" class="flex-1 px-4 py-3 bg-slate-200 text-slate-700 font-bold rounded-xl active:scale-95 transition-transform">關閉</button>
-            </div>
-        </div>
-    </div>
-
     <!-- 加入/選課分類 視窗 -->
     <div id="addCloudModal" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center z-[100] px-4">
         <div class="bg-white p-6 rounded-2xl max-w-sm w-full shadow-2xl">
@@ -278,6 +262,8 @@
             </div>
         </div>
     </div>
+
+    <div id="printArea" class="hidden print-hidden bg-white text-black p-4"></div>
 
     <script>
         function safeGet(key, defaultVal) { try { return localStorage.getItem(key) || defaultVal; } catch(e) { return defaultVal; } }
@@ -328,7 +314,7 @@
         let tempCloudData = null; 
 
         window.onload = () => { 
-            // 💡 確保語音能用
+            // 確保語音能用
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.onvoiceschanged = function() {
                     window.speechSynthesis.getVoices();
@@ -581,14 +567,12 @@
             u.rate = 0.9;
             u.pitch = 1;
 
-            // iOS 上嘗試強制選取中文語音
             let voices = window.speechSynthesis.getVoices();
             let zhVoice = voices.find(v => v.lang.includes('zh') || v.lang.includes('TW'));
             if (zhVoice) {
                 u.voice = zhVoice;
             }
 
-            // 稍微延遲讓系統反應
             setTimeout(() => {
                 window.speechSynthesis.speak(u);
             }, 50);
@@ -710,35 +694,61 @@
             setCat('第一課：蚊帳大使');
         }
 
-        function exportBackup() {
+        // === 💡 升級版：直接匯出為 json 檔案 ===
+        function exportBackupFile() {
             if(customDB.length === 0) return alert("沒有資料可備份喔！");
-            let code = `🌱萌芽備份-${btoa(encodeURIComponent(JSON.stringify({ customDB: customDB, date: new Date().toLocaleDateString('zh-TW') })))}`;
-            document.getElementById('backupTextArea').value = code;
-            document.getElementById('backupModal').classList.remove('hidden');
-        }
-        
-        function copyBackupText() {
-            let ta = document.getElementById('backupTextArea');
-            ta.select(); ta.setSelectionRange(0, 99999);
-            document.execCommand('copy');
-            alert('✅ 複製成功！\n可以將這段密碼傳到 LINE 給自己或別人備份喔。');
+            
+            const backupData = {
+                version: "1.0",
+                date: new Date().toLocaleDateString('zh-TW'),
+                data: customDB
+            };
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "萌芽成語寶典備份_" + new Date().getTime() + ".json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
         }
 
-        function importBackup() {
-            let code = document.getElementById('importBackupInput').value.trim();
-            if(!code.startsWith('🌱萌芽備份-')) return alert("❌ 備份碼格式錯誤。");
+        // === 💡 升級版：從 json 檔案匯入 ===
+        function importBackupFile() {
+            const fileInput = document.getElementById('importFileInput');
+            if(fileInput.files.length === 0) {
+                return alert("請先選擇要還原的 .json 備份檔案喔！");
+            }
+            
             if(!confirm("⚠️ 確定要還原題庫嗎？這會覆蓋目前的資料！")) return;
-            try {
-                let data = JSON.parse(decodeURIComponent(atob(code.replace('🌱萌芽備份-', ''))));
-                customDB = data.customDB;
-                idiomDB = [...customDB];
-                safeSet('sproutCustomDB_stable', JSON.stringify(customDB));
-                document.getElementById('importBackupInput').value = '';
-                document.getElementById('customCount').innerText = customDB.length;
-                alert(`✅ 還原成功！載入 ${data.date} 的備份。`);
-                initCategoryDropdowns();
-                setCat('第一課：蚊帳大使');
-            } catch(e) { alert("❌ 解析失敗。"); }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const parsedData = JSON.parse(e.target.result);
+                    
+                    if(parsedData.data && Array.isArray(parsedData.data)) {
+                        customDB = parsedData.data;
+                        idiomDB = [...customDB];
+                        safeSet('sproutCustomDB_stable', JSON.stringify(customDB));
+                        
+                        document.getElementById('customCount').innerText = customDB.length;
+                        fileInput.value = ""; 
+                        
+                        alert(`✅ 還原成功！載入 ${parsedData.date || '未知日期'} 的備份，共 ${customDB.length} 筆資料。`);
+                        initCategoryDropdowns();
+                        setCat('第一課：蚊帳大使');
+                    } else {
+                        alert("❌ 備份檔格式不正確，找不到題庫資料。");
+                    }
+                } catch(err) {
+                    alert("❌ 讀取失敗，檔案可能已損毀。");
+                }
+            };
+            
+            reader.readAsText(file);
         }
 
         let audioCtx = null;
@@ -870,3 +880,4 @@
     </script>
 </body>
 </html>
+```eof
