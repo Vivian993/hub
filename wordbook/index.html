@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>萌芽成語寶典 - 高年級專用</title>
     
-    <!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
+    <!-- 📌 iPhone 桌面 App 圖示 -->
     <link rel="apple-touch-icon" href="custom-icon.png">
     <link rel="icon" type="image/png" href="custom-icon.png">
     
@@ -78,11 +78,19 @@
     <main class="max-w-4xl mx-auto px-4 mt-2 no-print">
         <!-- 1. 探索/速查面板 -->
         <section id="panel-explore" class="block">
+            
             <div class="search-sticky">
-                <div class="relative mb-3">
-                    <input type="text" id="searchInput" placeholder="輸入成語或語詞 (打完會自動上網查字義)..." oninput="handleSearch()" class="w-full px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-50 text-lg transition-all pl-12 bg-white shadow-sm">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl">🔍</span>
+                <!-- 💡 修改為：打字自動篩選本地，按鈕強制查網路，避免手機輸入法卡頓 -->
+                <div class="flex gap-2 mb-3">
+                    <div class="relative flex-1">
+                        <input type="text" id="searchInput" placeholder="輸入關鍵字..." oninput="localSearch()" onkeypress="if(event.key==='Enter') cloudSearch()" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:outline-none text-base pl-10 bg-white shadow-sm">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xl">🔍</span>
+                    </div>
+                    <button type="button" onclick="cloudSearch()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-xl font-bold shadow-sm whitespace-nowrap active:scale-95 transition-transform flex items-center gap-1">
+                        <span>🌐</span> 查網路
+                    </button>
                 </div>
+                
                 <div>
                     <select id="categoryDropdown" onchange="setCat(this.value)" class="w-full p-3 rounded-xl border border-slate-300 bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500 cursor-pointer appearance-none shadow-sm">
                         <!-- 動態生成 -->
@@ -90,13 +98,14 @@
                 </div>
             </div>
             
-            <div id="loadingIndicator" class="hidden text-center text-emerald-500 font-bold py-4">
-                <span class="inline-block animate-spin mr-2">⏳</span>網路字典自動連線中...
+            <div id="loadingIndicator" class="hidden text-center text-indigo-500 font-bold py-8">
+                <span class="inline-block animate-spin mr-2 text-2xl">⏳</span>正在連線網路字典查詢中...
             </div>
             
             <div id="cloudResultBox" class="mb-4"></div>
+
             <div id="idiomList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            <div id="emptySearch" class="hidden text-center py-12 text-slate-400"><span class="text-5xl block mb-3">🧐</span><p>您的題庫中沒有這個詞喔，試試看上面的即時網路查詢結果！</p></div>
+            <div id="emptySearch" class="hidden text-center py-12 text-slate-400"><span class="text-5xl block mb-3">🧐</span><p>找不到符合的詞喔！您可以點擊上方的「🌐 查網路」連線查詢字典。</p></div>
         </section>
 
         <!-- 2. 遊戲闖關面板 -->
@@ -172,9 +181,10 @@
         <!-- 4. 匯入與管理面板 -->
         <section id="panel-import" class="hidden space-y-6 mt-4">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                
                 <!-- 備份與還原區塊 -->
                 <div class="pb-6 border-b border-slate-100">
-                    <h2 class="text-xl font-bold text-indigo-700 mb-3 flex items-center gap-2">📱 換手機/備份專用區</h2>
+                    <h2 class="text-xl font-bold text-indigo-700 mb-3 flex items-center gap-2">📱 換手機專用：備份與還原</h2>
                     <div class="flex justify-between items-center mb-3">
                         <span class="text-sm font-bold text-slate-600">目前題庫數量：<span id="customCount" class="text-indigo-600 text-lg">0</span> 筆</span>
                     </div>
@@ -197,7 +207,7 @@
                 <!-- 批次匯入區塊 -->
                 <div class="pb-6 border-b border-slate-100">
                     <h2 class="text-lg font-bold text-slate-800 mb-2">📥 批次新增課程資料</h2>
-                    <p class="text-xs text-slate-500 mb-3">選擇課次，並輸入成語或語詞。支援自動連網或手動打等號輸入。</p>
+                    <p class="text-xs text-slate-500 mb-3">請選擇課次，輸入成語或語詞。支援單純打詞讓系統連網查，也可以加上等號「=」自訂解釋造句。</p>
                     <select id="importClassSelect" class="w-full p-3 mb-3 rounded-xl border border-slate-300 bg-white font-bold focus:outline-none text-sm"></select>
                     <textarea id="importInput" rows="5" class="w-full p-3 border border-slate-300 rounded-xl text-sm focus:outline-none mb-3" placeholder="格式範例：
 1. 自動查字：負責, 蚊帳
@@ -274,8 +284,6 @@
         </div>
     </div>
 
-    <div id="printArea" class="hidden print-hidden bg-white text-black p-4"></div>
-
     <script>
         function safeGet(key, defaultVal) { try { return localStorage.getItem(key) || defaultVal; } catch(e) { return defaultVal; } }
         function safeSet(key, val) { try { localStorage.setItem(key, val); } catch(e) { console.error("儲存失敗", e); } }
@@ -289,16 +297,27 @@
         
         let customDB = [];
         try { 
-            let cd = JSON.parse(safeGet('sproutCustomDB_clean', '[]')); 
+            let cd = JSON.parse(safeGet('sproutCustomDB_stable', '[]')); 
             if (Array.isArray(cd)) customDB = cd;
         } catch(e){}
 
-        // 如果是完全空的，放一個範例進去，避免畫面看起來壞掉
-        if (customDB.length === 0) {
-            customDB.push({
-                "c": "第一課：蚊帳大使", "i": "守株待兔", "z": "ㄕㄡˇ ㄓㄨ ㄉㄞˋ ㄊㄨˋ", "m": "比喻妄想不勞而獲，或等著目標自己送上門來。", "s": "你不讀書想靠猜對，簡直是守株待兔！", "isCustom": true
-            });
-            safeSet('sproutCustomDB_clean', JSON.stringify(customDB));
+        // 用戶提供的備份資料 (自動幫忙保留，確保不見的資料回來)
+        let recoveredDB = [
+            {"c": "第一課：蚊帳大使", "i": "知己知彼", "z": "ㄓ ㄐㄧˇ ㄓ ㄅㄧˇ", "m": "正確的了解自己，並能評估對方的實力。", "s": "比賽前要知己知彼才能百戰百勝。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "百折不撓", "z": "ㄅㄞˇ ㄓㄜˊ ㄅㄨˋ ㄋㄠˊ", "m": "意志堅強，即使受到許多挫折，仍不屈服。", "s": "他百折不撓的精神令人敬佩。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "亡羊補牢", "z": "ㄨㄤˊ ㄧㄤˊ ㄅㄨˇ ㄌㄠˊ", "m": "比喻犯錯後及時更正，還能補救。", "s": "現在亡羊補牢還來得及，不要放棄。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "防微杜漸", "z": "ㄈㄤˊ ㄨㄟˊ ㄉㄨˋ ㄐㄧㄢˋ", "m": "防範於未然，在壞事剛發生時就加以制止。", "s": "小錯誤要防微杜漸，以免釀成大災。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "未雨綢繆", "z": "ㄨㄟˋ ㄩˇ ㄔㄡˊ ㄇㄡˊ", "m": "比喻事先做好準備工作。", "s": "平時要未雨綢繆，存點錢以備不時之需。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "自相矛盾", "z": "ㄗˋ ㄒㄧㄤ ㄇㄠˊ ㄉㄨㄣˋ", "m": "比喻行事或言語先後不相應、互相抵觸。", "s": "他說的話自相矛盾，讓人難以相信。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "臨陣磨槍", "z": "ㄌㄧㄣˊ ㄓㄣˋ ㄇㄛˊ ㄑㄧㄤ", "m": "比喻事到臨頭才匆忙準備。", "s": "考試前才臨陣磨槍是考不好的。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "畫蛇添足", "z": "ㄏㄨㄚˋ ㄕㄜˊ ㄊㄧㄢ ㄗㄨˊ", "m": "比喻多此一舉，反而弄巧成拙。", "s": "這段話簡直是畫蛇添足，反而扣分。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "囫圇吞棗", "z": "ㄏㄨˊ ㄌㄨㄣˊ ㄊㄨㄣ ㄗㄠˇ", "m": "比喻理解事物含糊不清，或學習時不求甚解。", "s": "讀書不能囫圇吞棗，要仔細思考。", "isCustom": true}
+        ];
+        
+        // 如果沒有資料，自動填入備份
+        if(customDB.length === 0) {
+            customDB = recoveredDB;
+            safeSet('sproutCustomDB_stable', JSON.stringify(customDB));
         }
 
         let idiomDB = [...customDB];
@@ -310,7 +329,6 @@
 
         let curTab = 'explore';
         let curCat = '全部'; 
-        let searchTimer = null;
         let tempCloudData = null; 
 
         window.onload = () => { 
@@ -418,60 +436,61 @@
             `).join('');
         }
 
-        // === 💡 速查區：打完字自動連網查詢 ===
-        function handleSearch(){
+        // === 💡 新版速查：打字即時篩選本地，按「查網路」按鈕才去雲端查 (最穩定不卡頓) ===
+        function localSearch(){
             curCat='全部'; 
             document.getElementById('categoryDropdown').value = '全部';
             document.getElementById('cloudResultBox').innerHTML = ''; 
-            clearTimeout(searchTimer);
             
             let kw = document.getElementById('searchInput').value.trim();
             if(!kw){ setCat('全部'); return; }
             
             let localMatch = idiomDB.filter(i=>i.i.includes(kw)||i.m.includes(kw)||(i.z&&i.z.includes(kw)));
+            renderIdioms(localMatch);
             
-            if(localMatch.length > 0 && localMatch.some(i => i.i === kw)) {
-                renderIdioms(localMatch);
-                return;
+            if(localMatch.length === 0) {
+                document.getElementById('emptySearch').classList.remove('hidden');
+                document.getElementById('idiomList').innerHTML = '';
             }
+        }
 
-            renderIdioms(localMatch); 
-            document.getElementById('loadingIndicator').classList.remove('hidden');
-            document.getElementById('emptySearch').classList.add('hidden');
+        async function cloudSearch() {
+            let kw = document.getElementById('searchInput').value.trim();
+            if(!kw) { alert("請先在搜尋框輸入要查詢的成語喔！"); return; }
             
-            searchTimer = setTimeout(async ()=>{
-                let onlineRes = await fetchOnlineData(kw, '補充成語'); 
-                document.getElementById('loadingIndicator').classList.add('hidden');
+            document.getElementById('emptySearch').classList.add('hidden');
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            
+            let onlineRes = await fetchOnlineData(kw, '補充成語'); 
+            document.getElementById('loadingIndicator').classList.add('hidden');
+            
+            if(onlineRes){
+                tempCloudData = onlineRes;
+                let isAlreadyInDB = idiomDB.some(i => i.i === onlineRes.i);
                 
-                if(onlineRes){
-                    tempCloudData = onlineRes;
-                    let isAlreadyInDB = idiomDB.some(i => i.i === onlineRes.i);
-                    
-                    document.getElementById('cloudResultBox').innerHTML = `
-                        <div class="bg-indigo-50 p-5 rounded-2xl border-2 border-indigo-200 shadow-sm relative mb-4">
-                            <div class="absolute top-4 right-4 flex flex-col gap-2">
-                                <span class="text-[10px] text-indigo-400 font-bold text-right">🌐 即時網路字典</span>
-                                ${!isAlreadyInDB ? `<button type="button" onclick="openAddCloudModal()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm active:scale-95">➕ 加入我的題庫</button>` : `<span class="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">✅ 已在題庫中</span>`}
+                document.getElementById('cloudResultBox').innerHTML = `
+                    <div class="bg-indigo-50 p-5 rounded-2xl border-2 border-indigo-200 shadow-sm relative mb-4">
+                        <div class="absolute top-4 right-4 flex flex-col gap-2">
+                            <span class="text-[10px] text-indigo-400 font-bold text-right">🌐 網路字典結果</span>
+                            ${!isAlreadyInDB ? `<button type="button" onclick="openAddCloudModal()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm active:scale-95">➕ 加入題庫</button>` : `<span class="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">✅ 已在題庫中</span>`}
+                        </div>
+                        <div class="pr-28">
+                            <h3 class="text-2xl font-bold text-indigo-900">${onlineRes.i}</h3>
+                            <p class="text-xs text-indigo-500 font-bold tracking-widest mt-1">${onlineRes.z}</p>
+                        </div>
+                        <div class="space-y-2 mt-4">
+                            <div class="bg-white/80 rounded-lg p-2.5 border border-indigo-100">
+                                <p class="text-sm font-bold text-indigo-900 leading-snug">💡 ${onlineRes.m}</p>
                             </div>
-                            <div class="pr-28">
-                                <h3 class="text-2xl font-bold text-indigo-900">${onlineRes.i}</h3>
-                                <p class="text-xs text-indigo-500 font-bold tracking-widest mt-1">${onlineRes.z}</p>
-                            </div>
-                            <div class="space-y-2 mt-4">
-                                <div class="bg-white/80 rounded-lg p-2.5 border border-indigo-100">
-                                    <p class="text-sm font-bold text-indigo-900 leading-snug">💡 ${onlineRes.m}</p>
-                                </div>
-                                <div class="border border-dashed border-indigo-200 rounded-lg p-2.5 bg-white/50">
-                                    <p class="text-sm text-slate-700 leading-snug">✍️ ${onlineRes.s}</p>
-                                </div>
+                            <div class="border border-dashed border-indigo-200 rounded-lg p-2.5 bg-white/50">
+                                <p class="text-sm text-slate-700 leading-snug">✍️ ${onlineRes.s}</p>
                             </div>
                         </div>
-                    `;
-                } else if(localMatch.length===0){
-                    document.getElementById('idiomList').innerHTML='';
-                    document.getElementById('emptySearch').classList.remove('hidden');
-                }
-            }, 800); // 停頓 0.8 秒後自動查詢
+                    </div>
+                `;
+            } else {
+                alert(`字典裡找不到「${kw}」喔！請確認是否打錯字了。`);
+            }
         }
 
         function openAddCloudModal() {
@@ -487,7 +506,7 @@
             
             customDB.unshift(tempCloudData);
             idiomDB.unshift(tempCloudData);
-            safeSet('sproutCustomDB_clean', JSON.stringify(customDB));
+            safeSet('sproutCustomDB_stable', JSON.stringify(customDB));
             
             document.getElementById('customCount').innerText = customDB.length;
             initCategoryDropdowns();
@@ -504,7 +523,7 @@
             if(!confirm(`確定要刪除「${word}」嗎？`)) return;
             customDB = customDB.filter(i => i.i !== word);
             idiomDB = [...customDB];
-            safeSet('sproutCustomDB_clean', JSON.stringify(customDB));
+            safeSet('sproutCustomDB_stable', JSON.stringify(customDB));
             document.getElementById('customCount').innerText = customDB.length;
             initCategoryDropdowns(); 
             setCat(curCat);
@@ -538,7 +557,7 @@
             }
             
             idiomDB = [...customDB];
-            safeSet('sproutCustomDB_clean', JSON.stringify(customDB));
+            safeSet('sproutCustomDB_stable', JSON.stringify(customDB));
             closeEditModal();
             initCategoryDropdowns(); 
             setCat(cat); 
@@ -636,7 +655,7 @@
             }
             
             idiomDB = [...customDB];
-            safeSet('sproutCustomDB_clean', JSON.stringify(customDB));
+            safeSet('sproutCustomDB_stable', JSON.stringify(customDB));
             document.getElementById('customCount').innerText = customDB.length;
             initCategoryDropdowns();
             status.innerText = `✅ 成功新增 ${successCount} 筆！`;
@@ -655,7 +674,7 @@
             if(!confirm("確定要清空所有資料嗎？")) return;
             idiomDB = idiomDB.filter(i => !i.isCustom);
             customDB = [];
-            safeSet('sproutCustomDB_clean', '[]');
+            safeSet('sproutCustomDB_stable', '[]');
             document.getElementById('customCount').innerText = 0;
             initCategoryDropdowns();
             setCat('第一課：蚊帳大使');
@@ -672,7 +691,8 @@
             let ta = document.getElementById('backupTextArea');
             ta.select(); ta.setSelectionRange(0, 99999);
             document.execCommand('copy');
-            alert('✅ 複製成功！');
+            alert('✅ 複製成功！
+可以將這段密碼傳到 LINE 給自己或別人備份喔。');
         }
 
         function importBackup() {
@@ -683,7 +703,7 @@
                 let data = JSON.parse(decodeURIComponent(atob(code.replace('🌱萌芽備份-', ''))));
                 customDB = data.customDB;
                 idiomDB = [...customDB];
-                safeSet('sproutCustomDB_clean', JSON.stringify(customDB));
+                safeSet('sproutCustomDB_stable', JSON.stringify(customDB));
                 document.getElementById('importBackupInput').value = '';
                 document.getElementById('customCount').innerText = customDB.length;
                 alert(`✅ 還原成功！載入 ${data.date} 的備份。`);
