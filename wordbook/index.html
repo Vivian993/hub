@@ -24,7 +24,6 @@ body{background:#fff!important}.no-print{display:none!important}#printArea{displ
 .print-title{font-size:24px;font-weight:bold;text-align:center;margin-bottom:20px}
 .print-item{margin-bottom:15px;line-height:1.6;font-size:14px;break-inside:avoid}
 }
-/* 調整首頁上方固定的高度與樣式 */
 .sticky-tools {
 position: sticky;
 top: 76px;
@@ -281,7 +280,6 @@ let idiomDB=[
 let curTab='explore', curCat='第一課：蚊帳大使', searchTimer=null;
 let wrongList = [];
 let customDB = [];
-// 💡 嚴格防呆機制：確保讀取出來的舊資料不會造成陣列崩潰
 try {
 let wl = JSON.parse(safeGet('sproutWrong', '[]'));
 if (Array.isArray(wl)) wrongList = wl;
@@ -289,7 +287,6 @@ if (Array.isArray(wl)) wrongList = wl;
 try {
 let cd = JSON.parse(safeGet('sproutCustomDB', '[]'));
 if (Array.isArray(cd)) {
-// 自動轉移舊版無效分類的資料，防止崩潰
 cd.forEach(item => {
 if (!lessonCats.includes(item.c)) {
 item.c = '補充成語';
@@ -320,7 +317,6 @@ async function generateKidFriendlyIdiom(word, defaultMeaning, defaultSentence) {
 const key = getApiKey();
 if(!key) throw new Error("尚未設定 API Key");
 const prompt = ⁠你是一位親切的國小老師。請用國小高年級學生聽得懂的簡單白話文，解釋「${word}」的意思(限25字內)。然後造一個貼近國小校園或家庭日常生活的例句(限30字內)，絕對不可以包含文言文。請只回傳合法的 JSON 格式：{"meaning":"...","sentence":"..."}⁠;
-// 💡 鎖定最新模型，並加入無縫切換機制
 const modelsToTry = ['gemini-3.5-flash', 'gemini-2.5-flash'];
 let lastErrorMsg = "API 連線失敗";
 for(let model of modelsToTry) {
@@ -537,7 +533,6 @@ status.innerText = ⁠✅ 匯入完成！成功新增 ${successCount} 個項目�
 document.getElementById('importInput').value = '';
 updateCustomPreview();
 renderCats();
-// 💡 匯入後直接跳轉回速查，並定格在該課次分類，畫面置頂
 setTimeout(() => {
 switchTab('explore');
 setCat(selectCategory);
