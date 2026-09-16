@@ -80,15 +80,10 @@
         <section id="panel-explore" class="block">
             
             <div class="search-sticky">
-                <!-- 💡 打字自動篩選本地，按鈕強制查網路 -->
-                <div class="flex gap-2 mb-3">
-                    <div class="relative flex-1">
-                        <input type="text" id="searchInput" placeholder="輸入關鍵字..." oninput="localSearch()" onkeypress="if(event.key==='Enter') cloudSearch()" class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:outline-none text-base pl-10 bg-white shadow-sm">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xl">🔍</span>
-                    </div>
-                    <button type="button" onclick="cloudSearch()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-xl font-bold shadow-sm whitespace-nowrap active:scale-95 transition-transform flex items-center gap-1">
-                        <span>🌐</span> 查網路
-                    </button>
+                <!-- 💡 任何詞彙都能自動查詢 -->
+                <div class="relative mb-3">
+                    <input type="text" id="searchInput" placeholder="輸入任何成語、語詞或生字 (自動連網查字義)..." oninput="handleSearch()" class="w-full px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:outline-none text-base pl-12 bg-white shadow-sm">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl">🔍</span>
                 </div>
                 
                 <div>
@@ -105,7 +100,7 @@
             <div id="cloudResultBox" class="mb-4"></div>
 
             <div id="idiomList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            <div id="emptySearch" class="hidden text-center py-12 text-slate-400"><span class="text-5xl block mb-3">🧐</span><p>找不到符合的詞喔！您可以點擊上方的「🌐 查網路」連線查詢字典。</p></div>
+            <div id="emptySearch" class="hidden text-center py-12 text-slate-400"><span class="text-5xl block mb-3">🧐</span><p>找不到符合的詞喔！系統會自動幫您查網路字典。</p></div>
         </section>
 
         <!-- 2. 遊戲闖關面板 -->
@@ -184,7 +179,7 @@
                 
                 <!-- 備份與還原區塊 -->
                 <div class="pb-6 border-b border-slate-100">
-                    <h2 class="text-xl font-bold text-indigo-700 mb-3 flex items-center gap-2">📱 換手機/備份專用區</h2>
+                    <h2 class="text-xl font-bold text-indigo-700 mb-3 flex items-center gap-2">📱 換手機專用：備份與還原</h2>
                     <div class="flex justify-between items-center mb-3">
                         <span class="text-sm font-bold text-slate-600">目前題庫數量：<span id="customCount" class="text-indigo-600 text-lg">0</span> 筆</span>
                     </div>
@@ -301,6 +296,25 @@
             if (Array.isArray(cd)) customDB = cd;
         } catch(e){}
 
+        // 用戶提供的備份資料 (自動還原)
+        let recoveredDB = [
+            {"c": "第一課：蚊帳大使", "i": "知己知彼", "z": "ㄓ ㄐㄧˇ ㄓ ㄅㄧˇ", "m": "正確的了解自己，並能評估對方的實力。", "s": "比賽前要知己知彼才能百戰百勝。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "百折不撓", "z": "ㄅㄞˇ ㄓㄜˊ ㄅㄨˋ ㄋㄠˊ", "m": "意志堅強，即使受到許多挫折，仍不屈服。", "s": "他百折不撓的精神令人敬佩。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "亡羊補牢", "z": "ㄨㄤˊ ㄧㄤˊ ㄅㄨˇ ㄌㄠˊ", "m": "比喻犯錯後及時更正，還能補救。", "s": "現在亡羊補牢還來得及，不要放棄。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "防微杜漸", "z": "ㄈㄤˊ ㄨㄟˊ ㄉㄨˋ ㄐㄧㄢˋ", "m": "防範於未然，在壞事剛發生時就加以制止。", "s": "小錯誤要防微杜漸，以免釀成大災。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "未雨綢繆", "z": "ㄨㄟˋ ㄩˇ ㄔㄡˊ ㄇㄡˊ", "m": "比喻事先做好準備工作。", "s": "平時要未雨綢繆，存點錢以備不時之需。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "自相矛盾", "z": "ㄗˋ ㄒㄧㄤ ㄇㄠˊ ㄉㄨㄣˋ", "m": "比喻行事或言語先後不相應、互相抵觸。", "s": "他說的話自相矛盾，讓人難以相信。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "臨陣磨槍", "z": "ㄌㄧㄣˊ ㄓㄣˋ ㄇㄛˊ ㄑㄧㄤ", "m": "比喻事到臨頭才匆忙準備。", "s": "考試前才臨陣磨槍是考不好的。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "畫蛇添足", "z": "ㄏㄨㄚˋ ㄕㄜˊ ㄊㄧㄢ ㄗㄨˊ", "m": "比喻多此一舉，反而弄巧成拙。", "s": "這段話簡直是畫蛇添足，反而扣分。", "isCustom": true},
+            {"c": "第一課：蚊帳大使", "i": "囫圇吞棗", "z": "ㄏㄨˊ ㄌㄨㄣˊ ㄊㄨㄣ ㄗㄠˇ", "m": "比喻理解事物含糊不清，或學習時不求甚解。", "s": "讀書不能囫圇吞棗，要仔細思考。", "isCustom": true}
+        ];
+        
+        // 如果沒有資料，自動填入備份
+        if(customDB.length === 0) {
+            customDB = recoveredDB;
+            safeSet('sproutCustomDB_stable', JSON.stringify(customDB));
+        }
+
         let idiomDB = [...customDB];
         let wrongList = [];
         try { 
@@ -309,11 +323,18 @@
         } catch(e){}
 
         let curTab = 'explore';
-        let curCat = '第一課：蚊帳大使'; 
+        let curCat = '全部'; 
         let searchTimer = null;
         let tempCloudData = null; 
 
         window.onload = () => { 
+            // 💡 確保語音能用
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.onvoiceschanged = function() {
+                    window.speechSynthesis.getVoices();
+                };
+            }
+
             document.getElementById('apiKeyInput').value = safeGet('sproutApiKey', '');
             initCategoryDropdowns();
             setCat(curCat);
@@ -386,7 +407,7 @@
             document.getElementById('emptySearch').classList.add('hidden');
             
             if(list.length === 0) {
-                container.innerHTML = '<div class="text-center py-10 text-slate-400 bg-white rounded-2xl border border-slate-200 col-span-full">此分類目前沒有內容喔！請到「管理」新增。</div>';
+                container.innerHTML = '<div class="text-center py-10 text-slate-400 bg-white rounded-2xl border border-slate-200 col-span-full">此分類目前沒有內容喔！請到「管理」新增，或在上方搜尋列直接查字。</div>';
                 return;
             }
 
@@ -402,7 +423,7 @@
                         <span class="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded mb-1">${item.c}</span>
                         <div class="flex items-center gap-2">
                             <h3 class="text-xl font-bold text-slate-800">${item.i}</h3>
-                            <button type="button" onclick="speakText('${item.i}。${item.m}')" class="w-7 h-7 rounded-full bg-slate-100 text-sm">🔊</button>
+                            <button type="button" onclick="speakText('${item.i}。${item.m}')" class="w-8 h-8 rounded-full bg-slate-100 text-base shadow-sm active:bg-slate-200">🔊</button>
                         </div>
                         <p class="text-xs text-slate-400 mt-1">${item.z}</p>
                     </div>
@@ -418,62 +439,63 @@
             `).join('');
         }
 
-        // === 打字自動搜尋本地 ===
-        function localSearch(){
+        // === 💡 恢復：打完字自動連網查詢字典 ===
+        function handleSearch(){
             curCat='全部'; 
             document.getElementById('categoryDropdown').value = '全部';
             document.getElementById('cloudResultBox').innerHTML = ''; 
+            clearTimeout(searchTimer);
             
             let kw = document.getElementById('searchInput').value.trim();
             if(!kw){ setCat('全部'); return; }
             
             let localMatch = idiomDB.filter(i=>i.i.includes(kw)||i.m.includes(kw)||(i.z&&i.z.includes(kw)));
-            renderIdioms(localMatch);
             
-            if(localMatch.length === 0) {
-                document.getElementById('emptySearch').classList.remove('hidden');
-                document.getElementById('idiomList').innerHTML = '';
+            if(localMatch.length > 0 && localMatch.some(i => i.i === kw)) {
+                renderIdioms(localMatch);
+                return;
             }
-        }
 
-        // === 手動點擊「查網路」按鈕 ===
-        async function cloudSearch() {
-            let kw = document.getElementById('searchInput').value.trim();
-            if(!kw) { alert("請先在搜尋框輸入要查詢的詞喔！"); return; }
-            
-            document.getElementById('emptySearch').classList.add('hidden');
+            renderIdioms(localMatch); 
             document.getElementById('loadingIndicator').classList.remove('hidden');
+            document.getElementById('emptySearch').classList.add('hidden');
             
-            let onlineRes = await fetchOnlineData(kw, '補充成語'); 
-            document.getElementById('loadingIndicator').classList.add('hidden');
-            
-            if(onlineRes){
-                tempCloudData = onlineRes;
-                let isAlreadyInDB = idiomDB.some(i => i.i === onlineRes.i);
+            searchTimer = setTimeout(async ()=>{
+                let onlineRes = await fetchOnlineData(kw, '補充成語'); 
+                document.getElementById('loadingIndicator').classList.add('hidden');
                 
-                document.getElementById('cloudResultBox').innerHTML = `
-                    <div class="bg-indigo-50 p-5 rounded-2xl border-2 border-indigo-200 shadow-sm relative mb-4">
-                        <div class="absolute top-4 right-4 flex flex-col gap-2">
-                            <span class="text-[10px] text-indigo-400 font-bold text-right">🌐 網路字典結果</span>
-                            ${!isAlreadyInDB ? `<button type="button" onclick="openAddCloudModal()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm active:scale-95">➕ 加入題庫</button>` : `<span class="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">✅ 已在題庫中</span>`}
-                        </div>
-                        <div class="pr-28">
-                            <h3 class="text-2xl font-bold text-indigo-900">${onlineRes.i}</h3>
-                            <p class="text-xs text-indigo-500 font-bold tracking-widest mt-1">${onlineRes.z}</p>
-                        </div>
-                        <div class="space-y-2 mt-4">
-                            <div class="bg-white/80 rounded-lg p-2.5 border border-indigo-100">
-                                <p class="text-sm font-bold text-indigo-900 leading-snug">💡 ${onlineRes.m}</p>
+                if(onlineRes){
+                    tempCloudData = onlineRes;
+                    let isAlreadyInDB = idiomDB.some(i => i.i === onlineRes.i);
+                    
+                    document.getElementById('cloudResultBox').innerHTML = `
+                        <div class="bg-indigo-50 p-5 rounded-2xl border-2 border-indigo-200 shadow-sm relative mb-4">
+                            <div class="absolute top-4 right-4 flex flex-col gap-2">
+                                <span class="text-[10px] text-indigo-400 font-bold text-right">🌐 即時網路字典</span>
+                                ${!isAlreadyInDB ? `<button type="button" onclick="openAddCloudModal()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm active:scale-95">➕ 加入題庫</button>` : `<span class="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded">✅ 已在題庫中</span>`}
                             </div>
-                            <div class="border border-dashed border-indigo-200 rounded-lg p-2.5 bg-white/50">
-                                <p class="text-sm text-slate-700 leading-snug">✍️ ${onlineRes.s}</p>
+                            <div class="pr-28">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-2xl font-bold text-indigo-900">${onlineRes.i}</h3>
+                                    <button type="button" onclick="speakText('${onlineRes.i}。${onlineRes.m}')" class="w-8 h-8 rounded-full bg-indigo-100 text-base shadow-sm active:bg-indigo-200">🔊</button>
+                                </div>
+                                <p class="text-xs text-indigo-500 font-bold tracking-widest mt-1">${onlineRes.z}</p>
+                            </div>
+                            <div class="space-y-2 mt-4">
+                                <div class="bg-white/80 rounded-lg p-2.5 border border-indigo-100">
+                                    <p class="text-sm font-bold text-indigo-900 leading-snug">💡 ${onlineRes.m}</p>
+                                </div>
+                                <div class="border border-dashed border-indigo-200 rounded-lg p-2.5 bg-white/50">
+                                    <p class="text-sm text-slate-700 leading-snug">✍️ ${onlineRes.s}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
-            } else {
-                alert(`字典裡找不到「${kw}」喔！請確認是否打錯字了。`);
-            }
+                    `;
+                } else if(localMatch.length===0){
+                    document.getElementById('idiomList').innerHTML='';
+                    document.getElementById('emptySearch').classList.remove('hidden');
+                }
+            }, 800); 
         }
 
         function openAddCloudModal() {
@@ -544,6 +566,32 @@
             closeEditModal();
             initCategoryDropdowns(); 
             setCat(cat); 
+        }
+
+        // === 💡 修正 iOS 語音問題 ===
+        function speakText(txt) {
+            if (!('speechSynthesis' in window)) {
+                alert("您的瀏覽器不支援語音朗讀喔！");
+                return;
+            }
+            window.speechSynthesis.cancel();
+            
+            let u = new SpeechSynthesisUtterance(txt);
+            u.lang = 'zh-TW';
+            u.rate = 0.9;
+            u.pitch = 1;
+
+            // iOS 上嘗試強制選取中文語音
+            let voices = window.speechSynthesis.getVoices();
+            let zhVoice = voices.find(v => v.lang.includes('zh') || v.lang.includes('TW'));
+            if (zhVoice) {
+                u.voice = zhVoice;
+            }
+
+            // 稍微延遲讓系統反應
+            setTimeout(() => {
+                window.speechSynthesis.speak(u);
+            }, 50);
         }
 
         async function fetchOnlineData(word, category) {
@@ -822,4 +870,3 @@
     </script>
 </body>
 </html>
-```eof
