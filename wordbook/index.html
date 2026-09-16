@@ -1,254 +1,298 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>萌芽成語寶典 - 觸控終極修復版</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<style>
-body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1E293B; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-.correct-ans { background-color: #DEF7EC !important; color: #046C4E !important; border-color: #31C48D !important; }
-.wrong-ans { background-color: #FDF2F2 !important; color: #9B1C1C !important; border-color: #F98080 !important; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萌芽成語寶典 - 觸控修復版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1E293B; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .quiz-option { transition: all 0.2s ease; cursor: pointer; }
+        .quiz-option:hover { transform: translateY(-2px); }
+        .correct-ans { background-color: #DEF7EC !important; border-color: #31C48D !important; color: #046C4E !important; }
+        .wrong-ans { background-color: #FDF2F2 !important; border-color: #F98080 !important; color: #9B1C1C !important; }
+    </style>
 </head>
 <body class="min-h-screen pb-24">
-<!-- 頂部導覽列：採用絕對安全排版，保證 iPhone 點擊 100% 有效 -->
-<header class="bg-white shadow-sm border-b border-slate-200">
-<div class="max-w-4xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
-<div class="flex items-center gap-2">
-<span class="text-3xl">🌱</span>
-<div>
-<h1 class="text-xl font-bold text-emerald-600">萌芽成語寶典</h1>
-<p class="text-xs text-slate-400">高年級完全相容版 (全課表整合)</p>
-</div>
-</div>
-<nav class="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto overflow-x-auto hide-scrollbar">
-<button type="button" onclick="switchTab('explore')" id="tab-btn-explore" class="px-4 py-2 rounded-lg text-sm font-bold bg-white text-emerald-600 shadow-sm whitespace-nowrap">📖 速查</button>
-<button type="button" onclick="switchTab('quiz')" id="tab-btn-quiz" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-500 whitespace-nowrap">🎮 遊戲</button>
-<button type="button" onclick="switchTab('print')" id="tab-btn-print" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-500 whitespace-nowrap">🖨️ 列印</button>
-<button type="button" onclick="switchTab('import')" id="tab-btn-import" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-500 whitespace-nowrap">📥 管理</button>
-</nav>
-</div>
-</header>
-<main class="max-w-3xl mx-auto px-4 mt-4">
-<!-- 1. 探索/速查面板 -->
-<div id="tab-explore" class="tab-content active space-y-4">
-<div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-<div class="relative">
-<input type="text" id="searchInput" placeholder="輸入成語或關鍵字搜尋..." oninput="handleSearch()" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-emerald-500 focus:outline-none text-base pl-11 bg-slate-50">
-<span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xl">🔍</span>
-</div>
-<div>
-<label class="block text-xs font-bold text-slate-500 mb-1">📚 選擇課次分類：</label>
-<select id="categorySelect" onchange="changeCategory(this.value)" class="w-full p-3 rounded-xl border border-slate-300 bg-white font-bold text-slate-700 focus:outline-none focus:border-emerald-500 cursor-pointer">
-<option value="第一課：蚊帳大使">📖 第一課：蚊帳大使</option>
-<option value="第二課：從空中看臺灣">📖 第二課：從空中看臺灣</option>
-<option value="第三課：攀岩高手">📖 第三課：攀岩高手</option>
-<option value="第四課：恆久的美">📖 第四課：恆久的美</option>
-<option value="第五課：它抓得住你——商標的故事">📖 第五課：它抓得住你——商標的故事</option>
-<option value="第六課：故事「動」起來">📖 第六課：故事「動」起來</option>
-<option value="第七課：為生命找出口">📖 第七課：為生命找出口</option>
-<option value="第八課：最勇敢的女孩">📖 第八課：最勇敢的女孩</option>
-<option value="第九課：在挫折中成長">📖 第九課：在挫折中成長</option>
-<option value="第十課：山中寄情">📖 第十課：山中寄情</option>
-<option value="第十一課：與達駭黑熊走入森林">📖 第十一課：與達駭黑熊走入森林</option>
-<option value="第十二課：荒島上的國王">📖 第十二課：荒島上的國王</option>
-<option value="補充成語">📖 補充成語</option>
-<option value="全部">🌟 全部顯示</option>
-<option value="錯題本">📌 我的錯題本</option>
-</select>
-</div>
-</div>
-<div id="idiomList" class="space-y-3"></div>
-</div>
-<!-- 2. 遊戲闖關面板 -->
-<div id="tab-quiz" class="tab-content space-y-4">
-<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center space-y-4">
-<h2 class="text-2xl font-bold text-slate-800">🎮 成語生存戰</h2>
-<p class="text-sm text-slate-500">測試您的成語實力，挑戰連續答對！</p>
-<button type="button" onclick="startQuiz()" class="w-full py-3 bg-emerald-500 text-white font-bold rounded-xl text-lg shadow-md hover:bg-emerald-600">🚀 開始闖關</button>
-</div>
-<div id="quizBox" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-<div class="flex justify-between text-sm font-bold text-slate-500">
-<span id="quizLives">❤️❤️❤️</span>
-<span id="quizProgress">1 / 10</span>
-</div>
-<p id="quizQuestion" class="text-lg font-bold text-slate-800"></p>
-<div id="quizOptions" class="space-y-2"></div>
-</div>
-</div>
-<!-- 3. 列印學習單面板 -->
-<div id="tab-print" class="tab-content space-y-4">
-<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-<h2 class="text-2xl font-bold text-slate-800">🖨️ 學習單產生器</h2>
-<p class="text-sm text-slate-500">勾選項目後可直接列印 A4 講義或考卷。</p>
-<div id="printContainer" class="space-y-2 max-h-60 overflow-y-auto p-2 border border-slate-200 rounded-xl"></div>
-<button type="button" onclick="window.print()" class="w-full py-3 bg-slate-800 text-white font-bold rounded-xl">🖨️ 列印清單</button>
-</div>
-</div>
-<!-- 4. 學校管理面板 -->
-<div id="tab-import" class="tab-content space-y-4">
-<div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
-<h2 class="text-2xl font-bold text-slate-800">📥 學校題庫新增</h2>
-<p class="text-sm text-slate-500">選擇課次，並輸入成語與白話造句（支援等號格式）。</p>
-<div>
-<label class="block text-sm font-bold text-slate-700 mb-1">選擇課次：</label>
-<select id="importClassSelect" class="w-full p-3 rounded-xl border border-slate-300 bg-white font-bold">
-<option value="第一課：蚊帳大使">第一課：蚊帳大使</option>
-<option value="第二課：從空中看臺灣">第二課：從空中看臺灣</option>
-<option value="第三課：攀岩高手">第三課：攀岩高手</option>
-<option value="第四課：恆久的美">第四課：恆久的美</option>
-<option value="第五課：它抓得住你——商標的故事">第五課：它抓得住你——商標的故事</option>
-<option value="第六課：故事「動」起來">第六課：故事「動」起來</option>
-<option value="第七課：為生命找出口">第七課：為生命找出口</option>
-<option value="第八課：最勇敢的女孩">第八課：最勇敢的女孩</option>
-<option value="第九課：在挫折中成長">第九課：在挫折中成長</option>
-<option value="第十課：山中寄情">第十課：山中寄情</option>
-<option value="第十一課：與達駭黑熊走入森林">第十一課：與達駭黑熊走入森林</option>
-<option value="第十二課：荒島上的國王">第十二課：荒島上的國王</option>
-<option value="補充成語">補充成語</option>
-</select>
-</div>
-<div>
-<label class="block text-sm font-bold text-slate-700 mb-1">輸入內容（格式：成語 = 解釋 = 例句）：</label>
-<textarea id="importText" rows="5" class="w-full p-3 border border-slate-300 rounded-xl text-sm" placeholder="守株待兔 = 比喻妄想不勞而獲 = 你不讀書想靠猜對，簡直是守株待兔！"></textarea>
-</div>
-<button type="button" onclick="saveCustomIdiom()" class="w-full py-3 bg-emerald-500 text-white font-bold rounded-xl shadow-md">💾 立即儲存並查看</button>
-</div>
-</div>
-</main>
-<script>
-let defaultDB = [
-{ c: '第一課：蚊帳大使', i: '守株待兔', z: 'ㄕㄡˇ ㄓㄨ ㄉㄞˋ ㄊㄨˋ', m: '只想靠好運氣，自己不肯努力做事。', s: '你不讀書想靠猜對，簡直是守株待兔！' },
-{ c: '第一課：蚊帳大使', i: '一石二鳥', z: 'ㄧ ㄕㄦˋ ㄦˋ ㄋㄧㄠˇ', m: '做一件事情同時達到兩個目的。', s: '媽媽一邊聽英文廣播一邊做運動，真是一石二鳥。' },
-{ c: '第二課：從空中看臺灣', i: '山明水秀', z: 'ㄕㄢ ㄇㄧㄥˊ ㄕㄨㄟˇ ㄒㄧㄡˋ', m: '形容風景優美、山明秀麗。', s: '鄉下老家是一個山明水秀的好地方。' }
-];
-let customDB = [];
-try {
-let saved = localStorage.getItem('safeSproutDB_v4');
-if (saved) customDB = JSON.parse(saved);
-} catch(e) { customDB = []; }
-let db = customDB.concat(defaultDB);
-window.onload = function() {
-changeCategory('第一課：蚊帳大使');
-renderPrintList();
-};
-function switchTab(tabId) {
-let tabs = ['explore', 'quiz', 'print', 'import'];
-tabs.forEach(t => {
-let panel = document.getElementById('tab-' + t);
-let btn = document.getElementById('tab-btn-' + t);
-if (t === tabId) {
-panel.classList.add('active');
-panel.classList.remove('hidden');
-btn.className = "px-4 py-2 rounded-lg text-sm font-bold bg-white text-emerald-600 shadow-sm whitespace-nowrap";
-} else {
-panel.classList.remove('active');
-panel.classList.add('hidden');
-btn.className = "px-4 py-2 rounded-lg text-sm font-medium text-slate-500 whitespace-nowrap";
-}
-});
-if (tabId === 'print') renderPrintList();
-}
-function changeCategory(cat) {
-if (cat === '全部') {
-renderList(db);
-} else if (cat === '錯題本') {
-let wrongs = JSON.parse(localStorage.getItem('sproutWrongs') || '[]');
-renderList(db.filter(i => wrongs.includes(i.i)));
-} else {
-renderList(db.filter(i => i.c === cat));
-}
-}
-function handleSearch() {
-let kw = document.getElementById('searchInput').value.trim();
-if (!kw) {
-changeCategory(document.getElementById('categorySelect').value);
-return;
-}
-let res = db.filter(i => i.i.includes(kw) || i.m.includes(kw));
-renderList(res);
-}
-function renderList(list) {
-let container = document.getElementById('idiomList');
-if (list.length === 0) {
-container.innerHTML = '<div class="text-center py-10 text-slate-400 bg-white rounded-2xl border border-slate-200">目前此分類沒有成語或語詞喔！您可以到「管理」分頁新增。</div>';
-return;
-}
-container.innerHTML = list.map(item => ⁠<div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-2"> <div> <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded">${item.c}</span> <h3 class="text-xl font-bold text-slate-800 mt-1">${item.i}</h3> <p class="text-xs text-slate-400">${item.z}</p> </div> <div class="bg-amber-50 p-3 rounded-xl"> <p class="text-sm font-bold text-amber-900">💡 ${item.m}</p> </div> <div class="bg-slate-50 p-3 rounded-xl border border-dashed border-slate-200"> <p class="text-sm text-slate-700"><strong>例句：</strong>${item.s}</p> </div> </div>⁠).join('');
-}
-function saveCustomIdiom() {
-let text = document.getElementById('importText').value.trim();
-let cat = document.getElementById('importClassSelect').value;
-if (!text) { alert('請輸入內容！'); return; }
-let lines = text.split('\n');
-let added = 0;
-lines.forEach(line => {
-if (line.includes('=')) {
-let p = line.split('=').map(x => x.trim());
-if (p.length >= 2) {
-let newItem = { c: cat, i: p[0], z: '', m: p[1], s: p[2] || '（暫無造句）' };
-customDB.unshift(newItem);
-added++;
-}
-} else if (line.trim()) {
-let newItem = { c: cat, i: line.trim(), z: '', m: '自訂詞彙解釋', s: '自訂範例造句' };
-customDB.unshift(newItem);
-added++;
-}
-});
-localStorage.setItem('safeSproutDB_v4', JSON.stringify(customDB));
-db = customDB.concat(defaultDB);
-document.getElementById('importText').value = '';
-alert(⁠✅ 成功新增 ${added} 筆題庫！⁠);
-switchTab('explore');
-document.getElementById('categorySelect').value = cat;
-changeCategory(cat);
-}
-function renderPrintList() {
-let container = document.getElementById('printContainer');
-container.innerHTML = db.map(i => ⁠<label class="flex items-center gap-2 text-sm text-slate-700 p-1 hover:bg-slate-50 rounded cursor-pointer"> <input type="checkbox" value="${i.i}" checked class="w-4 h-4 text-emerald-500 rounded"> <span>【${i.i}】${i.m}</span> </label>⁠).join('');
-}
-let qList = [], qIdx = 0, lives = 3;
-function startQuiz() {
-if (db.length < 2) { alert('題庫數量不足！'); return; }
-qList = [...db].sort(() => 0.5 - Math.random()).slice(0, 5);
-qIdx = 0; lives = 3;
-document.getElementById('quizBox').classList.remove('hidden');
-loadQuizQ();
-}
-function loadQuizQ() {
-if (qIdx >= qList.length || lives <= 0) {
-alert('🎉 遊戲結束！恭喜完成闖關！');
-document.getElementById('quizBox').classList.add('hidden');
-return;
-}
-let q = qList[qIdx];
-document.getElementById('quizLives').innerText = '❤️'.repeat(lives);
-document.getElementById('quizProgress').innerText = ⁠${qIdx + 1} / ${qList.length}⁠;
-document.getElementById('quizQuestion').innerText = ⁠請問意思是：「${q.m}」的是哪個成語？⁠;
-let opts = [q].concat(db.filter(x => x.i !== q.i).sort(() => 0.5 - Math.random()).slice(0, 3)).sort(() => 0.5 - Math.random());
-document.getElementById('quizOptions').innerHTML = opts.map(o => ⁠<button type="button" onclick="checkQuizAns('${o.i}', '${q.i}', this)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 hover:bg-emerald-50 text-left">${o.i}</button>⁠).join('');
-}
-function checkQuizAns(ans, correct, btn) {
-if (ans === correct) {
-btn.classList.add('correct-ans');
-setTimeout(() => { qIdx++; loadQuizQ(); }, 600);
-} else {
-btn.classList.add('wrong-ans');
-lives--;
-if (lives <= 0) {
-alert('💥 遊戲結束，愛心耗盡！');
-document.getElementById('quizBox').classList.add('hidden');
-} else {
-setTimeout(() => loadQuizQ(), 600);
-}
-}
-}
-</script>
+    <!-- 頂部導覽列：採用絕對安全排版，絕對不會覆蓋或卡死觸控 -->
+    <header class="bg-white shadow-sm border-b border-slate-200">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-2">
+                <span class="text-3xl">🌱</span>
+                <div>
+                    <h1 class="text-xl font-bold text-emerald-600">萌芽成語寶典</h1>
+                    <p class="text-xs text-slate-400">高年級完全相容版</p>
+                </div>
+            </div>
+            <nav class="flex bg-slate-100 p-1 rounded-xl w-full sm:w-auto overflow-x-auto hide-scrollbar">
+                <button onclick="switchTab('explore')" id="btn-explore" class="px-4 py-2 rounded-lg text-sm font-bold bg-white text-emerald-600 shadow-sm whitespace-nowrap">📖 速查</button>
+                <button onclick="switchTab('quiz')" id="btn-quiz" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-500 whitespace-nowrap">🎮 遊戲</button>
+                <button onclick="switchTab('print')" id="btn-print" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-500 whitespace-nowrap">🖨️ 列印</button>
+                <button onclick="switchTab('import')" id="btn-import" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-500 whitespace-nowrap">📥 管理</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 mt-4">
+        <!-- 1. 探索/速查面板 -->
+        <section id="panel-explore" class="space-y-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="輸入成語或關鍵字搜尋..." oninput="handleSearch()" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-emerald-500 focus:outline-none text-base pl-11 bg-slate-50">
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-xl">🔍</span>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">📚 選擇課次分類：</label>
+                    <select id="categorySelect" onchange="changeCategory(this.value)" class="w-full p-3 rounded-xl border border-slate-300 bg-white font-bold text-slate-700 focus:outline-none focus:border-emerald-500 cursor-pointer">
+                        <option value="全部">🌟 全部顯示</option>
+                        <option value="第一課：蚊帳大使">📖 第一課：蚊帳大使</option>
+                        <option value="第二課：從空中看臺灣">📖 第二課：從空中看臺灣</option>
+                        <option value="第三課：攀岩高手">📖 第三課：攀岩高手</option>
+                        <option value="第四課：恆久的美">📖 第四課：恆久的美</option>
+                        <option value="第五課：它抓得住你——商標的故事">📖 第五課：它抓得住你——商標的故事</option>
+                        <option value="第六課：故事「動」起來">📖 第六課：故事「動」起來</option>
+                        <option value="第七課：為生命找出口">📖 第七課：為生命找出口</option>
+                        <option value="第八課：最勇敢的女孩">📖 第八課：最勇敢的女孩</option>
+                        <option value="第九課：在挫折中成長">📖 第九課：在挫折中成長</option>
+                        <option value="第十課：山中寄情">📖 第十課：山中寄情</option>
+                        <option value="第十一課：與達駭黑熊走入森林">📖 第十一課：與達駭黑熊走入森林</option>
+                        <option value="第十二課：荒島上的國王">📖 第十二課：荒島上的國王</option>
+                        <option value="補充成語">📖 補充成語</option>
+                        <option value="錯題本">📌 我的錯題本</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="idiomList" class="space-y-3"></div>
+        </section>
+
+        <!-- 2. 遊戲闖關面板 -->
+        <section id="panel-quiz" class="hidden space-y-4">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center space-y-4">
+                <h2 class="text-2xl font-bold text-slate-800">🎮 成語生存戰</h2>
+                <p class="text-sm text-slate-500">測試您的成語實力，挑戰連續答對！</p>
+                <button onclick="startQuiz()" class="w-full py-3 bg-emerald-500 text-white font-bold rounded-xl text-lg shadow-md hover:bg-emerald-600">🚀 開始闖關</button>
+            </div>
+            <div id="quizBox" class="hidden bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <div class="flex justify-between text-sm font-bold text-slate-500">
+                    <span id="quizLives">❤️❤️❤️</span>
+                    <span id="quizProgress">1 / 10</span>
+                </div>
+                <p id="quizQuestion" class="text-lg font-bold text-slate-800"></p>
+                <div id="quizOptions" class="space-y-2"></div>
+            </div>
+        </section>
+
+        <!-- 3. 列印學習單面板 -->
+        <section id="panel-print" class="hidden space-y-4">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <h2 class="text-2xl font-bold text-slate-800">🖨️ 學習單產生器</h2>
+                <p class="text-sm text-slate-500">勾選項目後可直接列印 A4 講義或考卷。</p>
+                <div id="printContainer" class="space-y-2 max-h-60 overflow-y-auto p-2 border border-slate-200 rounded-xl"></div>
+                <button onclick="window.print()" class="w-full py-3 bg-slate-800 text-white font-bold rounded-xl">🖨️ 列印清單</button>
+            </div>
+        </section>
+
+        <!-- 4. 學校管理面板 -->
+        <section id="panel-import" class="hidden space-y-4">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <h2 class="text-2xl font-bold text-slate-800">📥 學校題庫新增</h2>
+                <p class="text-sm text-slate-500">選擇課次，並輸入成語與白話造句（支援等號格式）。</p>
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">選擇課次：</label>
+                    <select id="importClassSelect" class="w-full p-3 rounded-xl border border-slate-300 bg-white font-bold">
+                        <option value="第一課：蚊帳大使">第一課：蚊帳大使</option>
+                        <option value="第二課：從空中看臺灣">第二課：從空中看臺灣</option>
+                        <option value="第三課：攀岩高手">第三課：攀岩高手</option>
+                        <option value="第四課：恆久的美">第四課：恆久的美</option>
+                        <option value="第五課：它抓得住你——商標的故事">第五課：它抓得住你——商標的故事</option>
+                        <option value="第六課：故事「動」起來">第六課：故事「動」起來</option>
+                        <option value="第七課：為生命找出口">第七課：為生命找出口</option>
+                        <option value="第八課：最勇敢的女孩">第八課：最勇敢的女孩</option>
+                        <option value="第九課：在挫折中成長">第九課：在挫折中成長</option>
+                        <option value="第十課：山中寄情">第十課：山中寄情</option>
+                        <option value="第十一課：與達駭黑熊走入森林">第十一課：與達駭黑熊走入森林</option>
+                        <option value="第十二課：荒島上的國王">第十二課：荒島上的國王</option>
+                        <option value="補充成語">補充成語</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">輸入內容（格式：成語 = 解釋 = 例句）：</label>
+                    <textarea id="importText" rows="5" class="w-full p-3 border border-slate-300 rounded-xl text-sm" placeholder="守株待兔 = 比喻妄想不勞而獲 = 你不讀書想靠猜對，簡直是守株待兔！"></textarea>
+                </div>
+                
+                <button onclick="saveCustomIdiom()" class="w-full py-3 bg-emerald-500 text-white font-bold rounded-xl shadow-md">💾 立即儲存並查看</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // 內建安全資料庫
+        let defaultDB = [
+            { c: '第一課：蚊帳大使', i: '守株待兔', z: 'ㄕㄡˇ ㄓㄨ ㄉㄞˋ ㄊㄨˋ', m: '只想靠好運氣，自己不肯努力做事。', s: '你不讀書想靠猜對，簡直是守株待兔！' },
+            { c: '第一課：蚊帳大使', i: '一石二鳥', z: 'ㄧ ㄕㄦˋ ㄦˋ ㄋㄧㄠˇ', m: '做一件事情同時達到兩個目的。', s: '媽媽一邊聽英文廣播一邊做運動，真是一石二鳥。' },
+            { c: '第二課：從空中看臺灣', i: '山明水秀', z: 'ㄕㄢ ㄇㄧㄥˊ ㄕㄨㄟˇ ㄒㄧㄡˋ', m: '形容風景優美、山明秀麗。', s: '鄉下老家是一個山明水秀的好地方。' }
+        ];
+
+        let customDB = [];
+        try {
+            let saved = localStorage.getItem('safeSproutDB');
+            if (saved) customDB = JSON.parse(saved);
+        } catch(e) { customDB = []; }
+
+        let db = customDB.concat(defaultDB);
+        let currentCategory = '全部';
+
+        window.onload = function() {
+            renderList(db);
+            renderPrintList();
+        };
+
+        function switchTab(tab) {
+            ['explore', 'quiz', 'print', 'import'].forEach(t => {
+                document.getElementById('panel-' + t).classList.add('hidden');
+                document.getElementById('btn-' + t).className = "px-4 py-2 rounded-lg text-sm font-medium text-slate-500 whitespace-nowrap";
+            });
+            document.getElementById('panel-' + tab).classList.remove('hidden');
+            document.getElementById('btn-' + tab).className = "px-4 py-2 rounded-lg text-sm font-bold bg-white text-emerald-600 shadow-sm whitespace-nowrap";
+            
+            if (tab === 'print') renderPrintList();
+        }
+
+        function changeCategory(cat) {
+            currentCategory = cat;
+            if (cat === '全部') {
+                renderList(db);
+            } else if (cat === '錯題本') {
+                let wrongs = JSON.parse(localStorage.getItem('sproutWrongs') || '[]');
+                renderList(db.filter(i => wrongs.includes(i.i)));
+            } else {
+                renderList(db.filter(i => i.c === cat));
+            }
+        }
+
+        function handleSearch() {
+            let kw = document.getElementById('searchInput').value.trim();
+            if (!kw) {
+                changeCategory(document.getElementById('categorySelect').value);
+                return;
+            }
+            let res = db.filter(i => i.i.includes(kw) || i.m.includes(kw));
+            renderList(res);
+        }
+
+        function renderList(list) {
+            let container = document.getElementById('idiomList');
+            if (list.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 text-slate-400">目前沒有找到相關成語喔！</div>';
+                return;
+            }
+            container.innerHTML = list.map(item => `
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded">${item.c}</span>
+                            <h3 class="text-xl font-bold text-slate-800 mt-1">${item.i}</h3>
+                            <p class="text-xs text-slate-400">${item.z}</p>
+                        </div>
+                    </div>
+                    <div class="bg-amber-50 p-3 rounded-xl">
+                        <p class="text-sm font-bold text-amber-900">💡 ${item.m}</p>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-xl border border-dashed border-slate-200">
+                        <p class="text-sm text-slate-700"><strong>例句：</strong>${item.s}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function saveCustomIdiom() {
+            let text = document.getElementById('importText').value.trim();
+            let cat = document.getElementById('importClassSelect').value;
+            if (!text) { alert('請輸入內容！'); return; }
+
+            let lines = text.split('\n');
+            let added = 0;
+            lines.forEach(line => {
+                if (line.includes('=')) {
+                    let p = line.split('=').map(x => x.trim());
+                    if (p.length >= 2) {
+                        let newItem = { c: cat, i: p[0], z: '', m: p[1], s: p[2] || '（暫無造句）' };
+                        customDB.unshift(newItem);
+                        added++;
+                    }
+                } else if (line.trim()) {
+                    let newItem = { c: cat, i: line.trim(), z: '', m: '自訂詞彙解釋', s: '自訂範例造句' };
+                        customDB.unshift(newItem);
+                    added++;
+                }
+            });
+
+            localStorage.setItem('safeSproutDB', JSON.stringify(customDB));
+            db = customDB.concat(defaultDB);
+            document.getElementById('importText').value = '';
+            alert(`✅ 成功新增 ${added} 筆題庫！`);
+            
+            // 自動跳轉回速查並選定該課次
+            switchTab('explore');
+            document.getElementById('categorySelect').value = cat;
+            changeCategory(cat);
+        }
+
+        function renderPrintList() {
+            let container = document.getElementById('printContainer');
+            container.innerHTML = db.map(i => `
+                <label class="flex items-center gap-2 text-sm text-slate-700 p-1 hover:bg-slate-50 rounded">
+                    <input type="checkbox" value="${i.i}" checked class="w-4 h-4 text-emerald-500 rounded">
+                    <span>【${i.i}】${i.m}</span>
+                </label>
+            `).join('');
+        }
+
+        let qList = [], qIdx = 0, lives = 3;
+        function startQuiz() {
+            if (db.length < 2) { alert('題庫數量不足！'); return; }
+            qList = [...db].sort(() => 0.5 - Math.random()).slice(0, 5);
+            qIdx = 0; lives = 3;
+            document.getElementById('quizBox').classList.remove('hidden');
+            loadQuizQ();
+        }
+        function loadQuizQ() {
+            if (qIdx >= qList.length || lives <= 0) {
+                alert('🎉 遊戲結束！恭喜完成闖關！');
+                document.getElementById('quizBox').classList.add('hidden');
+                return;
+            }
+            let q = qList[qIdx];
+            document.getElementById('quizLives').innerText = '❤️'.repeat(lives);
+            document.getElementById('quizProgress').innerText = `${qIdx + 1} / ${qList.length}`;
+            document.getElementById('quizQuestion').innerText = `請問意思是：「${q.m}」的是哪個成語？`;
+            
+            let opts = [q].concat(db.filter(x => x.i !== q.i).sort(() => 0.5 - Math.random()).slice(0, 3)).sort(() => 0.5 - Math.random());
+            document.getElementById('quizOptions').innerHTML = opts.map(o => `
+                <button onclick="checkQuizAns('${o.i}', '${q.i}', this)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 hover:bg-emerald-50 text-left">${o.i}</button>
+            `).join('');
+        }
+        function checkQuizAns(ans, correct, btn) {
+            if (ans === correct) {
+                btn.classList.add('correct-ans');
+                setTimeout(() => { qIdx++; loadQuizQ(); }, 600);
+            } else {
+                btn.classList.add('wrong-ans');
+                lives--;
+                if (lives <= 0) {
+                    alert('💥 遊戲結束，愛心耗盡！');
+                    document.getElementById('quizBox').classList.add('hidden');
+                } else {
+                    setTimeout(() => loadQuizQ(), 600);
+                }
+            }
+        }
+    </script>
 </body>
 </html>
