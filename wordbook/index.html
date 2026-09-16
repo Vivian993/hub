@@ -79,7 +79,7 @@
         <section id="panel-explore" class="block">
             
             <div class="search-sticky">
-                <!-- 💡 搜尋框提示已更新 -->
+                <!-- 💡 搜尋框：打完字自動連網查詢 -->
                 <div class="relative mb-3">
                     <input type="text" id="searchInput" placeholder="輸入任何生字、語詞或成語 (打完會自動查字典)..." oninput="handleSearch()" class="w-full px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-50 text-lg transition-all pl-12 bg-white shadow-sm">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl">🔍</span>
@@ -425,7 +425,7 @@
             `).join('');
         }
 
-        // === 💡 恢復：打完字自動連網查詢字典 ===
+        // === 💡 打完字自動連網查詢字典 ===
         function handleSearch(){
             curCat='全部'; 
             document.getElementById('categoryDropdown').value = '全部';
@@ -776,8 +776,13 @@
         function startQuiz(){
             let c = document.getElementById('quizCategory').value;
             let cnt = parseInt(document.getElementById('quizCount').value);
+            
             let pool = (c==='ALL') ? idiomDB : (c==='REVIEW') ? idiomDB.filter(i=>wrongList.includes(i.i)) : idiomDB.filter(i=>i.c===c);
-            if(pool.length < 4) return alert(`「${c}」題目不足 4 題！`);
+            
+            if(pool.length < 4) {
+                alert(`「${c}」的題目只有 ${pool.length} 題，不到 4 題無法開始遊戲喔！請到管理區新增，或選擇別的課次。`);
+                return;
+            }
             
             qList = pool.sort(()=>.5-Math.random()).slice(0, Math.min(cnt, pool.length));
             qIdx=0; score=0; lives=3; combo=0;
@@ -795,10 +800,13 @@
             document.getElementById('comboCount').innerText = `🔥 ${combo}`;
             document.getElementById('quizProgress').innerText = `${qIdx+1} / ${qList.length}`;
             
-            let safeM = q.m.replace(new RegExp(q.i, 'g'), "〇〇");
+            let safeM = q.m ? q.m.replace(new RegExp(q.i, 'g'), "〇〇") : "（無解釋）";
             document.getElementById('quizQuestionText').innerText = safeM;
 
-            let opts = [q].concat(idiomDB.filter(i=>i.i!==q.i).sort(()=>.5-Math.random()).slice(0,3)).sort(()=>.5-Math.random());
+            // 💡 確保即使沒有選項也不會當機
+            let otherOpts = idiomDB.filter(i=>i.i!==q.i).sort(()=>.5-Math.random()).slice(0,3);
+            let opts = [q].concat(otherOpts).sort(()=>.5-Math.random());
+            
             document.getElementById('quizOptions').innerHTML = opts.map(o=>`
                 <button type="button" onclick="checkAns('${o.i}', '${q.i}', this)" class="quiz-option w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-lg font-bold text-slate-700 text-left">${o.i}</button>
             `).join('');
