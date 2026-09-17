@@ -8,8 +8,8 @@
     <link rel="apple-touch-icon" href="custom-icon.png">
     <link rel="icon" type="image/png" href="custom-icon.png">
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <link href="[https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap](https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap)" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1E293B; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -79,7 +79,6 @@
         <section id="panel-explore" class="block">
             
             <div class="search-sticky">
-                <!-- 💡 搜尋框：打完字自動連網查詢 -->
                 <div class="relative mb-3">
                     <input type="text" id="searchInput" placeholder="輸入任何生字、語詞或成語 (打完會自動查字典)..." oninput="handleSearch()" class="w-full px-5 py-3 rounded-xl border-2 border-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-50 text-lg transition-all pl-12 bg-white shadow-sm">
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-2xl">🔍</span>
@@ -87,7 +86,6 @@
                 
                 <div>
                     <select id="categoryDropdown" onchange="setCat(this.value)" class="w-full p-3 rounded-xl border border-slate-300 bg-white font-bold text-slate-800 focus:outline-none focus:border-emerald-500 cursor-pointer appearance-none shadow-sm">
-                        <!-- 動態生成 -->
                     </select>
                 </div>
             </div>
@@ -176,7 +174,6 @@
         <section id="panel-import" class="hidden space-y-6 mt-4">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
                 
-                <!-- 💡 備份與還原區塊 (完全改為實體 JSON 檔案下載與上傳) -->
                 <div class="pb-6 border-b border-slate-100">
                     <h2 class="text-xl font-bold text-indigo-700 mb-3 flex items-center gap-2">📱 換手機專用：備份與還原</h2>
                     <div class="flex justify-between items-center mb-3">
@@ -282,7 +279,7 @@
             if (Array.isArray(cd)) customDB = cd;
         } catch(e){}
 
-        // 用戶提供的備份資料 (自動還原)
+        // 用戶提供的備份資料 (確保有預設資料)
         let recoveredDB = [
             {"c": "第一課：蚊帳大使", "i": "知己知彼", "z": "ㄓ ㄐㄧˇ ㄓ ㄅㄧˇ", "m": "正確的了解自己，並能評估對方的實力。", "s": "比賽前要知己知彼才能百戰百勝。", "isCustom": true},
             {"c": "第一課：蚊帳大使", "i": "百折不撓", "z": "ㄅㄞˇ ㄓㄜˊ ㄅㄨˋ ㄋㄠˊ", "m": "意志堅強，即使受到許多挫折，仍不屈服。", "s": "他百折不撓的精神令人敬佩。", "isCustom": true},
@@ -295,7 +292,6 @@
             {"c": "第一課：蚊帳大使", "i": "囫圇吞棗", "z": "ㄏㄨˊ ㄌㄨㄣˊ ㄊㄨㄣ ㄗㄠˇ", "m": "比喻理解事物含糊不清，或學習時不求甚解。", "s": "讀書不能囫圇吞棗，要仔細思考。", "isCustom": true}
         ];
         
-        // 如果沒有資料，自動填入備份
         if(customDB.length === 0) {
             customDB = recoveredDB;
             safeSet('sproutCustomDB_stable', JSON.stringify(customDB));
@@ -314,7 +310,6 @@
         let tempCloudData = null; 
 
         window.onload = () => { 
-            // 確保語音能用
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.onvoiceschanged = function() {
                     window.speechSynthesis.getVoices();
@@ -425,7 +420,6 @@
             `).join('');
         }
 
-        // === 💡 打完字自動連網查詢字典 ===
         function handleSearch(){
             curCat='全部'; 
             document.getElementById('categoryDropdown').value = '全部';
@@ -554,7 +548,6 @@
             setCat(cat); 
         }
 
-        // === 💡 修正 iOS 語音問題 ===
         function speakText(txt) {
             if (!('speechSynthesis' in window)) {
                 alert("您的瀏覽器不支援語音朗讀喔！");
@@ -581,7 +574,7 @@
         async function fetchOnlineData(word, category) {
             let meaning = "無解釋"; let sentence = "（請點擊編輯按鈕手動輸入造句）"; let bopomo = "";
             try {
-                let res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(word)}.json`);
+                let res = await fetch(`[https://www.moedict.tw/uni/$](https://www.moedict.tw/uni/$){encodeURIComponent(word)}.json`);
                 if(res.ok) {
                     let data = await res.json();
                     let h = data.heteronyms?.[0] || {};
@@ -600,7 +593,7 @@
                     const prompt = `你是國小老師。請用白話文解釋「${word}」(限25字)。並造一個國小生活例句(限30字)。勿含文言文。請回傳JSON: {"meaning":"...","sentence":"..."}`;
                     const models = ['gemini-3.5-flash', 'gemini-2.5-flash'];
                     for(let m of models) {
-                        let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`, {
+                        let res = await fetch(`[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){m}:generateContent?key=${key}`, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                         });
@@ -694,7 +687,7 @@
             setCat('第一課：蚊帳大使');
         }
 
-        // === 💡 升級版：直接匯出為 json 檔案 ===
+        // === 💡 JSON 檔案備份與還原 ===
         function exportBackupFile() {
             if(customDB.length === 0) return alert("沒有資料可備份喔！");
             
@@ -713,7 +706,6 @@
             downloadAnchorNode.remove();
         }
 
-        // === 💡 升級版：從 json 檔案匯入 ===
         function importBackupFile() {
             const fileInput = document.getElementById('importFileInput');
             if(fileInput.files.length === 0) {
@@ -779,8 +771,9 @@
             
             let pool = (c==='ALL') ? idiomDB : (c==='REVIEW') ? idiomDB.filter(i=>wrongList.includes(i.i)) : idiomDB.filter(i=>i.c===c);
             
+            // 💡 遊戲選項保護：必須大於等於4才能玩，否則擋下
             if(pool.length < 4) {
-                alert(`「${c}」的題目只有 ${pool.length} 題，不到 4 題無法開始遊戲喔！請到管理區新增，或選擇別的課次。`);
+                alert(`「${c}」目前只有 ${pool.length} 題，必須至少 4 題才能進行遊戲喔！請先新增資料。`);
                 return;
             }
             
@@ -800,10 +793,11 @@
             document.getElementById('comboCount').innerText = `🔥 ${combo}`;
             document.getElementById('quizProgress').innerText = `${qIdx+1} / ${qList.length}`;
             
-            let safeM = q.m ? q.m.replace(new RegExp(q.i, 'g'), "〇〇") : "（無解釋）";
+            // 💡 確保沒有解釋時不會當機
+            let safeM = q.m ? q.m.replace(new RegExp(q.i, 'g'), "〇〇") : "（此題無解釋內容）";
             document.getElementById('quizQuestionText').innerText = safeM;
 
-            // 💡 確保即使沒有選項也不會當機
+            // 💡 確保選項正確生成
             let otherOpts = idiomDB.filter(i=>i.i!==q.i).sort(()=>.5-Math.random()).slice(0,3);
             let opts = [q].concat(otherOpts).sort(()=>.5-Math.random());
             
