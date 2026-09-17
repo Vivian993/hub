@@ -128,6 +128,7 @@
             <div id="quizActive" class="hidden space-y-4">
                 <div class="bg-slate-800 text-white rounded-xl p-3 flex justify-between items-center shadow-sm">
                     <div><span class="text-xs text-slate-400">生命值：</span><span id="livesCount" class="text-lg">❤️❤️❤️</span></div>
+                    <div class="text-xs font-bold text-amber-400" id="comboCount">🔥 0</div>
                     <div class="text-sm font-bold bg-slate-700 px-3 py-1 rounded-lg" id="quizProgress">1 / 10</div>
                 </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center">
@@ -689,7 +690,7 @@
         }
 
         // === JSON 檔案匯出 ===
-        function exportBackupFile() {
+        async function exportBackupFile() {
             if(customDB.length === 0) return alert("沒有資料可備份喔！");
             
             const backupData = {
@@ -697,14 +698,35 @@
                 date: new Date().toLocaleDateString('zh-TW'),
                 data: customDB
             };
-            
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "萌芽成語寶典備份_" + new Date().getTime() + ".json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
+            const fileName = "萌芽成語寶典備份_" + new Date().getTime() + ".json";
+            const jsonStr = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json" });
+
+            // 手機瀏覽器 (尤其 iOS) 常常無法用 data: 網址正常下載檔案，
+            // 改用「分享」功能會更穩定：可以直接存到「檔案」App，或用 LINE/Email 傳給自己。
+            try {
+                const file = new File([blob], fileName, { type: "application/json" });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: fileName });
+                    return;
+                }
+            } catch (e) {
+                // 使用者取消分享，或裝置不支援，就往下改用一般下載方式
+                if (e && e.name === 'AbortError') return;
+            }
+
+            try {
+                const blobUrl = URL.createObjectURL(blob);
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.href = blobUrl;
+                downloadAnchorNode.download = fileName;
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+            } catch (e) {
+                alert("❌ 下載備份檔失敗，您的瀏覽器可能不支援此功能。建議改用電腦版 Chrome 開啟此頁面備份。");
+            }
         }
 
         // === JSON 檔案匯入 ===
@@ -876,19 +898,42 @@
             let chk = Array.from(document.querySelectorAll('.print-cb:checked')).map(c=>c.value);
             if(!chk.length) return alert("請勾選項目！");
             let data = idiomDB.filter(i=>chk.includes(i.i));
-            let area = document.getElementById('printArea'), date = new Date().toLocaleDateString('zh-TW');
-            
+            let date = new Date().toLocaleDateString('zh-TW');
+            let bodyHtml = '';
+
             if(t==='meaning'){
-                area.innerHTML=`<div class="print-title">📖 成語解釋講義</div><div style="display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #ccc;padding-bottom:10px;"><span>班級：____ 座號：__ 姓名：_______</span><span>日期：${date}</span></div>`+ 
+                bodyHtml = `<div class="print-title">📖 成語解釋講義</div><div style="display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #ccc;padding-bottom:10px;"><span>班級：____ 座號：__ 姓名：_______</span><span>日期：${date}</span></div>`+ 
                 data.map((i,idx)=>`<div class="print-item"><strong>${idx+1}. 【${i.i}】</strong><br>解釋：${i.m}<br>造句：${i.s}</div>`).join('');
             }else{
-                area.innerHTML=`<div class="print-title">📝 選擇考卷</div><div style="display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #ccc;padding-bottom:10px;"><span>班級：____ 座號：__ 姓名：_______</span><span>得分：_______</span></div><p style="margin-bottom:15px;font-weight:bold;">※ 請選出最符合意思的選項：</p><div style="margin-bottom:30px;padding:15px;border:1px solid #000;border-radius:5px;line-height:2;">${data.map(i=>i.i).sort(()=>.5-Math.random()).join('　｜　')}</div>`+
+                bodyHtml = `<div class="print-title">📝 選擇考卷</div><div style="display:flex;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid #ccc;padding-bottom:10px;"><span>班級：____ 座號：__ 姓名：_______</span><span>得分：_______</span></div><p style="margin-bottom:15px;font-weight:bold;">※ 請選出最符合意思的選項：</p><div style="margin-bottom:30px;padding:15px;border:1px solid #000;border-radius:5px;line-height:2;">${data.map(i=>i.i).sort(()=>.5-Math.random()).join('　｜　')}</div>`+
                 data.map((i,idx)=>{ 
                     let safeM = i.m.replace(new RegExp(i.i, 'g'), "〇〇");
                     return `<div class="print-item"><strong>${idx+1}.</strong> 意思是：「${safeM}」 —— (　　)</div>`; 
                 }).join('')+`<div class="page-break"></div><div class="print-title">✅ 解答參考</div>`+data.map((i,idx)=>`<div class="print-item"><strong>${idx+1}.</strong> ${i.i}</div>`).join('');
             }
-            window.print();
+
+            // 改用獨立的列印視窗，避免這一頁的 Tailwind／版面樣式在某些手機瀏覽器
+            // 或 App 內建瀏覽器（例如 LINE、FB）裡跟「列印模式」互相干擾導致印不出來。
+            let printWin = window.open('', '_blank');
+            if(!printWin){
+                alert("⚠️ 無法開啟列印視窗，請確認瀏覽器沒有封鎖「彈出視窗」，或改用 Safari／Chrome 開啟此頁面再試一次。");
+                return;
+            }
+            printWin.document.write(`
+                <!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>列印學習單</title>
+                <style>
+                    body{font-family:'Noto Sans TC',sans-serif;color:#000;padding:20px;}
+                    .print-title{font-size:24px;font-weight:bold;text-align:center;margin-bottom:20px;}
+                    .print-item{margin-bottom:15px;line-height:1.6;font-size:14px;break-inside:avoid;}
+                    .page-break{page-break-before:always;}
+                    @page{margin:1.5cm;}
+                </style></head>
+                <body>${bodyHtml}</body></html>
+            `);
+            printWin.document.close();
+            printWin.onload = () => { printWin.focus(); printWin.print(); };
+            // 保險：如果 onload 沒有正常觸發，稍後再嘗試呼叫一次
+            setTimeout(() => { try { printWin.focus(); printWin.print(); } catch(e){} }, 500);
         }
     </script>
 </body>
