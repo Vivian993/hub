@@ -8,8 +8,10 @@
     <link rel="apple-touch-icon" href="custom-icon.png">
     <link rel="icon" type="image/png" href="custom-icon.png">
     
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <link href="[https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap](https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap)" rel="stylesheet">
+    <!-- 💡 確保 Tailwind CSS 正常載入，解決排版跑掉的問題 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #F8FAFC; color: #1E293B; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -130,10 +132,12 @@
                 </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center">
                     <p class="text-sm text-emerald-600 font-bold mb-2">請問這是哪個選項？</p>
-                    <p id="quizQuestionText" class="text-xl font-bold text-slate-800 leading-relaxed"></p>
+                    <p id="quizQuestionText" class="text-xl font-bold text-slate-800 leading-relaxed min-h-[4rem] flex items-center justify-center"></p>
                 </div>
-                <div id="quizOptions" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
-                <div class="mt-6 text-center hidden" id="quizNextBtnBox">
+                <!-- 💡 確保遊戲選項的容器有足夠的高度與間距 -->
+                <div id="quizOptions" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-4"></div>
+                
+                <div class="mt-4 text-center hidden pb-8" id="quizNextBtnBox">
                     <p id="quizFeedback" class="text-lg font-bold mb-3"></p>
                     <button type="button" onclick="nextQuizQuestion()" class="px-8 py-3 bg-emerald-500 text-white text-lg font-bold rounded-xl shadow-md w-full sm:w-auto">前往下一關 ➡️</button>
                 </div>
@@ -193,7 +197,6 @@
                     </div>
                 </div>
 
-                <!-- 批次匯入區塊 -->
                 <div class="pb-6 border-b border-slate-100">
                     <h2 class="text-lg font-bold text-slate-800 mb-2">📥 批次新增課程資料</h2>
                     <p class="text-xs text-slate-500 mb-3">選擇課次，並輸入成語或語詞。支援自動連網或手動打等號輸入。</p>
@@ -205,7 +208,6 @@
                     <div id="importStatus" class="mt-3 text-center text-sm font-bold text-emerald-600"></div>
                 </div>
                 
-                <!-- AI 金鑰區塊 -->
                 <div>
                     <h2 class="text-lg font-bold text-slate-800 mb-2">🔑 AI 自動翻譯設定 (選填)</h2>
                     <p class="text-xs text-slate-500 mb-3">輸入 API 金鑰，匯入或查詢成語時系統會自動把文言文翻譯成白話。</p>
@@ -218,7 +220,6 @@
         </section>
     </main>
 
-    <!-- 手動編輯卡片視窗 -->
     <div id="editModal" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center z-[100] px-4">
         <div class="bg-white p-6 rounded-2xl max-w-sm w-full shadow-2xl">
             <h3 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2" id="editTitle">✏️ 手動編輯</h3>
@@ -244,7 +245,6 @@
         </div>
     </div>
 
-    <!-- 加入/選課分類 視窗 -->
     <div id="addCloudModal" class="fixed inset-0 bg-slate-900/60 hidden flex items-center justify-center z-[100] px-4">
         <div class="bg-white p-6 rounded-2xl max-w-sm w-full shadow-2xl">
             <h3 class="text-xl font-bold text-slate-800 mb-2">📥 選擇加入哪一課</h3>
@@ -279,7 +279,7 @@
             if (Array.isArray(cd)) customDB = cd;
         } catch(e){}
 
-        // 用戶提供的備份資料 (確保有預設資料)
+        // 確保有預設資料
         let recoveredDB = [
             {"c": "第一課：蚊帳大使", "i": "知己知彼", "z": "ㄓ ㄐㄧˇ ㄓ ㄅㄧˇ", "m": "正確的了解自己，並能評估對方的實力。", "s": "比賽前要知己知彼才能百戰百勝。", "isCustom": true},
             {"c": "第一課：蚊帳大使", "i": "百折不撓", "z": "ㄅㄞˇ ㄓㄜˊ ㄅㄨˋ ㄋㄠˊ", "m": "意志堅強，即使受到許多挫折，仍不屈服。", "s": "他百折不撓的精神令人敬佩。", "isCustom": true},
@@ -420,6 +420,7 @@
             `).join('');
         }
 
+        // === 打完字自動連網查詢字典 ===
         function handleSearch(){
             curCat='全部'; 
             document.getElementById('categoryDropdown').value = '全部';
@@ -574,7 +575,7 @@
         async function fetchOnlineData(word, category) {
             let meaning = "無解釋"; let sentence = "（請點擊編輯按鈕手動輸入造句）"; let bopomo = "";
             try {
-                let res = await fetch(`[https://www.moedict.tw/uni/$](https://www.moedict.tw/uni/$){encodeURIComponent(word)}.json`);
+                let res = await fetch(`https://www.moedict.tw/uni/${encodeURIComponent(word)}.json`);
                 if(res.ok) {
                     let data = await res.json();
                     let h = data.heteronyms?.[0] || {};
@@ -593,7 +594,7 @@
                     const prompt = `你是國小老師。請用白話文解釋「${word}」(限25字)。並造一個國小生活例句(限30字)。勿含文言文。請回傳JSON: {"meaning":"...","sentence":"..."}`;
                     const models = ['gemini-3.5-flash', 'gemini-2.5-flash'];
                     for(let m of models) {
-                        let res = await fetch(`[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){m}:generateContent?key=${key}`, {
+                        let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                         });
@@ -687,7 +688,7 @@
             setCat('第一課：蚊帳大使');
         }
 
-        // === 💡 JSON 檔案備份與還原 ===
+        // === JSON 檔案匯出 ===
         function exportBackupFile() {
             if(customDB.length === 0) return alert("沒有資料可備份喔！");
             
@@ -706,6 +707,7 @@
             downloadAnchorNode.remove();
         }
 
+        // === JSON 檔案匯入 ===
         function importBackupFile() {
             const fileInput = document.getElementById('importFileInput');
             if(fileInput.files.length === 0) {
@@ -765,15 +767,24 @@
         }
 
         let qList=[], qIdx=0, score=0, isAns=false, lives=3, combo=0;
+        
+        // 💡 遊戲選項保護與執行
         function startQuiz(){
             let c = document.getElementById('quizCategory').value;
             let cnt = parseInt(document.getElementById('quizCount').value);
             
-            let pool = (c==='ALL') ? idiomDB : (c==='REVIEW') ? idiomDB.filter(i=>wrongList.includes(i.i)) : idiomDB.filter(i=>i.c===c);
+            let pool = [];
+            if (c === 'ALL') {
+                pool = idiomDB;
+            } else if (c === 'REVIEW') {
+                pool = idiomDB.filter(i => wrongList.includes(i.i));
+            } else {
+                pool = idiomDB.filter(i => i.c === c);
+            }
             
-            // 💡 遊戲選項保護：必須大於等於4才能玩，否則擋下
-            if(pool.length < 4) {
-                alert(`「${c}」目前只有 ${pool.length} 題，必須至少 4 題才能進行遊戲喔！請先新增資料。`);
+            // 💡 如果選項不到四題，完全擋下並警告
+            if(!pool || pool.length < 4) {
+                alert(`⚠️ 您選擇的分類目前只有 ${pool ? pool.length : 0} 題。\n遊戲需要至少 4 題才能產生選項！\n\n請先到管理區新增成語，或選擇別的課次。`);
                 return;
             }
             
@@ -793,11 +804,11 @@
             document.getElementById('comboCount').innerText = `🔥 ${combo}`;
             document.getElementById('quizProgress').innerText = `${qIdx+1} / ${qList.length}`;
             
-            // 💡 確保沒有解釋時不會當機
-            let safeM = q.m ? q.m.replace(new RegExp(q.i, 'g'), "〇〇") : "（此題無解釋內容）";
+            // 💡 確保安全顯示題目
+            let safeM = (q && q.m) ? q.m.replace(new RegExp(q.i, 'g'), "〇〇") : "（此題無解釋內容）";
             document.getElementById('quizQuestionText').innerText = safeM;
 
-            // 💡 確保選項正確生成
+            // 💡 確保選項安全生成
             let otherOpts = idiomDB.filter(i=>i.i!==q.i).sort(()=>.5-Math.random()).slice(0,3);
             let opts = [q].concat(otherOpts).sort(()=>.5-Math.random());
             
@@ -882,4 +893,3 @@
     </script>
 </body>
 </html>
-```eof
