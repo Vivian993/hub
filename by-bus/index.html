@@ -20,9 +20,10 @@
         .tab-inactive { background-color: #e5e7eb; color: #4b5563; }
         .highlight-next { background-color: #dcfce7; border-color: #22c55e; color: #166534; font-weight: bold; }
         .past-time { color: #9ca3af; text-decoration: line-through; }
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 16px); }
     </style>
 </head>
-<body class="pb-20">
+<body class="bg-gray-100">
 
     <header class="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center">
         <div>
@@ -35,220 +36,326 @@
         </div>
     </header>
 
-    <main class="p-4 max-w-md mx-auto">
-        <div class="flex space-x-2 mb-6">
-            <button onclick="switchTab('go')" id="tab-go" class="flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-active text-lg">
-                🏠 從家出發
-            </button>
-            <button onclick="switchTab('back')" id="tab-back" class="flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-inactive text-lg">
-                ↩️ 準備回家
-            </button>
-        </div>
+    <!-- 頁面 1：公車動態 (你最喜歡的排版) -->
+    <div id="page-bus" class="page-section">
+        <main class="p-4 max-w-md mx-auto pb-28">
+            <div class="flex space-x-2 mb-6">
+                <button onclick="switchTab('go')" id="tab-go" class="flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-active text-lg">
+                    🏠 從家出發
+                </button>
+                <button onclick="switchTab('back')" id="tab-back" class="flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-inactive text-lg">
+                    ↩️ 準備回家
+                </button>
+            </div>
 
-        <div id="content-go" class="space-y-6">
-            <!-- 往學校 -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <h2 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-indigo-500 pl-2">🎯 往學校 (北科附工)</h2>
-                
-                <div class="mb-4 pb-4 border-b border-gray-100">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">直達</span>
-                        <span class="text-xl font-bold text-gray-800">101路</span>
-                        <!-- 如果以後有QR Code專屬網址，可以直接貼在下面 href="..." 裡面取代它 -->
-                        <a href="https://www.busgooo.com/bus/TAO3420" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
-                            📍 顯示站牌動態
-                        </a>
+            <div id="content-go" class="space-y-6">
+                <!-- 往學校 -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-indigo-500 pl-2">🎯 往學校 (北科附工)</h2>
+                    
+                    <div class="mb-4 pb-4 border-b border-gray-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">直達</span>
+                            <span class="text-xl font-bold text-gray-800">101路</span>
+                            <a href="https://www.busgooo.com/bus/TAO3420" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
+                                📍 顯示站牌動態
+                            </a>
+                        </div>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            🏠 <b>龍安國強一街口</b> 上車<br>
+                            🏫 <b>體育館(北科附工)</b> 下車<br>
+                            <span class="text-red-500 text-xs">⚠️ 總站發車後約需 35~40 分鐘才會到家樓下</span>
+                        </p>
                     </div>
-                    <p class="text-sm text-gray-600 leading-relaxed">
-                        🏠 <b>龍安國強一街口</b> 上車<br>
-                        🏫 <b>體育館(北科附工)</b> 下車<br>
-                        <span class="text-red-500 text-xs">⚠️ 總站發車後約需 35~40 分鐘才會到家樓下</span>
-                    </p>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">班次多</span>
+                            <span class="text-xl font-bold text-gray-800">1路</span>
+                            <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
+                                📍 顯示站牌動態
+                            </a>
+                        </div>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            🚶‍♂️ 散步至 <b>武陵高中</b> 上車<br>
+                            🏫 <b>體育館(北科附工)</b> 下車
+                        </p>
+                    </div>
                 </div>
 
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">班次多</span>
-                        <span class="text-xl font-bold text-gray-800">1路</span>
-                        <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
-                            📍 顯示站牌動態
-                        </a>
+                <!-- 往市區 -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-pink-500 pl-2">🎯 往市區 (ATT/火車站)</h2>
+                    <p class="text-sm text-gray-500 mb-3">搭法與去學校一樣，只是提早在市區下車！</p>
+                    <div class="flex gap-2">
+                         <a href="https://www.busgooo.com/bus/TAO3420" target="_blank" rel="noopener noreferrer" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-center py-2 rounded-lg text-sm font-bold border border-indigo-200">📍 101 動態</a>
+                         <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 text-center py-2 rounded-lg text-sm font-bold border border-green-200">📍 1路 動態</a>
                     </div>
-                    <p class="text-sm text-gray-600 leading-relaxed">
-                        🚶‍♂️ 散步至 <b>武陵高中</b> 上車<br>
-                        🏫 <b>體育館(北科附工)</b> 下車
-                    </p>
                 </div>
             </div>
 
-            <!-- 往市區 -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <h2 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-pink-500 pl-2">🎯 往市區 (ATT/火車站)</h2>
-                <p class="text-sm text-gray-500 mb-3">搭法與去學校一樣，只是提早在市區下車！</p>
-                <div class="flex gap-2">
-                     <a href="https://www.busgooo.com/bus/TAO3420" target="_blank" rel="noopener noreferrer" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-center py-2 rounded-lg text-sm font-bold border border-indigo-200">📍 101 動態</a>
-                     <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 text-center py-2 rounded-lg text-sm font-bold border border-green-200">📍 1路 動態</a>
+            <div id="content-back" class="space-y-6 hidden">
+                <!-- 從學校回家 -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-indigo-500 pl-2">🏫 從學校回家</h2>
+                    
+                    <div class="mb-4 pb-4 border-b border-gray-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">有座位</span>
+                            <span class="text-xl font-bold text-gray-800">101路</span>
+                            <a href="https://www.busgooo.com/bus/TAO3420" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
+                                📍 顯示站牌動態
+                            </a>
+                        </div>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            🚶‍♂️ 散步至隔壁 <b>桃園巨蛋總站</b> 搭車<br>
+                            🏠 <b>龍安國強一街口</b> 下車 (到家)
+                        </p>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">校門口搭</span>
+                            <span class="text-xl font-bold text-gray-800">1路</span>
+                            <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
+                                📍 顯示站牌動態
+                            </a>
+                        </div>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            🏫 <b>體育館(北科附工)</b> 上車<br>
+                            🚶‍♂️ <b>武陵高中</b> 下車 (散步回家)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 從市區回家 -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-pink-500 pl-2">🛍️ 從市區 (ATT) 回家</h2>
+                    
+                    <div class="mb-4 pb-4 border-b border-gray-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">直達家</span>
+                            <span class="text-xl font-bold text-gray-800">101路</span>
+                            <a href="https://www.busgooo.com/bus/TAO3420" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
+                                📍 顯示站牌動態
+                            </a>
+                        </div>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            🛍️ <b>復興中正路口(ATT)</b> 上車<br>
+                            🏠 <b>龍安國強一街口</b> 下車<br>
+                            <span class="text-indigo-600 text-xs mt-1 block">💡 預估到站：通常在巨蛋發車後的 5~10 分鐘內抵達 ATT 站牌，請搭配動態確認。</span>
+                        </p>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">班次多</span>
+                            <span class="text-xl font-bold text-gray-800">1路</span>
+                            <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
+                                📍 顯示站牌動態
+                            </a>
+                        </div>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            🛍️ <b>復興中正路口(ATT)</b> 上車<br>
+                            🚶‍♂️ <b>武陵高中</b> 下車 (散步回家)
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="content-back" class="space-y-6 hidden">
-            <!-- 從學校回家 -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <h2 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-indigo-500 pl-2">🏫 從學校回家</h2>
-                
-                <div class="mb-4 pb-4 border-b border-gray-100">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">有座位</span>
-                        <span class="text-xl font-bold text-gray-800">101路</span>
-                        <a href="https://www.busgooo.com/bus/TAO3420" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
-                            📍 顯示站牌動態
-                        </a>
-                    </div>
-                    <p class="text-sm text-gray-600 leading-relaxed">
-                        🚶‍♂️ 散步至隔壁 <b>桃園巨蛋總站</b> 搭車<br>
-                        🏠 <b>龍安國強一街口</b> 下車 (到家)
-                    </p>
+            <div class="mt-8 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="flex border-b border-gray-200">
+                    <button onclick="switchRouteTab('101')" id="route-tab-101" class="flex-1 py-3 text-center font-bold bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600">
+                        🚌 101路 時刻表
+                    </button>
+                    <button onclick="switchRouteTab('1')" id="route-tab-1" class="flex-1 py-3 text-center font-bold bg-white text-gray-500 hover:bg-gray-50">
+                        🚌 1路 資訊
+                    </button>
                 </div>
 
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">校門口搭</span>
-                        <span class="text-xl font-bold text-gray-800">1路</span>
-                        <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
-                            📍 顯示站牌動態
-                        </a>
+                <div id="route-content-101" class="p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-gray-800 flex items-center">
+                            <span class="text-lg mr-1">⏱️</span> 智慧預估到站時間
+                        </h3>
                     </div>
-                    <p class="text-sm text-gray-600 leading-relaxed">
-                        🏫 <b>體育館(北科附工)</b> 上車<br>
-                        🚶‍♂️ <b>武陵高中</b> 下車 (散步回家)
-                    </p>
-                </div>
-            </div>
+                    
+                    <div class="flex gap-2 mb-4 bg-gray-100 p-1 rounded-lg">
+                        <button onclick="setLocationOffset(40, '🏠 在家裡等 (往學校)', this)" class="loc-btn flex-1 py-1.5 text-xs font-bold rounded-md bg-white shadow-sm text-indigo-700">🏠 家裡</button>
+                        <button onclick="setLocationOffset(0, '🏫 在巨蛋等 (往家裡)', this)" class="loc-btn flex-1 py-1.5 text-xs font-bold rounded-md text-gray-500">🏫 巨蛋</button>
+                        <button onclick="setLocationOffset(8, '🛍️ 在ATT等 (往家裡)', this)" class="loc-btn flex-1 py-1.5 text-xs font-bold rounded-md text-gray-500">🛍️ ATT</button>
+                    </div>
 
-            <!-- 從市區回家 -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                <h2 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-pink-500 pl-2">🛍️ 從市區 (ATT) 回家</h2>
-                
-                <div class="mb-4 pb-4 border-b border-gray-100">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">直達家</span>
-                        <span class="text-xl font-bold text-gray-800">101路</span>
-                        <a href="https://www.busgooo.com/bus/TAO3420" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
-                            📍 顯示站牌動態
-                        </a>
+                    <button onclick="openModal('image_4.png')" class="w-full mb-3 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg font-bold text-sm shadow-sm flex justify-center items-center gap-2 transition hover:bg-indigo-100">
+                        🗺️ 查看【101路】完整路線圖
+                    </button>
+
+                    <div class="bg-red-50 text-red-600 text-xs p-2 rounded mb-3">
+                        ⚠️ 近期客運常有調整班次，請以【顯示站牌動態】實際車況為準！
                     </div>
-                    <p class="text-sm text-gray-600 leading-relaxed">
-                        🛍️ <b>復興中正路口(ATT)</b> 上車<br>
-                        🏠 <b>龍安國強一街口</b> 下車<br>
-                        <span class="text-indigo-600 text-xs mt-1 block">💡 預估到站：通常在巨蛋發車後的 5~10 分鐘內抵達 ATT 站牌，請搭配動態確認。</span>
-                    </p>
+                    
+                    <div class="grid grid-cols-4 gap-2 text-center" id="schedule-grid">
+                        <!-- JS 動態產生 -->
+                    </div>
                 </div>
 
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">班次多</span>
-                        <span class="text-xl font-bold text-gray-800">1路</span>
-                        <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
-                            📍 顯示站牌動態
-                        </a>
-                    </div>
-                    <p class="text-sm text-gray-600 leading-relaxed">
-                        🛍️ <b>復興中正路口(ATT)</b> 上車<br>
-                        🚶‍♂️ <b>武陵高中</b> 下車 (散步回家)
+                <div id="route-content-1" class="p-6 hidden text-center">
+                    <div class="text-4xl mb-3">⚡</div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">1路公車 班次極度密集</h3>
+                    <p class="text-sm text-gray-600 mb-4">
+                        尖峰時間約 5~10 分鐘一班車<br>不需要看時刻表，隨到隨搭！
                     </p>
+                    <a href="https://bus.hinet.net/Web_P/page/route/m_route_dynamic.jsp?rb_id=30&r_id=140&d_id=0" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full text-lg font-bold shadow-md transition inline-block w-full mb-3">
+                        📍 一鍵看 1路 最新動態
+                    </a>
+                    
+                    <button onclick="openModal('image_5.png')" class="w-full py-2 bg-green-50 border border-green-200 text-green-700 rounded-lg font-bold text-sm shadow-sm flex justify-center items-center gap-2 transition hover:bg-green-100">
+                        🗺️ 查看【1路】完整路線圖
+                    </button>
                 </div>
             </div>
-        </div>
-
-        <div class="mt-8 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             
-            <!-- 路線切換頁籤 -->
-            <div class="flex border-b border-gray-200">
-                <button onclick="switchRouteTab('101')" id="route-tab-101" class="flex-1 py-3 text-center font-bold bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600">
-                    🚌 101路 時刻表
-                </button>
-                <button onclick="switchRouteTab('1')" id="route-tab-1" class="flex-1 py-3 text-center font-bold bg-white text-gray-500 hover:bg-gray-50">
-                    🚌 1路 資訊
-                </button>
+            <div class="text-center mt-6 text-xs text-gray-400">
+                市民卡票價：學生實扣 7 元 / 一般實扣 9 元
+            </div>
+        </main>
+    </div>
+
+    <!-- 頁面 2：學校課表 -->
+    <div id="page-schedule" class="page-section hidden">
+        <main class="p-4 max-w-md mx-auto pb-28">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <span class="mr-2">📅</span> 學校課表
+            </h2>
+            
+            <div class="flex gap-1 mb-4 bg-gray-200 p-1 rounded-xl" id="day-tabs">
+                <!-- JS 動態產生星期按鈕 -->
+            </div>
+            
+            <div class="bg-indigo-50 text-indigo-700 text-xs p-2.5 rounded-lg mb-4 border border-indigo-100 flex items-center font-bold">
+                <span class="mr-2 text-lg">💡</span> 已經自動幫你標示出今天的課表囉！
             </div>
 
-            <!-- 101路 時刻表內容 -->
-            <div id="route-content-101" class="p-4">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold text-gray-800 flex items-center">
-                        <span class="text-lg mr-1">⏱️</span> 智慧預估到站時間
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="grid grid-cols-12 bg-gray-50 border-b border-gray-200 text-xs text-gray-500 font-bold">
+                    <div class="col-span-3 py-2 text-center border-r border-gray-200">節次</div>
+                    <div class="col-span-9 py-2 px-4">科目</div>
+                </div>
+                <div id="schedule-content" class="flex flex-col">
+                    <!-- JS 動態生成 -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 頁面 3：等車英聽 -->
+    <div id="page-english" class="page-section hidden">
+        <main class="p-4 max-w-md mx-auto pb-28">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2 flex items-center">
+                <span class="mr-2">🎧</span> 等車英聽
+            </h2>
+            <p class="text-sm text-gray-500 mb-5">利用搭公車片段時間，無痛提升聽力！</p>
+
+            <div class="space-y-5">
+                <!-- ICRT 區塊 -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-orange-200">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="bg-orange-100 text-orange-600 w-10 h-10 flex items-center justify-center rounded-full text-lg">📻</div>
+                        <h3 class="font-bold text-gray-800 text-lg">ICRT 午餐廣播</h3>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">每天 5 分鐘的時事英文，專為台灣高中生設計！</p>
+                    <a href="https://www.icrt.com.tw/news_lunchbox.php?&mlevel1=7&mlevel2=96" target="_blank" class="block w-full text-center bg-orange-500 hover:bg-orange-600 text-white py-3.5 rounded-xl font-bold shadow-sm transition">
+                        ▶️ 點此開啟 ICRT 網頁直接聽
+                    </a>
+                </div>
+
+                <!-- 媽媽推薦學習資源 區塊 -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-green-200">
+                    <h3 class="font-bold text-gray-800 text-lg mb-2 flex items-center gap-2">
+                        <span class="text-2xl">📱</span> 媽媽精選推薦資源
                     </h3>
-                </div>
-                
-                <!-- 地點選擇按鈕 -->
-                <div class="flex gap-2 mb-4 bg-gray-100 p-1 rounded-lg">
-                    <button onclick="setLocationOffset(40, '🏠 在家裡等 (往學校)', this)" class="loc-btn flex-1 py-1.5 text-xs font-bold rounded-md bg-white shadow-sm text-indigo-700">🏠 家裡</button>
-                    <button onclick="setLocationOffset(0, '🏫 在巨蛋等 (往家裡)', this)" class="loc-btn flex-1 py-1.5 text-xs font-bold rounded-md text-gray-500">🏫 巨蛋</button>
-                    <button onclick="setLocationOffset(8, '🛍️ 在ATT等 (往家裡)', this)" class="loc-btn flex-1 py-1.5 text-xs font-bold rounded-md text-gray-500">🛍️ ATT</button>
-                </div>
+                    <p class="text-xs text-gray-500 mb-5">專屬為你挑選的英文頻道與影片，搭車無痛練聽力！</p>
+                    
+                    <div class="space-y-4">
+                        <!-- News for Kids -->
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <div class="font-bold text-gray-800 text-md mb-1">👦 News for Kids</div>
+                            <p class="text-xs text-gray-500 mb-3">每集約 10 分鐘，用簡單英文播報時事，程度剛剛好！</p>
+                            <a href="https://podcasts.apple.com/tw/podcast/news-for-kids/id1582114406" target="_blank" class="w-full bg-purple-600 text-white text-center py-3 rounded-lg text-sm font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-purple-700">
+                                🎧 Apple Podcast 聽聽看
+                            </a>
+                        </div>
+                        
+                        <!-- News Bites -->
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <div class="font-bold text-gray-800 text-md mb-1">📰 News Bites</div>
+                            <p class="text-xs text-gray-500 mb-3">適合中學生的雙語新聞，無痛熟悉英文語感與時事話題。</p>
+                            <a href="https://podcasts.apple.com/tw/podcast/news-bites/id1582110922" target="_blank" class="w-full bg-rose-600 text-white text-center py-3 rounded-lg text-sm font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-rose-700">
+                                🎧 Apple Podcast 聽聽看
+                            </a>
+                        </div>
 
-                <!-- 101路線圖按鈕 -->
-                <button onclick="openModal('image_4.png')" class="w-full mb-3 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg font-bold text-sm shadow-sm flex justify-center items-center gap-2 transition hover:bg-indigo-100">
-                    🗺️ 查看【101路】完整路線圖
-                </button>
+                        <!-- VoiceTube -->
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <div class="font-bold text-gray-800 text-md mb-1">🔤 VoiceTube 影音詞典</div>
+                            <p class="text-xs text-gray-500 mb-3">看影片學英文的神器，有中英雙語字幕對照超方便！</p>
+                            <a href="https://tw.voicetube.com/" target="_blank" class="w-full bg-indigo-600 text-white text-center py-3 rounded-lg text-sm font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-indigo-700">
+                                🎬 打開 VoiceTube 網頁
+                            </a>
+                        </div>
 
-                <div class="bg-red-50 text-red-600 text-xs p-2 rounded mb-3">
-                    ⚠️ 近期客運常有調整班次，請以【顯示站牌動態】實際車況為準！
-                </div>
-                
-                <div class="grid grid-cols-4 gap-2 text-center" id="schedule-grid">
-                    <!-- 時刻表會由 JavaScript 動態產生 -->
+                        <!-- Jenny Lu Tutoring (YouTube) -->
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <div class="font-bold text-gray-800 text-md mb-1">📺 Jenny Lu 精選 B1/B2 影片</div>
+                            <p class="text-xs text-gray-500 mb-3">收集了快 2000 支適合 B1/B2 程度的 YouTube 影片清單！</p>
+                            <a href="https://youtube.com/playlist?list=PL9wXt0T-Zhm-CgIKbKW0h_NG64PxqHCeC&si=kLmRDXZCP_0aUT0r" target="_blank" class="w-full bg-red-600 text-white text-center py-3 rounded-lg text-sm font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-red-700">
+                                ▶️ 前往 YouTube 播放清單
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </main>
+    </div>
 
-            <!-- 1路 資訊內容 -->
-            <div id="route-content-1" class="p-6 hidden text-center">
-                <div class="text-4xl mb-3">⚡</div>
-                <h3 class="text-lg font-bold text-gray-800 mb-2">1路公車 班次極度密集</h3>
-                <p class="text-sm text-gray-600 mb-4">
-                    尖峰時間約 5~10 分鐘一班車<br>不需要看時刻表，隨到隨搭！
-                </p>
-                <a href="https://bus.hinet.net/Web_P/page/route/m_route_dynamic.jsp?rb_id=30&r_id=140&d_id=0" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full text-lg font-bold shadow-md transition inline-block w-full mb-3">
-                    📍 一鍵看 1路 最新動態
-                </a>
-                
-                <!-- 1路線圖按鈕 -->
-                <button onclick="openModal('image_5.png')" class="w-full py-2 bg-green-50 border border-green-200 text-green-700 rounded-lg font-bold text-sm shadow-sm flex justify-center items-center gap-2 transition hover:bg-green-100">
-                    🗺️ 查看【1路】完整路線圖
-                </button>
-            </div>
-        </div>
-        
-        <div class="text-center mt-6 mb-8 text-xs text-gray-400">
-            市民卡票價：學生實扣 7 元 / 一般實扣 9 元
-        </div>
-    </main>
+    <!-- 底部導覽列 -->
+    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around items-center pb-safe pt-2 z-50 px-2 shadow-[0_-5px_15px_rgba(0,0,0,0.03)]">
+        <button onclick="switchPage('bus')" id="nav-bus" class="nav-btn flex-1 flex flex-col items-center p-2 text-indigo-600 transition">
+            <span class="text-2xl mb-1">🚌</span>
+            <span class="text-[10px] font-bold">公車動態</span>
+        </button>
+        <button onclick="switchPage('schedule')" id="nav-schedule" class="nav-btn flex-1 flex flex-col items-center p-2 text-gray-400 hover:text-indigo-500 transition">
+            <span class="text-2xl mb-1">📅</span>
+            <span class="text-[10px] font-bold">學校課表</span>
+        </button>
+        <button onclick="switchPage('english')" id="nav-english" class="nav-btn flex-1 flex flex-col items-center p-2 text-gray-400 hover:text-indigo-500 transition">
+            <span class="text-2xl mb-1">🎧</span>
+            <span class="text-[10px] font-bold">等車英聽</span>
+        </button>
+    </nav>
 
-    <!-- 圖片放大預覽 Modal (彈出視窗) -->
+    <!-- 圖片放大預覽 Modal -->
     <div id="image-modal" class="fixed inset-0 bg-black/90 z-[100] hidden flex-col justify-center items-center p-4 transition-opacity" onclick="closeModal()">
         <button onclick="closeModal()" class="absolute top-6 right-6 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full font-bold backdrop-blur-sm transition">
             ❌ 關閉
         </button>
         <div class="overflow-auto max-h-full w-full flex justify-center items-center" onclick="event.stopPropagation()">
-            <!-- 圖片會顯示在這裡 -->
             <img id="modal-image" src="" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl">
         </div>
     </div>
 
     <script>
+        // === 公車時刻表邏輯 ===
         const timeDisplay = document.getElementById('current-time');
         const scheduleGrid = document.getElementById('schedule-grid');
         const statusText = document.getElementById('location-status');
         
-        // 桃園巨蛋 101路 平日總站發車時刻 (已移除 06:30 停駛班次)
         const baseSchedule = [
             "06:00", "07:10", "08:00", "09:00", "10:00", 
             "11:00", "12:00", "13:00", "14:05", "15:15", 
             "16:00", "17:00", "18:15", "19:45", "21:30"
         ];
-
-        let currentOffsetMinutes = 40; // 預設在家裡等 (巨蛋發車+40分)
+        let currentOffsetMinutes = 40; 
 
         function updateTimeAndSchedule() {
             const now = new Date();
@@ -257,11 +364,11 @@
             const currentTimeStr = `${hours}:${minutes}`;
             timeDisplay.textContent = currentTimeStr;
 
+            if(!scheduleGrid) return;
             scheduleGrid.innerHTML = '';
             let nextFound = false;
 
             baseSchedule.forEach(baseTime => {
-                // 計算加上抵達時間的預估時刻
                 const [bH, bM] = baseTime.split(':').map(Number);
                 let dateObj = new Date();
                 dateObj.setHours(bH, bM + currentOffsetMinutes, 0);
@@ -290,15 +397,12 @@
         function setLocationOffset(minutes, label, btnElement) {
             currentOffsetMinutes = minutes;
             statusText.textContent = `目前推算：${label}`;
-            
-            // 更新按鈕樣式
             document.querySelectorAll('.loc-btn').forEach(btn => {
                 btn.classList.remove('bg-white', 'shadow-sm', 'text-indigo-700');
                 btn.classList.add('text-gray-500');
             });
             btnElement.classList.add('bg-white', 'shadow-sm', 'text-indigo-700');
             btnElement.classList.remove('text-gray-500');
-
             updateTimeAndSchedule();
         }
 
@@ -314,16 +418,12 @@
                 tabBack.className = "flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-inactive text-lg";
                 contentGo.classList.remove('hidden');
                 contentBack.classList.add('hidden');
-                
-                // 自動切換時刻表為「家裡等」
                 setLocationOffset(40, '🏠 在家裡等 (往學校)', locBtns[0]);
             } else {
                 tabBack.className = "flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-active text-lg";
                 tabGo.className = "flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-inactive text-lg";
                 contentBack.classList.remove('hidden');
                 contentGo.classList.add('hidden');
-                
-                // 自動切換時刻表為「巨蛋等」
                 setLocationOffset(0, '🏫 在巨蛋等 (往家裡)', locBtns[1]);
             }
         }
@@ -347,26 +447,153 @@
             }
         }
 
-        // --- 圖片預覽 Modal 控制邏輯 ---
+        function switchPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(page => page.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-indigo-600');
+                btn.classList.add('text-gray-400');
+            });
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+            document.getElementById(`nav-${pageId}`).classList.remove('text-gray-400');
+            document.getElementById(`nav-${pageId}`).classList.add('text-indigo-600');
+            window.scrollTo(0, 0);
+        }
+
         function openModal(imgSrc) {
             const modal = document.getElementById('image-modal');
-            const modalImg = document.getElementById('modal-image');
-            modalImg.src = imgSrc; // 動態載入點擊的圖片
+            document.getElementById('modal-image').src = imgSrc;
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            document.body.style.overflow = 'hidden'; // 鎖定背景，防止後面的網頁跟著滑動
+            document.body.style.overflow = 'hidden';
         }
 
         function closeModal() {
             const modal = document.getElementById('image-modal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
-            document.body.style.overflow = ''; // 恢復背景滑動
+            document.body.style.overflow = '';
         }
 
-        // 初始化
-        setInterval(updateTimeAndSchedule, 60000); // 每分鐘更新一次時鐘
-        updateTimeAndSchedule(); // 第一次載入立刻執行
+        // === 課表邏輯 ===
+        const PERIODS = [
+            {id:'z',label:'早自習',time:'07:30–07:50',isClass:false},
+            {id:1,label:'第一節',time:'08:10–09:00'},
+            {id:2,label:'第二節',time:'09:10–10:00'},
+            {id:3,label:'第三節',time:'10:10–11:00'},
+            {id:4,label:'第四節',time:'11:10–12:00'},
+            {id:'l',label:'午休',time:'12:00–13:10',isClass:false},
+            {id:5,label:'第五節',time:'13:10–14:00'},
+            {id:6,label:'第六節',time:'14:10–15:00'},
+            {id:7,label:'第七節',time:'15:15–16:05'},
+            {id:8,label:'第八節',time:'16:10–17:00'},
+        ];
+        const DAYNAMES = {1:'週一',2:'週二',3:'週三',4:'週四',5:'週五'};
+        const WEEK = {
+            1:{1:['國語文','陳姿穎'],2:['基礎電子實習','黃筱涓、吳育智'],3:['基礎電子實習','黃筱涓、吳育智'],4:['基礎電子實習','黃筱涓、吳育智'],5:['程式設計實習','黃筱涓、吳育智'],6:['程式設計實習','黃筱涓、吳育智'],7:['程式設計實習','黃筱涓、吳育智'],8:['數位電路選','張偉勤']},
+            2:{1:['數位電路','張偉勤'],2:['數位電路','張偉勤'],3:['英語文','林宗平(外師)'],4:['英語文','林宗平(外師)'],5:['地理','邱坤豪'],6:['地理','邱坤豪'],7:['健康與護理','陸淑芬'],8:['基本電學選','吳育智']},
+            3:{1:['體育','莊佳容'],2:['體育','莊佳容'],3:['臺灣手語／閩南語文','范文芳、宋麗華'],4:['基本電學','吳育智'],5:['班會','林宗平'],6:['彈性學習時間',''],7:['團體活動時間',''],8:null},
+            4:{1:['數學','林佳良'],2:['數學','林佳良'],3:['基本電學','吳育智'],4:['基本電學','吳育智'],5:['作文','陳姿穎'],6:['物理','徐慧茵'],7:['物理','徐慧茵'],8:null},
+            5:{1:['國語文','陳姿穎'],2:['國語文','陳姿穎'],3:['美術','徐珮玲(美術教室)'],4:['美術','徐珮玲(美術教室)'],5:['數學','林佳良'],6:['數學','林佳良'],7:['英語聽講','林宗平'],8:['英文選','林宗平']},
+        };
+
+        function getSubjectColor(subjectName) {
+            if(!subjectName) return 'bg-gray-50 text-gray-400 border-gray-200';
+            if(subjectName.includes('國語') || subjectName.includes('作文')) return 'bg-red-50 text-red-700 border-red-200';
+            if(subjectName.includes('數學')) return 'bg-blue-50 text-blue-700 border-blue-200';
+            if(subjectName.includes('電') || subjectName.includes('程式')) return 'bg-amber-50 text-amber-800 border-amber-200';
+            if(subjectName.includes('英')) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            if(subjectName.includes('體育') || subjectName.includes('健康')) return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+            if(subjectName.includes('物理') || subjectName.includes('地理')) return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+            if(subjectName.includes('美術') || subjectName.includes('班會') || subjectName.includes('活動') || subjectName.includes('彈性')) return 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200';
+            return 'bg-gray-100 text-gray-700 border-gray-200';
+        }
+
+        function renderSchedule(dayNum) {
+            const today = new Date().getDay();
+            
+            document.querySelectorAll('.day-tab-btn').forEach(btn => {
+                const btnDay = parseInt(btn.dataset.day);
+                if(btnDay === dayNum) {
+                    btn.className = 'day-tab-btn flex-1 py-2.5 rounded-lg font-bold text-sm bg-white shadow-sm text-indigo-700 transition ring-2 ring-indigo-500 ring-offset-1';
+                } else {
+                    btn.className = 'day-tab-btn flex-1 py-2.5 rounded-lg font-bold text-sm text-gray-600 hover:bg-gray-300 transition';
+                    if (btnDay === today) btn.classList.add('text-indigo-500', 'bg-indigo-50');
+                }
+            });
+
+            const contentDiv = document.getElementById('schedule-content');
+            if(!contentDiv) return; 
+            contentDiv.innerHTML = '';
+            
+            const dayData = WEEK[dayNum];
+
+            PERIODS.forEach(period => {
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-12 items-stretch border-b border-gray-100 last:border-0'; 
+                
+                if (period.isClass === false) {
+                    row.innerHTML = `
+                        <div class="col-span-12 py-2.5 px-4 bg-gray-50/80 text-gray-500 text-xs font-bold text-center flex items-center justify-center gap-2">
+                            <span>☕</span> ${period.label} (${period.time})
+                        </div>
+                    `;
+                } else {
+                    const classInfo = dayData[period.id];
+                    let subjectHTML = '<span class="text-gray-300 text-xs italic font-normal">無課程</span>';
+                    
+                    if (classInfo) {
+                        const [subject, teacher] = classInfo;
+                        const colorClass = getSubjectColor(subject);
+                        subjectHTML = `
+                            <div class="flex flex-col items-start justify-center py-2 h-full w-full">
+                                <span class="px-2.5 py-1.5 rounded-md text-sm font-bold border ${colorClass} shadow-sm inline-block mb-1">${subject}</span>
+                                <span class="text-[11px] text-gray-500 pl-1 font-medium flex items-center gap-1">
+                                    <span class="text-[10px]">👨‍🏫</span> ${teacher || '未定'}
+                                </span>
+                            </div>
+                        `;
+                    }
+
+                    row.innerHTML = `
+                        <div class="col-span-3 p-2 text-center border-r border-gray-100 flex flex-col justify-center bg-white">
+                            <span class="text-sm font-bold text-gray-700 mb-0.5">${period.label}</span>
+                            <span class="text-[10px] text-gray-400 leading-tight">${period.time.replace('–', '<br>|<br>')}</span>
+                        </div>
+                        <div class="col-span-9 px-4 py-1 flex items-center bg-white">${subjectHTML}</div>
+                    `;
+                }
+                contentDiv.appendChild(row);
+            });
+        }
+
+        function initSchedule() {
+            const tabsDiv = document.getElementById('day-tabs');
+            if(!tabsDiv) return;
+            
+            let today = new Date().getDay();
+            if (today === 0 || today === 6) today = 1; 
+
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'day-tab-btn';
+                btn.dataset.day = i;
+                btn.innerText = DAYNAMES[i];
+                btn.onclick = () => renderSchedule(i);
+                if (new Date().getDay() === i) {
+                    btn.innerHTML = `<span class="text-[10px] mr-0.5 text-orange-500">★</span>${DAYNAMES[i]}`;
+                }
+                tabsDiv.appendChild(btn);
+            }
+            renderSchedule(today);
+        }
+
+        try {
+            initSchedule();
+            updateTimeAndSchedule();
+            setInterval(updateTimeAndSchedule, 60000);
+        } catch(e) {
+            console.error("初始化發生錯誤:", e);
+        }
     </script>
 </body>
 </html>
