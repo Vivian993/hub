@@ -2,429 +2,333 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ryder公車表</title>
     
     <!-- 📌 iPhone 桌面 App 圖示：它會去抓您上傳到 GitHub 的 custom-icon.png 照片 -->
     <link rel="apple-touch-icon" href="custom-icon.png">
     <link rel="icon" type="image/png" href="custom-icon.png">
+    <!-- 讓網頁在手機上表現得像獨立 App (隱藏上下網址列) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Ryder公車">
-    
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background-color: #f3f4f6;
-            -webkit-tap-highlight-color: transparent;
-        }
-        /* 隱藏捲軸但可滾動 */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .tab-active { background-color: #4f46e5; color: white; }
+        .tab-inactive { background-color: #e5e7eb; color: #4b5563; }
+        .highlight-next { background-color: #dcfce7; border-color: #22c55e; color: #166534; font-weight: bold; }
+        .past-time { color: #9ca3af; text-decoration: line-through; }
     </style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex justify-center">
+<body class="pb-20">
 
-    <div class="w-full max-w-md bg-white min-h-screen shadow-xl relative pb-20">
-        
-        <!-- Header 區塊：顯示現在時間 -->
-        <div class="bg-blue-600 text-white p-5 rounded-b-3xl shadow-md sticky top-0 z-10">
-            <h1 class="text-xl font-bold mb-1 flex items-center">
-                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                Ryder公車表
-            </h1>
-            <div class="flex justify-between items-end mt-3">
-                <p class="text-blue-100 text-sm">北科附工 ↔ 國強一街</p>
-                <div class="text-right">
-                    <p class="text-xs text-blue-200 mb-1" id="current-date">載入中...</p>
-                    <p class="text-3xl font-bold tracking-wider" id="current-time">00:00</p>
-                </div>
-            </div>
+    <header class="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center">
+        <div>
+            <h1 class="text-xl font-bold">🚌 Ryder公車表</h1>
+            <p class="text-xs text-indigo-200 mt-1" id="location-status">目前推算：【總站發車時間】</p>
+        </div>
+        <div class="text-right">
+            <p class="text-sm text-indigo-200">現在時間</p>
+            <p class="text-2xl font-bold" id="current-time">--:--</p>
+        </div>
+    </header>
+
+    <main class="p-4 max-w-md mx-auto">
+        <div class="flex space-x-2 mb-6">
+            <button onclick="switchTab('go')" id="tab-go" class="flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-active text-lg">
+                🏠 從家出發
+            </button>
+            <button onclick="switchTab('back')" id="tab-back" class="flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-inactive text-lg">
+                ↩️ 準備回家
+            </button>
         </div>
 
-        <!-- 頁籤切換：去程 / 回程 -->
-        <div class="flex mt-4 mx-4 bg-gray-100 rounded-xl p-1">
-            <button onclick="switchTab('go')" id="tab-go" class="flex-1 py-2 text-sm font-bold rounded-lg bg-white shadow text-blue-600 transition-all duration-300">🏠 從家出發</button>
-            <button onclick="switchTab('back')" id="tab-back" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition-all duration-300">↩️ 準備回家</button>
-        </div>
-
-        <!-- 內容區塊：去程 -->
-        <div id="content-go" class="p-5 animate-fade-in">
-            <h2 class="text-md font-bold text-gray-800 mb-3 border-b-2 border-blue-500 pb-1 inline-block">🎯 往學校 (北科附工)</h2>
-            
-            <!-- 方案 A：101路 -->
-            <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-xl mb-4 shadow-sm">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="font-bold text-green-800 text-lg flex items-center">
-                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded mr-2">直達</span> 101路
-                    </h3>
-                    <!-- 一鍵查動態按鈕 -->
-                    <a href="https://ebus.tycg.gov.tw/ebus/driving-map/101" target="_blank" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-1.5 px-3 rounded-full shadow transition-colors flex items-center">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        看動態
-                    </a>
-                </div>
-                <p class="text-sm text-gray-600 mb-2">📍 家樓下 <span class="font-bold text-gray-800">【龍安國強一街口】</span> 上車，直達學校。</p>
-                <div class="bg-yellow-100 text-yellow-800 text-xs p-2 rounded mb-3 flex">
-                    <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    <span>注意：請在「往市區」那一側等車。早上巨蛋發車後，約需 <b>35~45分</b> 才會繞回我們家喔！</span>
-                </div>
-            </div>
-
-            <!-- 方案 B：1路 -->
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl mb-6 shadow-sm">
-                 <div class="flex justify-between items-start mb-2">
-                    <h3 class="font-bold text-blue-800 text-lg flex items-center">
-                        <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded mr-2">班次多</span> 1路
-                    </h3>
-                    <a href="https://ebus.tycg.gov.tw/ebus/driving-map/1" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1.5 px-3 rounded-full shadow transition-colors flex items-center">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        看動態
-                    </a>
-                </div>
-                <p class="text-sm text-gray-600">📍 走 10 分鐘到中山路 <span class="font-bold text-gray-800">【武陵高中】</span> 站，往市區方向上車。</p>
-                <p class="text-xs text-gray-500 mt-1">尖峰 5~10 分鐘一班，隨到隨上。</p>
-            </div>
-            
-            <!-- 新增：往市區 (ATT) -->
-            <h2 class="text-md font-bold text-gray-800 mb-3 mt-2 border-b-2 border-purple-500 pb-1 inline-block">🎯 往市區 (ATT / 火車站)</h2>
-            
-            <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-r-xl mb-4 shadow-sm">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="font-bold text-purple-800 text-lg flex items-center">
-                        <span class="bg-purple-500 text-white text-xs px-2 py-1 rounded mr-2">直達</span> 101路
-                    </h3>
-                    <a href="https://ebus.tycg.gov.tw/ebus/driving-map/101" target="_blank" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-1.5 px-3 rounded-full shadow transition-colors flex items-center">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        看動態
-                    </a>
-                </div>
-                <p class="text-sm text-gray-600 mb-1">📍 家樓下 <span class="font-bold text-gray-800">【龍安國強一街口】</span> 上車，直達 <span class="font-bold text-gray-800">【復興中正路口】</span>(ATT對面)。</p>
-                <p class="text-xs text-purple-700 mt-1">💡 一樣要在「往市區」那一側等車喔！</p>
-            </div>
-
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl mb-2 shadow-sm">
-                 <div class="flex justify-between items-start mb-2">
-                    <h3 class="font-bold text-blue-800 text-lg flex items-center">
-                        <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded mr-2">班次多</span> 1路
-                    </h3>
-                    <a href="https://ebus.tycg.gov.tw/ebus/driving-map/1" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1.5 px-3 rounded-full shadow transition-colors flex items-center">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        看動態
-                    </a>
-                </div>
-                <p class="text-sm text-gray-600">📍 走 10 分鐘到中山路 <span class="font-bold text-gray-800">【武陵高中】</span> 站，往市區方向上車，坐到 <span class="font-bold text-gray-800">【復興中正路口】</span>。</p>
-            </div>
-        </div>
-
-        <!-- 內容區塊：準備回家 (預設隱藏) -->
-        <div id="content-back" class="p-5 hidden animate-fade-in">
-            <h2 class="text-md font-bold text-gray-800 mb-3 border-b-2 border-orange-500 pb-1 inline-block">📍 從學校 (北科附工) 回家</h2>
-            
-            <!-- 回程方案 A：101路 -->
-            <div class="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-xl mb-4 shadow-sm relative overflow-hidden">
-                <div class="absolute top-0 right-0 bg-orange-500 text-white text-[10px] px-2 py-1 rounded-bl-lg font-bold">推薦搭法</div>
-                <div class="flex justify-between items-start mb-2 mt-2">
-                    <h3 class="font-bold text-orange-800 text-lg flex items-center">
-                        101路 (巨蛋上車)
-                    </h3>
-                    <a href="https://ebus.tycg.gov.tw/ebus/driving-map/101" target="_blank" class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-1.5 px-3 rounded-full shadow transition-colors z-10 relative flex items-center">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        看動態
-                    </a>
-                </div>
-                <p class="text-sm text-gray-600 mb-2">🚶 放學散步 3 分鐘到隔壁 <span class="font-bold text-gray-800">【桃園巨蛋總站】</span> 搭車，直達家樓下。</p>
-                <div class="bg-white/60 p-2 rounded text-sm text-orange-900 border border-orange-100">
-                    <span class="block mb-1 text-xs font-bold">傍晚熱門班次：</span>
-                    <div class="flex space-x-2">
-                        <span class="bg-orange-200 px-2 py-1 rounded text-xs font-bold">16:00</span>
-                        <span class="bg-orange-200 px-2 py-1 rounded text-xs font-bold">17:00</span>
-                        <span class="bg-orange-200 px-2 py-1 rounded text-xs font-bold">18:15</span>
+        <div id="content-go" class="space-y-6">
+            <!-- 往學校 -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-indigo-500 pl-2">🎯 往學校 (北科附工)</h2>
+                
+                <div class="mb-4 pb-4 border-b border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">直達</span>
+                        <span class="text-xl font-bold text-gray-800">101路</span>
+                        <!-- 如果以後有QR Code專屬網址，可以直接貼在下面 href="..." 裡面取代它 -->
+                        <a href="https://www.busgooo.com/bus/TAO3420" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
+                            📍 顯示站牌動態
+                        </a>
                     </div>
-                    <span class="block mt-2 mb-1 text-xs font-bold">晚自習班次：</span>
-                    <div class="flex space-x-2">
-                        <span class="bg-orange-200 px-2 py-1 rounded text-xs font-bold">19:45</span>
-                        <span class="bg-orange-200 px-2 py-1 rounded text-xs font-bold">21:30</span>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        🏠 <b>龍安國強一街口</b> 上車<br>
+                        🏫 <b>體育館(北科附工)</b> 下車<br>
+                        <span class="text-red-500 text-xs">⚠️ 總站發車後約需 35~40 分鐘才會到家樓下</span>
+                    </p>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">班次多</span>
+                        <span class="text-xl font-bold text-gray-800">1路</span>
+                        <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
+                            📍 顯示站牌動態
+                        </a>
                     </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        🚶‍♂️ 散步至 <b>武陵高中</b> 上車<br>
+                        🏫 <b>體育館(北科附工)</b> 下車
+                    </p>
                 </div>
             </div>
 
-            <!-- 回程方案 B：1路 -->
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl mb-6 shadow-sm">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="font-bold text-blue-800 text-lg flex items-center">
-                        1路 (校門口上車)
-                    </h3>
-                     <a href="https://ebus.tycg.gov.tw/ebus/driving-map/1" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1.5 px-3 rounded-full shadow transition-colors flex items-center">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        看動態
-                    </a>
+            <!-- 往市區 -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-pink-500 pl-2">🎯 往市區 (ATT/火車站)</h2>
+                <p class="text-sm text-gray-500 mb-3">搭法與去學校一樣，只是提早在市區下車！</p>
+                <div class="flex gap-2">
+                     <a href="https://www.busgooo.com/bus/TAO3420" target="_blank" rel="noopener noreferrer" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-center py-2 rounded-lg text-sm font-bold border border-indigo-200">📍 101 動態</a>
+                     <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 text-center py-2 rounded-lg text-sm font-bold border border-green-200">📍 1路 動態</a>
                 </div>
-                <p class="text-sm text-gray-600">📍 學校門口 <span class="font-bold text-gray-800">【體育館】</span> 站上車，坐到【武陵高中】下車走回家。</p>
-            </div>
-
-            <!-- 新增：從市區 (ATT) 回家 -->
-            <h2 class="text-md font-bold text-gray-800 mb-3 mt-2 border-b-2 border-purple-500 pb-1 inline-block">📍 從市區 (ATT / 火車站) 回家</h2>
-
-            <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-r-xl mb-4 shadow-sm">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="font-bold text-purple-800 text-lg flex items-center">
-                        <span class="bg-purple-500 text-white text-xs px-2 py-1 rounded mr-2">直達</span> 101路
-                    </h3>
-                    <a href="https://ebus.tycg.gov.tw/ebus/driving-map/101" target="_blank" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold py-1.5 px-3 rounded-full shadow transition-colors flex items-center">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        看動態
-                    </a>
-                </div>
-                <p class="text-sm text-gray-600 mb-1">📍 在 ATT 斜對面 <span class="font-bold text-gray-800">【復興中正路口】</span> 等車，直達家樓下。</p>
-                <div class="bg-purple-100 p-2 rounded text-xs text-purple-900 mt-2">
-                    <span class="block mb-1">巨蛋發車後，大約 <b>5~10分鐘</b> 會開到 ATT。</span>
-                    <span class="block font-bold mt-2 mb-1">下午/晚上預估過站時間 (僅供參考)：</span>
-                    <div class="grid grid-cols-3 gap-1 mt-1 text-[11px]">
-                        <span class="bg-white/60 px-1 py-1 rounded text-center">13:05~13:10</span>
-                        <span class="bg-white/60 px-1 py-1 rounded text-center">14:10~14:15</span>
-                        <span class="bg-white/60 px-1 py-1 rounded text-center">15:20~15:25</span>
-                        <span class="bg-white/60 px-1 py-1 rounded text-center">16:05~16:10</span>
-                        <span class="bg-white/60 px-1 py-1 rounded text-center">17:05~17:10</span>
-                        <span class="bg-white/60 px-1 py-1 rounded text-center">18:20~18:25</span>
-                        <span class="bg-white/60 px-1 py-1 rounded text-center">19:50~19:55</span>
-                        <span class="bg-white/60 px-1 py-1 rounded text-center font-bold text-red-600">21:35(末班)</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-xl mb-2 shadow-sm">
-                 <div class="flex justify-between items-start mb-2">
-                    <h3 class="font-bold text-blue-800 text-lg flex items-center">
-                        <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded mr-2">班次多</span> 1路
-                    </h3>
-                    <a href="https://ebus.tycg.gov.tw/ebus/driving-map/1" target="_blank" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1.5 px-3 rounded-full shadow transition-colors flex items-center">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        看動態
-                    </a>
-                </div>
-                <p class="text-sm text-gray-600">📍 ATT 附近的 <span class="font-bold text-gray-800">【復興中正路口】</span> 上車，坐到【武陵高中】下車走回家。</p>
             </div>
         </div>
 
-        <!-- 時刻表 (獨立出來放最下面，兩頁共用) -->
-        <div class="mx-5 mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-            <!-- 路線切換器 -->
-            <div class="flex space-x-1 mb-3 bg-gray-100 p-1 rounded-lg">
-                <button onclick="switchRoute('101')" id="btn-route-101" class="flex-1 py-1.5 text-sm font-bold rounded bg-white shadow text-blue-600 transition-colors">🚌 101路 時刻表</button>
-                <button onclick="switchRoute('1')" id="btn-route-1" class="flex-1 py-1.5 text-sm font-bold rounded text-gray-500 hover:bg-gray-200 transition-colors">🚌 1路 班次資訊</button>
-            </div>
-
-            <!-- 101路 專屬區塊 -->
-            <div id="schedule-101-section">
-                <!-- 地點切換器 (智慧推算) -->
-                <div class="flex space-x-1 mb-2 bg-gray-50 p-1 rounded-lg border border-gray-100">
-                    <button onclick="switchScheduleLoc('home')" id="btn-loc-home" class="flex-1 py-1.5 text-xs font-bold rounded bg-white shadow text-blue-600 transition-colors">🏠 在家裡等</button>
-                    <button onclick="switchScheduleLoc('dome')" id="btn-loc-dome" class="flex-1 py-1.5 text-xs font-bold rounded text-gray-500 transition-colors">🏫 在巨蛋等</button>
-                    <button onclick="switchScheduleLoc('att')" id="btn-loc-att" class="flex-1 py-1.5 text-xs font-bold rounded text-gray-500 transition-colors">🛍️ 在ATT等</button>
+        <div id="content-back" class="space-y-6 hidden">
+            <!-- 從學校回家 -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-indigo-500 pl-2">🏫 從學校回家</h2>
+                
+                <div class="mb-4 pb-4 border-b border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">有座位</span>
+                        <span class="text-xl font-bold text-gray-800">101路</span>
+                        <a href="https://www.busgooo.com/bus/TAO3420" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
+                            📍 顯示站牌動態
+                        </a>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        🚶‍♂️ 散步至隔壁 <b>桃園巨蛋總站</b> 搭車<br>
+                        🏠 <b>龍安國強一街口</b> 下車 (到家)
+                    </p>
                 </div>
 
-                <p class="text-[11px] text-red-500 mb-3 leading-tight font-bold" id="schedule-note">⚠️ 預估：巨蛋發車後，約需 40 分鐘才會繞回家樓下</p>
-
-                <div class="grid grid-cols-4 gap-2" id="schedule-grid">
-                    <!-- 時刻表會由 JavaScript 動態生成 -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">校門口搭</span>
+                        <span class="text-xl font-bold text-gray-800">1路</span>
+                        <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
+                            📍 顯示站牌動態
+                        </a>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        🏫 <b>體育館(北科附工)</b> 上車<br>
+                        🚶‍♂️ <b>武陵高中</b> 下車 (散步回家)
+                    </p>
                 </div>
-                <p class="text-xs text-gray-400 mt-3 text-center" id="next-bus-hint">綠底標示為本站預估抵達的下一班車</p>
             </div>
 
-            <!-- 1路 專屬區塊 (預設隱藏) -->
-            <div id="schedule-1-section" class="hidden text-center py-6 animate-fade-in">
-                <div class="text-4xl mb-2">🚍</div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">1路公車為「密集班次」</h3>
-                <p class="text-sm text-gray-600 mb-5">尖峰約 5~10 分鐘一班<br>隨到隨上，不需死記時刻表！</p>
-                <a href="https://ebus.tycg.gov.tw/ebus/driving-map/1" target="_blank" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-full shadow transition-colors">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                    直接查看 1路 即時動態
+            <!-- 從市區回家 -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800 mb-3 border-l-4 border-pink-500 pl-2">🛍️ 從市區 (ATT) 回家</h2>
+                
+                <div class="mb-4 pb-4 border-b border-gray-100">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">直達家</span>
+                        <span class="text-xl font-bold text-gray-800">101路</span>
+                        <a href="https://www.busgooo.com/bus/TAO3420" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
+                            📍 顯示站牌動態
+                        </a>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        🛍️ <b>復興中正路口(ATT)</b> 上車<br>
+                        🏠 <b>龍安國強一街口</b> 下車<br>
+                        <span class="text-indigo-600 text-xs mt-1 block">💡 預估到站：通常在巨蛋發車後的 5~10 分鐘內抵達 ATT 站牌，請搭配動態確認。</span>
+                    </p>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">班次多</span>
+                        <span class="text-xl font-bold text-gray-800">1路</span>
+                        <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow-sm transition">
+                            📍 顯示站牌動態
+                        </a>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        🛍️ <b>復興中正路口(ATT)</b> 上車<br>
+                        🚶‍♂️ <b>武陵高中</b> 下車 (散步回家)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            
+            <!-- 路線切換頁籤 -->
+            <div class="flex border-b border-gray-200">
+                <button onclick="switchRouteTab('101')" id="route-tab-101" class="flex-1 py-3 text-center font-bold bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600">
+                    🚌 101路 時刻表
+                </button>
+                <button onclick="switchRouteTab('1')" id="route-tab-1" class="flex-1 py-3 text-center font-bold bg-white text-gray-500 hover:bg-gray-50">
+                    🚌 1路 資訊
+                </button>
+            </div>
+
+            <!-- 101路 時刻表內容 -->
+            <div id="route-content-101" class="p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-gray-800 flex items-center">
+                        <span class="text-lg mr-1">⏱️</span> 智慧預估到站時間
+                    </h3>
+                </div>
+                
+                <!-- 地點選擇按鈕 -->
+                <div class="flex gap-2 mb-4 bg-gray-100 p-1 rounded-lg">
+                    <button onclick="setLocationOffset(40, '🏠 在家裡等 (往學校)', this)" class="loc-btn flex-1 py-1.5 text-xs font-bold rounded-md bg-white shadow-sm text-indigo-700">🏠 家裡</button>
+                    <button onclick="setLocationOffset(0, '🏫 在巨蛋等 (往家裡)', this)" class="loc-btn flex-1 py-1.5 text-xs font-bold rounded-md text-gray-500">🏫 巨蛋</button>
+                    <button onclick="setLocationOffset(8, '🛍️ 在ATT等 (往家裡)', this)" class="loc-btn flex-1 py-1.5 text-xs font-bold rounded-md text-gray-500">🛍️ ATT</button>
+                </div>
+
+                <div class="bg-red-50 text-red-600 text-xs p-2 rounded mb-3">
+                    ⚠️ 近期客運常有調整班次，請以【顯示站牌動態】實際車況為準！
+                </div>
+                
+                <div class="grid grid-cols-4 gap-2 text-center" id="schedule-grid">
+                    <!-- 時刻表會由 JavaScript 動態產生 -->
+                </div>
+            </div>
+
+            <!-- 1路 資訊內容 -->
+            <div id="route-content-1" class="p-6 hidden text-center">
+                <div class="text-4xl mb-3">⚡</div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">1路公車 班次極度密集</h3>
+                <p class="text-sm text-gray-600 mb-4">
+                    尖峰時間約 5~10 分鐘一班車<br>不需要看時刻表，隨到隨搭！
+                </p>
+                <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full text-lg font-bold shadow-md transition inline-block w-full">
+                    📍 一鍵看 1路 最新動態
                 </a>
             </div>
         </div>
-
-    </div>
+        
+        <div class="text-center mt-6 mb-8 text-xs text-gray-400">
+            市民卡票價：學生實扣 7 元 / 一般實扣 9 元
+        </div>
+    </main>
 
     <script>
-        // 101路平日發車時刻表 (已根據近期最新動態微調，移除可能減班的 06:30)
-        const schedule101 = [
-            "06:00", "07:10", "08:00", 
-            "09:00", "10:00", "11:00", "12:00", 
-            "13:00", "14:05", "15:15", "16:00", 
-            "17:00", "18:15", "19:45", "21:30"
+        const timeDisplay = document.getElementById('current-time');
+        const scheduleGrid = document.getElementById('schedule-grid');
+        const statusText = document.getElementById('location-status');
+        
+        // 桃園巨蛋 101路 平日總站發車時刻 (已移除 06:30 停駛班次)
+        const baseSchedule = [
+            "06:00", "07:10", "08:00", "09:00", "10:00", 
+            "11:00", "12:00", "13:00", "14:05", "15:15", 
+            "16:00", "17:00", "18:15", "19:45", "21:30"
         ];
 
-        // 各站點的時間差與設定
-        let currentLoc = 'home';
-        const locConfig = {
-            'home': { offset: 40, note: '⚠️ 預估：巨蛋發車後，約需 40 分鐘才會繞回家樓下', activeClass: 'text-blue-600' },
-            'dome': { offset: 0, note: '⚠️ 準點：總站發車，時間最準確！', activeClass: 'text-orange-600' },
-            'att': { offset: 7, note: '⚠️ 預估：巨蛋發車後，約 5~10 分鐘會經過 ATT', activeClass: 'text-purple-600' }
-        };
+        let currentOffsetMinutes = 40; // 預設在家裡等 (巨蛋發車+40分)
 
-        // 時間加法小工具 (例如 06:00 + 40分 = 06:40)
-        function addMins(timeStr, mins) {
-            let [h, m] = timeStr.split(':').map(Number);
-            m += mins;
-            h += Math.floor(m / 60);
-            m = m % 60;
-            return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
-        }
-
-        // 切換下方公車路線 (101路 / 1路)
-        function switchRoute(route) {
-            const section101 = document.getElementById('schedule-101-section');
-            const section1 = document.getElementById('schedule-1-section');
-            const btn101 = document.getElementById('btn-route-101');
-            const btn1 = document.getElementById('btn-route-1');
-
-            if (route === '101') {
-                section101.classList.remove('hidden');
-                section1.classList.add('hidden');
-                btn101.className = "flex-1 py-1.5 text-sm font-bold rounded bg-white shadow text-blue-600 transition-colors";
-                btn1.className = "flex-1 py-1.5 text-sm font-bold rounded text-gray-500 hover:bg-gray-200 transition-colors";
-            } else {
-                section101.classList.add('hidden');
-                section1.classList.remove('hidden');
-                btn1.className = "flex-1 py-1.5 text-sm font-bold rounded bg-white shadow text-blue-600 transition-colors";
-                btn101.className = "flex-1 py-1.5 text-sm font-bold rounded text-gray-500 hover:bg-gray-200 transition-colors";
-            }
-        }
-
-        // 切換下方時刻表的地點
-        function switchScheduleLoc(loc) {
-            currentLoc = loc;
-            const config = locConfig[loc];
-
-            // 更新按鈕樣式
-            ['home', 'dome', 'att'].forEach(l => {
-                const btn = document.getElementById(`btn-loc-${l}`);
-                if (l === loc) {
-                    btn.className = `flex-1 py-1.5 text-xs font-bold rounded bg-white shadow ${config.activeClass} transition-colors`;
-                } else {
-                    btn.className = `flex-1 py-1.5 text-xs font-bold rounded text-gray-500 hover:bg-gray-200 transition-colors`;
-                }
-            });
-
-            // 更新提示文字
-            document.getElementById('schedule-note').innerText = config.note;
-
-            // 立即重新推算並渲染時刻表
-            updateClock();
-        }
-
-        // 切換去程/回程頁籤
-        function switchTab(tab) {
-            const contentGo = document.getElementById('content-go');
-            const contentBack = document.getElementById('content-back');
-            const tabGo = document.getElementById('tab-go');
-            const tabBack = document.getElementById('tab-back');
-
-            if (tab === 'go') {
-                contentGo.classList.remove('hidden');
-                contentBack.classList.add('hidden');
-                
-                tabGo.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white shadow text-blue-600 transition-all duration-300";
-                tabBack.className = "flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition-all duration-300";
-                
-                // 連動切換下方時刻表到「家裡」
-                switchScheduleLoc('home');
-            } else {
-                contentGo.classList.add('hidden');
-                contentBack.classList.remove('hidden');
-                
-                tabBack.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white shadow text-orange-600 transition-all duration-300";
-                tabGo.className = "flex-1 py-2 text-sm font-bold rounded-lg text-gray-500 hover:text-gray-700 transition-all duration-300";
-                
-                // 連動切換下方時刻表到「巨蛋」
-                switchScheduleLoc('dome');
-            }
-        }
-
-        // 初始化時鐘與時刻表
-        function initApp() {
-            updateClock();
-            setInterval(updateClock, 1000); // 每秒更新
-        }
-
-        function updateClock() {
+        function updateTimeAndSchedule() {
             const now = new Date();
-            
-            // 更新日期與星期
-            const days = ['日', '一', '二', '三', '四', '五', '六'];
-            const dateStr = `${now.getMonth() + 1}月${now.getDate()}日 星期${days[now.getDay()]}`;
-            document.getElementById('current-date').innerText = dateStr;
-
-            // 更新時間
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const currentTimeStr = `${hours}:${minutes}`;
-            document.getElementById('current-time').innerText = currentTimeStr;
+            timeDisplay.textContent = currentTimeStr;
 
-            // 尋找下一班車並重新渲染時刻表
-            renderSchedule(currentTimeStr);
-        }
+            scheduleGrid.innerHTML = '';
+            let nextFound = false;
 
-        function renderSchedule(currentTimeStr) {
-            const grid = document.getElementById('schedule-grid');
-            grid.innerHTML = ''; // 清空重新繪製
+            baseSchedule.forEach(baseTime => {
+                // 計算加上抵達時間的預估時刻
+                const [bH, bM] = baseTime.split(':').map(Number);
+                let dateObj = new Date();
+                dateObj.setHours(bH, bM + currentOffsetMinutes, 0);
+                
+                const estH = String(dateObj.getHours()).padStart(2, '0');
+                const estM = String(dateObj.getMinutes()).padStart(2, '0');
+                const estTimeStr = `${estH}:${estM}`;
 
-            // 根據選擇的地點推算時間
-            const offset = locConfig[currentLoc].offset;
-            const adjustedSchedule = schedule101.map(t => addMins(t, offset));
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'py-2 rounded-lg text-sm border';
 
-            let nextBusIndex = -1;
-            
-            // 找出下一班車的 index
-            for (let i = 0; i < adjustedSchedule.length; i++) {
-                if (adjustedSchedule[i] >= currentTimeStr) {
-                    nextBusIndex = i;
-                    break;
+                if (currentTimeStr > estTimeStr) {
+                    timeDiv.classList.add('past-time', 'border-transparent', 'bg-gray-50');
+                } else if (!nextFound) {
+                    timeDiv.classList.add('highlight-next', 'border-green-500');
+                    nextFound = true;
+                } else {
+                    timeDiv.classList.add('text-gray-700', 'border-gray-200');
                 }
-            }
-
-            // 產生時刻表按鈕
-            adjustedSchedule.forEach((time, index) => {
-                const isNext = index === nextBusIndex;
-                const isPassed = time < currentTimeStr;
                 
-                const div = document.createElement('div');
-                div.className = `text-center py-2 rounded-lg text-sm border transition-colors ${
-                    isNext ? 'bg-green-500 text-white font-bold border-green-600 shadow-md transform scale-105' : 
-                    isPassed ? 'bg-gray-50 text-gray-300 border-gray-100' : 
-                    'bg-white text-gray-700 border-gray-200'
-                }`;
-                
-                div.innerText = time;
-                
-                // 如果是下一班，加上小提示
-                if (isNext) {
-                    div.innerHTML = `<span class="block">${time}</span><span class="text-[10px] opacity-80 -mt-1 block">下一班</span>`;
-                }
-
-                grid.appendChild(div);
+                timeDiv.textContent = estTimeStr;
+                scheduleGrid.appendChild(timeDiv);
             });
+        }
 
-            // 如果今天已經沒有車了
-            if (nextBusIndex === -1 && currentTimeStr > adjustedSchedule[adjustedSchedule.length - 1]) {
-                document.getElementById('next-bus-hint').innerText = "今天本站已經沒有 101路 囉！請改搭 1路";
-                document.getElementById('next-bus-hint').classList.add("text-red-500");
+        function setLocationOffset(minutes, label, btnElement) {
+            currentOffsetMinutes = minutes;
+            statusText.textContent = `目前推算：${label}`;
+            
+            // 更新按鈕樣式
+            document.querySelectorAll('.loc-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'shadow-sm', 'text-indigo-700');
+                btn.classList.add('text-gray-500');
+            });
+            btnElement.classList.add('bg-white', 'shadow-sm', 'text-indigo-700');
+            btnElement.classList.remove('text-gray-500');
+
+            updateTimeAndSchedule();
+        }
+
+        function switchTab(direction) {
+            const tabGo = document.getElementById('tab-go');
+            const tabBack = document.getElementById('tab-back');
+            const contentGo = document.getElementById('content-go');
+            const contentBack = document.getElementById('content-back');
+            const locBtns = document.querySelectorAll('.loc-btn');
+
+            if (direction === 'go') {
+                tabGo.className = "flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-active text-lg";
+                tabBack.className = "flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-inactive text-lg";
+                contentGo.classList.remove('hidden');
+                contentBack.classList.add('hidden');
+                
+                // 自動切換時刻表為「家裡等」
+                setLocationOffset(40, '🏠 在家裡等 (往學校)', locBtns[0]);
             } else {
-                 document.getElementById('next-bus-hint').innerText = "綠色底色標示為本站預估抵達的下一班車";
-                 document.getElementById('next-bus-hint').classList.remove("text-red-500");
+                tabBack.className = "flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-active text-lg";
+                tabGo.className = "flex-1 py-3 rounded-xl font-bold shadow-sm transition tab-inactive text-lg";
+                contentBack.classList.remove('hidden');
+                contentGo.classList.add('hidden');
+                
+                // 自動切換時刻表為「巨蛋等」
+                setLocationOffset(0, '🏫 在巨蛋等 (往家裡)', locBtns[1]);
             }
         }
 
-        // 啟動 App
-        window.onload = initApp;
+        function switchRouteTab(route) {
+            const tab101 = document.getElementById('route-tab-101');
+            const tab1 = document.getElementById('route-tab-1');
+            const content101 = document.getElementById('route-content-101');
+            const content1 = document.getElementById('route-content-1');
+
+            if (route === '101') {
+                tab101.className = "flex-1 py-3 text-center font-bold bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600";
+                tab1.className = "flex-1 py-3 text-center font-bold bg-white text-gray-500 hover:bg-gray-50";
+                content101.classList.remove('hidden');
+                content1.classList.add('hidden');
+            } else {
+                tab1.className = "flex-1 py-3 text-center font-bold bg-indigo-50 text-indigo-700 border-b-2 border-indigo-600";
+                tab101.className = "flex-1 py-3 text-center font-bold bg-white text-gray-500 hover:bg-gray-50";
+                content1.classList.remove('hidden');
+                content101.classList.add('hidden');
+            }
+        }
+
+        // 初始化
+        setInterval(updateTimeAndSchedule, 60000); // 每分鐘更新一次時鐘
+        updateTimeAndSchedule(); // 第一次載入立刻執行
     </script>
 </body>
 </html>
