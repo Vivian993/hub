@@ -216,24 +216,39 @@
 
         <!-- 時刻表 (獨立出來放最下面，兩頁共用) -->
         <div class="mx-5 mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-            <h3 class="text-md font-bold text-gray-800 mb-2 flex items-center justify-between">
-                <span>各站預估時刻表 (101路)</span>
-                <span class="text-xs font-normal text-gray-500 bg-gray-200 px-2 py-1 rounded">平日表</span>
-            </h3>
-
-            <!-- 地點切換器 (智慧推算) -->
-            <div class="flex space-x-1 mb-2 bg-gray-100 p-1 rounded-lg">
-                <button onclick="switchScheduleLoc('home')" id="btn-loc-home" class="flex-1 py-1.5 text-xs font-bold rounded bg-white shadow text-blue-600 transition-colors">🏠 在家裡等</button>
-                <button onclick="switchScheduleLoc('dome')" id="btn-loc-dome" class="flex-1 py-1.5 text-xs font-bold rounded text-gray-500 transition-colors">🏫 在巨蛋等</button>
-                <button onclick="switchScheduleLoc('att')" id="btn-loc-att" class="flex-1 py-1.5 text-xs font-bold rounded text-gray-500 transition-colors">🛍️ 在ATT等</button>
+            <!-- 路線切換器 -->
+            <div class="flex space-x-1 mb-3 bg-gray-100 p-1 rounded-lg">
+                <button onclick="switchRoute('101')" id="btn-route-101" class="flex-1 py-1.5 text-sm font-bold rounded bg-white shadow text-blue-600 transition-colors">🚌 101路 時刻表</button>
+                <button onclick="switchRoute('1')" id="btn-route-1" class="flex-1 py-1.5 text-sm font-bold rounded text-gray-500 hover:bg-gray-200 transition-colors">🚌 1路 班次資訊</button>
             </div>
 
-            <p class="text-[11px] text-red-500 mb-3 leading-tight font-bold" id="schedule-note">⚠️ 預估：巨蛋發車後，約需 40 分鐘才會繞回家樓下</p>
+            <!-- 101路 專屬區塊 -->
+            <div id="schedule-101-section">
+                <!-- 地點切換器 (智慧推算) -->
+                <div class="flex space-x-1 mb-2 bg-gray-50 p-1 rounded-lg border border-gray-100">
+                    <button onclick="switchScheduleLoc('home')" id="btn-loc-home" class="flex-1 py-1.5 text-xs font-bold rounded bg-white shadow text-blue-600 transition-colors">🏠 在家裡等</button>
+                    <button onclick="switchScheduleLoc('dome')" id="btn-loc-dome" class="flex-1 py-1.5 text-xs font-bold rounded text-gray-500 transition-colors">🏫 在巨蛋等</button>
+                    <button onclick="switchScheduleLoc('att')" id="btn-loc-att" class="flex-1 py-1.5 text-xs font-bold rounded text-gray-500 transition-colors">🛍️ 在ATT等</button>
+                </div>
 
-            <div class="grid grid-cols-4 gap-2" id="schedule-grid">
-                <!-- 時刻表會由 JavaScript 動態生成 -->
+                <p class="text-[11px] text-red-500 mb-3 leading-tight font-bold" id="schedule-note">⚠️ 預估：巨蛋發車後，約需 40 分鐘才會繞回家樓下</p>
+
+                <div class="grid grid-cols-4 gap-2" id="schedule-grid">
+                    <!-- 時刻表會由 JavaScript 動態生成 -->
+                </div>
+                <p class="text-xs text-gray-400 mt-3 text-center" id="next-bus-hint">綠底標示為本站預估抵達的下一班車</p>
             </div>
-            <p class="text-xs text-gray-400 mt-3 text-center" id="next-bus-hint">綠底標示為本站預估抵達的下一班車</p>
+
+            <!-- 1路 專屬區塊 (預設隱藏) -->
+            <div id="schedule-1-section" class="hidden text-center py-6 animate-fade-in">
+                <div class="text-4xl mb-2">🚍</div>
+                <h3 class="text-lg font-bold text-gray-800 mb-1">1路公車為「密集班次」</h3>
+                <p class="text-sm text-gray-600 mb-5">尖峰約 5~10 分鐘一班<br>隨到隨上，不需死記時刻表！</p>
+                <a href="https://ebus.tycg.gov.tw/ebus/driving-map/1" target="_blank" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-full shadow transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    直接查看 1路 即時動態
+                </a>
+            </div>
         </div>
 
     </div>
@@ -262,6 +277,26 @@
             h += Math.floor(m / 60);
             m = m % 60;
             return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+        }
+
+        // 切換下方公車路線 (101路 / 1路)
+        function switchRoute(route) {
+            const section101 = document.getElementById('schedule-101-section');
+            const section1 = document.getElementById('schedule-1-section');
+            const btn101 = document.getElementById('btn-route-101');
+            const btn1 = document.getElementById('btn-route-1');
+
+            if (route === '101') {
+                section101.classList.remove('hidden');
+                section1.classList.add('hidden');
+                btn101.className = "flex-1 py-1.5 text-sm font-bold rounded bg-white shadow text-blue-600 transition-colors";
+                btn1.className = "flex-1 py-1.5 text-sm font-bold rounded text-gray-500 hover:bg-gray-200 transition-colors";
+            } else {
+                section101.classList.add('hidden');
+                section1.classList.remove('hidden');
+                btn1.className = "flex-1 py-1.5 text-sm font-bold rounded bg-white shadow text-blue-600 transition-colors";
+                btn101.className = "flex-1 py-1.5 text-sm font-bold rounded text-gray-500 hover:bg-gray-200 transition-colors";
+            }
         }
 
         // 切換下方時刻表的地點
