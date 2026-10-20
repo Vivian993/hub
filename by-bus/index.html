@@ -188,6 +188,11 @@
                     <button onclick="setLocationOffset(8, '🛍️ 在ATT等 (往家裡)', this)" class="loc-btn flex-1 py-1.5 text-xs font-bold rounded-md text-gray-500">🛍️ ATT</button>
                 </div>
 
+                <!-- 101路線圖按鈕 -->
+                <button onclick="openModal('image_4.png')" class="w-full mb-3 py-2 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-lg font-bold text-sm shadow-sm flex justify-center items-center gap-2 transition hover:bg-indigo-100">
+                    🗺️ 查看【101路】完整路線圖
+                </button>
+
                 <div class="bg-red-50 text-red-600 text-xs p-2 rounded mb-3">
                     ⚠️ 近期客運常有調整班次，請以【顯示站牌動態】實際車況為準！
                 </div>
@@ -204,9 +209,14 @@
                 <p class="text-sm text-gray-600 mb-4">
                     尖峰時間約 5~10 分鐘一班車<br>不需要看時刻表，隨到隨搭！
                 </p>
-                <a href="https://www.busgooo.com/bus/TAO3010" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full text-lg font-bold shadow-md transition inline-block w-full">
+                <a href="https://bus.hinet.net/Web_P/page/route/m_route_dynamic.jsp?rb_id=30&r_id=140&d_id=0" target="_blank" rel="noopener noreferrer" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full text-lg font-bold shadow-md transition inline-block w-full mb-3">
                     📍 一鍵看 1路 最新動態
                 </a>
+                
+                <!-- 1路線圖按鈕 -->
+                <button onclick="openModal('image_5.png')" class="w-full py-2 bg-green-50 border border-green-200 text-green-700 rounded-lg font-bold text-sm shadow-sm flex justify-center items-center gap-2 transition hover:bg-green-100">
+                    🗺️ 查看【1路】完整路線圖
+                </button>
             </div>
         </div>
         
@@ -214,6 +224,17 @@
             市民卡票價：學生實扣 7 元 / 一般實扣 9 元
         </div>
     </main>
+
+    <!-- 圖片放大預覽 Modal (彈出視窗) -->
+    <div id="image-modal" class="fixed inset-0 bg-black/90 z-[100] hidden flex-col justify-center items-center p-4 transition-opacity" onclick="closeModal()">
+        <button onclick="closeModal()" class="absolute top-6 right-6 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full font-bold backdrop-blur-sm transition">
+            ❌ 關閉
+        </button>
+        <div class="overflow-auto max-h-full w-full flex justify-center items-center" onclick="event.stopPropagation()">
+            <!-- 圖片會顯示在這裡 -->
+            <img id="modal-image" src="" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl">
+        </div>
+    </div>
 
     <script>
         const timeDisplay = document.getElementById('current-time');
@@ -324,6 +345,23 @@
                 content1.classList.remove('hidden');
                 content101.classList.add('hidden');
             }
+        }
+
+        // --- 圖片預覽 Modal 控制邏輯 ---
+        function openModal(imgSrc) {
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-image');
+            modalImg.src = imgSrc; // 動態載入點擊的圖片
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden'; // 鎖定背景，防止後面的網頁跟著滑動
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('image-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = ''; // 恢復背景滑動
         }
 
         // 初始化
