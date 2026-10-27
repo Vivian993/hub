@@ -217,8 +217,10 @@
     align-items: center; justify-content: center; overflow: hidden;
   }
   .card-fallback span {
-    font-size: 48px; font-family: 'ZCOOL KuaiLe', 'Noto Sans TC', sans-serif;
-    opacity: 0.9; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    font-size: 22px; font-weight: 900; font-family: 'ZCOOL KuaiLe', 'Noto Sans TC', sans-serif;
+    opacity: 0.9; text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    text-align: center; padding: 0 16px; line-height: 1.4;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: normal;
   }
 
   .card-desc{
@@ -629,8 +631,8 @@ function cardHTML(x, absoluteIndex){
   
   let mediaHtml = x.i 
     ? `<img src="${x.i}" alt="${x.t}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-       <div class="card-fallback" style="display:none; background:linear-gradient(135deg, ${col.bg}, #ffffff); color:${accent};"><span>${x.t.charAt(0)}</span></div>`
-    : `<div class="card-fallback" style="background:linear-gradient(135deg, ${col.bg}, #ffffff); color:${accent};"><span>${x.t.charAt(0)}</span></div>`;
+       <div class="card-fallback" style="display:none; background:linear-gradient(135deg, ${col.bg}, #ffffff); color:${accent};"><span>${x.t}</span></div>`
+    : `<div class="card-fallback" style="background:linear-gradient(135deg, ${col.bg}, #ffffff); color:${accent};"><span>${x.t}</span></div>`;
 
   return `
     <div class="card">
